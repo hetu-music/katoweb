@@ -35,6 +35,8 @@ const MusicLibrary = () => {
   const [viewMode, setViewMode] = useState('grid');
   const [hoveredSong, setHoveredSong] = useState<string | null>(null);
   const router = useRouter();
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
     const fetchSongs = async () => {
@@ -63,6 +65,18 @@ const MusicLibrary = () => {
     fetchSongs();
   }, []);
 
+  useEffect(() => {
+    const onScroll = () => {
+      setShowScrollTop(window.scrollY > 200);
+    };
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // 获取所有类型和年份
   const allGenres = ['全部', ...new Set(songsData.flatMap(song => song.genre ? song.genre : []))];
   const allYears = ['全部', ...Array.from(new Set(songsData.map(song => song.year).filter(Boolean))).sort((a, b) => (b as number) - (a as number))];
@@ -87,14 +101,39 @@ const MusicLibrary = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+      {/* 关于弹窗 */}
+      {aboutOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-gradient-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-2xl shadow-2xl p-8 max-w-lg w-full relative text-white">
+            <button
+              className="absolute top-4 right-4 text-gray-300 hover:text-white text-xl font-bold"
+              onClick={() => setAboutOpen(false)}
+              aria-label="关闭"
+            >
+              ×
+            </button>
+            <h2 className="text-2xl font-bold mb-4">关于</h2>
+            <div className="text-base leading-relaxed space-y-2">
+              <p>本项目为河图作品合集，收录了河图的主要音乐作品，支持多维度筛选与搜索。</p>
+              <p>数据由本人整理，如有误漏请至 Github 提交反馈。</p>
+              <p>Github: <a href="https://github.com/hetu-music/data" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">https://github.com/hetu-music/data</a></p>
+            </div>
+          </div>
+        </div>
+      )}
       {/* 主容器 */}
       <div className="container mx-auto px-6 py-8">
         {/* 头部区域 */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <div>
+            <div className="flex items-center space-x-4">
               <h1 className="text-4xl font-bold text-white mb-2">河图作品合集</h1>
-              <p className="text-gray-300 text-lg">共 {songsData.length} 首歌曲</p>
+              <button
+                className="ml-2 px-4 py-1 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 text-sm font-medium shadow"
+                onClick={() => setAboutOpen(true)}
+              >
+                关于
+              </button>
             </div>
             <div className="flex items-center space-x-4">
               <button
@@ -279,6 +318,18 @@ const MusicLibrary = () => {
           </div>
         )}
       </div>
+      {/* 返回顶部按钮 */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 z-40 p-3 rounded-full bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200"
+          aria-label="返回顶部"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 };
