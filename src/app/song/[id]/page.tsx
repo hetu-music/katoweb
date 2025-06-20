@@ -9,24 +9,27 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const labelMap: Record<string, string> = {
-  title: '歌名',
-  date: '发行日期',
-  album: '专辑',
-  albumartist: '专辑艺人',
-  arranger: '编曲',
-  artist: '演唱',
-  comment: '备注',
-  composer: '作曲',
-  discnumber: '碟号',
-  disctotal: '碟总数',
-  genre: '流派',
-  lyricist: '作词',
-  lyrics: '歌词',
-  track: '曲号',
-  tracktotal: '曲总数',
-  length: '时长',
-  type: '类型',
+type Song = {
+  id: number;
+  title: string;
+  album: string | null;
+  year: number | null;
+  genre: string[] | null;
+  lyricist: string[] | null;
+  composer: string[] | null;
+  artist: string[] | null;
+  length: number | null;
+  cover?: string | null;
+  date?: string | null;
+  albumartist?: string[] | null;
+  arranger?: string[] | null;
+  comment?: string | null;
+  discnumber?: number | null;
+  disctotal?: number | null;
+  lyrics?: string | null;
+  track?: number | null;
+  tracktotal?: number | null;
+  type?: string | null;
 };
 
 function formatTime(seconds: number | null) {
@@ -39,7 +42,7 @@ function formatTime(seconds: number | null) {
 const SongDetail = () => {
   const params = useParams();
   const { id } = params;
-  const [song, setSong] = useState<any>(null);
+  const [song, setSong] = useState<Song | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 

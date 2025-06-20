@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, Play, Filter, Grid, List } from 'lucide-react';
+import { Search, Play, Grid, List } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 
@@ -21,6 +21,7 @@ type Song = {
   artist: string[] | null;
   length: number | null;
   cover?: string | null;
+  date?: string | null;
 };
 
 const MusicLibrary = () => {
@@ -46,7 +47,7 @@ const MusicLibrary = () => {
         .select('*');
       if (!error && data) {
         // Map DB data to UI data
-        const mapped = data.map((song: any) => ({
+        const mapped = data.map((song: Song) => ({
           id: song.id,
           title: song.title,
           album: song.album,
