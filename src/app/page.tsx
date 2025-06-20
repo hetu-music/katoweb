@@ -114,8 +114,8 @@ const MusicLibrary = () => {
             </button>
             <h2 className="text-2xl font-bold mb-4">关于</h2>
             <div className="text-base leading-relaxed space-y-2">
-              <p>本项目为河图作品合集，收录了河图的主要音乐作品，支持多维度筛选与搜索。</p>
-              <p>数据由本人整理，如有误漏请至 Github 提交反馈。</p>
+              <p>本项目为河图作品合集，收录了河图的主要音乐作品，支持筛选与搜索。</p>
+              <p>数据由本人整理，来源为创作者微博及各大音乐平台，如有误漏请至 Github 提交反馈。</p>
               <p>Github: <a href="https://github.com/hetu-music/data" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">https://github.com/hetu-music/data</a></p>
             </div>
           </div>
