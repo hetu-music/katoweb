@@ -5,11 +5,6 @@ import { Search, Play, Grid, List } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 
-// Supabase 配置（请替换为你的 Supabase URL 和 匿名 key）
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseKey);
-
 type Song = {
   id: number;
   title: string;
@@ -42,6 +37,9 @@ const MusicLibrary = () => {
   useEffect(() => {
     const fetchSongs = async () => {
       setLoading(true);
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+      const supabase = createClient(supabaseUrl, supabaseKey);
       const { data, error } = await supabase
         .from('music')
         .select('*');

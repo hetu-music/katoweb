@@ -5,9 +5,12 @@ import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import { Play, ArrowLeft } from 'lucide-react';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseKey);
+function formatTime(seconds: number | null) {
+  if (!seconds || isNaN(seconds)) return '-';
+  const min = Math.floor(seconds / 60);
+  const sec = (seconds % 60).toString().padStart(2, '0');
+  return `${min}:${sec}`;
+}
 
 type Song = {
   id: number;
@@ -32,13 +35,6 @@ type Song = {
   type?: string | null;
 };
 
-function formatTime(seconds: number | null) {
-  if (!seconds || isNaN(seconds)) return '-';
-  const min = Math.floor(seconds / 60);
-  const sec = (seconds % 60).toString().padStart(2, '0');
-  return `${min}:${sec}`;
-}
-
 const SongDetail = () => {
   const params = useParams();
   const { id } = params;
@@ -49,6 +45,9 @@ const SongDetail = () => {
   useEffect(() => {
     const fetchSong = async () => {
       setLoading(true);
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+      const supabase = createClient(supabaseUrl, supabaseKey);
       const { data, error } = await supabase
         .from('music')
         .select('*')
