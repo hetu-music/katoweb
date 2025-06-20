@@ -1,103 +1,80 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Search, Play, Filter, Grid, List } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
+
+// Supabase 配置（请替换为你的 Supabase URL 和 匿名 key）
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+type Song = {
+  id: number;
+  title: string;
+  album: string | null;
+  year: number | null;
+  genre: string[] | null;
+  lyricist: string[] | null;
+  composer: string[] | null;
+  artist: string[] | null;
+  length: number | null;
+  cover?: string | null;
+};
 
 const MusicLibrary = () => {
-  // 示例数据
-  const songsData = [
-    {
-      id: '001',
-      title: '稻香',
-      album: '魔杰座',
-      year: 2008,
-      genre: ['流行', '中国风'],
-      lyricist: '周杰伦',
-      composer: '周杰伦',
-      duration: '3:43',
-      cover: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop&crop=center'
-    },
-    {
-      id: '002',
-      title: '青花瓷',
-      album: '我很忙',
-      year: 2007,
-      genre: ['流行', '中国风'],
-      lyricist: '方文山',
-      composer: '周杰伦',
-      duration: '3:58',
-      cover: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300&h=300&fit=crop&crop=center'
-    },
-    {
-      id: '003',
-      title: '夜曲',
-      album: '十一月的萧邦',
-      year: 2005,
-      genre: ['流行', '抒情'],
-      lyricist: '方文山',
-      composer: '周杰伦',
-      duration: '3:47',
-      cover: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop&crop=center'
-    },
-    {
-      id: '004',
-      title: '七里香',
-      album: '七里香',
-      year: 2004,
-      genre: ['流行', '抒情'],
-      lyricist: '方文山',
-      composer: '周杰伦',
-      duration: '4:05',
-      cover: 'https://images.unsplash.com/photo-1471478331149-c72f17e33c73?w=300&h=300&fit=crop&crop=center'
-    },
-    {
-      id: '005',
-      title: '东风破',
-      album: '叶惠美',
-      year: 2003,
-      genre: ['流行', '中国风'],
-      lyricist: '方文山',
-      composer: '周杰伦',
-      duration: '4:32',
-      cover: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop&crop=center'
-    },
-    {
-      id: '006',
-      title: '简单爱',
-      album: '范特西',
-      year: 2001,
-      genre: ['流行', 'R&B'],
-      lyricist: '徐若瑄',
-      composer: '周杰伦',
-      duration: '4:30',
-      cover: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300&h=300&fit=crop&crop=center'
-    }
-  ];
-
+  // const songsData = [...] // 移除本地数据
+  const [songsData, setSongsData] = useState<Song[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('全部');
   const [selectedYear, setSelectedYear] = useState('全部');
   const [viewMode, setViewMode] = useState('grid');
   const [hoveredSong, setHoveredSong] = useState<string | null>(null);
 
+  useEffect(() => {
+    const fetchSongs = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('music')
+        .select('*');
+      if (!error && data) {
+        // Map DB data to UI data
+        const mapped = data.map((song: any) => ({
+          id: song.id,
+          title: song.title,
+          album: song.album,
+          year: song.date ? new Date(song.date).getFullYear() : null,
+          genre: song.genre,
+          lyricist: song.lyricist,
+          composer: song.composer,
+          artist: song.artist,
+          length: song.length,
+          cover: song.cover || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop&crop=center',
+        }));
+        setSongsData(mapped);
+      }
+      setLoading(false);
+    };
+    fetchSongs();
+  }, []);
+
   // 获取所有类型和年份
-  const allGenres = ['全部', ...new Set(songsData.flatMap(song => song.genre))];
-  const allYears = ['全部', ...Array.from(new Set(songsData.map(song => song.year))).sort((a, b) => b - a)];
+  const allGenres = ['全部', ...new Set(songsData.flatMap(song => song.genre ? song.genre : []))];
+  const allYears = ['全部', ...Array.from(new Set(songsData.map(song => song.year).filter(Boolean))).sort((a, b) => (b as number) - (a as number))];
 
   // 过滤歌曲
   const filteredSongs = useMemo(() => {
     return songsData.filter(song => {
       const matchesSearch = song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          song.album.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          song.lyricist.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          song.composer.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesGenre = selectedGenre === '全部' || song.genre.includes(selectedGenre);
-      const matchesYear = selectedYear === '全部' || song.year.toString() === selectedYear;
-      
+        (song.album && song.album.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (song.lyricist && song.lyricist.join(',').toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (song.composer && song.composer.join(',').toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesGenre = selectedGenre === '全部' || (song.genre && song.genre.includes(selectedGenre));
+      const matchesYear = selectedYear === '全部' || (song.year && song.year.toString() === selectedYear);
       return matchesSearch && matchesGenre && matchesYear;
     });
-  }, [searchTerm, selectedGenre, selectedYear]);
+  }, [searchTerm, selectedGenre, selectedYear, songsData]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
@@ -152,7 +129,7 @@ const MusicLibrary = () => {
                 className="px-4 py-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer"
               >
                 {allYears.map(year => (
-                  <option key={year} value={year} className="bg-gray-800">{year}</option>
+                  <option key={year} value={year === null ? '' : year} className="bg-gray-800">{year}</option>
                 ))}
               </select>
             </div>
@@ -160,25 +137,27 @@ const MusicLibrary = () => {
         </div>
 
         {/* 歌曲列表 */}
-        {viewMode === 'grid' ? (
+        {loading ? (
+          <div className="text-center py-16 text-gray-400">加载中...</div>
+        ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
             {filteredSongs.map((song) => (
               <div
                 key={song.id}
                 className="group cursor-pointer"
-                onMouseEnter={() => setHoveredSong(song.id)}
+                onMouseEnter={() => setHoveredSong(song.id.toString())}
                 onMouseLeave={() => setHoveredSong(null)}
               >
                 <div className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 p-4 transition-all duration-300 hover:bg-white/10 hover:scale-105 hover:shadow-2xl">
                   {/* 专辑封面 */}
                   <div className="relative mb-4">
                     <img
-                      src={song.cover}
-                      alt={song.album}
+                      src={song.cover || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop&crop=center'}
+                      alt={song.album || song.title}
                       className="w-full aspect-square object-cover rounded-xl"
                     />
                     {/* 播放按钮覆盖层 */}
-                    <div className={`absolute inset-0 bg-black/40 flex items-center justify-center rounded-xl transition-opacity duration-200 ${hoveredSong === song.id ? 'opacity-100' : 'opacity-0'}`}>
+                    <div className={`absolute inset-0 bg-black/40 flex items-center justify-center rounded-xl transition-opacity duration-200 ${hoveredSong === song.id.toString() ? 'opacity-100' : 'opacity-0'}`}>
                       <button className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg transform transition-transform duration-200 hover:scale-110">
                         <Play className="text-black ml-1" size={16} fill="currentColor" />
                       </button>
@@ -188,10 +167,10 @@ const MusicLibrary = () => {
                   {/* 歌曲信息 */}
                   <div className="space-y-1">
                     <h3 className="font-semibold text-white text-lg truncate">{song.title}</h3>
-                    <p className="text-gray-300 text-sm truncate">{song.album}</p>
-                    <p className="text-gray-400 text-xs">{song.year} • {song.duration}</p>
+                    <p className="text-gray-300 text-sm truncate">{song.album || '-'}</p>
+                    <p className="text-gray-400 text-xs">{song.year || '-'} • {song.length ? `${Math.floor(song.length / 60)}:${(song.length % 60).toString().padStart(2, '0')}` : '-'}</p>
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {song.genre.map(g => (
+                      {(song.genre || []).map((g: string) => (
                         <span key={g} className="px-2 py-1 text-xs bg-blue-500/20 text-blue-300 rounded-full">
                           {g}
                         </span>
@@ -208,12 +187,12 @@ const MusicLibrary = () => {
               <div
                 key={song.id}
                 className="group flex items-center p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-200 cursor-pointer"
-                onMouseEnter={() => setHoveredSong(song.id)}
+                onMouseEnter={() => setHoveredSong(song.id.toString())}
                 onMouseLeave={() => setHoveredSong(null)}
               >
                 {/* 序号 */}
                 <div className="w-8 text-center text-gray-400 text-sm">
-                  {hoveredSong === song.id ? (
+                  {hoveredSong === song.id.toString() ? (
                     <Play size={16} className="text-white" fill="currentColor" />
                   ) : (
                     index + 1
@@ -222,8 +201,8 @@ const MusicLibrary = () => {
 
                 {/* 专辑封面 */}
                 <img
-                  src={song.cover}
-                  alt={song.album}
+                  src={song.cover || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop&crop=center'}
+                  alt={song.album || song.title}
                   className="w-12 h-12 rounded-lg ml-4"
                 />
 
@@ -232,12 +211,12 @@ const MusicLibrary = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-white font-medium">{song.title}</h3>
-                      <p className="text-gray-400 text-sm">{song.album} • {song.year}</p>
+                      <p className="text-gray-400 text-sm">{song.album || '-'} • {song.year || '-'}</p>
                     </div>
                     <div className="flex items-center space-x-6 text-gray-400 text-sm">
-                      <span>作词: {song.lyricist}</span>
-                      <span>作曲: {song.composer}</span>
-                      <span>{song.duration}</span>
+                      <span>作词: {(song.lyricist && song.lyricist.length > 0) ? song.lyricist[0] : '-'}</span>
+                      <span>作曲: {(song.composer && song.composer.length > 0) ? song.composer[0] : '-'}</span>
+                      <span>{song.length ? `${Math.floor(song.length / 60)}:${(song.length % 60).toString().padStart(2, '0')}` : '-'}</span>
                     </div>
                   </div>
                 </div>
