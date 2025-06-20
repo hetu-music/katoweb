@@ -56,7 +56,7 @@ const MusicLibrary = () => {
           composer: song.composer,
           artist: song.artist,
           length: song.length,
-          cover: song.cover || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop&crop=center',
+          cover: song.cover && song.cover.trim() !== '' ? song.cover : 'https://opynrrdphngyveihxpdt.supabase.co/storage/v1/object/sign/cover/0a1.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV83Y2I4MjAxMS1mZjhmLTQwZWEtYmU2Ni1iOTdlNzhhNWY5ZWUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJjb3Zlci8wYTEuanBnIiwiaWF0IjoxNzUwNDMxODI2LCJleHAiOjE3ODE5Njc4MjZ9.e-EQnIn7tWFt4T_pTDzUbXRs8l6feunUzRiwilhq9QA',
         }));
         setSongsData(mapped);
       }
@@ -236,7 +236,7 @@ const MusicLibrary = () => {
                   {/* 专辑封面 */}
                   <div className="relative mb-4">
                     <img
-                      src={song.cover || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop&crop=center'}
+                      src={song.cover || 'https://opynrrdphngyveihxpdt.supabase.co/storage/v1/object/sign/cover/0a1.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV83Y2I4MjAxMS1mZjhmLTQwZWEtYmU2Ni1iOTdlNzhhNWY5ZWUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJjb3Zlci8wYTEuanBnIiwiaWF0IjoxNzUwNDMxODI2LCJleHAiOjE3ODE5Njc4MjZ9.e-EQnIn7tWFt4T_pTDzUbXRs8l6feunUzRiwilhq9QA'}
                       alt={song.album || song.title}
                       className="w-full aspect-square object-cover rounded-xl"
                     />

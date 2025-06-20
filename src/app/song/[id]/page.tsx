@@ -54,7 +54,7 @@ const SongDetail = () => {
       if (!error && data) {
         setSong({
           ...data,
-          cover: data.cover || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop&crop=center',
+          cover: data.cover && data.cover.trim() !== '' ? data.cover : 'https://opynrrdphngyveihxpdt.supabase.co/storage/v1/object/sign/cover/0a1.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV83Y2I4MjAxMS1mZjhmLTQwZWEtYmU2Ni1iOTdlNzhhNWY5ZWUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJjb3Zlci8wYTEuanBnIiwiaWF0IjoxNzUwNDMxODI2LCJleHAiOjE3ODE5Njc4MjZ9.e-EQnIn7tWFt4T_pTDzUbXRs8l6feunUzRiwilhq9QA',
         });
       }
       setLoading(false);
@@ -85,7 +85,7 @@ const SongDetail = () => {
           {/* 封面 */}
           <div className="relative w-48 h-48 flex-shrink-0">
             <img
-              src={song.cover}
+              src={song.cover || 'https://opynrrdphngyveihxpdt.supabase.co/storage/v1/object/sign/cover/0a1.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV83Y2I4MjAxMS1mZjhmLTQwZWEtYmU2Ni1iOTdlNzhhNWY5ZWUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJjb3Zlci8wYTEuanBnIiwiaWF0IjoxNzUwNDMxODI2LCJleHAiOjE3ODE5Njc4MjZ9.e-EQnIn7tWFt4T_pTDzUbXRs8l6feunUzRiwilhq9QA'}
               alt={song.album || song.title}
               className="w-full h-full object-cover rounded-2xl shadow-lg"
             />
