@@ -32,4 +32,4 @@ ENV NODE_ENV=production
 
 # 10. 启动 Next.js 应用
 EXPOSE 3000
-CMD ["pnpm", "start"] 
+CMD ["node_modules/.bin/next", "start"] 
