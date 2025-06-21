@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
-import { Play, ArrowLeft } from 'lucide-react';
+import { /* Play, */ ArrowLeft } from 'lucide-react';
 
 function formatTime(seconds: number | null) {
   if (!seconds || isNaN(seconds)) return '未知';
