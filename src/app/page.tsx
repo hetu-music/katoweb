@@ -55,7 +55,7 @@ const MusicLibrary = () => {
           composer: song.composer,
           artist: song.artist,
           length: song.length,
-          cover: song.cover && song.cover.trim() !== '' ? song.cover : 'https://opynrrdphngyveihxpdt.supabase.co/storage/v1/object/sign/cover/0a1.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV83Y2I4MjAxMS1mZjhmLTQwZWEtYmU2Ni1iOTdlNzhhNWY5ZWUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJjb3Zlci8wYTEuanBnIiwiaWF0IjoxNzUwNDMxODI2LCJleHAiOjE3ODE5Njc4MjZ9.e-EQnIn7tWFt4T_pTDzUbXRs8l6feunUzRiwilhq9QA',
+          cover: song.cover && song.cover.trim() !== '' ? song.cover : '/images/default-cover.jpg',
         }));
         setSongsData(mapped);
       }
@@ -235,23 +235,23 @@ const MusicLibrary = () => {
                   {/* 专辑封面 */}
                   <div className="relative mb-4">
                     <img
-                      src={song.cover || 'https://opynrrdphngyveihxpdt.supabase.co/storage/v1/object/sign/cover/0a1.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV83Y2I4MjAxMS1mZjhmLTQwZWEtYmU2Ni1iOTdlNzhhNWY5ZWUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJjb3Zlci8wYTEuanBnIiwiaWF0IjoxNzUwNDMxODI2LCJleHAiOjE3ODE5Njc4MjZ9.e-EQnIn7tWFt4T_pTDzUbXRs8l6feunUzRiwilhq9QA'}
+                      src={song.cover || '/images/default-cover.jpg'}
                       alt={song.album || song.title}
                       className="w-full aspect-square object-cover rounded-xl"
                     />
                     {/* 播放按钮覆盖层 */}
-                    <div className={`absolute inset-0 bg-black/40 flex items-center justify-center rounded-xl transition-opacity duration-200 ${hoveredSong === song.id.toString() ? 'opacity-100' : 'opacity-0'}`}>
+                    {/* <div className={`absolute inset-0 bg-black/40 flex items-center justify-center rounded-xl transition-opacity duration-200 ${hoveredSong === song.id.toString() ? 'opacity-100' : 'opacity-0'}`}>
                       <button className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg transform transition-transform duration-200 hover:scale-110">
                         <Play className="text-black ml-1" size={16} fill="currentColor" />
                       </button>
-                    </div>
+                    </div> */}
                   </div>
 
                   {/* 歌曲信息 */}
                   <div className="space-y-1">
                     <h3 className="font-semibold text-white text-lg truncate">{song.title}</h3>
-                    <p className="text-gray-300 text-sm truncate">{song.album || '-'}</p>
-                    <p className="text-gray-400 text-xs">{song.year || '-'} • {song.length ? `${Math.floor(song.length / 60)}:${(song.length % 60).toString().padStart(2, '0')}` : '-'}</p>
+                    <p className="text-gray-300 text-sm truncate">{song.album || '未知'}</p>
+                    <p className="text-gray-400 text-xs">{song.year || '未知'} • {song.length ? `${Math.floor(song.length / 60)}:${(song.length % 60).toString().padStart(2, '0')}` : '未知'}</p>
                     <div className="flex flex-wrap gap-1 mt-2">
                       {(song.genre || []).map((g: string) => (
                         <span key={g} className="px-2 py-1 text-xs bg-blue-500/20 text-blue-300 rounded-full">
@@ -276,16 +276,17 @@ const MusicLibrary = () => {
               >
                 {/* 序号 */}
                 <div className="w-8 text-center text-gray-400 text-sm">
-                  {hoveredSong === song.id.toString() ? (
+                  {/* {hoveredSong === song.id.toString() ? (
                     <Play size={16} className="text-white" fill="currentColor" />
                   ) : (
                     index + 1
-                  )}
+                  )} */}
+                  {index + 1}
                 </div>
 
                 {/* 专辑封面 */}
                 <img
-                  src={song.cover || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop&crop=center'}
+                  src={song.cover || '/images/default-cover.jpg'}
                   alt={song.album || song.title}
                   className="w-12 h-12 rounded-lg ml-4"
                 />
@@ -295,12 +296,12 @@ const MusicLibrary = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-white font-medium">{song.title}</h3>
-                      <p className="text-gray-400 text-sm">{song.album || '-'} • {song.year || '-'}</p>
+                      <p className="text-gray-400 text-sm">{song.album || '未知'} • {song.year || '未知'}</p>
                     </div>
                     <div className="flex items-center space-x-6 text-gray-400 text-sm">
-                      <span>作词: {(song.lyricist && song.lyricist.length > 0) ? song.lyricist[0] : '-'}</span>
-                      <span>作曲: {(song.composer && song.composer.length > 0) ? song.composer[0] : '-'}</span>
-                      <span>{song.length ? `${Math.floor(song.length / 60)}:${(song.length % 60).toString().padStart(2, '0')}` : '-'}</span>
+                      <span>作词: {(song.lyricist && song.lyricist.length > 0) ? song.lyricist[0] : '未知'}</span>
+                      <span>作曲: {(song.composer && song.composer.length > 0) ? song.composer[0] : '未知'}</span>
+                      <span>{song.length ? `${Math.floor(song.length / 60)}:${(song.length % 60).toString().padStart(2, '0')}` : '未知'}</span>
                     </div>
                   </div>
                 </div>

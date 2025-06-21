@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Play, ArrowLeft } from 'lucide-react';
 
 function formatTime(seconds: number | null) {
-  if (!seconds || isNaN(seconds)) return '-';
+  if (!seconds || isNaN(seconds)) return '未知';
   const min = Math.floor(seconds / 60);
   const sec = (seconds % 60).toString().padStart(2, '0');
   return `${min}:${sec}`;
@@ -56,7 +56,7 @@ const SongDetail = () => {
       if (!error && data) {
         setSong({
           ...data,
-          cover: data.cover && data.cover.trim() !== '' ? data.cover : 'https://opynrrdphngyveihxpdt.supabase.co/storage/v1/object/sign/cover/0a1.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV83Y2I4MjAxMS1mZjhmLTQwZWEtYmU2Ni1iOTdlNzhhNWY5ZWUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJjb3Zlci8wYTEuanBnIiwiaWF0IjoxNzUwNDMxODI2LCJleHAiOjE3ODE5Njc4MjZ9.e-EQnIn7tWFt4T_pTDzUbXRs8l6feunUzRiwilhq9QA',
+          cover: data.cover && data.cover.trim() !== '' ? data.cover : '/images/default-cover.jpg',
         });
       }
       setLoading(false);
@@ -87,13 +87,13 @@ const SongDetail = () => {
           {/* 封面 */}
           <div className="relative w-48 h-48 flex-shrink-0">
             <img
-              src={song.cover || 'https://opynrrdphngyveihxpdt.supabase.co/storage/v1/object/sign/cover/0a1.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV83Y2I4MjAxMS1mZjhmLTQwZWEtYmU2Ni1iOTdlNzhhNWY5ZWUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJjb3Zlci8wYTEuanBnIiwiaWF0IjoxNzUwNDMxODI2LCJleHAiOjE3ODE5Njc4MjZ9.e-EQnIn7tWFt4T_pTDzUbXRs8l6feunUzRiwilhq9QA'}
+              src={song.cover || '/images/default-cover.jpg'}
               alt={song.album || song.title}
               className="w-full h-full object-cover rounded-2xl shadow-lg"
             />
-            <button className="absolute bottom-4 right-4 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+            {/* <button className="absolute bottom-4 right-4 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
               <Play className="text-black ml-1" size={20} fill="currentColor" />
-            </button>
+            </button> */}
           </div>
           {/* 歌曲主信息 */}
           <div className="flex-1 text-white space-y-2 w-full">
@@ -112,23 +112,23 @@ const SongDetail = () => {
             <div className="mb-4">
               <div className="font-semibold text-base text-white/80 mb-1">创作信息</div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1 p-4 rounded-xl bg-white/5 border border-white/10">
-                <div><span className="font-semibold">作词：</span>{(song.lyricist && song.lyricist.length > 0) ? song.lyricist.join(', ') : '-'}</div>
-                <div><span className="font-semibold">作曲：</span>{(song.composer && song.composer.length > 0) ? song.composer.join(', ') : '-'}</div>
-                <div><span className="font-semibold">编曲：</span>{(song.arranger && song.arranger.length > 0) ? song.arranger.join(', ') : '-'}</div>
-                <div><span className="font-semibold">演唱：</span>{(song.artist && song.artist.length > 0) ? song.artist.join(', ') : '-'}</div>
+                <div><span className="font-semibold">作词：</span>{(song.lyricist && song.lyricist.length > 0) ? song.lyricist.join(', ') : '未知'}</div>
+                <div><span className="font-semibold">作曲：</span>{(song.composer && song.composer.length > 0) ? song.composer.join(', ') : '未知'}</div>
+                <div><span className="font-semibold">编曲：</span>{(song.arranger && song.arranger.length > 0) ? song.arranger.join(', ') : '未知'}</div>
+                <div><span className="font-semibold">演唱：</span>{(song.artist && song.artist.length > 0) ? song.artist.join(', ') : '未知'}</div>
               </div>
             </div>
             {/* 其余主要信息 */}
             <div className="mb-4">
               <div className="font-semibold text-base text-white/80 mb-1">基本信息</div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1 p-4 rounded-xl bg-white/5 border border-white/10">
-                <div><span className="font-semibold">专辑：</span>{song.album || '-'}</div>
-                <div><span className="font-semibold">专辑艺人：</span>{(song.albumartist && song.albumartist.length > 0) ? song.albumartist.join(', ') : '-'}</div>
-                <div><span className="font-semibold">发行日期：</span>{song.date || '-'}</div>
+                <div><span className="font-semibold">专辑：</span>{song.album || '未知'}</div>
+                <div><span className="font-semibold">专辑艺人：</span>{(song.albumartist && song.albumartist.length > 0) ? song.albumartist.join(', ') : '未知'}</div>
+                <div><span className="font-semibold">发行日期：</span>{song.date || '未知'}</div>
                 <div><span className="font-semibold">时长：</span>{formatTime(song.length)}</div>
-                <div><span className="font-semibold">曲号：</span>{song.track || '-'}/{song.tracktotal || '-'}</div>
-                <div><span className="font-semibold">碟号：</span>{song.discnumber || '-'}/{song.disctotal || '-'}</div>
-                <div><span className="font-semibold">流派：</span>{(song.genre && song.genre.length > 0) ? song.genre.join(', ') : '-'}</div>
+                <div><span className="font-semibold">曲号：</span>{song.track || '未知'}/{song.tracktotal || '未知'}</div>
+                <div><span className="font-semibold">碟号：</span>{song.discnumber || '未知'}/{song.disctotal || '未知'}</div>
+                <div><span className="font-semibold">流派：</span>{(song.genre && song.genre.length > 0) ? song.genre.join(', ') : '未知'}</div>
                 <div><span className="font-semibold">类型：</span>{song.type || '原创'}</div>
               </div>
             </div>
