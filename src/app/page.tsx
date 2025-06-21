@@ -36,9 +36,10 @@ const MusicLibrary = () => {
   useEffect(() => {
     const fetchSongs = async () => {
       setLoading(true);
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-      const supabase = createClient(supabaseUrl, supabaseKey);
+      // 运行时获取 supabase 配置
+      const envRes = await fetch('/api/env');
+      const env = await envRes.json();
+      const supabase = createClient(env.supabaseUrl, env.supabaseKey);
       const { data, error } = await supabase
         .from('music')
         .select('*');

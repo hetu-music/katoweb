@@ -27,10 +27,8 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 
-# 9. 设置环境变量
+# 9. 仅设置生产环境变量，Supabase 相关变量运行时注入
 ENV NODE_ENV=production
-ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
-ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 # 10. 启动 Next.js 应用
 EXPOSE 3000
