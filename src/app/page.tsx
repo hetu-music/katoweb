@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Search, Grid, List } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 
 type Song = {
@@ -20,7 +20,7 @@ type Song = {
 };
 
 // 创建单例 Supabase 客户端
-let supabaseClient: any = null;
+let supabaseClient: SupabaseClient | null = null;
 
 const getSupabaseClient = async () => {
   if (!supabaseClient) {

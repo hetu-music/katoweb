@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { ArrowLeft, RefreshCw, Eye, EyeOff } from 'lucide-react';
 
 function formatTime(seconds: number | null) {
@@ -36,7 +36,7 @@ type Song = {
 };
 
 // 创建单例 Supabase 客户端
-let supabaseClient: any = null;
+let supabaseClient: SupabaseClient | null = null;
 
 const getSupabaseClient = async () => {
   if (!supabaseClient) {
@@ -90,19 +90,16 @@ const isCacheValid = (timestamp: number): boolean => {
 const LazyImage = ({ src, alt, className }: { src: string; alt: string; className: string }) => {
   const [imageSrc, setImageSrc] = useState('/images/default-cover.jpg');
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     const img = new Image();
     img.onload = () => {
       setImageSrc(src);
       setImageLoaded(true);
-      setImageError(false);
     };
     img.onerror = () => {
       setImageSrc('/images/default-cover.jpg');
       setImageLoaded(true);
-      setImageError(true);
     };
     img.src = src;
   }, [src]);
