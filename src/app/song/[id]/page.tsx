@@ -45,8 +45,8 @@ const SongDetail = () => {
   useEffect(() => {
     const fetchSong = async () => {
       setLoading(true);
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+      const supabaseUrl = process.env.SUPABASE_URL || '';
+      const supabaseKey = process.env.SUPABASE_ANON_KEY || '';
       const supabase = createClient(supabaseUrl, supabaseKey);
       const { data, error } = await supabase
         .from('music')
