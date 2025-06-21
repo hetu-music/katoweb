@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
-import { /* Play, */ ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 function formatTime(seconds: number | null) {
   if (!seconds || isNaN(seconds)) return '未知';
@@ -91,9 +91,6 @@ const SongDetail = () => {
               alt={song.album || song.title}
               className="w-full h-full object-cover rounded-2xl shadow-lg"
             />
-            {/* <button className="absolute bottom-4 right-4 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
-              <Play className="text-black ml-1" size={20} fill="currentColor" />
-            </button> */}
           </div>
           {/* 歌曲主信息 */}
           <div className="flex-1 text-white space-y-2 w-full">

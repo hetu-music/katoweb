@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, /* Play, */ Grid, List } from 'lucide-react';
+import { Search, Grid, List } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 
@@ -29,7 +29,6 @@ const MusicLibrary = () => {
   const [selectedLyricist, setSelectedLyricist] = useState('全部');
   const [selectedComposer, setSelectedComposer] = useState('全部');
   const [viewMode, setViewMode] = useState('grid');
-  // const [hoveredSong, setHoveredSong] = useState<string | null>(null);
   const router = useRouter();
   const [aboutOpen, setAboutOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -227,8 +226,6 @@ const MusicLibrary = () => {
               <div
                 key={song.id}
                 className="group cursor-pointer"
-                // onMouseEnter={() => setHoveredSong(song.id.toString())}
-                // onMouseLeave={() => setHoveredSong(null)}
                 onClick={() => router.push(`/song/${song.id}`)}
               >
                 <div className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 p-4 transition-all duration-300 hover:bg-white/10 hover:scale-105 hover:shadow-2xl">
@@ -270,17 +267,10 @@ const MusicLibrary = () => {
               <div
                 key={song.id}
                 className="group flex items-center p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-200 cursor-pointer"
-                // onMouseEnter={() => setHoveredSong(song.id.toString())}
-                // onMouseLeave={() => setHoveredSong(null)}
                 onClick={() => router.push(`/song/${song.id}`)}
               >
                 {/* 序号 */}
                 <div className="w-8 text-center text-gray-400 text-sm">
-                  {/* {hoveredSong === song.id.toString() ? (
-                    <Play size={16} className="text-white" fill="currentColor" />
-                  ) : (
-                    index + 1
-                  )} */}
                   {index + 1}
                 </div>
 
