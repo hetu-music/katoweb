@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Search, Grid, List } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
@@ -19,8 +19,58 @@ type Song = {
   date?: string | null;
 };
 
+// 创建单例 Supabase 客户端
+let supabaseClient: any = null;
+
+const getSupabaseClient = async () => {
+  if (!supabaseClient) {
+    const envRes = await fetch('/api/env');
+    const env = await envRes.json();
+    supabaseClient = createClient(env.supabaseUrl, env.supabaseKey);
+  }
+  return supabaseClient;
+};
+
+// 缓存数据
+const CACHE_KEY = 'music_library_data';
+const CACHE_DURATION = 30 * 60 * 1000; // 30分钟
+
+const getCachedData = (): { data: Song[] | null; timestamp: number } => {
+  if (typeof window === 'undefined') return { data: null, timestamp: 0 };
+  
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      return {
+        data: parsed.data,
+        timestamp: parsed.timestamp
+      };
+    }
+  } catch (error) {
+    console.error('Failed to parse cached data:', error);
+  }
+  return { data: null, timestamp: 0 };
+};
+
+const setCachedData = (data: Song[]) => {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      data,
+      timestamp: Date.now()
+    }));
+  } catch (error) {
+    console.error('Failed to cache data:', error);
+  }
+};
+
+const isCacheValid = (timestamp: number): boolean => {
+  return Date.now() - timestamp < CACHE_DURATION;
+};
+
 const MusicLibrary = () => {
-  // const songsData = [...] // 移除本地数据
   const [songsData, setSongsData] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,18 +83,27 @@ const MusicLibrary = () => {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
-  useEffect(() => {
-    const fetchSongs = async () => {
-      setLoading(true);
-      // 运行时获取 supabase 配置
-      const envRes = await fetch('/api/env');
-      const env = await envRes.json();
-      const supabase = createClient(env.supabaseUrl, env.supabaseKey);
+  const fetchSongs = useCallback(async (forceRefresh = false) => {
+    setLoading(true);
+    
+    // 检查缓存
+    if (!forceRefresh) {
+      const { data: cachedData, timestamp } = getCachedData();
+      if (cachedData && isCacheValid(timestamp)) {
+        setSongsData(cachedData);
+        setLoading(false);
+        return;
+      }
+    }
+
+    try {
+      const supabase = await getSupabaseClient();
       const { data, error } = await supabase
         .from('music')
-        .select('*');
+        .select('*')
+        .order('id', { ascending: true }); // 添加排序确保一致性
+
       if (!error && data) {
-        // Map DB data to UI data
         const mapped = data.map((song: Song) => ({
           id: song.id,
           title: song.title,
@@ -57,12 +116,22 @@ const MusicLibrary = () => {
           length: song.length,
           cover: song.cover && song.cover.trim() !== '' ? song.cover : '/images/default-cover.jpg',
         }));
+        
         setSongsData(mapped);
+        setCachedData(mapped); // 缓存数据
+      } else {
+        console.error('Failed to fetch songs:', error);
       }
+    } catch (error) {
+      console.error('Error fetching songs:', error);
+    } finally {
       setLoading(false);
-    };
-    fetchSongs();
+    }
   }, []);
+
+  useEffect(() => {
+    fetchSongs();
+  }, [fetchSongs]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -76,27 +145,71 @@ const MusicLibrary = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // 获取所有类型和年份
-  const allGenres = ['全部', ...new Set(songsData.flatMap(song => song.genre ? song.genre : []))];
-  const allYears = ['全部', ...Array.from(new Set(songsData.map(song => song.year).filter(Boolean))).sort((a, b) => (b as number) - (a as number))];
-  // 获取所有作词人和作曲人
-  const allLyricists = ['全部', ...new Set(songsData.flatMap(song => song.lyricist ? song.lyricist : []))];
-  const allComposers = ['全部', ...new Set(songsData.flatMap(song => song.composer ? song.composer : []))];
+  // 使用 useMemo 优化筛选选项计算
+  const filterOptions = useMemo(() => {
+    const allGenres = ['全部', ...new Set(songsData.flatMap(song => song.genre ? song.genre : []))];
+    const allYears = ['全部', ...Array.from(new Set(songsData.map(song => song.year).filter(Boolean))).sort((a, b) => (b as number) - (a as number))];
+    const allLyricists = ['全部', ...new Set(songsData.flatMap(song => song.lyricist ? song.lyricist : []))];
+    const allComposers = ['全部', ...new Set(songsData.flatMap(song => song.composer ? song.composer : []))];
+    
+    return { allGenres, allYears, allLyricists, allComposers };
+  }, [songsData]);
 
-  // 过滤歌曲
+  // 防抖搜索
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // 过滤歌曲 - 使用防抖后的搜索词
   const filteredSongs = useMemo(() => {
     return songsData.filter(song => {
-      const matchesSearch = song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (song.album && song.album.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (song.lyricist && song.lyricist.join(',').toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (song.composer && song.composer.join(',').toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesSearch = !debouncedSearchTerm || 
+        song.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        (song.album && song.album.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) ||
+        (song.lyricist && song.lyricist.join(',').toLowerCase().includes(debouncedSearchTerm.toLowerCase())) ||
+        (song.composer && song.composer.join(',').toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
+      
       const matchesGenre = selectedGenre === '全部' || (song.genre && song.genre.includes(selectedGenre));
       const matchesYear = selectedYear === '全部' || (song.year && song.year.toString() === selectedYear);
       const matchesLyricist = selectedLyricist === '全部' || (song.lyricist && song.lyricist.includes(selectedLyricist));
       const matchesComposer = selectedComposer === '全部' || (song.composer && song.composer.includes(selectedComposer));
+      
       return matchesSearch && matchesGenre && matchesYear && matchesLyricist && matchesComposer;
     });
-  }, [searchTerm, selectedGenre, selectedYear, songsData, selectedLyricist, selectedComposer]);
+  }, [debouncedSearchTerm, selectedGenre, selectedYear, songsData, selectedLyricist, selectedComposer]);
+
+  // 图片懒加载组件
+  const LazyImage = ({ src, alt, className }: { src: string; alt: string; className: string }) => {
+    const [imageSrc, setImageSrc] = useState('/images/default-cover.jpg');
+    const [imageLoaded, setImageLoaded] = useState(false);
+
+    useEffect(() => {
+      const img = new Image();
+      img.onload = () => {
+        setImageSrc(src);
+        setImageLoaded(true);
+      };
+      img.onerror = () => {
+        setImageSrc('/images/default-cover.jpg');
+        setImageLoaded(true);
+      };
+      img.src = src;
+    }, [src]);
+
+    return (
+      <img
+        src={imageSrc}
+        alt={alt}
+        className={`${className} ${imageLoaded ? 'opacity-100' : 'opacity-50'} transition-opacity duration-300`}
+      />
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
@@ -116,10 +229,17 @@ const MusicLibrary = () => {
               <p>本项目为河图作品合集，收录了河图的主要音乐作品，支持筛选与搜索。</p>
               <p>数据由本人整理，来源为创作者微博及各大音乐平台，如有误漏请至 Github 提交反馈。</p>
               <p>Github: <a href="https://github.com/hetu-music/data" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">https://github.com/hetu-music/data</a></p>
+              <button
+                onClick={() => fetchSongs(true)}
+                className="mt-4 px-4 py-2 bg-blue-500/20 border border-blue-400/30 rounded-lg text-blue-300 hover:bg-blue-500/30 transition-all duration-200"
+              >
+                刷新数据
+              </button>
             </div>
           </div>
         </div>
       )}
+
       {/* 主容器 */}
       <div className="container mx-auto px-6 py-8">
         {/* 头部区域 */}
@@ -157,7 +277,8 @@ const MusicLibrary = () => {
               />
             </div>
           </div>
-          {/* 四个筛选框一行，PC端横排，移动端换行 */}
+
+          {/* 筛选框 */}
           <div className="w-full flex flex-col sm:flex-row gap-3">
             {/* 流派筛选 */}
             <div className="flex items-center flex-1 min-w-[180px]">
@@ -168,11 +289,12 @@ const MusicLibrary = () => {
                 className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer rounded-r-2xl border-l-0 min-w-0"
                 style={{marginLeft: '-1px'}}
               >
-                {allGenres.map(genre => (
+                {filterOptions.allGenres.map(genre => (
                   <option key={genre} value={genre} className="bg-gray-800 text-white">{genre}</option>
                 ))}
               </select>
             </div>
+            
             {/* 发行日期筛选 */}
             <div className="flex items-center flex-1 min-w-[180px]">
               <span className="h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white text-sm rounded-l-2xl select-none tracking-wide min-w-[80px] max-w-[80px] w-[80px]">发行日期</span>
@@ -182,11 +304,12 @@ const MusicLibrary = () => {
                 className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer rounded-r-2xl border-l-0 min-w-0"
                 style={{marginLeft: '-1px'}}
               >
-                {allYears.map(year => (
+                {filterOptions.allYears.map(year => (
                   <option key={year} value={year === null ? '' : year} className="bg-gray-800 text-white">{year}</option>
                 ))}
               </select>
             </div>
+            
             {/* 作词筛选 */}
             <div className="flex items-center flex-1 min-w-[180px]">
               <span className="h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white text-sm rounded-l-2xl select-none tracking-wide min-w-[80px] max-w-[80px] w-[80px]">作词</span>
@@ -196,11 +319,12 @@ const MusicLibrary = () => {
                 className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer rounded-r-2xl border-l-0 min-w-0"
                 style={{marginLeft: '-1px'}}
               >
-                {allLyricists.map(lyricist => (
+                {filterOptions.allLyricists.map(lyricist => (
                   <option key={lyricist} value={lyricist} className="bg-gray-800 text-white">{lyricist}</option>
                 ))}
               </select>
             </div>
+            
             {/* 作曲筛选 */}
             <div className="flex items-center flex-1 min-w-[180px]">
               <span className="h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white text-sm rounded-l-2xl select-none tracking-wide min-w-[80px] max-w-[80px] w-[80px]">作曲</span>
@@ -210,7 +334,7 @@ const MusicLibrary = () => {
                 className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer rounded-r-2xl border-l-0 min-w-0"
                 style={{marginLeft: '-1px'}}
               >
-                {allComposers.map(composer => (
+                {filterOptions.allComposers.map(composer => (
                   <option key={composer} value={composer} className="bg-gray-800 text-white">{composer}</option>
                 ))}
               </select>
@@ -220,7 +344,10 @@ const MusicLibrary = () => {
 
         {/* 歌曲列表 */}
         {loading ? (
-          <div className="text-center py-16 text-gray-400">加载中...</div>
+          <div className="text-center py-16 text-gray-400">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+            加载中...
+          </div>
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
             {filteredSongs.map((song) => (
@@ -232,17 +359,11 @@ const MusicLibrary = () => {
                 <div className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 p-4 transition-all duration-300 hover:bg-white/10 hover:scale-105 hover:shadow-2xl">
                   {/* 专辑封面 */}
                   <div className="relative mb-4">
-                    <img
+                    <LazyImage
                       src={song.cover || '/images/default-cover.jpg'}
                       alt={song.album || song.title}
                       className="w-full aspect-square object-cover rounded-xl"
                     />
-                    {/* 播放按钮覆盖层 */}
-                    {/* <div className={`absolute inset-0 bg-black/40 flex items-center justify-center rounded-xl transition-opacity duration-200 ${hoveredSong === song.id.toString() ? 'opacity-100' : 'opacity-0'}`}>
-                      <button className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg transform transition-transform duration-200 hover:scale-110">
-                        <Play className="text-black ml-1" size={16} fill="currentColor" />
-                      </button>
-                    </div> */}
                   </div>
 
                   {/* 歌曲信息 */}
@@ -276,7 +397,7 @@ const MusicLibrary = () => {
                 </div>
 
                 {/* 专辑封面 */}
-                <img
+                <LazyImage
                   src={song.cover || '/images/default-cover.jpg'}
                   alt={song.album || song.title}
                   className="w-12 h-12 rounded-lg ml-4"
@@ -302,13 +423,14 @@ const MusicLibrary = () => {
         )}
 
         {/* 无结果提示 */}
-        {filteredSongs.length === 0 && (
+        {filteredSongs.length === 0 && !loading && (
           <div className="text-center py-16">
             <div className="text-gray-400 text-lg mb-2">没有找到匹配的歌曲</div>
             <div className="text-gray-500 text-sm">尝试调整搜索条件或筛选器</div>
           </div>
         )}
       </div>
+
       {/* 返回顶部按钮 */}
       {showScrollTop && (
         <button
