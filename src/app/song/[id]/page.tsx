@@ -32,7 +32,7 @@ type Song = {
   lyrics?: string | null;
   track?: number | null;
   tracktotal?: number | null;
-  type?: string | null;
+  type?: string[] | null;
 };
 
 // 创建单例 Supabase 客户端
@@ -126,7 +126,6 @@ const SongDetail = () => {
   const [song, setSong] = useState<Song | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [lyricsExpanded, setLyricsExpanded] = useState(true);
   const router = useRouter();
@@ -176,15 +175,8 @@ const SongDetail = () => {
       setError(err instanceof Error ? err.message : '加载歌曲失败');
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   }, [id]);
-
-  // 刷新数据
-  const handleRefresh = useCallback(() => {
-    setRefreshing(true);
-    fetchSong(true);
-  }, [fetchSong]);
 
   // 滚动到顶部
   const scrollToTop = useCallback(() => {
@@ -226,7 +218,7 @@ const SongDetail = () => {
         { label: '曲号', value: `${song.track || '未知'}/${song.tracktotal || '未知'}` },
         { label: '碟号', value: `${song.discnumber || '未知'}/${song.disctotal || '未知'}` },
         { label: '流派', value: (song.genre && song.genre.length > 0) ? song.genre.join(', ') : '未知' },
-        { label: '类型', value: song.type || '原创' },
+        { label: '类型', value: (song.type && song.type.length > 0) ? song.type.join(', ') : '原创' },
       ]
     };
   }, [song]);
@@ -256,12 +248,6 @@ const SongDetail = () => {
             >
               返回主页
             </button>
-            <button
-              onClick={handleRefresh}
-              className="px-4 py-2 rounded-xl bg-blue-500/20 border border-blue-400/30 text-blue-300 hover:bg-blue-500/30 transition-all duration-200"
-            >
-              重试
-            </button>
           </div>
         </div>
       </div>
@@ -290,15 +276,6 @@ const SongDetail = () => {
             <ArrowLeft size={18} />
             返回主页面
           </button>
-          
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/20 border border-blue-400/30 text-blue-300 hover:bg-blue-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
-            {refreshing ? '刷新中...' : '刷新数据'}
-          </button>
         </div>
 
         {/* 主信息区 */}
@@ -322,19 +299,21 @@ const SongDetail = () => {
                     {g}
                   </span>
                 ))}
-                <span className="px-3 py-1 text-xs bg-green-500/20 text-green-300 rounded-full border border-green-400/30">
-                  {song.type || '原创'}
-                </span>
+                {(song.type && song.type.length > 0 ? song.type : ['原创']).map((t: string) => (
+                  <span key={t} className="px-3 py-1 text-xs bg-green-500/20 text-green-300 rounded-full border border-green-400/30">
+                    {t}
+                  </span>
+                ))}
               </div>
             </div>
 
             {/* 创作信息 */}
             <div>
               <h3 className="font-semibold text-lg text-white/90 mb-3">创作信息</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-xl bg-white/5 border border-white/10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 rounded-xl bg-white/5 border border-white/10">
                 {songInfo?.creativeInfo.map((item, index) => (
-                  <div key={index} className="flex flex-col sm:flex-row sm:items-center">
-                    <span className="font-medium text-white/80 min-w-[4rem] mb-1 sm:mb-0">{item.label}：</span>
+                  <div key={index} className="flex flex-col">
+                    <span className="font-semibold text-blue-300 text-base md:text-lg min-w-[4rem] mb-1">{item.label}：</span>
                     <span className="text-white/90 break-words">{item.value}</span>
                   </div>
                 ))}
@@ -344,10 +323,10 @@ const SongDetail = () => {
             {/* 基本信息 */}
             <div>
               <h3 className="font-semibold text-lg text-white/90 mb-3">基本信息</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-xl bg-white/5 border border-white/10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 rounded-xl bg-white/5 border border-white/10">
                 {songInfo?.basicInfo.map((item, index) => (
-                  <div key={index} className="flex flex-col sm:flex-row sm:items-center">
-                    <span className="font-medium text-white/80 min-w-[6rem] mb-1 sm:mb-0">{item.label}：</span>
+                  <div key={index} className="flex flex-col">
+                    <span className="font-semibold text-blue-300 text-base md:text-lg min-w-[6rem] mb-1">{item.label}：</span>
                     <span className="text-white/90 break-words">{item.value}</span>
                   </div>
                 ))}

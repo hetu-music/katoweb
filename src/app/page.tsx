@@ -17,6 +17,7 @@ type Song = {
   length: number | null;
   cover?: string | null;
   date?: string | null;
+  type?: string[] | null;
 };
 
 // 创建单例 Supabase 客户端
@@ -115,6 +116,7 @@ const MusicLibrary = () => {
           artist: song.artist,
           length: song.length,
           cover: song.cover && song.cover.trim() !== '' ? song.cover : '/images/default-cover.jpg',
+          type: song.type,
         }));
         
         setSongsData(mapped);
@@ -229,12 +231,6 @@ const MusicLibrary = () => {
               <p>本项目为河图作品合集，收录了河图的主要音乐作品，支持筛选与搜索。</p>
               <p>数据由本人整理，来源为创作者微博及各大音乐平台，如有误漏请至 Github 提交反馈。</p>
               <p>Github: <a href="https://github.com/hetu-music/data" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">https://github.com/hetu-music/data</a></p>
-              <button
-                onClick={() => fetchSongs(true)}
-                className="mt-4 px-4 py-2 bg-blue-500/20 border border-blue-400/30 rounded-lg text-blue-300 hover:bg-blue-500/30 transition-all duration-200"
-              >
-                刷新数据
-              </button>
             </div>
           </div>
         </div>
@@ -349,7 +345,7 @@ const MusicLibrary = () => {
             加载中...
           </div>
         ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-6">
             {filteredSongs.map((song) => (
               <div
                 key={song.id}
@@ -375,6 +371,11 @@ const MusicLibrary = () => {
                       {(song.genre || []).map((g: string) => (
                         <span key={g} className="px-2 py-1 text-xs bg-blue-500/20 text-blue-300 rounded-full">
                           {g}
+                        </span>
+                      ))}
+                      {(song.type && song.type.length > 0 ? song.type : ['原创']).map((t: string) => (
+                        <span key={t} className="px-2 py-1 text-xs bg-green-500/20 text-green-300 rounded-full">
+                          {t}
                         </span>
                       ))}
                     </div>
@@ -414,6 +415,16 @@ const MusicLibrary = () => {
                       <span>作词: {(song.lyricist && song.lyricist.length > 0) ? song.lyricist[0] : '未知'}</span>
                       <span>作曲: {(song.composer && song.composer.length > 0) ? song.composer[0] : '未知'}</span>
                       <span>{song.length ? `${Math.floor(song.length / 60)}:${(song.length % 60).toString().padStart(2, '0')}` : '未知'}</span>
+                      {(song.genre || []).map((g: string) => (
+                        <span key={g} className="px-2 py-1 text-xs bg-blue-500/20 text-blue-300 rounded-full">
+                          {g}
+                        </span>
+                      ))}
+                      {(song.type && song.type.length > 0 ? song.type : ['原创']).map((t: string) => (
+                        <span key={t} className="px-2 py-1 text-xs bg-green-500/20 text-green-300 rounded-full">
+                          {t}
+                        </span>
+                      ))}
                     </div>
                   </div>
                 </div>
