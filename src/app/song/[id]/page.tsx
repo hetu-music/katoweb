@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { ArrowLeft, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
 function formatTime(seconds: number | null) {
   if (!seconds || isNaN(seconds)) return '未知';
