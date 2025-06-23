@@ -38,7 +38,7 @@ const CACHE_DURATION = 30 * 60 * 1000; // 30分钟
 
 const getCachedData = (): { data: Song[] | null; timestamp: number } => {
   if (typeof window === 'undefined') return { data: null, timestamp: 0 };
-  
+
   try {
     const cached = localStorage.getItem(CACHE_KEY);
     if (cached) {
@@ -56,7 +56,7 @@ const getCachedData = (): { data: Song[] | null; timestamp: number } => {
 
 const setCachedData = (data: Song[]) => {
   if (typeof window === 'undefined') return;
-  
+
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify({
       data,
@@ -86,7 +86,7 @@ const MusicLibrary = () => {
 
   const fetchSongs = useCallback(async (forceRefresh = false) => {
     setLoading(true);
-    
+
     // 检查缓存
     if (!forceRefresh) {
       const { data: cachedData, timestamp } = getCachedData();
@@ -168,35 +168,35 @@ const MusicLibrary = () => {
     const allYears = ['全部', ...Array.from(new Set(songsData.map(song => song.year).filter(Boolean))).sort((a, b) => (b as number) - (a as number))];
     const allLyricists = ['全部', ...new Set(songsData.flatMap(song => song.lyricist ? song.lyricist : []))];
     const allComposers = ['全部', ...new Set(songsData.flatMap(song => song.composer ? song.composer : []))];
-    
+
     return { allGenres, allYears, allLyricists, allComposers };
   }, [songsData]);
 
   // 防抖搜索
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-  
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
     }, 300);
-    
+
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
   // 过滤歌曲 - 使用防抖后的搜索词
   const filteredSongs = useMemo(() => {
     return songsData.filter(song => {
-      const matchesSearch = !debouncedSearchTerm || 
+      const matchesSearch = !debouncedSearchTerm ||
         song.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
         (song.album && song.album.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) ||
         (song.lyricist && song.lyricist.join(',').toLowerCase().includes(debouncedSearchTerm.toLowerCase())) ||
         (song.composer && song.composer.join(',').toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
-      
+
       const matchesGenre = selectedGenre === '全部' || (song.genre && song.genre.includes(selectedGenre));
       const matchesYear = selectedYear === '全部' || (song.year && song.year.toString() === selectedYear);
       const matchesLyricist = selectedLyricist === '全部' || (song.lyricist && song.lyricist.includes(selectedLyricist));
       const matchesComposer = selectedComposer === '全部' || (song.composer && song.composer.includes(selectedComposer));
-      
+
       return matchesSearch && matchesGenre && matchesYear && matchesLyricist && matchesComposer;
     });
   }, [debouncedSearchTerm, selectedGenre, selectedYear, songsData, selectedLyricist, selectedComposer]);
@@ -206,7 +206,7 @@ const MusicLibrary = () => {
     const [imageSrc, setImageSrc] = useState('https://cover.hetu-music.com/default.jpg');
     const [imageLoaded, setImageLoaded] = useState(false);
     const imgRef = React.useRef<HTMLImageElement>(null);
-    
+
     useEffect(() => {
       let observer: IntersectionObserver | null = null;
       const imgElement = imgRef.current;
@@ -297,14 +297,17 @@ const MusicLibrary = () => {
 
           {/* 搜索和筛选区域 */}
           <div className="w-full mb-3">
-            <div className="relative w-full">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <div className="flex items-center w-full">
+              <div className="h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white rounded-l-2xl select-none min-w-[60px] max-w-[60px] w-[60px]">
+                <Search size={20} />
+              </div>
               <input
                 type="text"
-                placeholder="搜索歌曲、专辑或作词作曲..."
+                placeholder="搜索歌曲、作词、作曲、专辑..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/15 transition-all duration-200 rounded-r-2xl border-l-0 min-w-0"
+                style={{ marginLeft: '-1px' }}
               />
             </div>
           </div>
@@ -318,14 +321,14 @@ const MusicLibrary = () => {
                 value={selectedGenre}
                 onChange={(e) => setSelectedGenre(e.target.value)}
                 className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer rounded-r-2xl border-l-0 min-w-0"
-                style={{marginLeft: '-1px'}}
+                style={{ marginLeft: '-1px' }}
               >
                 {filterOptions.allGenres.map(genre => (
                   <option key={genre} value={genre} className="bg-gray-800 text-white">{genre}</option>
                 ))}
               </select>
             </div>
-            
+
             {/* 发行日期筛选 */}
             <div className="flex items-center flex-1 min-w-[180px]">
               <span className="h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white text-sm rounded-l-2xl select-none tracking-wide min-w-[80px] max-w-[80px] w-[80px]">发行日期</span>
@@ -333,14 +336,14 @@ const MusicLibrary = () => {
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(e.target.value)}
                 className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer rounded-r-2xl border-l-0 min-w-0"
-                style={{marginLeft: '-1px'}}
+                style={{ marginLeft: '-1px' }}
               >
                 {filterOptions.allYears.map(year => (
                   <option key={year} value={year === null ? '' : year} className="bg-gray-800 text-white">{year}</option>
                 ))}
               </select>
             </div>
-            
+
             {/* 作词筛选 */}
             <div className="flex items-center flex-1 min-w-[180px]">
               <span className="h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white text-sm rounded-l-2xl select-none tracking-wide min-w-[80px] max-w-[80px] w-[80px]">作词</span>
@@ -348,14 +351,14 @@ const MusicLibrary = () => {
                 value={selectedLyricist}
                 onChange={(e) => setSelectedLyricist(e.target.value)}
                 className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer rounded-r-2xl border-l-0 min-w-0"
-                style={{marginLeft: '-1px'}}
+                style={{ marginLeft: '-1px' }}
               >
                 {filterOptions.allLyricists.map(lyricist => (
                   <option key={lyricist} value={lyricist} className="bg-gray-800 text-white">{lyricist}</option>
                 ))}
               </select>
             </div>
-            
+
             {/* 作曲筛选 */}
             <div className="flex items-center flex-1 min-w-[180px]">
               <span className="h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white text-sm rounded-l-2xl select-none tracking-wide min-w-[80px] max-w-[80px] w-[80px]">作曲</span>
@@ -363,7 +366,7 @@ const MusicLibrary = () => {
                 value={selectedComposer}
                 onChange={(e) => setSelectedComposer(e.target.value)}
                 className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer rounded-r-2xl border-l-0 min-w-0"
-                style={{marginLeft: '-1px'}}
+                style={{ marginLeft: '-1px' }}
               >
                 {filterOptions.allComposers.map(composer => (
                   <option key={composer} value={composer} className="bg-gray-800 text-white">{composer}</option>
