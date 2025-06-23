@@ -441,7 +441,30 @@ const MusicLibrary = () => {
 
                 {/* 歌曲信息 */}
                 <div className="flex-1 ml-4">
-                  <div className="flex items-center justify-between">
+                  {/* 小屏：精简显示 */}
+                  <div className="flex flex-col gap-1 md:hidden">
+                    <h3 className="text-white font-medium truncate">{song.title}</h3>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {song.lyricist && song.lyricist.length > 0 && (
+                        <span className="text-gray-300 text-sm truncate">{song.lyricist[0]}</span>
+                      )}
+                      {song.composer && song.composer.length > 0 && (
+                        <span className="text-gray-300 text-sm truncate">{song.composer[0]}</span>
+                      )}
+                      {(song.genre || []).map((g: string) => (
+                        <span key={g} className="px-2 py-1 text-xs bg-blue-500/20 text-blue-300 rounded-full">
+                          {g}
+                        </span>
+                      ))}
+                      {(song.type && song.type.length > 0 ? song.type : ['原创']).map((t: string) => (
+                        <span key={t} className="px-2 py-1 text-xs bg-green-500/20 text-green-300 rounded-full">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  {/* 大屏：原有详细显示 */}
+                  <div className="hidden md:flex items-center justify-between">
                     <div>
                       <h3 className="text-white font-medium">{song.title}</h3>
                       <p className="text-gray-400 text-sm">{song.album || '未知'} • {song.year || '未知'}</p>
