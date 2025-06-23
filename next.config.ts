@@ -5,19 +5,10 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'hetu-music.com',
-      },
-      {
-        protocol: 'https',
         hostname: 'cover.hetu-music.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'www.hetu-music.com',
       },
     ],
   },
-  /* config options here */
 };
 
 export default nextConfig;
