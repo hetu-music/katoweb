@@ -110,7 +110,7 @@ const LazyImage = ({ src, alt, className }: { src: string; alt: string; classNam
                 setImageLoaded(true);
               };
               img.src = src;
-              observer && observer.disconnect();
+              if (observer) observer.disconnect();
             }
           });
         },

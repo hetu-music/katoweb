@@ -105,7 +105,7 @@ const MusicLibrary = () => {
         .order('id', { ascending: true }); // 添加排序确保一致性
 
       if (!error && data) {
-        const mapped = data.map((song: Song, idx: number) => ({
+        const mapped = data.map((song: Song) => ({
           id: song.id,
           title: song.title,
           album: song.album,
@@ -224,7 +224,7 @@ const MusicLibrary = () => {
                   setImageLoaded(true);
                 };
                 img.src = src;
-                observer && observer.disconnect();
+                if (observer) observer.disconnect();
               }
             });
           },
