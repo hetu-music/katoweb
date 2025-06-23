@@ -1,36 +1,40 @@
-# 1. 使用官方 Node.js 运行时作为基础镜像
-FROM node:20-alpine AS builder
-
-# 2. 设置工作目录
+# 构建阶段
+FROM node:20-slim AS builder
 WORKDIR /app
 
-# 3. 复制依赖文件并安装 pnpm
+# 启用 corepack 安装 pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# 复制依赖文件
 COPY package.json pnpm-lock.yaml ./
-RUN npm install -g pnpm
 
-# 4. 安装依赖
-RUN pnpm install --frozen-lockfile
+# 安装生产依赖
+RUN pnpm install --frozen-lockfile --prod
 
-# 5. 复制所有源代码
+# 复制必要源码
 COPY . .
 
-# 6. 构建 Next.js 应用
+# 设置生产环境并构建
+ENV NODE_ENV=production
 RUN pnpm build
 
-# 7. 生产环境镜像
-FROM node:20-alpine AS runner
+# 运行阶段
+FROM node:20-slim AS runner
 WORKDIR /app
 
-# 8. 只复制生产需要的文件
-COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
-COPY --from=builder /app/next.config.js ./
-COPY --from=builder /app/node_modules ./node_modules
+# 安装 sharp 依赖
+RUN apt-get update && apt-get install -y libvips-dev && apt-get clean
+
+# 复制构建产物和必要文件
+COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/next.config.ts ./next.config.ts
 
-# 9. 仅设置生产环境变量，Supabase 相关变量运行时注入
+# 设置环境变量
 ENV NODE_ENV=production
 
-# 10. 启动 Next.js 应用
+# 暴露端口并启动
 EXPOSE 3000
-CMD ["node_modules/.bin/next", "start"] 
+CMD ["pnpm", "start"]
