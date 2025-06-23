@@ -117,7 +117,6 @@ const MusicLibrary = () => {
           length: song.length,
           cover: song.cover && song.cover.trim() !== '' ? song.cover : 'https://cover.hetu-music.com/default.jpg',
           type: song.type,
-          _originalIndex: idx, // 用于无日期时保持原顺序
         }));
 
         // 排序：有日期的按日期从新到旧，无日期的排在后面并保持原顺序
@@ -130,12 +129,12 @@ const MusicLibrary = () => {
             return 1;
           } else {
             // 都没有日期，按原顺序
-            return (a._originalIndex ?? 0) - (b._originalIndex ?? 0);
+            return 0;
           }
         });
 
-        setSongsData(sorted.map(({ _originalIndex, ...rest }) => rest));
-        setCachedData(sorted.map(({ _originalIndex, ...rest }) => rest)); // 缓存数据
+        setSongsData(sorted);
+        setCachedData(sorted); // 缓存数据
       } else {
         console.error('Failed to fetch songs:', error);
       }

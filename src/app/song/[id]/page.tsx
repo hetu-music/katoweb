@@ -202,7 +202,7 @@ const SongDetail = () => {
         }, 300);
       };
     })(),
-    [id]
+    [id, setLoading, setError, setSong]
   );
 
   // 滚动到顶部
