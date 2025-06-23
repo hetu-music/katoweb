@@ -88,25 +88,45 @@ const isCacheValid = (timestamp: number): boolean => {
 
 // 图片懒加载组件
 const LazyImage = ({ src, alt, className }: { src: string; alt: string; className: string }) => {
-  const [imageSrc, setImageSrc] = useState('/images/default-cover.jpg');
+  const [imageSrc, setImageSrc] = useState('https://cover.hetu-music.com/default.jpg');
   const [imageLoaded, setImageLoaded] = useState(false);
+  const imgRef = React.useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    const img = new Image();
-    img.onload = () => {
-      setImageSrc(src);
-      setImageLoaded(true);
+    let observer: IntersectionObserver | null = null;
+    const imgElement = imgRef.current;
+    if (imgElement) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const img = new window.Image();
+              img.onload = () => {
+                setImageSrc(src);
+                setImageLoaded(true);
+              };
+              img.onerror = () => {
+                setImageSrc('https://cover.hetu-music.com/default.jpg');
+                setImageLoaded(true);
+              };
+              img.src = src;
+              observer && observer.disconnect();
+            }
+          });
+        },
+        { threshold: 0.1 }
+      );
+      observer.observe(imgElement);
+    }
+    return () => {
+      if (observer && imgElement) observer.unobserve(imgElement);
     };
-    img.onerror = () => {
-      setImageSrc('/images/default-cover.jpg');
-      setImageLoaded(true);
-    };
-    img.src = src;
   }, [src]);
 
   return (
     <div className="relative">
       <img
+        ref={imgRef}
         src={imageSrc}
         alt={alt}
         className={`${className} ${imageLoaded ? 'opacity-100' : 'opacity-50'} transition-opacity duration-300`}
@@ -131,52 +151,59 @@ const SongDetail = () => {
   const router = useRouter();
 
   // 获取歌曲数据
-  const fetchSong = useCallback(async (forceRefresh = false) => {
-    if (!id) return;
-    
-    setLoading(true);
-    setError(null);
-    
-    // 检查缓存（除非强制刷新）
-    if (!forceRefresh) {
-      const { data: cachedData, timestamp } = getCachedSong(id);
-      if (cachedData && isCacheValid(timestamp)) {
-        setSong(cachedData);
-        setLoading(false);
-        return;
-      }
-    }
-
-    try {
-      const supabase = await getSupabaseClient();
-      const { data, error } = await supabase
-        .from('music')
-        .select('*')
-        .eq('id', id)
-        .single();
-        
-      if (error) {
-        throw new Error(error.message);
-      }
-      
-      if (data) {
-        const processedSong = {
-          ...data,
-          cover: data.cover && data.cover.trim() !== '' ? data.cover : '/images/default-cover.jpg',
-          year: data.date ? new Date(data.date).getFullYear() : null,
-        };
-        setSong(processedSong);
-        setCachedSong(id, processedSong);
-      } else {
-        setError('未找到该歌曲');
-      }
-    } catch (err) {
-      console.error('Error fetching song:', err);
-      setError(err instanceof Error ? err.message : '加载歌曲失败');
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
+  const fetchSong = useCallback(
+    (() => {
+      let debounceTimer: NodeJS.Timeout | null = null;
+      let lastId: string | null = null;
+      return async (forceRefresh = false) => {
+        if (!id) return;
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(async () => {
+          if (lastId === id && !forceRefresh) return;
+          lastId = id;
+          setLoading(true);
+          setError(null);
+          // 检查缓存（除非强制刷新）
+          if (!forceRefresh) {
+            const { data: cachedData, timestamp } = getCachedSong(id);
+            if (cachedData && isCacheValid(timestamp)) {
+              setSong(cachedData);
+              setLoading(false);
+              return;
+            }
+          }
+          try {
+            const supabase = await getSupabaseClient();
+            const { data, error } = await supabase
+              .from('music')
+              .select('*')
+              .eq('id', id)
+              .single();
+            if (error) {
+              throw new Error(error.message);
+            }
+            if (data) {
+              const processedSong = {
+                ...data,
+                cover: data.cover && data.cover.trim() !== '' ? data.cover : 'https://cover.hetu-music.com/default.jpg',
+                year: data.date ? new Date(data.date).getFullYear() : null,
+              };
+              setSong(processedSong);
+              setCachedSong(id, processedSong);
+            } else {
+              setError('未找到该歌曲');
+            }
+          } catch (err) {
+            console.error('Error fetching song:', err);
+            setError(err instanceof Error ? err.message : '加载歌曲失败');
+          } finally {
+            setLoading(false);
+          }
+        }, 300);
+      };
+    })(),
+    [id]
+  );
 
   // 滚动到顶部
   const scrollToTop = useCallback(() => {
@@ -283,7 +310,7 @@ const SongDetail = () => {
           {/* 封面 */}
           <div className="w-full md:w-48 flex-shrink-0 flex justify-center md:justify-start">
             <LazyImage
-              src={song.cover || '/images/default-cover.jpg'}
+              src={song.cover || 'https://cover.hetu-music.com/default.jpg'}
               alt={song.album || song.title}
               className="w-48 h-48 object-cover rounded-2xl shadow-lg"
             />
