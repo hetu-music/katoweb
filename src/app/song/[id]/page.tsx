@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
@@ -97,58 +97,58 @@ const SongDetail = () => {
   const [lyricsExpanded, setLyricsExpanded] = useState(true);
   const router = useRouter();
 
+  // 用 useRef 替代闭包变量
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const lastId = useRef<string | null>(null);
+
   // 获取歌曲数据
   const fetchSong = useCallback(
-    (() => {
-      let debounceTimer: NodeJS.Timeout | null = null;
-      let lastId: string | null = null;
-      return async (forceRefresh = false) => {
-        if (!id) return;
-        if (debounceTimer) clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(async () => {
-          if (lastId === id && !forceRefresh) return;
-          lastId = id;
-          setLoading(true);
-          setError(null);
-          // 检查缓存（除非强制刷新）
-          if (!forceRefresh) {
-            const { data: cachedData, timestamp } = getCachedSong(id);
-            if (cachedData && isCacheValid(timestamp)) {
-              setSong(cachedData);
-              setLoading(false);
-              return;
-            }
-          }
-          try {
-            const supabase = await getSupabaseClient();
-            const { data, error } = await supabase
-              .from('music')
-              .select('*')
-              .eq('id', id)
-              .single();
-            if (error) {
-              throw new Error(error.message);
-            }
-            if (data) {
-              const processedSong = {
-                ...data,
-                cover: data.cover && data.cover.trim() !== '' ? data.cover : 'https://cover.hetu-music.com/default.jpg',
-                year: data.date ? new Date(data.date).getFullYear() : null,
-              };
-              setSong(processedSong);
-              setCachedSong(id, processedSong);
-            } else {
-              setError('未找到该歌曲');
-            }
-          } catch (err) {
-            console.error('Error fetching song:', err);
-            setError(err instanceof Error ? err.message : '加载歌曲失败');
-          } finally {
+    async (forceRefresh = false) => {
+      if (!id) return;
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      debounceTimer.current = setTimeout(async () => {
+        if (lastId.current === id && !forceRefresh) return;
+        lastId.current = id;
+        setLoading(true);
+        setError(null);
+        // 检查缓存（除非强制刷新）
+        if (!forceRefresh) {
+          const { data: cachedData, timestamp } = getCachedSong(id);
+          if (cachedData && isCacheValid(timestamp)) {
+            setSong(cachedData);
             setLoading(false);
+            return;
           }
-        }, 300);
-      };
-    })(),
+        }
+        try {
+          const supabase = await getSupabaseClient();
+          const { data, error } = await supabase
+            .from('music')
+            .select('*')
+            .eq('id', id)
+            .single();
+          if (error) {
+            throw new Error(error.message);
+          }
+          if (data) {
+            const processedSong = {
+              ...data,
+              cover: data.cover && data.cover.trim() !== '' ? data.cover : 'https://cover.hetu-music.com/default.jpg',
+              year: data.date ? new Date(data.date).getFullYear() : null,
+            };
+            setSong(processedSong);
+            setCachedSong(id, processedSong);
+          } else {
+            setError('未找到该歌曲');
+          }
+        } catch (err) {
+          console.error('Error fetching song:', err);
+          setError(err instanceof Error ? err.message : '加载歌曲失败');
+        } finally {
+          setLoading(false);
+        }
+      }, 300);
+    },
     [id, setLoading, setError, setSong]
   );
 
