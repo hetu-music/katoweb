@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'cover.hetu-music.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'hetu-music.com',
+      },
     ],
   },
   /* config options here */
