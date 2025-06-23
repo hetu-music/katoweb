@@ -4,6 +4,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Search, Grid, List } from 'lucide-react';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 type Song = {
   id: number;
@@ -200,53 +201,6 @@ const MusicLibrary = () => {
     });
   }, [debouncedSearchTerm, selectedGenre, selectedYear, songsData, selectedLyricist, selectedComposer]);
 
-  // 图片懒加载组件
-  const LazyImage = ({ src, alt, className }: { src: string; alt: string; className: string }) => {
-    const [imageSrc, setImageSrc] = useState('https://cover.hetu-music.com/default.jpg');
-    const [imageLoaded, setImageLoaded] = useState(false);
-    const imgRef = React.useRef<HTMLImageElement>(null);
-
-    useEffect(() => {
-      let observer: IntersectionObserver | null = null;
-      const imgElement = imgRef.current;
-      if (imgElement) {
-        observer = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              if (entry.isIntersecting) {
-                const img = new window.Image();
-                img.onload = () => {
-                  setImageSrc(src);
-                  setImageLoaded(true);
-                };
-                img.onerror = () => {
-                  setImageSrc('https://cover.hetu-music.com/default.jpg');
-                  setImageLoaded(true);
-                };
-                img.src = src;
-                if (observer) observer.disconnect();
-              }
-            });
-          },
-          { threshold: 0.1 }
-        );
-        observer.observe(imgElement);
-      }
-      return () => {
-        if (observer && imgElement) observer.unobserve(imgElement);
-      };
-    }, [src]);
-
-    return (
-      <img
-        ref={imgRef}
-        src={imageSrc}
-        alt={alt}
-        className={`${className} ${imageLoaded ? 'opacity-100' : 'opacity-50'} transition-opacity duration-300`}
-      />
-    );
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
       {/* 关于弹窗 */}
@@ -392,10 +346,14 @@ const MusicLibrary = () => {
                 <div className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 p-4 transition-all duration-300 hover:bg-white/10 hover:scale-105 hover:shadow-2xl">
                   {/* 专辑封面 */}
                   <div className="relative mb-4">
-                    <LazyImage
+                    <Image
                       src={song.cover || 'https://cover.hetu-music.com/default.jpg'}
                       alt={song.album || song.title}
+                      width={400}
+                      height={400}
                       className="w-full aspect-square object-cover rounded-xl"
+                      style={{ objectFit: 'cover' }}
+                      priority
                     />
                   </div>
 
@@ -435,10 +393,14 @@ const MusicLibrary = () => {
                 </div>
 
                 {/* 专辑封面 */}
-                <LazyImage
+                <Image
                   src={song.cover || 'https://cover.hetu-music.com/default.jpg'}
                   alt={song.album || song.title}
+                  width={48}
+                  height={48}
                   className="w-12 h-12 rounded-lg ml-4"
+                  style={{ objectFit: 'cover' }}
+                  priority
                 />
 
                 {/* 歌曲信息 */}

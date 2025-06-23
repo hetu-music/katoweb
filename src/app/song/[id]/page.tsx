@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import Image from 'next/image';
 
 function formatTime(seconds: number | null) {
   if (!seconds || isNaN(seconds)) return '未知';
@@ -84,60 +85,6 @@ const setCachedSong = (id: string, data: Song) => {
 
 const isCacheValid = (timestamp: number): boolean => {
   return Date.now() - timestamp < CACHE_DURATION;
-};
-
-// 图片懒加载组件
-const LazyImage = ({ src, alt, className }: { src: string; alt: string; className: string }) => {
-  const [imageSrc, setImageSrc] = useState('https://cover.hetu-music.com/default.jpg');
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const imgRef = React.useRef<HTMLImageElement>(null);
-
-  useEffect(() => {
-    let observer: IntersectionObserver | null = null;
-    const imgElement = imgRef.current;
-    if (imgElement) {
-      observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              const img = new window.Image();
-              img.onload = () => {
-                setImageSrc(src);
-                setImageLoaded(true);
-              };
-              img.onerror = () => {
-                setImageSrc('https://cover.hetu-music.com/default.jpg');
-                setImageLoaded(true);
-              };
-              img.src = src;
-              if (observer) observer.disconnect();
-            }
-          });
-        },
-        { threshold: 0.1 }
-      );
-      observer.observe(imgElement);
-    }
-    return () => {
-      if (observer && imgElement) observer.unobserve(imgElement);
-    };
-  }, [src]);
-
-  return (
-    <div className="relative">
-      <img
-        ref={imgRef}
-        src={imageSrc}
-        alt={alt}
-        className={`${className} ${imageLoaded ? 'opacity-100' : 'opacity-50'} transition-opacity duration-300`}
-      />
-      {!imageLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/10 rounded-2xl">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white/50"></div>
-        </div>
-      )}
-    </div>
-  );
 };
 
 const SongDetail = () => {
@@ -309,10 +256,14 @@ const SongDetail = () => {
         <div className="flex flex-col md:flex-row gap-8 items-start bg-white/10 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/20 mb-8">
           {/* 封面 */}
           <div className="w-full md:w-48 flex-shrink-0 flex justify-center md:justify-start">
-            <LazyImage
+            <Image
               src={song.cover || 'https://cover.hetu-music.com/default.jpg'}
               alt={song.album || song.title}
+              width={192}
+              height={192}
               className="w-48 h-48 object-cover rounded-2xl shadow-lg"
+              style={{ objectFit: 'cover' }}
+              priority
             />
           </div>
           
