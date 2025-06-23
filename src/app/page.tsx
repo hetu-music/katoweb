@@ -105,7 +105,7 @@ const MusicLibrary = () => {
         .order('id', { ascending: true }); // 添加排序确保一致性
 
       if (!error && data) {
-        const mapped = data.map((song: Song) => ({
+        const mapped = data.map((song: Song, idx: number) => ({
           id: song.id,
           title: song.title,
           album: song.album,
@@ -117,10 +117,25 @@ const MusicLibrary = () => {
           length: song.length,
           cover: song.cover && song.cover.trim() !== '' ? song.cover : 'https://cover.hetu-music.com/default.jpg',
           type: song.type,
+          _originalIndex: idx, // 用于无日期时保持原顺序
         }));
-        
-        setSongsData(mapped);
-        setCachedData(mapped); // 缓存数据
+
+        // 排序：有日期的按日期从新到旧，无日期的排在后面并保持原顺序
+        const sorted = mapped.slice().sort((a, b) => {
+          if (a.year && b.year) {
+            return (b.year as number) - (a.year as number);
+          } else if (a.year && !b.year) {
+            return -1;
+          } else if (!a.year && b.year) {
+            return 1;
+          } else {
+            // 都没有日期，按原顺序
+            return (a._originalIndex ?? 0) - (b._originalIndex ?? 0);
+          }
+        });
+
+        setSongsData(sorted.map(({ _originalIndex, ...rest }) => rest));
+        setCachedData(sorted.map(({ _originalIndex, ...rest }) => rest)); // 缓存数据
       } else {
         console.error('Failed to fetch songs:', error);
       }
