@@ -15,7 +15,7 @@ type Song = {
   composer: string[] | null;
   artist: string[] | null;
   length: number | null;
-  cover?: string | null;
+  hascover?: boolean | null;
   date?: string | null;
   type?: string[] | null;
 };
@@ -58,6 +58,17 @@ const setCachedData = (data: Song[]) => {
 const isCacheValid = (timestamp: number): boolean => {
   return Date.now() - timestamp < CACHE_DURATION;
 };
+
+// 获取封面url
+function getCoverUrl(song: Song): string {
+  if (song.hascover === true) {
+    return `https://cover.hetu-music.com/${song.id}.jpg`;
+  } else if (song.hascover === false) {
+    return 'https://cover.hetu-music.com/proto.jpg';
+  } else {
+    return 'https://cover.hetu-music.com/default.jpg';
+  }
+}
 
 const MusicLibrary = () => {
   const [songsData, setSongsData] = useState<Song[]>([]);
@@ -104,17 +115,18 @@ const MusicLibrary = () => {
         composer: song.composer,
         artist: song.artist,
         length: song.length,
-        cover: song.cover && song.cover.trim() !== '' ? song.cover : 'https://cover.hetu-music.com/default.jpg',
+        hascover: song.hascover,
+        date: song.date,
         type: song.type,
       }));
 
       // 排序：有日期的按日期从新到旧，无日期的排在后面并保持原顺序
       const sorted = mapped.slice().sort((a: Song, b: Song) => {
-        if (a.year && b.year) {
-          return (b.year as number) - (a.year as number);
-        } else if (a.year && !b.year) {
+        if (a.date && b.date) {
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        } else if (a.date && !b.date) {
           return -1;
-        } else if (!a.year && b.year) {
+        } else if (!a.date && b.date) {
           return 1;
         } else {
           // 都没有日期，按原顺序
@@ -332,7 +344,7 @@ const MusicLibrary = () => {
                   {/* 专辑封面 */}
                   <div className="relative mb-4">
                     <Image
-                      src={song.cover || 'https://cover.hetu-music.com/default.jpg'}
+                      src={getCoverUrl(song)}
                       alt={song.album || song.title}
                       width={400}
                       height={400}
@@ -378,7 +390,7 @@ const MusicLibrary = () => {
 
                 {/* 专辑封面 */}
                 <Image
-                  src={song.cover || 'https://cover.hetu-music.com/default.jpg'}
+                  src={getCoverUrl(song)}
                   alt={song.album || song.title}
                   width={48}
                   height={48}

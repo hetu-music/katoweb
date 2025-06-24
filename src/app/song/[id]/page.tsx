@@ -22,7 +22,7 @@ type Song = {
   composer: string[] | null;
   artist: string[] | null;
   length: number | null;
-  cover?: string | null;
+  hascover?: boolean | null;
   date?: string | null;
   albumartist?: string[] | null;
   arranger?: string[] | null;
@@ -74,6 +74,17 @@ const isCacheValid = (timestamp: number): boolean => {
   return Date.now() - timestamp < CACHE_DURATION;
 };
 
+// 获取封面url
+function getCoverUrl(song: Song): string {
+  if (song.hascover === true) {
+    return `https://cover.hetu-music.com/${song.id}.jpg`;
+  } else if (song.hascover === false) {
+    return 'https://cover.hetu-music.com/proto.jpg';
+  } else {
+    return 'https://cover.hetu-music.com/default.jpg';
+  }
+}
+
 const SongDetail = () => {
   const params = useParams();
   const id = params.id as string;
@@ -120,7 +131,7 @@ const SongDetail = () => {
 
           const processedSong = {
             ...data,
-            cover: data.cover && data.cover.trim() !== '' ? data.cover : 'https://cover.hetu-music.com/default.jpg',
+            hascover: data.hascover,
             year: data.date ? new Date(data.date).getFullYear() : null,
           };
           setSong(processedSong);
@@ -241,7 +252,7 @@ const SongDetail = () => {
           {/* 封面 */}
           <div className="w-full md:w-48 flex-shrink-0 flex justify-center md:justify-start">
             <Image
-              src={song.cover || 'https://cover.hetu-music.com/default.jpg'}
+              src={getCoverUrl(song)}
               alt={song.album || song.title}
               width={192}
               height={192}
