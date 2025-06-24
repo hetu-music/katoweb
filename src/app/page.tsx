@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Search, Grid, List } from 'lucide-react';
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
@@ -19,18 +18,6 @@ type Song = {
   cover?: string | null;
   date?: string | null;
   type?: string[] | null;
-};
-
-// 创建单例 Supabase 客户端
-let supabaseClient: SupabaseClient | null = null;
-
-const getSupabaseClient = async () => {
-  if (!supabaseClient) {
-    const envRes = await fetch('/api/env');
-    const env = await envRes.json();
-    supabaseClient = createClient(env.supabaseUrl, env.supabaseKey);
-  }
-  return supabaseClient;
 };
 
 // 缓存数据
@@ -99,46 +86,44 @@ const MusicLibrary = () => {
     }
 
     try {
-      const supabase = await getSupabaseClient();
-      const { data, error } = await supabase
-        .from('music')
-        .select('*')
-        .order('id', { ascending: true }); // 添加排序确保一致性
+      const response = await fetch('/api/songs');
 
-      if (!error && data) {
-        const mapped = data.map((song: Song) => ({
-          id: song.id,
-          title: song.title,
-          album: song.album,
-          year: song.date ? new Date(song.date).getFullYear() : null,
-          genre: song.genre,
-          lyricist: song.lyricist,
-          composer: song.composer,
-          artist: song.artist,
-          length: song.length,
-          cover: song.cover && song.cover.trim() !== '' ? song.cover : 'https://cover.hetu-music.com/default.jpg',
-          type: song.type,
-        }));
-
-        // 排序：有日期的按日期从新到旧，无日期的排在后面并保持原顺序
-        const sorted = mapped.slice().sort((a, b) => {
-          if (a.year && b.year) {
-            return (b.year as number) - (a.year as number);
-          } else if (a.year && !b.year) {
-            return -1;
-          } else if (!a.year && b.year) {
-            return 1;
-          } else {
-            // 都没有日期，按原顺序
-            return 0;
-          }
-        });
-
-        setSongsData(sorted);
-        setCachedData(sorted); // 缓存数据
-      } else {
-        console.error('Failed to fetch songs:', error);
+      if (!response.ok) {
+        throw new Error('Failed to fetch songs');
       }
+
+      const data = await response.json();
+
+      const mapped = data.map((song: Song) => ({
+        id: song.id,
+        title: song.title,
+        album: song.album,
+        year: song.date ? new Date(song.date).getFullYear() : null,
+        genre: song.genre,
+        lyricist: song.lyricist,
+        composer: song.composer,
+        artist: song.artist,
+        length: song.length,
+        cover: song.cover && song.cover.trim() !== '' ? song.cover : 'https://cover.hetu-music.com/default.jpg',
+        type: song.type,
+      }));
+
+      // 排序：有日期的按日期从新到旧，无日期的排在后面并保持原顺序
+      const sorted = mapped.slice().sort((a: Song, b: Song) => {
+        if (a.year && b.year) {
+          return (b.year as number) - (a.year as number);
+        } else if (a.year && !b.year) {
+          return -1;
+        } else if (!a.year && b.year) {
+          return 1;
+        } else {
+          // 都没有日期，按原顺序
+          return 0;
+        }
+      });
+
+      setSongsData(sorted);
+      setCachedData(sorted); // 缓存数据
     } catch (error) {
       console.error('Error fetching songs:', error);
     } finally {
@@ -353,7 +338,6 @@ const MusicLibrary = () => {
                       height={400}
                       className="w-full aspect-square object-cover rounded-xl"
                       style={{ objectFit: 'cover' }}
-                      priority
                     />
                   </div>
 
@@ -400,7 +384,6 @@ const MusicLibrary = () => {
                   height={48}
                   className="w-12 h-12 rounded-lg ml-4"
                   style={{ objectFit: 'cover' }}
-                  priority
                 />
 
                 {/* 歌曲信息 */}

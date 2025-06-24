@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
 
@@ -36,25 +35,13 @@ type Song = {
   type?: string[] | null;
 };
 
-// 创建单例 Supabase 客户端
-let supabaseClient: SupabaseClient | null = null;
-
-const getSupabaseClient = async () => {
-  if (!supabaseClient) {
-    const envRes = await fetch('/api/env');
-    const env = await envRes.json();
-    supabaseClient = createClient(env.supabaseUrl, env.supabaseKey);
-  }
-  return supabaseClient;
-};
-
 // 缓存数据
 const CACHE_KEY_PREFIX = 'song_detail_';
 const CACHE_DURATION = 30 * 60 * 1000; // 30分钟
 
 const getCachedSong = (id: string): { data: Song | null; timestamp: number } => {
   if (typeof window === 'undefined') return { data: null, timestamp: 0 };
-  
+
   try {
     const cached = localStorage.getItem(`${CACHE_KEY_PREFIX}${id}`);
     if (cached) {
@@ -72,7 +59,7 @@ const getCachedSong = (id: string): { data: Song | null; timestamp: number } => 
 
 const setCachedSong = (id: string, data: Song) => {
   if (typeof window === 'undefined') return;
-  
+
   try {
     localStorage.setItem(`${CACHE_KEY_PREFIX}${id}`, JSON.stringify({
       data,
@@ -101,7 +88,6 @@ const SongDetail = () => {
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const lastId = useRef<string | null>(null);
 
-  // 获取歌曲数据
   const fetchSong = useCallback(
     async (forceRefresh = false) => {
       if (!id) return;
@@ -121,26 +107,24 @@ const SongDetail = () => {
           }
         }
         try {
-          const supabase = await getSupabaseClient();
-          const { data, error } = await supabase
-            .from('music')
-            .select('*')
-            .eq('id', id)
-            .single();
-          if (error) {
-            throw new Error(error.message);
+          const response = await fetch(`/api/songs/${id}`);
+
+          if (!response.ok) {
+            if (response.status === 404) {
+              throw new Error('未找到该歌曲');
+            }
+            throw new Error('加载歌曲失败');
           }
-          if (data) {
-            const processedSong = {
-              ...data,
-              cover: data.cover && data.cover.trim() !== '' ? data.cover : 'https://cover.hetu-music.com/default.jpg',
-              year: data.date ? new Date(data.date).getFullYear() : null,
-            };
-            setSong(processedSong);
-            setCachedSong(id, processedSong);
-          } else {
-            setError('未找到该歌曲');
-          }
+
+          const data = await response.json();
+
+          const processedSong = {
+            ...data,
+            cover: data.cover && data.cover.trim() !== '' ? data.cover : 'https://cover.hetu-music.com/default.jpg',
+            year: data.date ? new Date(data.date).getFullYear() : null,
+          };
+          setSong(processedSong);
+          setCachedSong(id, processedSong);
         } catch (err) {
           console.error('Error fetching song:', err);
           setError(err instanceof Error ? err.message : '加载歌曲失败');
@@ -176,7 +160,7 @@ const SongDetail = () => {
   // 使用 useMemo 优化渲染性能
   const songInfo = useMemo(() => {
     if (!song) return null;
-    
+
     return {
       creativeInfo: [
         { label: '作词', value: (song.lyricist && song.lyricist.length > 0) ? song.lyricist.join(', ') : '未知' },
@@ -266,7 +250,7 @@ const SongDetail = () => {
               priority
             />
           </div>
-          
+
           {/* 歌曲主信息 */}
           <div className="flex-1 text-white space-y-4 w-full">
             <div>
@@ -345,7 +329,7 @@ const SongDetail = () => {
               </button>
             )}
           </div>
-          
+
           <div className="whitespace-pre-line leading-relaxed">
             {song.lyrics ? (
               <div className="p-4 rounded-xl bg-white/5 border border-white/10">
