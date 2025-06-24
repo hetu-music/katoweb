@@ -245,9 +245,10 @@ const MusicLibrary = () => {
             </div>
           </div>
 
-          {/* 搜索和筛选区域 */}
-          <div className="w-full mb-3">
-            <div className="flex items-center w-full">
+          {/* 搜索和筛选区域 - 上下布局，保证两端对齐 */}
+          <div className="w-full flex flex-col gap-3">
+            {/* 搜索框 */}
+            <div className="w-full flex items-center">
               <div className="h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white rounded-l-2xl select-none min-w-[60px] max-w-[60px] w-[60px]">
                 <Search size={20} />
               </div>
@@ -260,68 +261,60 @@ const MusicLibrary = () => {
                 style={{ marginLeft: '-1px' }}
               />
             </div>
-          </div>
-
-          {/* 筛选框 */}
-          <div className="w-full flex flex-col sm:flex-row gap-3">
-            {/* 流派筛选 */}
-            <div className="flex items-center flex-1 min-w-[180px]">
-              <span className="h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white text-sm rounded-l-2xl select-none tracking-wide min-w-[80px] max-w-[80px] w-[80px]">流派</span>
-              <select
-                value={selectedGenre}
-                onChange={(e) => setSelectedGenre(e.target.value)}
-                className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer rounded-r-2xl border-l-0 min-w-0"
-                style={{ marginLeft: '-1px' }}
-              >
-                {filterOptions.allGenres.map(genre => (
-                  <option key={genre} value={genre} className="bg-gray-800 text-white">{genre}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* 发行日期筛选 */}
-            <div className="flex items-center flex-1 min-w-[180px]">
-              <span className="h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white text-sm rounded-l-2xl select-none tracking-wide min-w-[80px] max-w-[80px] w-[80px]">发行日期</span>
-              <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
-                className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer rounded-r-2xl border-l-0 min-w-0"
-                style={{ marginLeft: '-1px' }}
-              >
-                {filterOptions.allYears.map(year => (
-                  <option key={year} value={year === null ? '' : year} className="bg-gray-800 text-white">{year}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* 作词筛选 */}
-            <div className="flex items-center flex-1 min-w-[180px]">
-              <span className="h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white text-sm rounded-l-2xl select-none tracking-wide min-w-[80px] max-w-[80px] w-[80px]">作词</span>
-              <select
-                value={selectedLyricist}
-                onChange={(e) => setSelectedLyricist(e.target.value)}
-                className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer rounded-r-2xl border-l-0 min-w-0"
-                style={{ marginLeft: '-1px' }}
-              >
-                {filterOptions.allLyricists.map(lyricist => (
-                  <option key={lyricist} value={lyricist} className="bg-gray-800 text-white">{lyricist}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* 作曲筛选 */}
-            <div className="flex items-center flex-1 min-w-[180px]">
-              <span className="h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white text-sm rounded-l-2xl select-none tracking-wide min-w-[80px] max-w-[80px] w-[80px]">作曲</span>
-              <select
-                value={selectedComposer}
-                onChange={(e) => setSelectedComposer(e.target.value)}
-                className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer rounded-r-2xl border-l-0 min-w-0"
-                style={{ marginLeft: '-1px' }}
-              >
-                {filterOptions.allComposers.map(composer => (
-                  <option key={composer} value={composer} className="bg-gray-800 text-white">{composer}</option>
-                ))}
-              </select>
+            {/* 筛选框 */}
+            <div className="w-full flex flex-col sm:flex-row gap-3">
+              {/* 流派筛选 */}
+              <div className="flex items-center flex-1 min-w-0">
+                <span className="h-[48px] flex sm:hidden lg:flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-blue-200 text-base font-semibold rounded-l-2xl select-none tracking-wide w-[120px] min-w-[120px] max-w-[140px]">流派</span>
+                <select
+                  value={selectedGenre}
+                  onChange={(e) => setSelectedGenre(e.target.value)}
+                  className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-l-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px]"
+                >
+                  {filterOptions.allGenres.map(genre => (
+                    <option key={genre} value={genre} className="bg-gray-800 text-white">{genre}</option>
+                  ))}
+                </select>
+              </div>
+              {/* 发行日期筛选 */}
+              <div className="flex items-center flex-1 min-w-0">
+                <span className="h-[48px] flex sm:hidden lg:flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-blue-200 text-base font-semibold rounded-l-2xl select-none tracking-wide w-[120px] min-w-[120px] max-w-[140px]">发行日期</span>
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-l-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px]"
+                >
+                  {filterOptions.allYears.map(year => (
+                    <option key={year} value={year === null ? '' : year} className="bg-gray-800 text-white">{year}</option>
+                  ))}
+                </select>
+              </div>
+              {/* 作词筛选 */}
+              <div className="flex items-center flex-1 min-w-0">
+                <span className="h-[48px] flex sm:hidden lg:flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-blue-200 text-base font-semibold rounded-l-2xl select-none tracking-wide w-[120px] min-w-[120px] max-w-[140px]">作词</span>
+                <select
+                  value={selectedLyricist}
+                  onChange={(e) => setSelectedLyricist(e.target.value)}
+                  className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-l-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px]"
+                >
+                  {filterOptions.allLyricists.map(lyricist => (
+                    <option key={lyricist} value={lyricist} className="bg-gray-800 text-white">{lyricist}</option>
+                  ))}
+                </select>
+              </div>
+              {/* 作曲筛选 */}
+              <div className="flex items-center flex-1 min-w-0">
+                <span className="h-[48px] flex sm:hidden lg:flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-blue-200 text-base font-semibold rounded-l-2xl select-none tracking-wide w-[120px] min-w-[120px] max-w-[140px]">作曲</span>
+                <select
+                  value={selectedComposer}
+                  onChange={(e) => setSelectedComposer(e.target.value)}
+                  className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-l-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px]"
+                >
+                  {filterOptions.allComposers.map(composer => (
+                    <option key={composer} value={composer} className="bg-gray-800 text-white">{composer}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         </div>
