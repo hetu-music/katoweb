@@ -239,7 +239,11 @@ const SongDetail = () => {
         {/* 顶部操作栏 */}
         <div className="flex items-center justify-between mb-6">
           <button
-            onClick={() => router.push('/')}
+            onClick={() => {
+              // 返回主页时带上原有的查询参数
+              const search = typeof window !== 'undefined' ? window.location.search : '';
+              router.push('/' + search);
+            }}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 shadow-sm"
           >
             <ArrowLeft size={18} />
