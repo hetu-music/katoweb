@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { Search, Grid, List } from 'lucide-react';
+import { Search, Grid, List, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
@@ -286,7 +286,7 @@ const MusicLibrary = () => {
             {/* 搜索和筛选区域 - 上下布局，保证两端对齐 */}
             <div className="w-full flex flex-col gap-3">
               {/* 搜索框 */}
-              <div className="w-full flex items-center">
+              <div className="w-full flex items-center relative">
                 <div className="h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white rounded-l-2xl select-none min-w-[60px] max-w-[60px] w-[60px]">
                   <Search size={20} />
                 </div>
@@ -295,9 +295,19 @@ const MusicLibrary = () => {
                   placeholder="搜索歌曲、作词、作曲、专辑..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/15 transition-all duration-200 rounded-r-2xl border-l-0 min-w-0"
+                  className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/15 transition-all duration-200 rounded-r-2xl border-l-0 min-w-0 pr-10"
                   style={{ marginLeft: '-1px' }}
                 />
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full text-gray-300 hover:text-white focus:outline-none bg-transparent active:bg-white/10 transition-all"
+                    aria-label="清空搜索"
+                  >
+                    <XCircle size={24} />
+                  </button>
+                )}
               </div>
               {/* 筛选框 */}
               <div className="w-full flex flex-col sm:flex-row gap-3">
