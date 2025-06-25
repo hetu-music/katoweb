@@ -368,10 +368,19 @@ const MusicLibrary = () => {
               {filteredSongs.map((song) => (
                 <div
                   key={song.id}
-                  className="group cursor-pointer"
-                  onClick={() => {
+                  className="group cursor-pointer touch-active"
+                  onClick={e => {
                     sessionStorage.setItem('music_scrollY', String(window.scrollY));
-                    router.push(`/song/${song.id}${window.location.search}`);
+                    if (typeof window !== 'undefined' && window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
+                      const target = e.currentTarget;
+                      target.classList.add('touch-active-delay');
+                      setTimeout(() => {
+                        target.classList.remove('touch-active-delay');
+                        router.push(`/song/${song.id}${window.location.search}`);
+                      }, 260);
+                    } else {
+                      router.push(`/song/${song.id}${window.location.search}`);
+                    }
                   }}
                 >
                   <div className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 p-4 transition-all duration-300 hover:bg-white/10 hover:scale-105 hover:shadow-2xl">
@@ -414,10 +423,19 @@ const MusicLibrary = () => {
               {filteredSongs.map((song, index) => (
                 <div
                   key={song.id}
-                  className="group flex items-center p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-200 cursor-pointer"
-                  onClick={() => {
+                  className="group flex items-center p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-200 cursor-pointer touch-active"
+                  onClick={e => {
                     sessionStorage.setItem('music_scrollY', String(window.scrollY));
-                    router.push(`/song/${song.id}${window.location.search}`);
+                    if (typeof window !== 'undefined' && window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
+                      const target = e.currentTarget;
+                      target.classList.add('touch-active-delay');
+                      setTimeout(() => {
+                        target.classList.remove('touch-active-delay');
+                        router.push(`/song/${song.id}${window.location.search}`);
+                      }, 260);
+                    } else {
+                      router.push(`/song/${song.id}${window.location.search}`);
+                    }
                   }}
                 >
                   {/* 序号 */}

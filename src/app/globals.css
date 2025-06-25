@@ -24,3 +24,16 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* 触摸动画，仅在触摸设备生效 */
+@media (hover: none) and (pointer: coarse) {
+  .touch-active {
+    transition: transform 0.6s cubic-bezier(.4,0,.2,1), box-shadow 0.6s;
+  }
+  /* 移除:active伪类，点击后只用touch-active-delay控制放大 */
+  .touch-active.touch-active-delay {
+    transform: scale(1.12);
+    box-shadow: 0 8px 32px 0 rgba(0,0,0,0.25);
+    transition: transform 0.6s cubic-bezier(.4,0,.2,1), box-shadow 0.6s;
+  }
+}
