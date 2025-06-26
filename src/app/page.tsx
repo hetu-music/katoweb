@@ -395,7 +395,7 @@ const MusicLibrary = () => {
 
                         // 立即开始导航，不等待动画完成
                         router.push(`/song/${song.id}${window.location.search}`);
-                      }, 150); // 减少到150ms，让用户感受到点击反馈但不会觉得卡顿
+                      }, 120); // 减少到150ms，让用户感受到点击反馈但不会觉得卡顿
                     } else {
                       router.push(`/song/${song.id}${window.location.search}`);
                     }
@@ -458,7 +458,7 @@ const MusicLibrary = () => {
 
                         // 立即开始导航
                         router.push(`/song/${song.id}${window.location.search}`);
-                      }, 150);
+                      }, 120);
                     } else {
                       router.push(`/song/${song.id}${window.location.search}`);
                     }

@@ -290,8 +290,8 @@ const SongDetail = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 rounded-xl bg-white/5 border border-white/10">
                 {songInfo?.creativeInfo.map((item, index) => (
                   <div key={index} className="flex items-start">
-                    <span className="font-semibold text-blue-300 text-sm md:text-base min-w-[4rem]">{item.label}：</span>
-                    <span className="text-white/90 break-words text-sm md:text-base">{item.value}</span>
+                    <span className="font-semibold text-blue-300 text-base min-w-[4rem]">{item.label}：</span>
+                    <span className="text-white/90 break-words text-base">{item.value}</span>
                   </div>
                 ))}
               </div>
@@ -303,8 +303,8 @@ const SongDetail = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 rounded-xl bg-white/5 border border-white/10">
                 {songInfo?.basicInfo.map((item, index) => (
                   <div key={index} className="flex items-start">
-                    <span className="font-semibold text-blue-300 text-sm md:text-base min-w-[6rem]">{item.label}：</span>
-                    <span className="text-white/90 break-words text-sm md:text-base">{item.value}</span>
+                    <span className="font-semibold text-blue-300 text-base min-w-[6rem]">{item.label}：</span>
+                    <span className="text-white/90 break-words text-base">{item.value}</span>
                   </div>
                 ))}
               </div>
