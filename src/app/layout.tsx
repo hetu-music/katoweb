@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "河图作品合集",
+  title: "河图作品勘鉴",
   description: "Create by hetu-music",
 };
 

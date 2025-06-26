@@ -198,10 +198,57 @@ const MusicLibrary = () => {
 
   // 使用 useMemo 优化筛选选项计算
   const filterOptions = useMemo(() => {
-    const allGenres = ['全部', ...new Set(songsData.flatMap(song => song.genre ? song.genre : []))];
-    const allYears = ['全部', ...Array.from(new Set(songsData.map(song => song.year).filter(Boolean))).sort((a, b) => (b as number) - (a as number))];
-    const allLyricists = ['全部', ...new Set(songsData.flatMap(song => song.lyricist ? song.lyricist : []))];
-    const allComposers = ['全部', ...new Set(songsData.flatMap(song => song.composer ? song.composer : []))];
+    // 处理流派
+    const genreSet = new Set<string>();
+    let hasUnknownGenre = false;
+    songsData.forEach(song => {
+      if (!song.genre || song.genre.length === 0) {
+        hasUnknownGenre = true;
+      } else {
+        song.genre.forEach(g => genreSet.add(g));
+      }
+    });
+    const allGenres = ['全部', ...Array.from(genreSet)];
+    if (hasUnknownGenre) allGenres.push('未知');
+
+    // 处理年份
+    const yearSet = new Set<number>();
+    let hasUnknownYear = false;
+    songsData.forEach(song => {
+      if (!song.year) {
+        hasUnknownYear = true;
+      } else {
+        yearSet.add(song.year);
+      }
+    });
+    const allYears = ['全部', ...Array.from(yearSet).sort((a, b) => (b as number) - (a as number))];
+    if (hasUnknownYear) allYears.push('未知');
+
+    // 处理作词
+    const lyricistSet = new Set<string>();
+    let hasUnknownLyricist = false;
+    songsData.forEach(song => {
+      if (!song.lyricist || song.lyricist.length === 0) {
+        hasUnknownLyricist = true;
+      } else {
+        song.lyricist.forEach(l => lyricistSet.add(l));
+      }
+    });
+    const allLyricists = ['全部', ...Array.from(lyricistSet)];
+    if (hasUnknownLyricist) allLyricists.push('未知');
+
+    // 处理作曲
+    const composerSet = new Set<string>();
+    let hasUnknownComposer = false;
+    songsData.forEach(song => {
+      if (!song.composer || song.composer.length === 0) {
+        hasUnknownComposer = true;
+      } else {
+        song.composer.forEach(c => composerSet.add(c));
+      }
+    });
+    const allComposers = ['全部', ...Array.from(composerSet)];
+    if (hasUnknownComposer) allComposers.push('未知');
 
     return { allGenres, allYears, allLyricists, allComposers };
   }, [songsData]);
@@ -226,10 +273,14 @@ const MusicLibrary = () => {
         (song.lyricist && song.lyricist.join(',').toLowerCase().includes(debouncedSearchTerm.toLowerCase())) ||
         (song.composer && song.composer.join(',').toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
 
-      const matchesGenre = selectedGenre === '全部' || (song.genre && song.genre.includes(selectedGenre));
-      const matchesYear = selectedYear === '全部' || (song.year && song.year.toString() === selectedYear);
-      const matchesLyricist = selectedLyricist === '全部' || (song.lyricist && song.lyricist.includes(selectedLyricist));
-      const matchesComposer = selectedComposer === '全部' || (song.composer && song.composer.includes(selectedComposer));
+      const matchesGenre = selectedGenre === '全部' ||
+        (selectedGenre === '未知' ? (!song.genre || song.genre.length === 0) : (song.genre && song.genre.includes(selectedGenre)));
+      const matchesYear = selectedYear === '全部' ||
+        (selectedYear === '未知' ? (!song.year) : (song.year && song.year.toString() === selectedYear));
+      const matchesLyricist = selectedLyricist === '全部' ||
+        (selectedLyricist === '未知' ? (!song.lyricist || song.lyricist.length === 0) : (song.lyricist && song.lyricist.includes(selectedLyricist)));
+      const matchesComposer = selectedComposer === '全部' ||
+        (selectedComposer === '未知' ? (!song.composer || song.composer.length === 0) : (song.composer && song.composer.includes(selectedComposer)));
 
       return matchesSearch && matchesGenre && matchesYear && matchesLyricist && matchesComposer;
     });
@@ -251,7 +302,7 @@ const MusicLibrary = () => {
               </button>
               <h2 className="text-2xl font-bold mb-4">关于</h2>
               <div className="text-base leading-relaxed space-y-2">
-                <p>本项目为河图作品合集，收录了河图的主要音乐作品，支持筛选与搜索。</p>
+                <p>本项目为河图作品勘鉴，收录了河图的主要音乐作品资料，支持筛选与搜索。</p>
                 <p>数据由本人整理，来源为创作者微博及各大音乐平台，如有误漏请至 Github 提交反馈。</p>
                 <p>Github: <a href="https://github.com/hetu-music/data" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">https://github.com/hetu-music/data</a></p>
               </div>
