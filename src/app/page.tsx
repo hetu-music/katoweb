@@ -316,7 +316,7 @@ const MusicLibrary = () => {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center space-x-4">
-                <h1 className="text-4xl font-bold text-white mb-2">河图作品合集</h1>
+                <h1 className="text-4xl font-bold text-white mb-2">河图作品勘鉴</h1>
                 <button
                   className="ml-2 px-4 py-1 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 text-sm font-medium shadow"
                   onClick={() => setAboutOpen(true)}
