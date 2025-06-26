@@ -289,9 +289,9 @@ const SongDetail = () => {
               <h3 className="font-semibold text-lg text-white/90 mb-3">创作信息</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 rounded-xl bg-white/5 border border-white/10">
                 {songInfo?.creativeInfo.map((item, index) => (
-                  <div key={index} className="flex flex-col">
-                    <span className="font-semibold text-blue-300 text-base md:text-lg min-w-[4rem] mb-1">{item.label}：</span>
-                    <span className="text-white/90 break-words">{item.value}</span>
+                  <div key={index} className="flex items-start">
+                    <span className="font-semibold text-blue-300 text-sm md:text-base min-w-[4rem]">{item.label}：</span>
+                    <span className="text-white/90 break-words text-sm md:text-base">{item.value}</span>
                   </div>
                 ))}
               </div>
@@ -302,9 +302,9 @@ const SongDetail = () => {
               <h3 className="font-semibold text-lg text-white/90 mb-3">基本信息</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 rounded-xl bg-white/5 border border-white/10">
                 {songInfo?.basicInfo.map((item, index) => (
-                  <div key={index} className="flex flex-col">
-                    <span className="font-semibold text-blue-300 text-base md:text-lg min-w-[6rem] mb-1">{item.label}：</span>
-                    <span className="text-white/90 break-words">{item.value}</span>
+                  <div key={index} className="flex items-start">
+                    <span className="font-semibold text-blue-300 text-sm md:text-base min-w-[6rem]">{item.label}：</span>
+                    <span className="text-white/90 break-words text-sm md:text-base">{item.value}</span>
                   </div>
                 ))}
               </div>

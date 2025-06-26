@@ -381,13 +381,21 @@ const MusicLibrary = () => {
                   className="group cursor-pointer touch-active"
                   onClick={e => {
                     sessionStorage.setItem('music_scrollY', String(window.scrollY));
+
                     if (typeof window !== 'undefined' && window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
                       const target = e.currentTarget;
-                      target.classList.add('touch-active-delay');
+
+                      // 立即添加按下效果
+                      target.classList.add('touch-active-pressed');
+
+                      // 短暂延迟后开始导航
                       setTimeout(() => {
-                        target.classList.remove('touch-active-delay');
+                        target.classList.remove('touch-active-pressed');
+                        target.classList.add('touch-navigating');
+
+                        // 立即开始导航，不等待动画完成
                         router.push(`/song/${song.id}${window.location.search}`);
-                      }, 260);
+                      }, 150); // 减少到150ms，让用户感受到点击反馈但不会觉得卡顿
                     } else {
                       router.push(`/song/${song.id}${window.location.search}`);
                     }
@@ -436,13 +444,21 @@ const MusicLibrary = () => {
                   className="group flex items-center p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-200 cursor-pointer touch-active"
                   onClick={e => {
                     sessionStorage.setItem('music_scrollY', String(window.scrollY));
+
                     if (typeof window !== 'undefined' && window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
                       const target = e.currentTarget;
-                      target.classList.add('touch-active-delay');
+
+                      // 立即添加按下效果
+                      target.classList.add('touch-active-pressed');
+
+                      // 短暂延迟后开始导航
                       setTimeout(() => {
-                        target.classList.remove('touch-active-delay');
+                        target.classList.remove('touch-active-pressed');
+                        target.classList.add('touch-navigating');
+
+                        // 立即开始导航
                         router.push(`/song/${song.id}${window.location.search}`);
-                      }, 260);
+                      }, 150);
                     } else {
                       router.push(`/song/${song.id}${window.location.search}`);
                     }
