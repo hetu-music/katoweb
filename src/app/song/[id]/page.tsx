@@ -85,6 +85,14 @@ function getCoverUrl(song: Song): string {
   }
 }
 
+// type 标签颜色映射，和主页统一，且不与 genre 冲突
+const typeColorMap: Record<string, string> = {
+  '翻唱': 'bg-green-500/20 text-green-300 border-green-400/30',
+  '合作': 'bg-yellow-500/20 text-yellow-300 border-yellow-400/30',
+  '原创': 'bg-purple-500/20 text-purple-300 border-purple-400/30',
+  '商业': 'bg-orange-500/20 text-orange-300 border-orange-400/30',
+};
+
 const SongDetail = () => {
   const params = useParams();
   const id = params.id as string;
@@ -277,7 +285,10 @@ const SongDetail = () => {
                   </span>
                 ))}
                 {(song.type && song.type.length > 0 ? song.type : ['原创']).map((t: string) => (
-                  <span key={t} className="px-3 py-1 text-xs bg-green-500/20 text-green-300 rounded-full border border-green-400/30">
+                  <span
+                    key={t}
+                    className={`px-3 py-1 text-xs rounded-full border ${typeColorMap[t] || 'bg-gray-500/20 text-gray-300 border-gray-400/30'}`}
+                  >
                     {t}
                   </span>
                 ))}

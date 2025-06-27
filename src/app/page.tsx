@@ -70,13 +70,21 @@ function getCoverUrl(song: Song): string {
   }
 }
 
+// type 标签颜色映射
+const typeColorMap: Record<string, string> = {
+  '翻唱': 'bg-green-500/20 text-green-300',
+  '合作': 'bg-yellow-500/20 text-yellow-300',
+  '原创': 'bg-purple-500/20 text-purple-300',
+  '商业': 'bg-orange-500/20 text-orange-300',
+};
+
 const MusicLibrary = () => {
   const router = useRouter();
   const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
 
   // 1. 初始化状态从URL参数读取
   const [searchTerm, setSearchTerm] = useState(() => searchParams?.get('q') || '');
-  const [selectedGenre, setSelectedGenre] = useState(() => searchParams?.get('genre') || '全部');
+  const [selectedType, setSelectedType] = useState(() => searchParams?.get('type') || '全部');
   const [selectedYear, setSelectedYear] = useState(() => searchParams?.get('year') || '全部');
   const [selectedLyricist, setSelectedLyricist] = useState(() => searchParams?.get('lyricist') || '全部');
   const [selectedComposer, setSelectedComposer] = useState(() => searchParams?.get('composer') || '全部');
@@ -93,7 +101,7 @@ const MusicLibrary = () => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
     if (searchTerm) params.set('q', searchTerm); else params.delete('q');
-    if (selectedGenre && selectedGenre !== '全部') params.set('genre', selectedGenre); else params.delete('genre');
+    if (selectedType && selectedType !== '全部') params.set('type', selectedType); else params.delete('type');
     if (selectedYear && selectedYear !== '全部') params.set('year', selectedYear); else params.delete('year');
     if (selectedLyricist && selectedLyricist !== '全部') params.set('lyricist', selectedLyricist); else params.delete('lyricist');
     if (selectedComposer && selectedComposer !== '全部') params.set('composer', selectedComposer); else params.delete('composer');
@@ -102,7 +110,7 @@ const MusicLibrary = () => {
     if (newUrl !== window.location.pathname + window.location.search) {
       window.history.replaceState(null, '', newUrl);
     }
-  }, [searchTerm, selectedGenre, selectedYear, selectedLyricist, selectedComposer, viewMode]);
+  }, [searchTerm, selectedType, selectedYear, selectedLyricist, selectedComposer, viewMode]);
 
   // 3. 滚动位置保存与恢复
   useEffect(() => {
@@ -198,18 +206,18 @@ const MusicLibrary = () => {
 
   // 使用 useMemo 优化筛选选项计算
   const filterOptions = useMemo(() => {
-    // 处理流派
-    const genreSet = new Set<string>();
-    let hasUnknownGenre = false;
+    // 处理类型
+    const typeSet = new Set<string>();
+    let hasUnknownType = false;
     songsData.forEach(song => {
-      if (!song.genre || song.genre.length === 0) {
-        hasUnknownGenre = true;
+      if (!song.type || song.type.length === 0) {
+        hasUnknownType = true;
       } else {
-        song.genre.forEach(g => genreSet.add(g));
+        song.type.forEach(t => typeSet.add(t));
       }
     });
-    const allGenres = ['全部', ...Array.from(genreSet)];
-    if (hasUnknownGenre) allGenres.push('未知');
+    const allTypes = ['全部', ...Array.from(typeSet)];
+    if (hasUnknownType) allTypes.push('未知');
 
     // 处理年份
     const yearSet = new Set<number>();
@@ -250,7 +258,7 @@ const MusicLibrary = () => {
     const allComposers = ['全部', ...Array.from(composerSet)];
     if (hasUnknownComposer) allComposers.push('未知');
 
-    return { allGenres, allYears, allLyricists, allComposers };
+    return { allTypes, allYears, allLyricists, allComposers };
   }, [songsData]);
 
   // 防抖搜索
@@ -273,8 +281,9 @@ const MusicLibrary = () => {
         (song.lyricist && song.lyricist.join(',').toLowerCase().includes(debouncedSearchTerm.toLowerCase())) ||
         (song.composer && song.composer.join(',').toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
 
-      const matchesGenre = selectedGenre === '全部' ||
-        (selectedGenre === '未知' ? (!song.genre || song.genre.length === 0) : (song.genre && song.genre.includes(selectedGenre)));
+      // type 筛选
+      const matchesType = selectedType === '全部' ||
+        (selectedType === '未知' ? (!song.type || song.type.length === 0) : (song.type && song.type.includes(selectedType)));
       const matchesYear = selectedYear === '全部' ||
         (selectedYear === '未知' ? (!song.year) : (song.year && song.year.toString() === selectedYear));
       const matchesLyricist = selectedLyricist === '全部' ||
@@ -282,9 +291,9 @@ const MusicLibrary = () => {
       const matchesComposer = selectedComposer === '全部' ||
         (selectedComposer === '未知' ? (!song.composer || song.composer.length === 0) : (song.composer && song.composer.includes(selectedComposer)));
 
-      return matchesSearch && matchesGenre && matchesYear && matchesLyricist && matchesComposer;
+      return matchesSearch && matchesType && matchesYear && matchesLyricist && matchesComposer;
     });
-  }, [debouncedSearchTerm, selectedGenre, selectedYear, songsData, selectedLyricist, selectedComposer]);
+  }, [debouncedSearchTerm, selectedType, selectedYear, songsData, selectedLyricist, selectedComposer]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
@@ -362,16 +371,16 @@ const MusicLibrary = () => {
               </div>
               {/* 筛选框 */}
               <div className="w-full flex flex-col sm:flex-row gap-3">
-                {/* 流派筛选 */}
+                {/* 类型筛选 */}
                 <div className="flex items-center flex-1 min-w-0">
-                  <span className="h-[48px] flex sm:hidden lg:flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-blue-200 text-base font-semibold rounded-l-2xl select-none tracking-wide w-[120px] min-w-[120px] max-w-[140px]">流派</span>
+                  <span className="h-[48px] flex sm:hidden lg:flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-blue-200 text-base font-semibold rounded-l-2xl select-none tracking-wide w-[120px] min-w-[120px] max-w-[140px]">类型</span>
                   <select
-                    value={selectedGenre}
-                    onChange={(e) => setSelectedGenre(e.target.value)}
+                    value={selectedType}
+                    onChange={(e) => setSelectedType(e.target.value)}
                     className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-l-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px]"
                   >
-                    {filterOptions.allGenres.map(genre => (
-                      <option key={genre} value={genre} className="bg-gray-800 text-white">{genre}</option>
+                    {filterOptions.allTypes.map(type => (
+                      <option key={type} value={type} className="bg-gray-800 text-white">{type}</option>
                     ))}
                   </select>
                 </div>
@@ -471,13 +480,11 @@ const MusicLibrary = () => {
                       <p className="text-gray-300 text-sm truncate">{song.album || '未知'}</p>
                       <p className="text-gray-400 text-xs">{song.year || '未知'} • {song.length ? `${Math.floor(song.length / 60)}:${(song.length % 60).toString().padStart(2, '0')}` : '未知'}</p>
                       <div className="flex flex-wrap gap-1 mt-2">
-                        {(song.genre || []).map((g: string) => (
-                          <span key={g} className="px-2 py-1 text-xs bg-blue-500/20 text-blue-300 rounded-full">
-                            {g}
-                          </span>
-                        ))}
-                        {(song.type && song.type.length > 0 ? song.type : ['原创']).map((t: string) => (
-                          <span key={t} className="px-2 py-1 text-xs bg-green-500/20 text-green-300 rounded-full">
+                        {(song.type || []).map((t: string) => (
+                          <span
+                            key={t}
+                            className={`px-2 py-1 text-xs rounded-full ${typeColorMap[t] || 'bg-gray-500/20 text-gray-300'}`}
+                          >
                             {t}
                           </span>
                         ))}
@@ -542,13 +549,11 @@ const MusicLibrary = () => {
                         {song.composer && song.composer.length > 0 && (
                           <span className="text-gray-300 text-sm truncate">{song.composer[0]}</span>
                         )}
-                        {(song.genre || []).map((g: string) => (
-                          <span key={g} className="px-2 py-1 text-xs bg-blue-500/20 text-blue-300 rounded-full">
-                            {g}
-                          </span>
-                        ))}
-                        {(song.type && song.type.length > 0 ? song.type : ['原创']).map((t: string) => (
-                          <span key={t} className="px-2 py-1 text-xs bg-green-500/20 text-green-300 rounded-full">
+                        {(song.type || []).map((t: string) => (
+                          <span
+                            key={t}
+                            className={`px-2 py-1 text-xs rounded-full ${typeColorMap[t] || 'bg-gray-500/20 text-gray-300'}`}
+                          >
                             {t}
                           </span>
                         ))}
@@ -564,13 +569,11 @@ const MusicLibrary = () => {
                         <span>作词: {(song.lyricist && song.lyricist.length > 0) ? song.lyricist[0] : '未知'}</span>
                         <span>作曲: {(song.composer && song.composer.length > 0) ? song.composer[0] : '未知'}</span>
                         <span>{song.length ? `${Math.floor(song.length / 60)}:${(song.length % 60).toString().padStart(2, '0')}` : '未知'}</span>
-                        {(song.genre || []).map((g: string) => (
-                          <span key={g} className="px-2 py-1 text-xs bg-blue-500/20 text-blue-300 rounded-full">
-                            {g}
-                          </span>
-                        ))}
-                        {(song.type && song.type.length > 0 ? song.type : ['原创']).map((t: string) => (
-                          <span key={t} className="px-2 py-1 text-xs bg-green-500/20 text-green-300 rounded-full">
+                        {(song.type || []).map((t: string) => (
+                          <span
+                            key={t}
+                            className={`px-2 py-1 text-xs rounded-full ${typeColorMap[t] || 'bg-gray-500/20 text-gray-300'}`}
+                          >
                             {t}
                           </span>
                         ))}
