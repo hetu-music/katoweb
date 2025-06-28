@@ -4,50 +4,14 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Search, Grid, List, XCircle, ExternalLink, Mail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-
-type Song = {
-  id: number;
-  title: string;
-  album: string | null;
-  year: number | null;
-  genre: string[] | null;
-  lyricist: string[] | null;
-  composer: string[] | null;
-  artist: string[] | null;
-  length: number | null;
-  hascover?: boolean | null;
-  date?: string | null;
-  type?: string[] | null;
-};
-
-interface MusicLibraryClientProps {
-  initialSongsData: Song[];
-}
-
-// 获取封面url
-function getCoverUrl(song: Song): string {
-  if (song.hascover === true) {
-    return `https://cover.hetu-music.com/${song.id}.jpg`;
-  } else if (song.hascover === false) {
-    return 'https://cover.hetu-music.com/proto.jpg';
-  } else {
-    return 'https://cover.hetu-music.com/default.jpg';
-  }
-}
-
-// type 标签颜色映射
-const typeColorMap: Record<string, string> = {
-  '翻唱': 'bg-green-500/20 text-green-300',
-  '合作': 'bg-yellow-500/20 text-yellow-300',
-  '原创': 'bg-purple-500/20 text-purple-300',
-  '商业': 'bg-orange-500/20 text-orange-300',
-};
+import { MusicLibraryClientProps } from './lib/types';
+import { getCoverUrl, typeColorMap, genreColorMap, calculateFilterOptions, filterSongs } from './lib/utils';
 
 const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsData }) => {
   const router = useRouter();
   const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
 
-  // 1. 状态初始化（与原代码相同，但移除了 loading 和 songsData 状态）
+  // 1. 状态初始化
   const [searchTerm, setSearchTerm] = useState(() => searchParams?.get('q') || '');
   const [selectedType, setSelectedType] = useState(() => searchParams?.get('type') || '全部');
   const [selectedYear, setSelectedYear] = useState(() => searchParams?.get('year') || '全部');
@@ -106,59 +70,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
 
   // 使用 useMemo 优化筛选选项计算
   const filterOptions = useMemo(() => {
-    // 处理类型
-    const typeSet = new Set<string>();
-    let hasUnknownType = false;
-    songsData.forEach(song => {
-      if (!song.type || song.type.length === 0) {
-        hasUnknownType = true;
-      } else {
-        song.type.forEach(t => typeSet.add(t));
-      }
-    });
-    const allTypes = ['全部', ...Array.from(typeSet)];
-    if (hasUnknownType) allTypes.push('未知');
-
-    // 处理年份
-    const yearSet = new Set<number>();
-    let hasUnknownYear = false;
-    songsData.forEach(song => {
-      if (!song.year) {
-        hasUnknownYear = true;
-      } else {
-        yearSet.add(song.year);
-      }
-    });
-    const allYears = ['全部', ...Array.from(yearSet).sort((a, b) => (b as number) - (a as number))];
-    if (hasUnknownYear) allYears.push('未知');
-
-    // 处理作词
-    const lyricistSet = new Set<string>();
-    let hasUnknownLyricist = false;
-    songsData.forEach(song => {
-      if (!song.lyricist || song.lyricist.length === 0) {
-        hasUnknownLyricist = true;
-      } else {
-        song.lyricist.forEach(l => lyricistSet.add(l));
-      }
-    });
-    const allLyricists = ['全部', ...Array.from(lyricistSet)];
-    if (hasUnknownLyricist) allLyricists.push('未知');
-
-    // 处理作曲
-    const composerSet = new Set<string>();
-    let hasUnknownComposer = false;
-    songsData.forEach(song => {
-      if (!song.composer || song.composer.length === 0) {
-        hasUnknownComposer = true;
-      } else {
-        song.composer.forEach(c => composerSet.add(c));
-      }
-    });
-    const allComposers = ['全部', ...Array.from(composerSet)];
-    if (hasUnknownComposer) allComposers.push('未知');
-
-    return { allTypes, allYears, allLyricists, allComposers };
+    return calculateFilterOptions(songsData);
   }, [songsData]);
 
   // 防抖搜索
@@ -173,25 +85,14 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
 
   // 过滤歌曲 - 使用防抖后的搜索词
   const filteredSongs = useMemo(() => {
-    return songsData.filter(song => {
-      const matchesSearch = !debouncedSearchTerm ||
-        song.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-        (song.album && song.album.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) ||
-        (song.lyricist && song.lyricist.join(',').toLowerCase().includes(debouncedSearchTerm.toLowerCase())) ||
-        (song.composer && song.composer.join(',').toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
-
-      // type 筛选
-      const matchesType = selectedType === '全部' ||
-        (selectedType === '未知' ? (!song.type || song.type.length === 0) : (song.type && song.type.includes(selectedType)));
-      const matchesYear = selectedYear === '全部' ||
-        (selectedYear === '未知' ? (!song.year) : (song.year && song.year.toString() === selectedYear));
-      const matchesLyricist = selectedLyricist === '全部' ||
-        (selectedLyricist === '未知' ? (!song.lyricist || song.lyricist.length === 0) : (song.lyricist && song.lyricist.includes(selectedLyricist)));
-      const matchesComposer = selectedComposer === '全部' ||
-        (selectedComposer === '未知' ? (!song.composer || song.composer.length === 0) : (song.composer && song.composer.includes(selectedComposer)));
-
-      return matchesSearch && matchesType && matchesYear && matchesLyricist && matchesComposer;
-    });
+    return filterSongs(
+      songsData,
+      debouncedSearchTerm,
+      selectedType,
+      selectedYear,
+      selectedLyricist,
+      selectedComposer
+    );
   }, [debouncedSearchTerm, selectedType, selectedYear, songsData, selectedLyricist, selectedComposer]);
 
   return (
@@ -433,10 +334,18 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
                       <p className="text-gray-300 text-sm truncate">{song.album || '未知'}</p>
                       <p className="text-gray-400 text-xs">{song.year || '未知'} • {song.length ? `${Math.floor(song.length / 60)}:${(song.length % 60).toString().padStart(2, '0')}` : '未知'}</p>
                       <div className="flex flex-wrap gap-1 mt-2">
+                        {(song.genre || []).map((g: string) => (
+                          <span
+                            key={g}
+                            className={`px-2 py-1 text-xs rounded-full border ${genreColorMap[g] || 'bg-blue-500/20 text-blue-300 border-blue-400/30'}`}
+                          >
+                            {g}
+                          </span>
+                        ))}
                         {(song.type || []).map((t: string) => (
                           <span
                             key={t}
-                            className={`px-2 py-1 text-xs rounded-full ${typeColorMap[t] || 'bg-gray-500/20 text-gray-300'}`}
+                            className={`px-2 py-1 text-xs rounded-full border ${typeColorMap[t] || 'bg-gray-500/20 text-gray-300 border-gray-400/30'}`}
                           >
                             {t}
                           </span>
@@ -493,19 +402,31 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
                   {/* 歌曲信息 */}
                   <div className="flex-1 ml-4">
                     {/* 小屏：精简显示 */}
-                    <div className="flex flex-col gap-1 md:hidden">
-                      <h3 className="text-white font-medium truncate">{song.title}</h3>
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        {song.lyricist && song.lyricist.length > 0 && (
-                          <span className="text-gray-300 text-sm truncate">{song.lyricist[0]}</span>
-                        )}
-                        {song.composer && song.composer.length > 0 && (
-                          <span className="text-gray-300 text-sm truncate">{song.composer[0]}</span>
-                        )}
+                    <div className="flex items-center justify-between md:hidden">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-white font-medium truncate">{song.title}</h3>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {song.lyricist && song.lyricist.length > 0 && (
+                            <span className="text-gray-300 text-sm truncate">{song.lyricist[0]}</span>
+                          )}
+                          {song.composer && song.composer.length > 0 && (
+                            <span className="text-gray-300 text-sm truncate">{song.composer[0]}</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-1 ml-2">
+                        {(song.genre || []).map((g: string) => (
+                          <span
+                            key={g}
+                            className={`px-2 py-1 text-xs rounded-full border ${genreColorMap[g] || 'bg-blue-500/20 text-blue-300 border-blue-400/30'}`}
+                          >
+                            {g}
+                          </span>
+                        ))}
                         {(song.type || []).map((t: string) => (
                           <span
                             key={t}
-                            className={`px-2 py-1 text-xs rounded-full ${typeColorMap[t] || 'bg-gray-500/20 text-gray-300'}`}
+                            className={`px-2 py-1 text-xs rounded-full border ${typeColorMap[t] || 'bg-gray-500/20 text-gray-300 border-gray-400/30'}`}
                           >
                             {t}
                           </span>
@@ -522,14 +443,24 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
                         <span>作词: {(song.lyricist && song.lyricist.length > 0) ? song.lyricist[0] : '未知'}</span>
                         <span>作曲: {(song.composer && song.composer.length > 0) ? song.composer[0] : '未知'}</span>
                         <span>{song.length ? `${Math.floor(song.length / 60)}:${(song.length % 60).toString().padStart(2, '0')}` : '未知'}</span>
-                        {(song.type || []).map((t: string) => (
-                          <span
-                            key={t}
-                            className={`px-2 py-1 text-xs rounded-full ${typeColorMap[t] || 'bg-gray-500/20 text-gray-300'}`}
-                          >
-                            {t}
-                          </span>
-                        ))}
+                        <div className="flex flex-wrap gap-1 ml-4">
+                          {(song.genre || []).map((g: string) => (
+                            <span
+                              key={g}
+                              className={`px-2 py-1 text-xs rounded-full border ${genreColorMap[g] || 'bg-blue-500/20 text-blue-300 border-blue-400/30'}`}
+                            >
+                              {g}
+                            </span>
+                          ))}
+                          {(song.type || []).map((t: string) => (
+                            <span
+                              key={t}
+                              className={`px-2 py-1 text-xs rounded-full border ${typeColorMap[t] || 'bg-gray-500/20 text-gray-300 border-gray-400/30'}`}
+                            >
+                              {t}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>

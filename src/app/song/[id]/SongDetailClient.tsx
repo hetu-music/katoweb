@@ -4,61 +4,8 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
-
-// formatTime 函数
-function formatTime(seconds: number | null) {
-  if (!seconds || isNaN(seconds)) return '未知';
-  const min = Math.floor(seconds / 60);
-  const sec = (seconds % 60).toString().padStart(2, '0');
-  return `${min}:${sec}`;
-}
-
-// Song 类型定义
-type Song = {
-  id: number;
-  title: string;
-  album: string | null;
-  year: number | null;
-  genre: string[] | null;
-  lyricist: string[] | null;
-  composer: string[] | null;
-  artist: string[] | null;
-  length: number | null;
-  hascover?: boolean | null;
-  date?: string | null;
-  albumartist?: string[] | null;
-  arranger?: string[] | null;
-  comment?: string | null;
-  discnumber?: number | null;
-  disctotal?: number | null;
-  lyrics?: string | null;
-  track?: number | null;
-  tracktotal?: number | null;
-  type?: string[] | null;
-};
-
-// getCoverUrl 函数
-function getCoverUrl(song: Song): string {
-  if (song.hascover === true) {
-    return `https://cover.hetu-music.com/${song.id}.jpg`;
-  } else if (song.hascover === false) {
-    return 'https://cover.hetu-music.com/proto.jpg';
-  } else {
-    return 'https://cover.hetu-music.com/default.jpg';
-  }
-}
-
-// typeColorMap
-const typeColorMap: Record<string, string> = {
-  '翻唱': 'bg-green-500/20 text-green-300 border-green-400/30',
-  '合作': 'bg-yellow-500/20 text-yellow-300 border-yellow-400/30',
-  '原创': 'bg-purple-500/20 text-purple-300 border-purple-400/30',
-  '商业': 'bg-orange-500/20 text-orange-300 border-orange-400/30',
-};
-
-interface SongDetailClientProps {
-  song: Song;
-}
+import { SongDetailClientProps } from '../../lib/types';
+import { getCoverUrl, typeColorMap, genreColorMap, calculateSongInfo } from '../../lib/utils';
 
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   // 移除加载和错误状态，因为数据已经在服务端获取
@@ -82,24 +29,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
   // songInfo 计算逻辑
   const songInfo = useMemo(() => {
-    return {
-      creativeInfo: [
-        { label: '作词', value: (song.lyricist && song.lyricist.length > 0) ? song.lyricist.join(', ') : '未知' },
-        { label: '作曲', value: (song.composer && song.composer.length > 0) ? song.composer.join(', ') : '未知' },
-        { label: '编曲', value: (song.arranger && song.arranger.length > 0) ? song.arranger.join(', ') : '未知' },
-        { label: '演唱', value: (song.artist && song.artist.length > 0) ? song.artist.join(', ') : '未知' },
-      ],
-      basicInfo: [
-        { label: '专辑', value: song.album || '未知' },
-        { label: '专辑艺人', value: (song.albumartist && song.albumartist.length > 0) ? song.albumartist.join(', ') : '未知' },
-        { label: '发行日期', value: song.date || '未知' },
-        { label: '时长', value: formatTime(song.length) },
-        { label: '曲号', value: `${song.track || '未知'}/${song.tracktotal || '未知'}` },
-        { label: '碟号', value: `${song.discnumber || '未知'}/${song.disctotal || '未知'}` },
-        { label: '流派', value: (song.genre && song.genre.length > 0) ? song.genre.join(', ') : '未知' },
-        { label: '类型', value: (song.type && song.type.length > 0) ? song.type.join(', ') : '原创' },
-      ]
-    };
+    return calculateSongInfo(song);
   }, [song]);
 
   // 渲染逻辑
@@ -142,7 +72,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
               <h1 className="text-3xl font-bold mb-3 break-words">{song.title}</h1>
               <div className="flex flex-wrap gap-2">
                 {(song.genre || []).map((g: string) => (
-                  <span key={g} className="px-3 py-1 text-xs bg-blue-500/20 text-blue-300 rounded-full border border-blue-400/30">
+                  <span key={g} className={`px-3 py-1 text-xs rounded-full border ${genreColorMap[g] || 'bg-blue-500/20 text-blue-300 border-blue-400/30'}`}>
                     {g}
                   </span>
                 ))}
