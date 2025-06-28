@@ -351,7 +351,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
                   <div className="flex items-center gap-2 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 shadow-sm">
                     <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-indigo-400 rounded-full"></div>
                     <span className="text-white font-medium text-sm">
-                      筛选 <span className="text-purple-200 font-semibold">{filteredSongs.length}</span> 首
+                      已显示 <span className="text-purple-200 font-semibold">{filteredSongs.length}</span> 首
                     </span>
                   </div>
                 </div>

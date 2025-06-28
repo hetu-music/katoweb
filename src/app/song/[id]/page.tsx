@@ -29,12 +29,13 @@ type Song = {
 
 // 服务端数据获取函数
 async function getSong(id: string): Promise<Song | null> {
-  // 在函数内部验证环境变量
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
-  
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('Missing Supabase environment variables');
+
+  // 如果是构建时的占位符，返回空数组
+  if (!supabaseUrl || !supabaseAnonKey ||
+    supabaseUrl === 'placeholder' || supabaseAnonKey === 'placeholder') {
+    console.log('Using placeholder environment variables, returning empty data');
     return null;
   }
 
@@ -72,7 +73,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
   return <SongDetailClient song={song} />;
 }
 
-// 生成静态参数（可选，如果您有固定的歌曲ID列表）
+// 生成静态参数
 export async function generateStaticParams() {
   return [];
 }
