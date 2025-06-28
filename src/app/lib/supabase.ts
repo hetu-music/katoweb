@@ -56,6 +56,11 @@ export async function getSongById(id: number): Promise<SongDetail | null> {
 
   if (error) {
     console.error('Supabase error:', error);
+    // 如果是记录不存在的错误，返回 null 而不是抛出错误
+    if (error.code === 'PGRST116') {
+      return null;
+    }
+    // 其他错误仍然抛出
     throw new Error('Failed to fetch song');
   }
 
