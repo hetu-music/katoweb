@@ -12,8 +12,6 @@ const nextConfig: NextConfig = {
   },
   // 压缩配置
   compress: true,
-  // 生产环境优化
-  swcMinify: true,
 };
 
 export default nextConfig;
