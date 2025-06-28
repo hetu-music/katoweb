@@ -29,10 +29,16 @@ type Song = {
 
 // 服务端数据获取函数
 async function getSong(id: string): Promise<Song | null> {
-  const supabase = createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_ANON_KEY!
-  );
+  // 在函数内部验证环境变量
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+  
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('Missing Supabase environment variables');
+    return null;
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const { data, error } = await supabase
     .from('music')
