@@ -3,14 +3,6 @@ import { createClient } from '@supabase/supabase-js';
 import { notFound } from 'next/navigation';
 import SongDetailClient from './SongDetailClient';
 
-// formatTime 函数保持不变
-function formatTime(seconds: number | null) {
-  if (!seconds || isNaN(seconds)) return '未知';
-  const min = Math.floor(seconds / 60);
-  const sec = (seconds % 60).toString().padStart(2, '0');
-  return `${min}:${sec}`;
-}
-
 // Song 类型定义保持不变
 type Song = {
   id: number;
@@ -76,8 +68,6 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
 
 // 生成静态参数（可选，如果您有固定的歌曲ID列表）
 export async function generateStaticParams() {
-  // 如果您想为所有歌曲生成静态页面，可以在这里返回所有ID
-  // 为了演示，这里返回空数组，表示按需生成
   return [];
 }
 
