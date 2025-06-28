@@ -1,4 +1,3 @@
-// page.tsx - 改为服务端组件，使用 ISR
 import { createClient } from '@supabase/supabase-js';
 import MusicLibraryClient from './MusicLibraryClient';
 
@@ -23,8 +22,11 @@ async function getSongs(): Promise<Song[]> {
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
   
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Missing Supabase environment variables');
+  // 如果是构建时的占位符，返回空数组
+  if (!supabaseUrl || !supabaseAnonKey || 
+      supabaseUrl === 'placeholder' || supabaseAnonKey === 'placeholder') {
+    console.log('Using placeholder environment variables, returning empty data');
+    return [];
   }
 
   const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -94,4 +96,4 @@ export default async function MusicLibraryPage() {
 }
 
 // 启用 ISR - 每30分钟重新生成页面
-export const revalidate = 1800; // 30 minutes
+export const revalidate = 1800;
