@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { notFound } from 'next/navigation';
 import SongDetailClient from './SongDetailClient';
 
-// Song 类型定义保持不变
+// Song 类型定义
 type Song = {
   id: number;
   title: string;
@@ -45,7 +45,7 @@ async function getSong(id: string): Promise<Song | null> {
     return null;
   }
 
-  // 处理数据，与原来的 processedSong 逻辑相同
+  // 处理数据
   return {
     ...data,
     hascover: data.hascover,
