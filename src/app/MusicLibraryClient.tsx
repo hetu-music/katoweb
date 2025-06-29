@@ -186,54 +186,54 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
               {/* 筛选框 */}
               <div className="w-full flex flex-col sm:flex-row gap-3">
                 {/* 类型筛选 */}
-                <div className="flex items-center flex-1 min-w-0">
-                  <span className="h-[48px] flex sm:hidden lg:flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-blue-200 text-base font-semibold rounded-l-2xl select-none tracking-wide w-[120px] min-w-[120px] max-w-[140px]">类型</span>
+                <div className="filter-container">
+                  <span className="filter-label">类型</span>
                   <select
                     value={selectedType}
                     onChange={(e) => setSelectedType(e.target.value)}
-                    className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-l-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px]"
+                    className="filter-select"
                   >
                     {filterOptions.allTypes.map(type => (
-                      <option key={type} value={type} className="bg-gray-800 text-white">{type}</option>
+                      <option key={type} value={type} className="filter-option">{type}</option>
                     ))}
                   </select>
                 </div>
                 {/* 发行日期筛选 */}
-                <div className="flex items-center flex-1 min-w-0">
-                  <span className="h-[48px] flex sm:hidden lg:flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-blue-200 text-base font-semibold rounded-l-2xl select-none tracking-wide w-[120px] min-w-[120px] max-w-[140px]">发行日期</span>
+                <div className="filter-container">
+                  <span className="filter-label">发行日期</span>
                   <select
                     value={selectedYear}
                     onChange={(e) => setSelectedYear(e.target.value)}
-                    className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-l-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px]"
+                    className="filter-select"
                   >
                     {filterOptions.allYears.map(year => (
-                      <option key={year} value={year === null ? '' : year} className="bg-gray-800 text-white">{year}</option>
+                      <option key={year} value={year === null ? '' : year} className="filter-option">{year}</option>
                     ))}
                   </select>
                 </div>
                 {/* 作词筛选 */}
-                <div className="flex items-center flex-1 min-w-0">
-                  <span className="h-[48px] flex sm:hidden lg:flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-blue-200 text-base font-semibold rounded-l-2xl select-none tracking-wide w-[120px] min-w-[120px] max-w-[140px]">作词</span>
+                <div className="filter-container">
+                  <span className="filter-label">作词</span>
                   <select
                     value={selectedLyricist}
                     onChange={(e) => setSelectedLyricist(e.target.value)}
-                    className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-l-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px]"
+                    className="filter-select"
                   >
                     {filterOptions.allLyricists.map(lyricist => (
-                      <option key={lyricist} value={lyricist} className="bg-gray-800 text-white">{lyricist}</option>
+                      <option key={lyricist} value={lyricist} className="filter-option">{lyricist}</option>
                     ))}
                   </select>
                 </div>
                 {/* 作曲筛选 */}
-                <div className="flex items-center flex-1 min-w-0">
-                  <span className="h-[48px] flex sm:hidden lg:flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-blue-200 text-base font-semibold rounded-l-2xl select-none tracking-wide w-[120px] min-w-[120px] max-w-[140px]">作曲</span>
+                <div className="filter-container">
+                  <span className="filter-label">作曲</span>
                   <select
                     value={selectedComposer}
                     onChange={(e) => setSelectedComposer(e.target.value)}
-                    className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-l-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px]"
+                    className="filter-select"
                   >
                     {filterOptions.allComposers.map(composer => (
-                      <option key={composer} value={composer} className="bg-gray-800 text-white">{composer}</option>
+                      <option key={composer} value={composer} className="filter-option">{composer}</option>
                     ))}
                   </select>
                 </div>
