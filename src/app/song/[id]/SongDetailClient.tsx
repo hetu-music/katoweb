@@ -39,12 +39,29 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         {/* 顶部操作栏 */}
         <div className="flex items-center justify-between mb-6">
           <button
-            onClick={() => {
+            onClick={(e) => {
               // 返回主页时带上原有的查询参数
               const search = typeof window !== 'undefined' ? window.location.search : '';
-              router.push('/' + search);
+
+              if (typeof window !== 'undefined' && window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
+                const target = e.currentTarget;
+
+                // 立即添加按下效果
+                target.classList.add('touch-active-pressed');
+
+                // 短暂延迟后开始导航
+                setTimeout(() => {
+                  target.classList.remove('touch-active-pressed');
+                  target.classList.add('touch-navigating');
+
+                  // 立即开始导航，不等待动画完成
+                  router.push('/' + search);
+                }, 180);
+              } else {
+                router.push('/' + search);
+              }
             }}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 shadow-sm touch-active"
           >
             <ArrowLeft size={18} />
             返回主页面
