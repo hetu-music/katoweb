@@ -6,10 +6,10 @@ import { mapAndSortSongs } from './utils';
 export function createSupabaseClient() {
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
-  
+
   // 如果是构建时的占位符，返回null
-  if (!supabaseUrl || !supabaseAnonKey || 
-      supabaseUrl === 'placeholder' || supabaseAnonKey === 'placeholder') {
+  if (!supabaseUrl || !supabaseAnonKey ||
+    supabaseUrl === 'placeholder' || supabaseAnonKey === 'placeholder') {
     console.log('Using placeholder environment variables');
     return null;
   }
@@ -20,7 +20,7 @@ export function createSupabaseClient() {
 // 获取所有歌曲数据
 export async function getSongs(): Promise<Song[]> {
   const supabase = createSupabaseClient();
-  
+
   if (!supabase) {
     console.log('Supabase client not available, returning empty data');
     return [];
@@ -42,7 +42,7 @@ export async function getSongs(): Promise<Song[]> {
 // 根据ID获取歌曲详情
 export async function getSongById(id: number): Promise<SongDetail | null> {
   const supabase = createSupabaseClient();
-  
+
   if (!supabase) {
     console.log('Supabase client not available');
     return null;
@@ -55,16 +55,12 @@ export async function getSongById(id: number): Promise<SongDetail | null> {
     .single();
 
   if (error) {
-    console.error('Supabase error:', error);
-    // 如果是记录不存在的错误，返回 null 而不是抛出错误
-    if (error.code === 'PGRST116') {
-      return null;
-    }
-    // 其他错误仍然抛出
-    throw new Error('Failed to fetch song');
+    console.log('Supabase query failed for id:', id, 'Error:', error);
+    return null;
   }
 
   if (!data) {
+    console.log('No song found for id:', id);
     return null;
   }
 
