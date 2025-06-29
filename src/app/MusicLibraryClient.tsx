@@ -128,6 +128,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
                   </span>
                   提交反馈。
                 </p>
+                <p>特别鸣谢：正版河图吧吧主 @正版河图吧 及众位网友整理的《歌手河图作品发布勘鉴》，为本项目提供了宝贵参考资料。</p>
               </div>
             </div>
           </div>

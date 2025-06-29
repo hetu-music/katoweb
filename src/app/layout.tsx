@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "河图作品勘鉴",
-  description: "Create by hetu-music",
+  description: "河图音乐作品收录与筛选",
 };
 
 export default function RootLayout({
