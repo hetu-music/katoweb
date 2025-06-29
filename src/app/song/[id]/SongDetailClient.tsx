@@ -56,7 +56,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
                   // 立即开始导航，不等待动画完成
                   router.push('/' + search);
-                }, 180);
+                }, 120);
               } else {
                 router.push('/' + search);
               }
