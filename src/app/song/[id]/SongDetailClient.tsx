@@ -8,7 +8,6 @@ import { SongDetailClientProps } from '../../lib/types';
 import { getCoverUrl, typeColorMap, genreColorMap, calculateSongInfo } from '../../lib/utils';
 
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
-  // 移除加载和错误状态，因为数据已经在服务端获取
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [lyricsExpanded, setLyricsExpanded] = useState(true);
   const router = useRouter();
@@ -106,8 +105,8 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
             {/* 创作信息 */}
             <div>
-              <h3 className="font-semibold text-lg text-white/90 mb-3">创作信息</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 rounded-xl bg-white/5 border border-white/10">
+              <h3 className="block-panel-title mb-3">创作信息</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 block-panel-inner">
                 {songInfo?.creativeInfo.map((item, index) => (
                   <div key={index} className="flex items-start">
                     <span className="font-semibold text-blue-300 text-base min-w-[4rem]">{item.label}：</span>
@@ -119,8 +118,8 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
             {/* 基本信息 */}
             <div>
-              <h3 className="font-semibold text-lg text-white/90 mb-3">基本信息</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 rounded-xl bg-white/5 border border-white/10">
+              <h3 className="block-panel-title mb-3">基本信息</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 block-panel-inner">
                 {songInfo?.basicInfo.map((item, index) => (
                   <div key={index} className="flex items-start">
                     <span className="font-semibold text-blue-300 text-base min-w-[6rem]">{item.label}：</span>
@@ -133,13 +132,13 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         </div>
 
         {/* 备注区块 */}
-        <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 text-white/90 border border-white/10 mb-8 shadow-lg">
-          <h3 className="font-semibold mb-3 text-lg text-white flex items-center gap-2">
+        <div className="block-panel mb-8">
+          <h3 className="block-panel-title mb-3">
             备注
           </h3>
           <div className="whitespace-pre-line leading-relaxed">
             {song.comment ? (
-              <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <div className="block-panel-inner">
                 {song.comment}
               </div>
             ) : (
@@ -148,10 +147,53 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
           </div>
         </div>
 
+        {/* 音乐平台链接区块 */}
+        {(song.kugolink || song.qmlink || song.nelink) && (
+          <div className="block-panel mb-8">
+            <h3 className="block-panel-title mb-3">
+              收听平台
+            </h3>
+            <div className="block-panel-inner mb-2 text-center">
+              <div className="flex flex-row flex-wrap sm:flex-row items-center justify-center gap-3 sm:gap-6">
+                {song.kugolink && (
+                  <a
+                    href={song.kugolink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="min-w-[120px] flex justify-center items-center px-6 py-2 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/20 text-white font-semibold shadow-sm hover:from-blue-500/30 hover:to-purple-500/30 transition-all duration-200"
+                  >
+                    酷狗音乐
+                  </a>
+                )}
+                {song.nelink && (
+                  <a
+                    href={song.nelink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="min-w-[120px] flex justify-center items-center px-6 py-2 rounded-full bg-gradient-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-white/20 text-white font-semibold shadow-sm hover:from-red-500/30 hover:to-pink-500/30 transition-all duration-200"
+                  >
+                    网易云音乐
+                  </a>
+                )}
+                {song.qmlink && (
+                  <a
+                    href={song.qmlink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="min-w-[120px] flex justify-center items-center px-6 py-2 rounded-full bg-gradient-to-r from-green-500/20 to-blue-500/20 backdrop-blur-sm border border-white/20 text-white font-semibold shadow-sm hover:from-green-500/30 hover:to-blue-500/30 transition-all duration-200"
+                  >
+                    QQ音乐
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 歌词区块 */}
-        <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 text-white/90 border border-white/10 shadow-lg">
+        <div className="block-panel">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-lg text-white flex items-center gap-2">
+            <h3 className="block-panel-title mb-3">
               歌词
             </h3>
             {song.lyrics && song.lyrics.length > 500 && (
@@ -167,7 +209,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
           <div className="whitespace-pre-line leading-relaxed">
             {song.lyrics ? (
-              <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <div className="block-panel-inner">
                 <div className={`${!lyricsExpanded && song.lyrics.length > 500 ? 'max-h-64 overflow-hidden' : ''} transition-all duration-300`}>
                   {song.lyrics}
                 </div>

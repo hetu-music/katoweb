@@ -44,3 +44,16 @@ body {
 .filter-option {
   @apply bg-gray-800 text-white;
 }
+
+/* 信息界面区块样式 */
+.block-panel {
+  @apply bg-white/5 backdrop-blur-sm rounded-2xl p-6 text-white/90 border border-white/10 shadow-lg;
+}
+
+.block-panel-title {
+  @apply font-semibold text-lg text-white flex items-center gap-2;
+}
+
+.block-panel-inner {
+  @apply p-4 rounded-xl bg-white/5 border border-white/10;
+}

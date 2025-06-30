@@ -165,6 +165,9 @@ export function mapAndSortSongs(data: SongDetail[]): Song[] {
     hascover: song.hascover,
     date: song.date,
     type: song.type,
+    kugolink: song.kugolink ?? null,
+    qmlink: song.qmlink ?? null,
+    nelink: song.nelink ?? null,
   }));
 
   // 排序：有日期的按日期从新到旧，无日期的排在后面并保持原顺序

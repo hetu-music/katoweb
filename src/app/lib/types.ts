@@ -24,6 +24,9 @@ export type SongDetail = Song & {
   lyrics?: string | null;
   track?: number | null;
   tracktotal?: number | null;
+  kugolink?: string | null;
+  qmlink?: string | null;
+  nelink?: string | null;
 };
 
 // 音乐库客户端组件属性
