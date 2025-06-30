@@ -25,6 +25,7 @@ export const typeColorMap: Record<string, string> = {
   '合作': 'bg-yellow-500/20 text-yellow-300 border-yellow-400/30',
   '原创': 'bg-purple-500/20 text-purple-300 border-purple-400/30',
   '商业': 'bg-orange-500/20 text-orange-300 border-orange-400/30',
+  '墨宝': 'bg-red-500/20 text-red-300 border-red-400/30',
 };
 
 // 流派标签颜色映射
