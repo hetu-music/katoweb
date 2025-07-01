@@ -296,27 +296,26 @@ export default function AdminPage() {
               </button>
             </div>
 
-            <form onSubmit={showAdd ? handleAdd : handleEditSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form onSubmit={showAdd ? handleAdd : handleEditSubmit} className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {songFields.map(field => (
-                  <div key={field.key} className={field.type === 'textarea' ? 'md:col-span-2' : ''}>
-                    <label className="block text-white font-medium mb-2">{field.label}:</label>
+                  <div key={field.key} className={(field.type === 'textarea' ? 'md:col-span-2' : '') + ' flex flex-col gap-2 bg-white/5 rounded-xl p-4 border border-white/10 shadow-sm'}>
+                    <label className="block text-blue-100 font-semibold mb-1 text-sm tracking-wide">{field.label}:</label>
                     {renderInput(field, showAdd ? newSong : editForm, showAdd ? setNewSong : setEditForm)}
                   </div>
                 ))}
               </div>
-
-              <div className="flex justify-end gap-4 pt-6 border-t border-white/20">
+              <div className="flex justify-end gap-4 pt-8 border-t border-white/20 mt-4">
                 <button
                   type="button"
                   onClick={() => { setShowAdd(false); setEditSong(null); }}
-                  className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+                  className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 font-medium"
                 >
                   取消
                 </button>
                 <button
                   type="submit"
-                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 text-green-200 hover:from-green-500/30 hover:to-emerald-500/30 hover:text-green-100 transition-all duration-200 font-medium"
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 text-green-200 hover:from-green-500/30 hover:to-emerald-500/30 hover:text-green-100 transition-all duration-200 font-semibold shadow-sm"
                 >
                   <Save size={18} />
                   {showAdd ? '提交' : '保存'}
@@ -405,13 +404,46 @@ function renderInput(f: any, state: any, setState: any) {
   }
   
   if (f.type === 'array') {
+    const arr: string[] = Array.isArray(v) ? v : v ? [v] : [];
     return (
-      <input
-        value={Array.isArray(v) ? v.join(',') : v || ''}
-        onChange={e => setState((s: any) => ({ ...s, [f.key]: e.target.value.split(',').map((x: string) => x.trim()).filter(Boolean) }))}
-        className={baseInputClass}
-        placeholder={`请输入${f.label}，多个用逗号分隔`}
-      />
+      <div className="space-y-2">
+        {arr.length === 0 && (
+          <div className="text-gray-400 text-xs mb-2 pl-1">暂无{f.label}</div>
+        )}
+        {arr.map((item, idx) => (
+          <div key={idx} className="flex items-center gap-2 mb-1 group">
+            <input
+              value={item}
+              onChange={e => {
+                const newArr = [...arr];
+                newArr[idx] = e.target.value;
+                setState((s: any) => ({ ...s, [f.key]: newArr }));
+              }}
+              className={baseInputClass + " flex-1 border-l-4 border-transparent group-hover:border-blue-400 focus:border-blue-400 bg-white/15"}
+              placeholder={`请输入${f.label}`}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const newArr = arr.filter((_, i) => i !== idx);
+                setState((s: any) => ({ ...s, [f.key]: newArr }));
+              }}
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-red-500/20 text-red-200 hover:bg-red-500/60 hover:text-white transition-all duration-200 focus:outline-none"
+              title="删除"
+            >
+              <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 4l8 8M12 4l-8 8"/></svg>
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => setState((s: any) => ({ ...s, [f.key]: [...arr, ''] }))}
+          className="mt-1 flex items-center gap-1 px-3 py-1 rounded-lg bg-blue-500/20 text-blue-200 hover:bg-blue-500/40 hover:text-white transition-all duration-200 text-xs font-medium"
+        >
+          <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M7 2v10M2 7h10"/></svg>
+          添加{f.label}
+        </button>
+      </div>
     );
   }
   
