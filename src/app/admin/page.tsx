@@ -15,7 +15,7 @@ const songFields: { key: keyof SongDetail; label: string; type: 'text'|'number'|
   { key: 'hascover', label: '封面', type: 'boolean' },
   { key: 'date', label: '日期', type: 'date' },
   { key: 'type', label: '类型', type: 'array' },
-  { key: 'albumartist', label: '专辑艺人', type: 'array' },
+  { key: 'albumartist', label: '专辑创作', type: 'array' },
   { key: 'arranger', label: '编曲', type: 'array' },
   { key: 'comment', label: '备注', type: 'textarea' },
   { key: 'discnumber', label: '碟号', type: 'number' },
@@ -85,7 +85,8 @@ export default function AdminPage() {
     e.preventDefault();
     try {
       setLoading(true);
-      const created = await apiCreateSong(newSong);
+      const { year, ...songWithoutYear } = newSong;
+      const created = await apiCreateSong(songWithoutYear);
       setSongs((prev) => [...prev, created]);
       setShowAdd(false);
       setNewSong({ title: "", album: "" });
@@ -106,7 +107,8 @@ export default function AdminPage() {
     if (!editSong) return;
     try {
       setLoading(true);
-      const updated = await apiUpdateSong(editSong.id, editForm);
+      const { year, ...formWithoutYear } = editForm;
+      const updated = await apiUpdateSong(editSong.id, formWithoutYear);
       setSongs((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
       setEditSong(null);
     } catch (e: any) {
