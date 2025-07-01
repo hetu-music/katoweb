@@ -222,7 +222,7 @@ export default function AdminPage() {
       <div className="container mx-auto px-6 py-8 max-w-7xl">
         {/* Header Section */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-6">管理后台</h1>
+          <h1 className="text-4xl font-bold text-white mb-6">管理页面</h1>
           
           {/* Search and Add Button */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
