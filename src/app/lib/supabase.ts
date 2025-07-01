@@ -18,7 +18,7 @@ export function createSupabaseClient() {
 }
 
 // 获取所有歌曲数据
-export async function getSongs(): Promise<Song[]> {
+export async function getSongs(table: string = 'music'): Promise<Song[]> {
   const supabase = createSupabaseClient();
 
   if (!supabase) {
@@ -27,7 +27,7 @@ export async function getSongs(): Promise<Song[]> {
   }
 
   const { data, error } = await supabase
-    .from('music')
+    .from(table)
     .select('*')
     .order('id', { ascending: true });
 
@@ -40,7 +40,7 @@ export async function getSongs(): Promise<Song[]> {
 }
 
 // 根据ID获取歌曲详情
-export async function getSongById(id: number): Promise<SongDetail | null> {
+export async function getSongById(id: number, table: string = 'music'): Promise<SongDetail | null> {
   const supabase = createSupabaseClient();
 
   if (!supabase) {
@@ -49,7 +49,7 @@ export async function getSongById(id: number): Promise<SongDetail | null> {
   }
 
   const { data, error } = await supabase
-    .from('music')
+    .from(table)
     .select('*')
     .eq('id', id)
     .single();
@@ -72,27 +72,27 @@ export async function getSongById(id: number): Promise<SongDetail | null> {
 }
 
 // 新增歌曲
-export async function createSong(song: Partial<Song>): Promise<Song> {
+export async function createSong(song: Partial<Song>, table: string = 'music'): Promise<Song> {
   const supabase = createSupabaseClient();
   if (!supabase) throw new Error('Supabase client not available');
-  const { data, error } = await supabase.from('music').insert([song]).select().single();
+  const { data, error } = await supabase.from(table).insert([song]).select().single();
   if (error) throw new Error(error.message);
   return data as Song;
 }
 
 // 更新歌曲
-export async function updateSong(id: number, song: Partial<Song>): Promise<Song> {
+export async function updateSong(id: number, song: Partial<Song>, table: string = 'music'): Promise<Song> {
   const supabase = createSupabaseClient();
   if (!supabase) throw new Error('Supabase client not available');
-  const { data, error } = await supabase.from('music').update(song).eq('id', id).select().single();
+  const { data, error } = await supabase.from(table).update(song).eq('id', id).select().single();
   if (error) throw new Error(error.message);
   return data as Song;
 }
 
 // 删除歌曲
-export async function deleteSong(id: number): Promise<void> {
+export async function deleteSong(id: number, table: string = 'music'): Promise<void> {
   const supabase = createSupabaseClient();
   if (!supabase) throw new Error('Supabase client not available');
-  const { error } = await supabase.from('music').delete().eq('id', id);
+  const { error } = await supabase.from(table).delete().eq('id', id);
   if (error) throw new Error(error.message);
 }
