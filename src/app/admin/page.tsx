@@ -12,7 +12,7 @@ const songFields: { key: keyof SongDetail; label: string; type: 'text'|'number'|
   { key: 'composer', label: '作曲', type: 'array' },
   { key: 'artist', label: '演唱', type: 'array' },
   { key: 'length', label: '时长(秒)', type: 'number' },
-  { key: 'hascover', label: '有封面', type: 'boolean' },
+  { key: 'hascover', label: '封面', type: 'boolean' },
   { key: 'date', label: '日期', type: 'date' },
   { key: 'type', label: '类型', type: 'array' },
   { key: 'albumartist', label: '专辑艺人', type: 'array' },
