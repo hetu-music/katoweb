@@ -2,6 +2,8 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { Search, Plus, Edit, Trash2, Save, X, Eye, EyeOff, ArrowUp } from "lucide-react";
 import type { Song, SongDetail } from "../lib/types";
+import { createClient } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
 
 // Define song fields configuration
 const songFields: { key: keyof SongDetail; label: string; type: 'text' | 'number' | 'array' | 'boolean' | 'date' | 'textarea' }[] = [
@@ -112,6 +114,20 @@ export default function AdminPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+
+  const router = useRouter();
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+  // Route protection: check user session
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
+        router.replace("/login");
+      }
+    });
+  }, [router]);
 
   // Fetch songs on mount
   useEffect(() => {
