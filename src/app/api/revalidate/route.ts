@@ -6,22 +6,32 @@ export async function POST(request: NextRequest) {
     // 添加安全验证
     const secret = request.nextUrl.searchParams.get('secret');
     if (secret !== process.env.REVALIDATE_SECRET) {
-      return NextResponse.json({ message: 'Invalid secret' }, { status: 401 });
+      return new NextResponse('ERROR: Invalid secret', { 
+        status: 401,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+      });
     }
 
     // 重新验证音乐库页面
     revalidatePath('/');
     
-    return NextResponse.json({ 
-      message: 'Page revalidated successfully',
-      timestamp: new Date().toISOString()
+    const timestamp = new Date().toISOString();
+    
+    const response = `SUCCESS: Home page revalidated at ${timestamp}`;
+    
+    return new NextResponse(response, {
+      status: 200,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' }
     });
   } catch (error) {
     console.error('Revalidation error:', error);
-    return NextResponse.json(
-      { message: 'Error revalidating page' },
-      { status: 500 }
-    );
+    
+    const errorResponse = `ERROR: Revalidation failed - ${error instanceof Error ? error.message : 'Unknown error'}`;
+    
+    return new NextResponse(errorResponse, {
+      status: 500,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+    });
   }
 }
 
@@ -30,30 +40,45 @@ export async function GET(request: NextRequest) {
   try {
     const secret = request.nextUrl.searchParams.get('secret');
     const id = request.nextUrl.searchParams.get('id');
+    
     if (secret !== process.env.REVALIDATE_SECRET) {
-      return NextResponse.json({ message: 'Invalid secret' }, { status: 401 });
-    }
-    if (!id) {
-      return NextResponse.json({ message: 'Missing id parameter' }, { status: 400 });
-    }
-    if (id === 'all') {
-      // 刷新所有歌曲详情页
-      revalidatePath('/song/[id]');
-      return NextResponse.json({
-        message: 'All song detail pages revalidated successfully',
-        timestamp: new Date().toISOString()
+      return new NextResponse('ERROR: Invalid secret', { 
+        status: 401,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
       });
     }
-    revalidatePath(`/song/${id}`);
-    return NextResponse.json({
-      message: `Page /song/${id} revalidated successfully`,
-      timestamp: new Date().toISOString()
+    
+    if (!id) {
+      return new NextResponse('ERROR: Missing id parameter', { 
+        status: 400,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+      });
+    }
+    
+    const timestamp = new Date().toISOString();
+    
+    let response: string;
+    
+    if (id === 'all') {
+      revalidatePath('/song/[id]');
+      response = `SUCCESS: All song pages revalidated at ${timestamp}`;
+    } else {
+      revalidatePath(`/song/${id}`);
+      response = `SUCCESS: Page /song/${id} revalidated at ${timestamp}`;
+    }
+    
+    return new NextResponse(response, {
+      status: 200,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' }
     });
   } catch (error) {
     console.error('Revalidation error:', error);
-    return NextResponse.json(
-      { message: 'Error revalidating page' },
-      { status: 500 }
-    );
+    
+    const errorResponse = `ERROR: Revalidation failed - ${error instanceof Error ? error.message : 'Unknown error'}`;
+    
+    return new NextResponse(errorResponse, {
+      status: 500,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+    });
   }
 }

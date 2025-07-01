@@ -70,3 +70,29 @@ export async function getSongById(id: number): Promise<SongDetail | null> {
     year: data.date ? new Date(data.date).getFullYear() : null,
   } as SongDetail;
 }
+
+// 新增歌曲
+export async function createSong(song: Partial<Song>): Promise<Song> {
+  const supabase = createSupabaseClient();
+  if (!supabase) throw new Error('Supabase client not available');
+  const { data, error } = await supabase.from('music').insert([song]).select().single();
+  if (error) throw new Error(error.message);
+  return data as Song;
+}
+
+// 更新歌曲
+export async function updateSong(id: number, song: Partial<Song>): Promise<Song> {
+  const supabase = createSupabaseClient();
+  if (!supabase) throw new Error('Supabase client not available');
+  const { data, error } = await supabase.from('music').update(song).eq('id', id).select().single();
+  if (error) throw new Error(error.message);
+  return data as Song;
+}
+
+// 删除歌曲
+export async function deleteSong(id: number): Promise<void> {
+  const supabase = createSupabaseClient();
+  if (!supabase) throw new Error('Supabase client not available');
+  const { error } = await supabase.from('music').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+}
