@@ -5,7 +5,7 @@ import { mapAndSortSongs } from './utils';
 // 创建Supabase客户端
 export function createSupabaseClient() {
   const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+  const supabaseAnonKey = process.env.SUPABASE_SECRET_API;
 
   // 如果是构建时的占位符，返回null
   if (!supabaseUrl || !supabaseAnonKey ||

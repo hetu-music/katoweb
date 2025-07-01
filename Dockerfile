@@ -8,7 +8,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 ENV SUPABASE_URL=placeholder
-ENV SUPABASE_ANON_KEY=placeholder
+ENV SUPABASE_SECRET_API=placeholder
 
 COPY . .
 
