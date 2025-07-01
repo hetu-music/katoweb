@@ -1,10 +1,10 @@
 "use client";
-import React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { Search, Plus, Edit, Trash2, Save, X, Eye, EyeOff, ArrowUp } from "lucide-react";
 import type { Song, SongDetail } from "../lib/types";
 
-const songFields: { key: keyof SongDetail; label: string; type: 'text'|'number'|'array'|'boolean'|'date'|'textarea'; }[] = [
+// Define song fields configuration
+const songFields: { key: keyof SongDetail; label: string; type: 'text' | 'number' | 'array' | 'boolean' | 'date' | 'textarea' }[] = [
   { key: 'title', label: '标题', type: 'text' },
   { key: 'album', label: '专辑', type: 'text' },
   { key: 'genre', label: '流派', type: 'array' },
@@ -28,6 +28,79 @@ const songFields: { key: keyof SongDetail; label: string; type: 'text'|'number'|
   { key: 'nelink', label: '网易云链接', type: 'text' },
 ];
 
+// Debounce utility
+function debounce<T extends (...args: any[]) => void>(func: T, wait: number): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+}
+
+// Memoized SongRow component
+const SongRow = React.memo(({ song, idx, expandedRows, toggleRowExpansion, handleEdit, handleDelete }: {
+  song: SongDetail;
+  idx: number;
+  expandedRows: Set<number>;
+  toggleRowExpansion: (id: number) => void;
+  handleEdit: (song: Song) => void;
+  handleDelete: (id: number) => void;
+}) => {
+  return (
+    <>
+      <tr className="border-b border-white/10 hover:bg-white/5 transition-colors">
+        <td className="py-4 px-4 text-white/90">{idx + 1}</td>
+        <td className="py-4 px-4 text-white/90 font-medium">{song.title}</td>
+        <td className="py-4 px-4 text-white/80">{song.album || '-'}</td>
+        <td className="py-4 px-4 text-white/80">{Array.isArray(song.lyricist) ? song.lyricist.join(', ') : (song.lyricist || '-')}</td>
+        <td className="py-4 px-4 text-white/80">{Array.isArray(song.composer) ? song.composer.join(', ') : (song.composer || '-')}</td>
+        <td className="py-4 px-4 text-white/80">{Array.isArray(song.type) ? song.type.join(', ') : (song.type || '-')}</td>
+        <td className="py-4 px-4">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => toggleRowExpansion(song.id)}
+              className="p-2 rounded-lg bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200 transition-all duration-200"
+              title="查看详情"
+            >
+              {expandedRows.has(song.id) ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+            <button
+              onClick={() => handleEdit(song)}
+              className="p-2 rounded-lg bg-green-500/20 text-green-300 hover:bg-green-500/30 hover:text-green-200 transition-all duration-200"
+              title="编辑"
+            >
+              <Edit size={16} />
+            </button>
+            <button
+              onClick={() => handleDelete(song.id)}
+              className="p-2 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 hover:text-red-200 transition-all duration-200"
+              title="删除"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        </td>
+      </tr>
+      {expandedRows.has(song.id) && (
+        <tr>
+          <td colSpan={7} className="py-4 px-4 bg-white/5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {songFields.slice(5).map(field => (
+                <div key={field.key} className="flex flex-col">
+                  <span className="text-blue-300 text-sm font-medium mb-1">{field.label}:</span>
+                  <span className="text-white/80 text-sm break-words">
+                    {formatField(song[field.key], field.type)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </td>
+        </tr>
+      )}
+    </>
+  );
+});
+
 export default function AdminPage() {
   const [songs, setSongs] = useState<SongDetail[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,6 +113,7 @@ export default function AdminPage() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
+  // Fetch songs on mount
   useEffect(() => {
     fetchSongs()
       .then(setSongs)
@@ -47,7 +121,7 @@ export default function AdminPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  // 滚动监听
+  // Scroll listener
   useEffect(() => {
     const onScroll = () => {
       setShowScrollTop(window.scrollY > 200);
@@ -56,38 +130,51 @@ export default function AdminPage() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // 过滤歌曲
-  const filteredSongs = songs.filter(song =>
-    song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    song.album?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (song.lyricist && song.lyricist.some(l => l.toLowerCase().includes(searchTerm.toLowerCase()))) ||
-    (song.composer && song.composer.some(c => c.toLowerCase().includes(searchTerm.toLowerCase())))
+  // Debounced search handler
+  const debouncedSetSearchTerm = useCallback(
+    debounce((value: string) => setSearchTerm(value), 300),
+    []
   );
 
-  const handleDelete = async (id: number) => {
+  // Memoized filtered songs
+  const filteredSongs = useMemo(() => {
+    return songs.filter(song =>
+      song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      song.album?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (song.lyricist && song.lyricist.some(l => l.toLowerCase().includes(searchTerm.toLowerCase()))) ||
+      (song.composer && song.composer.some(c => c.toLowerCase().includes(searchTerm.toLowerCase())))
+    );
+  }, [songs, searchTerm]);
+
+  // Memoized sorted songs
+  const sortedSongs = useMemo(() => {
+    return [...filteredSongs].sort((a, b) => a.id - b.id);
+  }, [filteredSongs]);
+
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const handleDelete = useCallback(async (id: number) => {
     if (!window.confirm("确定要删除这首歌曲吗？")) return;
     try {
       setLoading(true);
       await apiDeleteSong(id);
-      setSongs((prev) => prev.filter((s) => s.id !== id));
+      setSongs(prev => prev.filter(s => s.id !== id));
     } catch (e: any) {
       setError(e.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleAdd = async (e: React.FormEvent) => {
+  const handleAdd = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       setLoading(true);
       const { year, ...songWithoutYear } = newSong;
       const created = await apiCreateSong(songWithoutYear);
-      setSongs((prev) => [...prev, created]);
+      setSongs(prev => [...prev, created]);
       setShowAdd(false);
       setNewSong({ title: "", album: "" });
     } catch (e: any) {
@@ -95,47 +182,49 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [newSong]);
 
-  const handleEdit = (song: Song) => {
+  const handleEdit = useCallback((song: Song) => {
     setEditSong(song);
     setEditForm({ ...song });
-  };
+  }, []);
 
-  const handleEditSubmit = async (e: React.FormEvent) => {
+  const handleEditSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editSong) return;
     try {
       setLoading(true);
       const { year, ...formWithoutYear } = editForm;
       const updated = await apiUpdateSong(editSong.id, formWithoutYear);
-      setSongs((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+      setSongs(prev => prev.map(s => s.id === updated.id ? updated : s));
       setEditSong(null);
     } catch (e: any) {
       setError(e.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [editSong, editForm]);
 
-  const toggleRowExpansion = (id: number) => {
-    const newExpanded = new Set(expandedRows);
-    if (newExpanded.has(id)) {
-      newExpanded.delete(id);
-    } else {
-      newExpanded.add(id);
-    }
-    setExpandedRows(newExpanded);
-  };
+  const toggleRowExpansion = useCallback((id: number) => {
+    setExpandedRows(prev => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(id)) {
+        newExpanded.delete(id);
+      } else {
+        newExpanded.add(id);
+      }
+      return newExpanded;
+    });
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
       <div className="container mx-auto px-6 py-8 max-w-7xl">
-        {/* 头部区域 */}
+        {/* Header Section */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-6">管理后台</h1>
           
-          {/* 搜索和新增按钮 */}
+          {/* Search and Add Button */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="flex-1 flex items-center relative">
               <div className="h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white rounded-l-2xl select-none min-w-[60px] max-w-[60px] w-[60px]">
@@ -144,9 +233,8 @@ export default function AdminPage() {
               <input
                 type="text"
                 placeholder="搜索歌曲、专辑、作词、作曲..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/15 transition-all duration-200 rounded-r-2xl border-l-0 min-w-0"
+                onChange={(e) => debouncedSetSearchTerm(e.target.value)}
+                className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder_MULTI_LINE_COMMENT-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/15 transition-all duration-200 rounded-r-2xl border-l-0 min-w-0"
                 style={{ marginLeft: '-1px' }}
               />
             </div>
@@ -159,7 +247,7 @@ export default function AdminPage() {
             </button>
           </div>
 
-          {/* 统计信息 */}
+          {/* Stats */}
           <div className="flex items-center gap-4 mb-6">
             <div className="flex items-center gap-2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 shadow-sm">
               <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-pulse"></div>
@@ -176,7 +264,7 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* 加载和错误状态 */}
+        {/* Loading and Error States */}
         {loading && (
           <div className="text-center py-8">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
@@ -196,7 +284,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 歌曲表格 */}
+        {/* Songs Table */}
         {!loading && (
           <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 shadow-2xl border border-white/20 overflow-hidden">
             <div className="overflow-x-auto">
@@ -213,59 +301,16 @@ export default function AdminPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {[...filteredSongs].sort((a, b) => a.id - b.id).map((song, idx) => (
-                    <React.Fragment key={song.id}>
-                      <tr className="border-b border-white/10 hover:bg-white/5 transition-colors">
-                        <td className="py-4 px-4 text-white/90">{idx + 1}</td>
-                        <td className="py-4 px-4 text-white/90 font-medium">{song.title}</td>
-                        <td className="py-4 px-4 text-white/80">{song.album || '-'}</td>
-                        <td className="py-4 px-4 text-white/80">{Array.isArray(song.lyricist) ? song.lyricist.join(', ') : (song.lyricist || '-')}</td>
-                        <td className="py-4 px-4 text-white/80">{Array.isArray(song.composer) ? song.composer.join(', ') : (song.composer || '-')}</td>
-                        <td className="py-4 px-4 text-white/80">{Array.isArray(song.type) ? song.type.join(', ') : (song.type || '-')}</td>
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => toggleRowExpansion(song.id)}
-                              className="p-2 rounded-lg bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200 transition-all duration-200"
-                              title="查看详情"
-                            >
-                              {expandedRows.has(song.id) ? <EyeOff size={16} /> : <Eye size={16} />}
-                            </button>
-                            <button
-                              onClick={() => handleEdit(song)}
-                              className="p-2 rounded-lg bg-green-500/20 text-green-300 hover:bg-green-500/30 hover:text-green-200 transition-all duration-200"
-                              title="编辑"
-                            >
-                              <Edit size={16} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(song.id)}
-                              className="p-2 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 hover:text-red-200 transition-all duration-200"
-                              title="删除"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                      {/* 展开的详情行 */}
-                      {expandedRows.has(song.id) && (
-                        <tr>
-                          <td colSpan={7} className="py-4 px-4 bg-white/5">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                              {songFields.slice(5).map(field => (
-                                <div key={field.key} className="flex flex-col">
-                                  <span className="text-blue-300 text-sm font-medium mb-1">{field.label}:</span>
-                                  <span className="text-white/80 text-sm break-words">
-                                    {formatField(song[field.key], field.type)}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
+                  {sortedSongs.map((song, idx) => (
+                    <SongRow
+                      key={song.id}
+                      song={song}
+                      idx={idx}
+                      expandedRows={expandedRows}
+                      toggleRowExpansion={toggleRowExpansion}
+                      handleEdit={handleEdit}
+                      handleDelete={handleDelete}
+                    />
                   ))}
                 </tbody>
               </table>
@@ -273,7 +318,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 无结果提示 */}
+        {/* No Results */}
         {!loading && filteredSongs.length === 0 && (
           <div className="text-center py-16">
             <div className="text-gray-400 text-lg mb-2">没有找到匹配的歌曲</div>
@@ -282,7 +327,7 @@ export default function AdminPage() {
         )}
       </div>
 
-      {/* 新增/编辑表单弹窗 */}
+      {/* Add/Edit Form Modal */}
       {(showAdd || editSong) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="bg-gradient-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-2xl shadow-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
@@ -326,7 +371,7 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* 返回顶部按钮 */}
+      {/* Scroll to Top Button */}
       {showScrollTop && (
         <button
           onClick={scrollToTop}
@@ -340,7 +385,7 @@ export default function AdminPage() {
   );
 }
 
-// API 函数保持不变
+// API Functions
 async function fetchSongs() {
   const res = await fetch("/api/admin-music");
   if (!res.ok) throw new Error("获取歌曲失败");
