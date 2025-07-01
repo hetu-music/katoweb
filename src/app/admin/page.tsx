@@ -204,9 +204,9 @@ export default function AdminPage() {
                     <th className="text-left py-4 px-4 text-white font-semibold">序号</th>
                     <th className="text-left py-4 px-4 text-white font-semibold">标题</th>
                     <th className="text-left py-4 px-4 text-white font-semibold">专辑</th>
-                    <th className="text-left py-4 px-4 text-white font-semibold">年份</th>
-                    <th className="text-left py-4 px-4 text-white font-semibold">流派</th>
                     <th className="text-left py-4 px-4 text-white font-semibold">作词</th>
+                    <th className="text-left py-4 px-4 text-white font-semibold">作曲</th>
+                    <th className="text-left py-4 px-4 text-white font-semibold">类型</th>
                     <th className="text-left py-4 px-4 text-white font-semibold">操作</th>
                   </tr>
                 </thead>
@@ -217,13 +217,9 @@ export default function AdminPage() {
                         <td className="py-4 px-4 text-white/90">{idx + 1}</td>
                         <td className="py-4 px-4 text-white/90 font-medium">{song.title}</td>
                         <td className="py-4 px-4 text-white/80">{song.album || '-'}</td>
-                        <td className="py-4 px-4 text-white/80">{song.year || '-'}</td>
-                        <td className="py-4 px-4 text-white/80">
-                          {Array.isArray(song.genre) ? song.genre.join(', ') : (song.genre || '-')}
-                        </td>
-                        <td className="py-4 px-4 text-white/80">
-                          {Array.isArray(song.lyricist) ? song.lyricist.join(', ') : (song.lyricist || '-')}
-                        </td>
+                        <td className="py-4 px-4 text-white/80">{Array.isArray(song.lyricist) ? song.lyricist.join(', ') : (song.lyricist || '-')}</td>
+                        <td className="py-4 px-4 text-white/80">{Array.isArray(song.composer) ? song.composer.join(', ') : (song.composer || '-')}</td>
+                        <td className="py-4 px-4 text-white/80">{Array.isArray(song.type) ? song.type.join(', ') : (song.type || '-')}</td>
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-2">
                             <button
@@ -424,9 +420,9 @@ function renderInput(f: any, state: any, setState: any) {
         onChange={e => setState((s: any) => ({ ...s, [f.key]: e.target.value === 'true' ? true : e.target.value === 'false' ? false : null }))}
         className={baseInputClass}
       >
-        <option value="">未设置</option>
-        <option value="true">是</option>
-        <option value="false">否</option>
+        <option value="">白底狐狸（默认）</option>
+        <option value="false">初号机（黑底机器人）</option>
+        <option value="true">定制封面</option>
       </select>
     );
   }
