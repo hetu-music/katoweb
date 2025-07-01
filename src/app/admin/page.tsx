@@ -5,6 +5,10 @@ import type { Song, SongDetail } from "../lib/types";
 import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 // Define song fields configuration
 const songFields: { key: keyof SongDetail; label: string; type: 'text' | 'number' | 'array' | 'boolean' | 'date' | 'textarea' }[] = [
   { key: 'title', label: '标题', type: 'text' },
@@ -116,9 +120,6 @@ export default function AdminPage() {
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
   const router = useRouter();
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   // Route protection: check user session
   useEffect(() => {
@@ -403,15 +404,22 @@ export default function AdminPage() {
 
 // API Functions
 async function fetchSongs() {
-  const res = await fetch("/api/admin");
+  const { data: { session } } = await supabase.auth.getSession();
+  const res = await fetch("/api/admin", {
+    headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+  });
   if (!res.ok) throw new Error("获取歌曲失败");
   return res.json();
 }
 
 async function apiCreateSong(song: Partial<Song>) {
+  const { data: { session } } = await supabase.auth.getSession();
   const res = await fetch("/api/admin", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+    },
     body: JSON.stringify(song),
   });
   if (!res.ok) throw new Error("新增失败");
@@ -419,9 +427,13 @@ async function apiCreateSong(song: Partial<Song>) {
 }
 
 async function apiUpdateSong(id: number, song: Partial<Song>) {
+  const { data: { session } } = await supabase.auth.getSession();
   const res = await fetch("/api/admin", {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+    },
     body: JSON.stringify({ id, ...song }),
   });
   if (!res.ok) throw new Error("更新失败");
@@ -429,9 +441,13 @@ async function apiUpdateSong(id: number, song: Partial<Song>) {
 }
 
 async function apiDeleteSong(id: number) {
+  const { data: { session } } = await supabase.auth.getSession();
   const res = await fetch("/api/admin", {
     method: "DELETE",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+    },
     body: JSON.stringify({ id }),
   });
   if (!res.ok) throw new Error("删除失败");
