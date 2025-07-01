@@ -387,13 +387,13 @@ export default function AdminPage() {
 
 // API Functions
 async function fetchSongs() {
-  const res = await fetch("/api/admin-music");
+  const res = await fetch("/api/admin");
   if (!res.ok) throw new Error("获取歌曲失败");
   return res.json();
 }
 
 async function apiCreateSong(song: Partial<Song>) {
-  const res = await fetch("/api/admin-music", {
+  const res = await fetch("/api/admin", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(song),
@@ -403,7 +403,7 @@ async function apiCreateSong(song: Partial<Song>) {
 }
 
 async function apiUpdateSong(id: number, song: Partial<Song>) {
-  const res = await fetch("/api/admin-music", {
+  const res = await fetch("/api/admin", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id, ...song }),
@@ -413,7 +413,7 @@ async function apiUpdateSong(id: number, song: Partial<Song>) {
 }
 
 async function apiDeleteSong(id: number) {
-  const res = await fetch("/api/admin-music", {
+  const res = await fetch("/api/admin", {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id }),
