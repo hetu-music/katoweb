@@ -76,7 +76,7 @@ export async function createSong(song: Partial<Song>, table: string = 'music', a
   const supabase = createSupabaseClient(table, accessToken);
   if (!supabase) throw new Error('Supabase client not available');
   const { data, error } = await supabase.from(table).insert([song]).select().single();
-  if (error) throw new Error(error.message);
+  if (error) throw new Error('Failed to create song');
   return data as Song;
 }
 
@@ -85,14 +85,6 @@ export async function updateSong(id: number, song: Partial<Song>, table: string 
   const supabase = createSupabaseClient(table, accessToken);
   if (!supabase) throw new Error('Supabase client not available');
   const { data, error } = await supabase.from(table).update(song).eq('id', id).select().single();
-  if (error) throw new Error(error.message);
+  if (error) throw new Error('Failed to update song');
   return data as Song;
-}
-
-// 删除歌曲
-export async function deleteSong(id: number, table: string = 'music', accessToken?: string): Promise<void> {
-  const supabase = createSupabaseClient(table, accessToken);
-  if (!supabase) throw new Error('Supabase client not available');
-  const { error } = await supabase.from(table).delete().eq('id', id);
-  if (error) throw new Error(error.message);
 }
