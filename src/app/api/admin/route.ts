@@ -21,15 +21,22 @@ async function getUserFromRequest(request: NextRequest) {
     },
   });
 
+  // 优先用 Authorization header
   const authHeader = request.headers.get('authorization');
+  let token: string | undefined;
   if (authHeader) {
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user } } = await supabase.auth.getUser(token);
-    return user;
+    token = authHeader.replace('Bearer ', '');
+  } else {
+    // 没有 header 时，取 session 里的 access_token
+    const { data: { session } } = await supabase.auth.getSession();
+    token = session?.access_token;
   }
 
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.user ?? null;
+  if (!token) return null;
+
+  // 用 getUser(token) 校验
+  const { data: { user } } = await supabase.auth.getUser(token);
+  return user;
 }
 
 export async function GET(request: NextRequest) {

@@ -4,9 +4,6 @@ import { redirect } from 'next/navigation';
 import AdminClientComponent from './AdminClient';
 import { getSongs } from '../lib/supabase';
 
-console.log('supabaseUrl:', process.env.NEXT_PUBLIC_SUPABASE_URL);
-console.log('supabaseAnonKey:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-
 export default async function AdminPage() {
   const cookieStore = await cookies();
   const supabase = createServerClient(
