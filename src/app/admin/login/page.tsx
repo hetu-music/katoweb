@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 
@@ -12,11 +12,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
-
-  // 登录页加载时初始化 CSRF token
-  useEffect(() => {
-    fetch('/api/auth/csrf', { method: 'GET' });
-  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
