@@ -11,8 +11,8 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
-          // Middleware 通常不需要设置 cookie，这里可以留空或 no-op
+        setAll() {
+          throw new Error('Do not use setAll in middleware.');
         },
       },
     }
@@ -20,8 +20,12 @@ export async function middleware(request: NextRequest) {
 
   const { data: { session } } = await supabase.auth.getSession();
 
-  if (!session && request.nextUrl.pathname.startsWith('/admin') && request.nextUrl.pathname !== '/admin/login') {
-    return NextResponse.redirect(new URL('/admin/login', request.url));
+  // 检查 session 是否过期
+  const now = Math.floor(Date.now() / 1000);
+  if (!session || (session.expires_at && session.expires_at < now)) {
+    if (request.nextUrl.pathname.startsWith('/admin') && request.nextUrl.pathname !== '/admin/login') {
+      return NextResponse.redirect(new URL('/admin/login', request.url));
+    }
   }
 
   return NextResponse.next();

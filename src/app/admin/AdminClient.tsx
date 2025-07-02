@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Search, Plus, Edit, Save, X, Eye, EyeOff, ArrowUp } from 'lucide-react';
 import type { Song, SongDetail } from '../lib/types';
+import { createClient } from '@supabase/supabase-js';
 
 // Define song fields configuration
 const songFields: { key: keyof SongDetail; label: string; type: 'text' | 'number' | 'array' | 'boolean' | 'date' | 'textarea' }[] = [
@@ -92,6 +93,10 @@ const SongRow = React.memo(({ song, idx, expandedRows, toggleRowExpansion, handl
     </>
   );
 });
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function AdminClientComponent({ initialSongs, initialError }: { initialSongs: SongDetail[], initialError: string | null }) {
   const [songs, setSongs] = useState<SongDetail[]>(initialSongs);
@@ -356,10 +361,30 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
 }
 
 // API Functions
+// 获取 CSRF token
+function getCsrfToken() {
+  if (typeof document !== 'undefined') {
+    const match = document.cookie.match(/(?:^|; )csrf_token=([^;]*)/);
+    if (match) return decodeURIComponent(match[1]);
+  }
+  return '';
+}
+// 获取 access_token（假设 supabase-js 已初始化）
+async function getAccessToken() {
+  const { data } = await supabase.auth.getSession();
+  return data.session?.access_token || '';
+}
+
 async function apiCreateSong(song: Partial<Song>) {
+  const csrfToken = getCsrfToken();
+  const accessToken = await getAccessToken();
   const res = await fetch('/api/admin', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}),
+      ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {}),
+    },
     body: JSON.stringify(song),
   });
   if (!res.ok) throw new Error('新增失败');
@@ -367,9 +392,15 @@ async function apiCreateSong(song: Partial<Song>) {
 }
 
 async function apiUpdateSong(id: number, song: Partial<Song>) {
+  const csrfToken = getCsrfToken();
+  const accessToken = await getAccessToken();
   const res = await fetch('/api/admin', {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}),
+      ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {}),
+    },
     body: JSON.stringify({ id, ...song }),
   });
   if (!res.ok) throw new Error('更新失败');

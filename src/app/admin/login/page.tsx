@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 
@@ -13,13 +13,27 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const router = useRouter();
 
+  // 登录页加载时初始化 CSRF token
+  useEffect(() => {
+    fetch('/api/auth/csrf', { method: 'GET' });
+  }, []);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     try {
+      // 读取 CSRF token
+      let csrfToken = '';
+      if (typeof document !== 'undefined') {
+        const match = document.cookie.match(/(?:^|; )csrf_token=([^;]*)/);
+        if (match) csrfToken = decodeURIComponent(match[1]);
+      }
       const res = await fetch('/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}),
+        },
         body: JSON.stringify({ email, password }),
       });
       const result = await res.json();
