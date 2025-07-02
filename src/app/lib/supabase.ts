@@ -88,11 +88,3 @@ export async function updateSong(id: number, song: Partial<Song>, table: string 
   if (error) throw new Error(error.message);
   return data as Song;
 }
-
-// 删除歌曲
-export async function deleteSong(id: number, table: string = 'music', accessToken?: string): Promise<void> {
-  const supabase = createSupabaseClient(table, accessToken);
-  if (!supabase) throw new Error('Supabase client not available');
-  const { error } = await supabase.from(table).delete().eq('id', id);
-  if (error) throw new Error(error.message);
-}

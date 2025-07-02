@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSongs, createSong, updateSong, deleteSong } from '../../lib/supabase';
+import { getSongs, createSong, updateSong, } from '../../lib/supabase';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -54,20 +54,6 @@ export async function PUT(request: NextRequest) {
     if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
     const song = await updateSong(id, data, 'temp', accessToken);
     return NextResponse.json(song);
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
-  }
-}
-
-export async function DELETE(request: NextRequest) {
-  const accessToken = getAccessTokenFromRequest(request);
-  const user = await getUserFromRequest(request);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  try {
-    const { id } = await request.json();
-    if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
-    await deleteSong(id, 'temp', accessToken);
-    return NextResponse.json({ success: true });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
