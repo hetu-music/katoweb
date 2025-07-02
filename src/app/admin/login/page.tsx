@@ -1,29 +1,37 @@
-"use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
+'use client';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (error) {
-      setError(error.message);
-    } else {
-      router.push("/admin");
+    setError('');
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        setError(result.error || '登录失败');
+        return;
+      }
+      router.push('/admin');
+      router.refresh();
+    } catch (err: any) {
+      setError('Unexpected error during login');
+      console.error('Unexpected login error:', err.message);
     }
   };
 
@@ -52,4 +60,4 @@ export default function LoginPage() {
       </form>
     </div>
   );
-} 
+}
