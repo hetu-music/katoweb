@@ -182,21 +182,10 @@ export function generateCSRFToken(): string {
     .map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// 设置 CSRF token 到 cookie
-export async function setCSRFCookie(token: string) {
-  // 依赖 next/headers 的实现
-}
-
 // 获取 cookie 中的 CSRF token
 export async function getCSRFCookie(): Promise<string | undefined> {
   // 依赖 next/headers 的实现
   return undefined;
-}
-
-// 校验 CSRF token
-export async function verifyCSRFToken(request: Request | { headers: Record<string, string> | Headers }): Promise<boolean> {
-  // 依赖 next/headers 的实现
-  return false;
 }
 
 export function getCoverUrl(song: Song | SongDetail): string {
