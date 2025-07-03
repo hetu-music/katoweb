@@ -1,17 +1,6 @@
 import { Song, SongDetail } from './types';
 import { cookies as nextCookies } from 'next/headers';
 
-// 获取封面URL
-export function getCoverUrl(song: Song | SongDetail): string {
-  if (song.hascover === true) {
-    return `https://cover.hetu-music.com/${song.id}.jpg`;
-  } else if (song.hascover === false) {
-    return 'https://cover.hetu-music.com/proto.jpg';
-  } else {
-    return 'https://cover.hetu-music.com/default.jpg';
-  }
-}
-
 const CSRF_COOKIE_NAME = 'csrf-token';
 const CSRF_HEADER_NAME = 'x-csrf-token';
 

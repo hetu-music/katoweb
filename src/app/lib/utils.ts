@@ -200,3 +200,13 @@ export async function verifyCSRFToken(request: any): Promise<boolean> {
   // 依赖 next/headers 的实现
   return false;
 }
+
+export function getCoverUrl(song: Song | SongDetail): string {
+  if (song.hascover === true) {
+    return `https://cover.hetu-music.com/${song.id}.jpg`;
+  } else if (song.hascover === false) {
+    return 'https://cover.hetu-music.com/proto.jpg';
+  } else {
+    return 'https://cover.hetu-music.com/default.jpg';
+  }
+}
