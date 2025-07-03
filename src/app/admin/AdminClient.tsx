@@ -2,19 +2,20 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Search, Plus, Edit, Save, X, Eye, EyeOff, ArrowUp } from 'lucide-react';
 import type { Song, SongDetail } from '../lib/types';
+import { genreColorMap, typeColorMap } from '../lib/utils';
 
 // Define song fields configuration
 const songFields: { key: keyof SongDetail; label: string; type: 'text' | 'number' | 'array' | 'boolean' | 'date' | 'textarea'; required?: boolean; maxLength?: number; minLength?: number; min?: number; isUrl?: boolean; arrayMaxLength?: number; }[] = [
   { key: 'title', label: '标题', type: 'text', required: true, minLength: 1, maxLength: 100 },
   { key: 'album', label: '专辑', type: 'text', maxLength: 100 },
-  { key: 'genre', label: '流派', type: 'array', arrayMaxLength: 30 },
   { key: 'lyricist', label: '作词', type: 'array', arrayMaxLength: 30 },
   { key: 'composer', label: '作曲', type: 'array', arrayMaxLength: 30 },
+  { key: 'type', label: '类型', type: 'array', arrayMaxLength: 30 },
   { key: 'artist', label: '演唱', type: 'array', arrayMaxLength: 30 },
   { key: 'length', label: '时长(秒)', type: 'number', min: 1 },
   { key: 'hascover', label: '封面', type: 'boolean' },
   { key: 'date', label: '日期', type: 'date', maxLength: 30 },
-  { key: 'type', label: '类型', type: 'array', arrayMaxLength: 30 },
+  { key: 'genre', label: '流派', type: 'array', arrayMaxLength: 30 },
   { key: 'albumartist', label: '专辑创作', type: 'array', arrayMaxLength: 30 },
   { key: 'arranger', label: '编曲', type: 'array', arrayMaxLength: 30 },
   { key: 'comment', label: '备注', type: 'textarea', maxLength: 10000 },
@@ -230,7 +231,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
         {/* Header Section */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-6">管理页面</h1>
-          
+
           {/* Search and Add Button */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="flex-1 flex items-center relative">
@@ -282,7 +283,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
         {error && (
           <div className="bg-red-500/20 border border-red-400/30 rounded-xl p-4 mb-6">
             <p className="text-red-200">{error}</p>
-            <button 
+            <button
               onClick={() => setError(null)}
               className="mt-2 text-red-300 hover:text-red-100 text-sm underline"
             >
@@ -480,6 +481,30 @@ function renderInput(f: any, state: any, setState: any, errors: Record<string, s
     setErrors({ ...errors, [f.key]: err });
   };
 
+  if (f.key === 'genre' || f.key === 'type') {
+    const options = f.key === 'genre' ? Object.keys(genreColorMap) : Object.keys(typeColorMap);
+    const arr: string[] = Array.isArray(v) ? v : v ? [v] : [];
+    return (
+      <>
+        <select
+          multiple
+          value={arr}
+          onChange={e => {
+            const selected = Array.from(e.target.selectedOptions).map(opt => opt.value);
+            handleChange(selected);
+          }}
+          className={baseInputClass + ' min-h-[80px]'}
+        >
+          {options.map(opt => (
+            <option key={opt} value={opt}>{opt}</option>
+          ))}
+        </select>
+        <div className="text-xs text-gray-400 mt-1">可多选，按住Ctrl或Cmd点击选择</div>
+        {errorMsg && <div className="text-red-400 text-xs mt-1">{errorMsg}</div>}
+      </>
+    );
+  }
+
   if (f.type === 'textarea') {
     return (
       <>
@@ -525,7 +550,7 @@ function renderInput(f: any, state: any, setState: any, errors: Record<string, s
                 className="w-8 h-8 flex items-center justify-center rounded-full bg-red-500/20 text-red-200 hover:bg-red-500/60 hover:text-white transition-all duration-200 focus:outline-none"
                 title="删除"
               >
-                <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 4l8 8M12 4l-8 8"/></svg>
+                <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 4l8 8M12 4l-8 8" /></svg>
               </button>
             </div>
           ))}
@@ -534,7 +559,7 @@ function renderInput(f: any, state: any, setState: any, errors: Record<string, s
             onClick={() => handleChange([...arr, ''])}
             className="mt-1 flex items-center gap-1 px-3 py-1 rounded-lg bg-blue-500/20 text-blue-200 hover:bg-blue-500/40 hover:text-white transition-all duration-200 text-xs font-medium"
           >
-            <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M7 2v10M2 7h10"/></svg>
+            <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M7 2v10M2 7h10" /></svg>
             添加{f.label}
           </button>
         </div>
