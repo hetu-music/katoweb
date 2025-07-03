@@ -3,6 +3,7 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Search, Plus, Edit, Save, X, Eye, EyeOff, ArrowUp } from 'lucide-react';
 import type { Song, SongDetail } from '../lib/types';
 import { genreColorMap, typeColorMap } from '../lib/utils';
+import { useRouter } from 'next/navigation';
 
 // Define song fields configuration
 const songFields: { key: keyof SongDetail; label: string; type: 'text' | 'number' | 'array' | 'boolean' | 'date' | 'textarea'; required?: boolean; maxLength?: number; minLength?: number; min?: number; isUrl?: boolean; arrayMaxLength?: number; }[] = [
@@ -133,6 +134,8 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
   const [csrfToken, setCsrfToken] = useState('');
   const [editResultMessage, setEditResultMessage] = useState<string | null>(null);
+  const [logoutLoading, setLogoutLoading] = useState(false);
+  const router = useRouter();
 
   // Scroll listener
   React.useEffect(() => {
@@ -260,50 +263,82 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     });
   }, []);
 
+  const handleLogout = async () => {
+    setLogoutLoading(true);
+    try {
+      const csrfRes = await fetch('/api/auth/csrf-token');
+      const csrfData = await csrfRes.json();
+      const res = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-csrf-token': csrfData.csrfToken || '',
+        },
+      });
+      if (res.ok) {
+        router.push('/admin/login');
+        router.refresh();
+      }
+    } finally {
+      setLogoutLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
       <div className="container mx-auto px-6 py-8 max-w-7xl">
         {/* Header Section */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-6">管理页面</h1>
+        <div className="mb-8 flex flex-row items-center justify-between gap-4">
+          <h1 className="text-4xl font-bold text-white flex-1 mb-0">管理页面</h1>
+          <button
+            onClick={handleLogout}
+            disabled={logoutLoading}
+            className="flex items-center gap-2 px-6 py-2 rounded-xl bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-400/30 text-blue-100 hover:from-blue-500/30 hover:to-indigo-500/30 hover:text-white transition-all duration-200 shadow-sm font-medium whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed"
+            style={{ minWidth: 0 }}
+          >
+            {logoutLoading && (
+              <span className="inline-block w-5 h-5 mr-2 align-middle animate-spin border-2 border-white border-t-transparent rounded-full"></span>
+            )}
+            退出登录
+          </button>
+        </div>
 
-          {/* Search and Add Button */}
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="flex-1 flex items-center relative">
-              <div className="h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white rounded-l-2xl select-none min-w-[60px] max-w-[60px] w-[60px]">
-                <Search size={20} />
-              </div>
-              <input
-                type="text"
-                placeholder="搜索歌曲、专辑、作词、作曲..."
-                onChange={(e) => debouncedSetSearchTerm(e.target.value)}
-                className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/15 transition-all duration-200 rounded-r-2xl border-l-0 min-w-0"
-                style={{ marginLeft: '-1px' }}
-              />
+        {/* Search and Add Button */}
+        <div className="flex flex-col md:flex-row gap-4 mb-6">
+          <div className="flex-1 flex items-center relative">
+            <div className="h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white rounded-l-2xl select-none min-w-[60px] max-w-[60px] w-[60px]">
+              <Search size={20} />
             </div>
-            <button
-              onClick={() => setShowAdd(true)}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 text-green-200 hover:from-green-500/30 hover:to-emerald-500/30 hover:text-green-100 transition-all duration-200 shadow-sm font-medium whitespace-nowrap"
-            >
-              <Plus size={20} />
-              新增歌曲
-            </button>
+            <input
+              type="text"
+              placeholder="搜索歌曲、专辑、作词、作曲..."
+              onChange={(e) => debouncedSetSearchTerm(e.target.value)}
+              className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/15 transition-all duration-200 rounded-r-2xl border-l-0 min-w-0"
+              style={{ marginLeft: '-1px' }}
+            />
           </div>
+          <button
+            onClick={() => setShowAdd(true)}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 text-green-200 hover:from-green-500/30 hover:to-emerald-500/30 hover:text-green-100 transition-all duration-200 shadow-sm font-medium whitespace-nowrap"
+          >
+            <Plus size={20} />
+            新增歌曲
+          </button>
+        </div>
 
-          {/* Stats */}
-          <div className="flex items-center gap-4 mb-6">
-            <div className="flex items-center gap-2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 shadow-sm">
-              <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-pulse"></div>
-              <span className="text-white font-medium text-sm">
-                总计 <span className="text-blue-200 font-semibold">{songs.length}</span> 首
-              </span>
-            </div>
-            <div className="flex items-center gap-2 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 shadow-sm">
-              <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-indigo-400 rounded-full"></div>
-              <span className="text-white font-medium text-sm">
-                已显示 <span className="text-purple-200 font-semibold">{filteredSongs.length}</span> 首
-              </span>
-            </div>
+        {/* Stats */}
+        <div className="flex items-center gap-4 mb-6">
+          <div className="flex items-center gap-2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 shadow-sm">
+            <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-pulse"></div>
+            <span className="text-white font-medium text-sm">
+              总计 <span className="text-blue-200 font-semibold">{songs.length}</span> 首
+            </span>
+          </div>
+          <div className="flex items-center gap-2 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 shadow-sm">
+            <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-indigo-400 rounded-full"></div>
+            <span className="text-white font-medium text-sm">
+              已显示 <span className="text-purple-200 font-semibold">{filteredSongs.length}</span> 首
+            </span>
           </div>
         </div>
 

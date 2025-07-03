@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [csrfToken, setCsrfToken] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -24,6 +25,7 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -36,26 +38,31 @@ export default function LoginPage() {
       const result = await res.json();
       if (!res.ok) {
         setError(result.error || '登录失败');
+        setLoading(false);
         return;
       }
       router.push('/admin');
       router.refresh();
     } catch (err: any) {
       setError('Unexpected error during login');
+      setLoading(false);
       console.error('Unexpected login error:', err.message);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <form onSubmit={handleLogin} className="flex flex-col gap-4 w-80 p-8 border rounded shadow">
-        <h2 className="text-2xl font-bold mb-4">登录</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+      <form
+        onSubmit={handleLogin}
+        className="flex flex-col gap-5 w-full max-w-sm p-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl"
+      >
+        <h2 className="text-3xl font-bold mb-2 text-white text-center tracking-wide">后台登录</h2>
         <input
           type="email"
           placeholder="邮箱"
           value={email}
           onChange={e => setEmail(e.target.value)}
-          className="border p-2 rounded"
+          className="h-12 px-4 rounded-xl border border-white/20 bg-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:bg-white/30 transition-all"
           required
         />
         <input
@@ -63,11 +70,20 @@ export default function LoginPage() {
           placeholder="密码"
           value={password}
           onChange={e => setPassword(e.target.value)}
-          className="border p-2 rounded"
+          className="h-12 px-4 rounded-xl border border-white/20 bg-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:bg-white/30 transition-all"
           required
         />
-        {error && <div className="text-red-500">{error}</div>}
-        <button type="submit" className="bg-blue-500 text-white p-2 rounded">登录</button>
+        {error && <div className="text-red-400 text-center text-sm font-medium">{error}</div>}
+        <button
+          type="submit"
+          className="h-12 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-semibold rounded-xl shadow transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+          disabled={loading}
+        >
+          {loading && (
+            <span className="inline-block w-5 h-5 mr-2 align-middle animate-spin border-2 border-white border-t-transparent rounded-full"></span>
+          )}
+          {loading ? '登录中...' : '登录'}
+        </button>
       </form>
     </div>
   );
