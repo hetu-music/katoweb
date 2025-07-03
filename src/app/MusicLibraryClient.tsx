@@ -5,7 +5,7 @@ import { Search, Grid, List, XCircle, ExternalLink, Mail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { MusicLibraryClientProps } from './lib/types';
-import { getCoverUrl, typeColorMap, genreColorMap, calculateFilterOptions, filterSongs } from './lib/utils';
+import { getCoverUrl, typeColorMap, genreColorMap, calculateFilterOptions, filterSongs, mapAndSortSongs } from './lib/utils';
 
 const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsData }) => {
   const router = useRouter();
@@ -85,14 +85,14 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
 
   // 过滤歌曲 - 使用防抖后的搜索词
   const filteredSongs = useMemo(() => {
-    return filterSongs(
+    return mapAndSortSongs(filterSongs(
       songsData,
       debouncedSearchTerm,
       selectedType,
       selectedYear,
       selectedLyricist,
       selectedComposer
-    );
+    ));
   }, [debouncedSearchTerm, selectedType, selectedYear, songsData, selectedLyricist, selectedComposer]);
 
   return (

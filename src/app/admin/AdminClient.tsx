@@ -2,7 +2,7 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Search, Plus, Edit, Save, X, Eye, EyeOff, ArrowUp } from 'lucide-react';
 import type { Song, SongDetail } from '../lib/types';
-import { genreColorMap, typeColorMap } from '../lib/utils';
+import { genreColorMap, typeColorMap, mapAndSortSongs } from '../lib/utils';
 import { useRouter } from 'next/navigation';
 
 // Define song fields configuration
@@ -182,9 +182,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
   }, [songs, searchTerm]);
 
   // Memoized sorted songs
-  const sortedSongs = useMemo(() => {
-    return [...filteredSongs].sort((a, b) => a.id - b.id);
-  }, [filteredSongs]);
+  const sortedSongs = useMemo(() => mapAndSortSongs(filteredSongs), [filteredSongs]);
 
   const scrollToTop = useCallback(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });

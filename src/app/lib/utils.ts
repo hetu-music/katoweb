@@ -140,28 +140,13 @@ export function calculateSongInfo(song: SongDetail): SongInfo {
 }
 
 // 数据映射和排序
-export function mapAndSortSongs(data: SongDetail[]): Song[] {
-  // 数据映射
+export function mapAndSortSongs(data: SongDetail[]): SongDetail[] {
   const mapped = data.map((song) => ({
-    id: song.id,
-    title: song.title,
-    album: song.album,
+    ...song,
     year: song.date ? new Date(song.date).getFullYear() : null,
-    genre: song.genre,
-    lyricist: song.lyricist,
-    composer: song.composer,
-    artist: song.artist,
-    length: song.length,
-    hascover: song.hascover,
-    date: song.date,
-    type: song.type,
-    kugolink: song.kugolink ?? null,
-    qmlink: song.qmlink ?? null,
-    nelink: song.nelink ?? null,
   }));
 
-  // 排序：有日期的按日期从新到旧，无日期的排在后面并保持原顺序
-  return mapped.slice().sort((a: Song, b: Song) => {
+  return mapped.slice().sort((a, b) => {
     if (a.date && b.date) {
       return new Date(b.date).getTime() - new Date(a.date).getTime();
     } else if (a.date && !b.date) {
