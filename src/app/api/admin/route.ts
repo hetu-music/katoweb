@@ -2,9 +2,35 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSongs, createSong, updateSong } from '../../lib/supabase';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { z } from 'zod';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+//类型校验
+const SongSchema = z.object({
+  title: z.string().min(1).max(100),
+  album: z.string().max(100).nullable().optional(),
+  genre: z.array(z.string().max(30)).nullable().optional(),
+  lyricist: z.array(z.string().max(30)).nullable().optional(),
+  composer: z.array(z.string().max(30)).nullable().optional(),
+  artist: z.array(z.string().max(30)).nullable().optional(),
+  length: z.number().int().min(1).nullable().optional(),
+  hascover: z.boolean().nullable().optional(),
+  date: z.string().max(30).nullable().optional(),
+  type: z.array(z.string().max(30)).nullable().optional(),
+  albumartist: z.array(z.string().max(30)).nullable().optional(),
+  arranger: z.array(z.string().max(30)).nullable().optional(),
+  comment: z.string().max(10000).nullable().optional(),
+  discnumber: z.number().int().min(1).nullable().optional(),
+  disctotal: z.number().int().min(1).nullable().optional(),
+  lyrics: z.string().max(10000).nullable().optional(),
+  track: z.number().int().min(1).nullable().optional(),
+  tracktotal: z.number().int().min(1).nullable().optional(),
+  kugolink: z.string().url().max(200).nullable().optional(),
+  qmlink: z.string().url().max(200).nullable().optional(),
+  nelink: z.string().url().max(200).nullable().optional(),
+});
 
 async function getUserFromRequest(request: NextRequest) {
   const cookieStore = await cookies();
@@ -72,6 +98,11 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
+    // 校验 body
+    const parseResult = SongSchema.safeParse(body);
+    if (!parseResult.success) {
+      return NextResponse.json({ error: 'Invalid input', details: parseResult.error.errors }, { status: 400 });
+    }
     const cookieStore = await cookies();
     const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
       cookies: {
@@ -86,7 +117,7 @@ export async function POST(request: NextRequest) {
       },
     });
     const { data: { session } } = await supabase.auth.getSession();
-    const song = await createSong(body, 'temp', session?.access_token);
+    const song = await createSong(parseResult.data, 'temp', session?.access_token);
     return NextResponse.json(song);
   } catch (e: any) {
     console.error('POST song error:', e.message);
@@ -101,7 +132,12 @@ export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
     const { id, ...data } = body;
-    if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
+    if (!id || typeof id !== 'number' || id < 1 || !Number.isInteger(id)) return NextResponse.json({ error: 'Missing or invalid id' }, { status: 400 });
+    // 校验 data
+    const parseResult = SongSchema.safeParse(data);
+    if (!parseResult.success) {
+      return NextResponse.json({ error: 'Invalid input', details: parseResult.error.errors }, { status: 400 });
+    }
     const cookieStore = await cookies();
     const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
       cookies: {
@@ -116,7 +152,7 @@ export async function PUT(request: NextRequest) {
       },
     });
     const { data: { session } } = await supabase.auth.getSession();
-    const song = await updateSong(id, data, 'temp', session?.access_token);
+    const song = await updateSong(id, parseResult.data, 'temp', session?.access_token);
     return NextResponse.json(song);
   } catch (e: any) {
     console.error('PUT song error:', e.message);
