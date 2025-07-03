@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSongs, createSong, updateSong } from '../../lib/supabase';
-import { createServerClient } from '@supabase/ssr';
+import { getSongs, createSong, updateSong, createSupabaseClient } from '../../lib/supabase';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
 import { verifyCSRFToken } from '@/app/lib/utils.server';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 //类型校验
 const SongSchema = z.object({
@@ -35,18 +31,12 @@ const SongSchema = z.object({
 
 async function getUserFromRequest(request: NextRequest) {
   const cookieStore = await cookies();
-  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll();
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          cookieStore.set(name, value, options);
-        });
-      },
-    },
-  });
+  
+  // 使用 supabase.ts 中的函数创建客户端
+  const supabase = createSupabaseClient('temp');
+  if (!supabase) {
+    return null;
+  }
 
   // 优先用 Authorization header
   const authHeader = request.headers.get('authorization');
@@ -79,18 +69,11 @@ export async function GET(request: NextRequest) {
 
   try {
     const cookieStore = await cookies();
-    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options);
-          });
-        },
-      },
-    });
+    const supabase = createSupabaseClient('temp');
+    if (!supabase) {
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
+    
     const { data: { session } } = await supabase.auth.getSession();
     const songs = await getSongs('temp', session?.access_token);
     return NextResponse.json(songs);
@@ -118,19 +101,13 @@ export async function POST(request: NextRequest) {
     if (!parseResult.success) {
       return NextResponse.json({ error: 'Invalid input', details: parseResult.error.errors }, { status: 400 });
     }
+    
     const cookieStore = await cookies();
-    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options);
-          });
-        },
-      },
-    });
+    const supabase = createSupabaseClient('temp');
+    if (!supabase) {
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
+    
     const { data: { session } } = await supabase.auth.getSession();
     const song = await createSong(parseResult.data, 'temp', session?.access_token);
     return NextResponse.json(song);
@@ -160,19 +137,13 @@ export async function PUT(request: NextRequest) {
     if (!parseResult.success) {
       return NextResponse.json({ error: 'Invalid input', details: parseResult.error.errors }, { status: 400 });
     }
+    
     const cookieStore = await cookies();
-    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options);
-          });
-        },
-      },
-    });
+    const supabase = createSupabaseClient('temp');
+    if (!supabase) {
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
+    
     const { data: { session } } = await supabase.auth.getSession();
     const song = await updateSong(id, parseResult.data, 'temp', session?.access_token);
     return NextResponse.json(song);
