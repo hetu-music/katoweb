@@ -43,9 +43,9 @@ const songFields: SongFieldConfig[] = [
 ];
 
 // Debounce utility
-function debounce<T extends (...args: any[]) => void>(func: T, wait: number): (...args: Parameters<T>) => void {
+function debounce<Args extends unknown[]>(func: (...args: Args) => void, wait: number): (...args: Args) => void {
   let timeout: NodeJS.Timeout;
-  return (...args: Parameters<T>) => {
+  return (...args: Args) => {
     clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);
   };
@@ -166,9 +166,9 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
   }, []);
 
   // Debounced search handler
-  const debouncedSetSearchTerm = useCallback(
-    debounce((value: string) => setSearchTerm(value), 300),
-    []
+  const debouncedSetSearchTerm = useMemo(
+    () => debounce((value: string) => setSearchTerm(value), 300),
+    [setSearchTerm]
   );
 
   // Memoized filtered songs
