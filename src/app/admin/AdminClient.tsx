@@ -108,6 +108,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
   const [csrfToken, setCsrfToken] = useState('');
+  const [editResultMessage, setEditResultMessage] = useState<string | null>(null);
 
   // Scroll listener
   React.useEffect(() => {
@@ -201,13 +202,19 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     }
     try {
       setLoading(true);
+      setEditResultMessage(null);
       const { year, ...formWithoutYear } = editForm;
       const updated = await apiUpdateSong(editSong.id, formWithoutYear, csrfToken);
       setSongs(prev => prev.map(s => s.id === updated.id ? updated : s));
-      setEditSong(null);
       setEditFormErrors({});
+      setEditResultMessage('保存成功');
+      // 延迟1秒后关闭弹窗和清空提示
+      setTimeout(() => {
+        setEditSong(null);
+        setEditResultMessage(null);
+      }, 2000);
     } catch (e: any) {
-      setError(e.message);
+      setEditResultMessage(e.message || '保存失败');
     } finally {
       setLoading(false);
     }
@@ -341,7 +348,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white">{showAdd ? '新增' : '编辑'}歌曲</h2>
               <button
-                onClick={() => { setShowAdd(false); setEditSong(null); }}
+                onClick={() => { setShowAdd(false); setEditSong(null); setEditResultMessage(null); }}
                 className="p-2 rounded-lg bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-all duration-200"
               >
                 <X size={20} />
@@ -357,10 +364,27 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
                   </div>
                 ))}
               </div>
-              <div className="flex justify-end gap-4 pt-8 border-t border-white/20 mt-4">
+              <div className="flex items-center justify-end gap-4 pt-8 border-t border-white/20 mt-4">
+                {editSong && editResultMessage && (
+                  <div
+                    className={`mr-4 px-5 py-2 rounded-lg shadow-lg border-2 flex items-center gap-2 text-base font-bold transition-all duration-200
+                      ${editResultMessage === '保存成功'
+                        ? 'bg-green-500/40 text-green-100 border-green-400/80'
+                        : 'bg-red-500/40 text-red-100 border-red-400/80'}
+                    `}
+                    style={{ minWidth: '120px' }}
+                  >
+                    {editResultMessage === '保存成功' ? (
+                      <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#34d399" opacity="0.3"/><path d="M6 10.5l3 3 5-5" stroke="#34d399" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    ) : (
+                      <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#f87171" opacity="0.3"/><path d="M7 7l6 6M13 7l-6 6" stroke="#f87171" strokeWidth="2.2" strokeLinecap="round"/></svg>
+                    )}
+                    <span>{editResultMessage}</span>
+                  </div>
+                )}
                 <button
                   type="button"
-                  onClick={() => { setShowAdd(false); setEditSong(null); }}
+                  onClick={() => { setShowAdd(false); setEditSong(null); setEditResultMessage(null); }}
                   className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 font-medium"
                 >
                   取消
