@@ -6,7 +6,7 @@ import { mapAndSortSongs } from './utils';
 export function createSupabaseClient(table?: string, accessToken?: string) {
   let supabaseUrl: string | undefined;
   let supabaseKey: string | undefined;
-  let options: any = {};
+  const options: { global?: { headers: { Authorization: string } } } = {};
   if (table === 'music') {
     supabaseUrl = process.env.SUPABASE_URL;
     supabaseKey = process.env.SUPABASE_SECRET_API;

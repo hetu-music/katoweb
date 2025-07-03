@@ -1,4 +1,3 @@
-import { Song, SongDetail } from './types';
 import { cookies as nextCookies } from 'next/headers';
 
 const CSRF_COOKIE_NAME = 'csrf-token';
@@ -23,7 +22,7 @@ export async function getCSRFCookie(): Promise<string | undefined> {
 }
 
 // 校验 CSRF token
-export async function verifyCSRFToken(request: any): Promise<boolean> {
+export async function verifyCSRFToken(request: Request | { headers: any }): Promise<boolean> {
   const cookieToken = await getCSRFCookie();
   let headerToken = undefined;
   if (request.headers?.get) {

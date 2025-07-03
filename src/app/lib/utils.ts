@@ -175,8 +175,6 @@ export function mapAndSortSongs(data: SongDetail[]): Song[] {
 }
 
 // CSRF 相关工具
-const CSRF_COOKIE_NAME = 'csrf_token';
-const CSRF_HEADER_NAME = 'x-csrf-token';
 
 // 生成安全的 CSRF token
 export function generateCSRFToken(): string {
@@ -196,7 +194,7 @@ export async function getCSRFCookie(): Promise<string | undefined> {
 }
 
 // 校验 CSRF token
-export async function verifyCSRFToken(request: any): Promise<boolean> {
+export async function verifyCSRFToken(request: Request | { headers: any }): Promise<boolean> {
   // 依赖 next/headers 的实现
   return false;
 }

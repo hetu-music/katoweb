@@ -6,7 +6,19 @@ import { genreColorMap, typeColorMap } from '../lib/utils';
 import { useRouter } from 'next/navigation';
 
 // Define song fields configuration
-const songFields: { key: keyof SongDetail; label: string; type: 'text' | 'number' | 'array' | 'boolean' | 'date' | 'textarea'; required?: boolean; maxLength?: number; minLength?: number; min?: number; isUrl?: boolean; arrayMaxLength?: number; }[] = [
+type SongFieldConfig = {
+  key: keyof SongDetail;
+  label: string;
+  type: 'text' | 'number' | 'array' | 'boolean' | 'date' | 'textarea';
+  required?: boolean;
+  maxLength?: number;
+  minLength?: number;
+  min?: number;
+  isUrl?: boolean;
+  arrayMaxLength?: number;
+};
+
+const songFields: SongFieldConfig[] = [
   { key: 'title', label: '标题', type: 'text', required: true, minLength: 1, maxLength: 100 },
   { key: 'album', label: '专辑', type: 'text', maxLength: 100 },
   { key: 'lyricist', label: '作词', type: 'array', arrayMaxLength: 30 },
@@ -94,16 +106,17 @@ const SongRow = React.memo(({ song, idx, expandedRows, toggleRowExpansion, handl
     </>
   );
 });
+SongRow.displayName = 'SongRow';
 
 // 工具函数：将对象中的空字符串转为 null
-function convertEmptyStringToNull(obj: any): any {
+function convertEmptyStringToNull<T>(obj: T): T {
   if (Array.isArray(obj)) {
-    return obj.map(convertEmptyStringToNull);
+    return obj.map(convertEmptyStringToNull) as T;
   } else if (obj && typeof obj === 'object') {
-    const newObj: any = {};
+    const newObj: Record<string, unknown> = {};
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        const val = obj[key];
+        const val = (obj as Record<string, unknown>)[key];
         if (val === '') {
           newObj[key] = null;
         } else if (Array.isArray(val)) {
@@ -114,7 +127,7 @@ function convertEmptyStringToNull(obj: any): any {
         }
       }
     }
-    return newObj;
+    return newObj as T;
   }
   return obj;
 }
@@ -506,26 +519,26 @@ async function apiUpdateSong(id: number, song: Partial<Song>, csrfToken: string)
   return res.json();
 }
 
-function formatField(val: any, type: string) {
+function formatField(val: unknown, type: SongFieldConfig['type']): string {
   if (val == null) return '-';
-  if (type === 'array') return Array.isArray(val) ? val.join(', ') : val;
+  if (type === 'array') return Array.isArray(val) ? (val as string[]).join(', ') : String(val);
   if (type === 'boolean') return val ? '是' : '否';
   if (type === 'date') return val ? String(val).slice(0, 10) : '-';
   if (type === 'textarea' && typeof val === 'string' && val.length > 50) {
     return val.substring(0, 50) + '...';
   }
-  return val;
+  return String(val);
 }
 
-function validateField(f: any, value: any): string {
+function validateField(f: SongFieldConfig, value: unknown): string {
   if (f.required && (!value || (typeof value === 'string' && value.trim() === ''))) {
     return `${f.label}为必填项`;
   }
-  if (f.type === 'text' || f.type === 'textarea' || f.type === 'date') {
-    if (f.minLength && value && value.length < f.minLength) {
+  if ((f.type === 'text' || f.type === 'textarea' || f.type === 'date') && typeof value === 'string') {
+    if (f.minLength && value.length < f.minLength) {
       return `${f.label}最少${f.minLength}个字符`;
     }
-    if (f.maxLength && value && value.length > f.maxLength) {
+    if (f.maxLength && value.length > f.maxLength) {
       return `${f.label}不能超过${f.maxLength}个字符`;
     }
     if (f.isUrl && value) {
@@ -545,8 +558,8 @@ function validateField(f: any, value: any): string {
   }
   if (f.type === 'number') {
     if (value !== null && value !== undefined && value !== '') {
-      if (isNaN(value)) return `${f.label}必须为数字`;
-      if (f.min !== undefined && value < f.min) {
+      if (typeof value !== 'number' || isNaN(value)) return `${f.label}必须为数字`;
+      if (f.min !== undefined && (value as number) < f.min) {
         return `${f.label}不能小于${f.min}`;
       }
       if (!Number.isInteger(value)) {
@@ -557,13 +570,19 @@ function validateField(f: any, value: any): string {
   return '';
 }
 
-function renderInput(f: any, state: any, setState: any, errors: Record<string, string>, setErrors: (e: Record<string, string>) => void) {
+function renderInput(
+  f: SongFieldConfig,
+  state: Partial<SongDetail>,
+  setState: React.Dispatch<React.SetStateAction<Partial<SongDetail>>>,
+  errors: Record<string, string>,
+  setErrors: (e: Record<string, string>) => void
+) {
   const v = state[f.key];
   const baseInputClass = 'w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/15 transition-all duration-200 rounded-xl';
   const errorMsg = errors[f.key];
 
-  const handleChange = (val: any) => {
-    setState((s: any) => ({ ...s, [f.key]: val }));
+  const handleChange = (val: unknown) => {
+    setState((s) => ({ ...s, [f.key]: val }));
     const err = validateField(f, val);
     setErrors({ ...errors, [f.key]: err });
   };
@@ -571,7 +590,9 @@ function renderInput(f: any, state: any, setState: any, errors: Record<string, s
   if (f.key === 'genre' || f.key === 'type') {
     const options = f.key === 'genre' ? Object.keys(genreColorMap) : Object.keys(typeColorMap);
     const colorMap = f.key === 'genre' ? genreColorMap : typeColorMap;
-    const arr: string[] = Array.isArray(v) ? v : v ? [v] : [];
+    const arr: string[] = Array.isArray(v)
+      ? v.filter((item): item is string => typeof item === 'string')
+      : typeof v === 'string' ? [v] : [];
     return (
       <>
         <div className="flex flex-wrap gap-2">
@@ -603,7 +624,7 @@ function renderInput(f: any, state: any, setState: any, errors: Record<string, s
     return (
       <>
         <textarea
-          value={v || ''}
+          value={typeof v === 'string' ? v : ''}
           onChange={e => handleChange(e.target.value)}
           rows={4}
           className={baseInputClass + ' resize-vertical'}
@@ -615,7 +636,9 @@ function renderInput(f: any, state: any, setState: any, errors: Record<string, s
     );
   }
   if (f.type === 'array') {
-    const arr: string[] = Array.isArray(v) ? v : v ? [v] : [];
+    const arr: string[] = Array.isArray(v)
+      ? v.filter((item): item is string => typeof item === 'string')
+      : typeof v === 'string' ? [v] : [];
     return (
       <>
         <div className="space-y-2">
@@ -625,7 +648,7 @@ function renderInput(f: any, state: any, setState: any, errors: Record<string, s
           {arr.map((item, idx) => (
             <div key={idx} className="flex items-center gap-2 mb-1 group">
               <input
-                value={item}
+                value={typeof item === 'string' ? item : ''}
                 onChange={e => {
                   const newArr = [...arr];
                   newArr[idx] = e.target.value;
@@ -682,7 +705,7 @@ function renderInput(f: any, state: any, setState: any, errors: Record<string, s
       <>
         <input
           type="number"
-          value={v ?? ''}
+          value={typeof v === 'number' && !isNaN(v) ? v : ''}
           onChange={e => handleChange(e.target.value === '' ? null : Number(e.target.value))}
           className={baseInputClass}
           placeholder={`请输入${f.label}`}
@@ -698,7 +721,7 @@ function renderInput(f: any, state: any, setState: any, errors: Record<string, s
       <>
         <input
           type="date"
-          value={v ? String(v).slice(0, 10) : ''}
+          value={typeof v === 'string' ? v.slice(0, 10) : ''}
           onChange={e => handleChange(e.target.value)}
           className={baseInputClass}
           maxLength={f.maxLength}
@@ -710,7 +733,7 @@ function renderInput(f: any, state: any, setState: any, errors: Record<string, s
   return (
     <>
       <input
-        value={v ?? ''}
+        value={typeof v === 'string' ? v : ''}
         onChange={e => handleChange(e.target.value)}
         className={baseInputClass}
         placeholder={`请输入${f.label}`}
