@@ -483,23 +483,30 @@ function renderInput(f: any, state: any, setState: any, errors: Record<string, s
 
   if (f.key === 'genre' || f.key === 'type') {
     const options = f.key === 'genre' ? Object.keys(genreColorMap) : Object.keys(typeColorMap);
+    const colorMap = f.key === 'genre' ? genreColorMap : typeColorMap;
     const arr: string[] = Array.isArray(v) ? v : v ? [v] : [];
     return (
       <>
-        <select
-          multiple
-          value={arr}
-          onChange={e => {
-            const selected = Array.from(e.target.selectedOptions).map(opt => opt.value);
-            handleChange(selected);
-          }}
-          className={baseInputClass + ' min-h-[80px]'}
-        >
-          {options.map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
-        <div className="text-xs text-gray-400 mt-1">可多选，按住Ctrl或Cmd点击选择</div>
+        <div className="flex flex-wrap gap-2">
+          {options.map(opt => {
+            const selected = arr.includes(opt);
+            return (
+              <button
+                key={opt}
+                type="button"
+                className={`px-3 py-1 text-xs rounded-full border transition select-none focus:outline-none ${colorMap[opt]} ${selected ? 'ring-2 ring-blue-400 border-blue-400/80' : 'border-transparent opacity-80'}`}
+                onClick={() => {
+                  const next = selected ? arr.filter(x => x !== opt) : [...arr, opt];
+                  handleChange(next);
+                }}
+              >
+                {opt}
+                {selected && <span className="ml-1">✔</span>}
+              </button>
+            );
+          })}
+        </div>
+        <div className="text-xs text-gray-400 mt-1">可多选，点击标签切换</div>
         {errorMsg && <div className="text-red-400 text-xs mt-1">{errorMsg}</div>}
       </>
     );
