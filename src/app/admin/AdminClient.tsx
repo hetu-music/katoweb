@@ -195,7 +195,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     // 校验所有字段
     const errors: Record<string, string> = {};
     songFields.forEach(f => {
-      errors[f.key] = validateField(f, (newSong as any)[f.key]);
+      errors[f.key] = validateField(f, (newSong as Partial<SongDetail>)[f.key]);
     });
     setAddFormErrors(errors);
     const firstErrorKey = Object.keys(errors).find(k => errors[k]);
@@ -207,7 +207,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     }
     try {
       setLoading(true);
-      const { year, ...songWithoutYear } = newSong;
+      const { /* year, */ ...songWithoutYear } = newSong;
       // 处理空字符串为 null
       const songToSubmit = convertEmptyStringToNull(songWithoutYear);
       const created = await apiCreateSong(songToSubmit, csrfToken);
@@ -215,8 +215,12 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
       setShowAdd(false);
       setNewSong({ title: "", album: "" });
       setAddFormErrors({});
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        setError(e.message);
+      } else {
+        setError('未知错误');
+      }
     } finally {
       setLoading(false);
     }
@@ -233,7 +237,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     // 校验所有字段
     const errors: Record<string, string> = {};
     songFields.forEach(f => {
-      errors[f.key] = validateField(f, (editForm as any)[f.key]);
+      errors[f.key] = validateField(f, (editForm as Partial<SongDetail>)[f.key]);
     });
     setEditFormErrors(errors);
     const firstErrorKey = Object.keys(errors).find(k => errors[k]);
@@ -245,7 +249,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     try {
       setLoading(true);
       setEditResultMessage(null);
-      const { year, ...formWithoutYear } = editForm;
+      const { /* year, */ ...formWithoutYear } = editForm;
       // 处理空字符串为 null
       const formToSubmit = convertEmptyStringToNull(formWithoutYear);
       const updated = await apiUpdateSong(editSong.id, formToSubmit, csrfToken);
@@ -257,8 +261,12 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
         setEditSong(null);
         setEditResultMessage(null);
       }, 2000);
-    } catch (e: any) {
-      setEditResultMessage(e.message || '保存失败');
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        setEditResultMessage(e.message || '保存失败');
+      } else {
+        setEditResultMessage('保存失败');
+      }
     } finally {
       setLoading(false);
     }
