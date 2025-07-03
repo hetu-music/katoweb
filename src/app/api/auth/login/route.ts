@@ -24,10 +24,10 @@ export async function POST(request: NextRequest) {
 
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 401 });
+    return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
   }
   if (!data.session) {
-    return NextResponse.json({ error: 'No session returned after login' }, { status: 401 });
+    return NextResponse.json({ error: 'Login failed' }, { status: 401 });
   }
   // 登录成功，返回 200
   return NextResponse.json({ success: true });

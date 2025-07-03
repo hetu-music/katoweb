@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(songs);
   } catch (e: any) {
     console.error('GET songs error:', e.message);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(song);
   } catch (e: any) {
     console.error('POST song error:', e.message);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -120,6 +120,6 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(song);
   } catch (e: any) {
     console.error('PUT song error:', e.message);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

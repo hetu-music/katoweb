@@ -26,9 +26,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Revalidation error:', error);
     
-    const errorResponse = `ERROR: Revalidation failed - ${error instanceof Error ? error.message : 'Unknown error'}`;
-    
-    return new NextResponse(errorResponse, {
+    return new NextResponse('ERROR: Revalidation failed', {
       status: 500,
       headers: { 'Content-Type': 'text/plain; charset=utf-8' }
     });
@@ -74,9 +72,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Revalidation error:', error);
     
-    const errorResponse = `ERROR: Revalidation failed - ${error instanceof Error ? error.message : 'Unknown error'}`;
-    
-    return new NextResponse(errorResponse, {
+    return new NextResponse('ERROR: Revalidation failed', {
       status: 500,
       headers: { 'Content-Type': 'text/plain; charset=utf-8' }
     });
