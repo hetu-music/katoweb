@@ -51,10 +51,10 @@ const SongRow = React.memo(({ song, idx, expandedRows, toggleRowExpansion, handl
       <tr className="border-b border-white/10 hover:bg-white/5 transition-colors">
         <td className="py-4 px-4 text-white/90">{idx + 1}</td>
         <td className="py-4 px-4 text-white/90 font-medium">{song.title}</td>
-        <td className="py-4 px-4 text-white/80">{song.album || '-'}</td>
-        <td className="py-4 px-4 text-white/80">{Array.isArray(song.lyricist) ? song.lyricist.join(', ') : (song.lyricist || '-')}</td>
-        <td className="py-4 px-4 text-white/80">{Array.isArray(song.composer) ? song.composer.join(', ') : (song.composer || '-')}</td>
-        <td className="py-4 px-4 text-white/80">{Array.isArray(song.type) ? song.type.join(', ') : (song.type || '-')}</td>
+        <td className="py-4 px-4 text-white/80 hidden md:table-cell">{song.album || '-'}</td>
+        <td className="py-4 px-4 text-white/80 hidden md:table-cell">{Array.isArray(song.lyricist) ? song.lyricist.join(', ') : (song.lyricist || '-')}</td>
+        <td className="py-4 px-4 text-white/80 hidden md:table-cell">{Array.isArray(song.composer) ? song.composer.join(', ') : (song.composer || '-')}</td>
+        <td className="py-4 px-4 text-white/80 hidden md:table-cell">{Array.isArray(song.type) ? song.type.join(', ') : (song.type || '-')}</td>
         <td className="py-4 px-4">
           <div className="flex items-center gap-2">
             <button
@@ -78,7 +78,7 @@ const SongRow = React.memo(({ song, idx, expandedRows, toggleRowExpansion, handl
         <tr>
           <td colSpan={7} className="py-4 px-4 bg-white/5">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {songFields.slice(5).map(field => (
+              {songFields.map(field => (
                 <div key={field.key} className="flex flex-col">
                   <span className="text-blue-300 text-sm font-medium mb-1">{field.label}:</span>
                   <span className="text-white/80 text-sm break-words">
@@ -308,10 +308,10 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
                   <tr className="border-b border-white/20">
                     <th className="text-left py-4 px-4 text-white font-semibold">序号</th>
                     <th className="text-left py-4 px-4 text-white font-semibold">标题</th>
-                    <th className="text-left py-4 px-4 text-white font-semibold">专辑</th>
-                    <th className="text-left py-4 px-4 text-white font-semibold">作词</th>
-                    <th className="text-left py-4 px-4 text-white font-semibold">作曲</th>
-                    <th className="text-left py-4 px-4 text-white font-semibold">类型</th>
+                    <th className="text-left py-4 px-4 text-white font-semibold hidden md:table-cell">专辑</th>
+                    <th className="text-left py-4 px-4 text-white font-semibold hidden md:table-cell">作词</th>
+                    <th className="text-left py-4 px-4 text-white font-semibold hidden md:table-cell">作曲</th>
+                    <th className="text-left py-4 px-4 text-white font-semibold hidden md:table-cell">类型</th>
                     <th className="text-left py-4 px-4 text-white font-semibold">操作</th>
                   </tr>
                 </thead>
