@@ -3,7 +3,7 @@ import { getSongs, createSong, updateSong } from '../../lib/supabase';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
-import { verifyCSRFToken } from '@/app/lib/utils';
+import { verifyCSRFToken } from '@/app/lib/utils.server';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;

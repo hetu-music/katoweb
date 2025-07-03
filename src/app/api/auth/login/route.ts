@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { verifyCSRFToken } from '@/app/lib/utils';
+import { verifyCSRFToken } from '@/app/lib/utils.server';
 
 export async function POST(request: NextRequest) {
   if (!(await verifyCSRFToken(request))) {
