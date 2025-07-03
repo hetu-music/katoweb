@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import AdminClientComponent from './AdminClient';
 import { getSongs } from '../lib/supabase';
+import type { Song } from '../lib/types';
 
 export default async function AdminPage() {
   const cookieStore = await cookies();
@@ -30,13 +31,18 @@ export default async function AdminPage() {
     redirect('/admin/login');
   }
 
-  let songs: any[] = [];
+  let songs: Song[] = [];
   let error = null;
   try {
     songs = await getSongs('temp', session.access_token);
-  } catch (e: any) {
-    error = e.message;
-    console.error('Fetch songs error:', e.message);
+  } catch (e: unknown) {
+    if (e && typeof e === 'object' && 'message' in e && typeof (e as Error).message === 'string') {
+      error = (e as Error).message;
+      console.error('Fetch songs error:', (e as Error).message);
+    } else {
+      error = 'Unknown error';
+      console.error('Fetch songs error:', e);
+    }
   }
 
   return <AdminClientComponent initialSongs={songs} initialError={error} />;

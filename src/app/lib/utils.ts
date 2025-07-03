@@ -194,7 +194,7 @@ export async function getCSRFCookie(): Promise<string | undefined> {
 }
 
 // 校验 CSRF token
-export async function verifyCSRFToken(request: Request | { headers: any }): Promise<boolean> {
+export async function verifyCSRFToken(request: Request | { headers: Record<string, string> | Headers }): Promise<boolean> {
   // 依赖 next/headers 的实现
   return false;
 }

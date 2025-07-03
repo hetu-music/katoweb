@@ -94,8 +94,12 @@ export async function GET(request: NextRequest) {
     const { data: { session } } = await supabase.auth.getSession();
     const songs = await getSongs('temp', session?.access_token);
     return NextResponse.json(songs);
-  } catch (e: any) {
-    console.error('GET songs error:', e.message);
+  } catch (e: unknown) {
+    if (e && typeof e === 'object' && 'message' in e && typeof (e as Error).message === 'string') {
+      console.error('GET songs error:', (e as Error).message);
+    } else {
+      console.error('GET songs error:', e);
+    }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -130,8 +134,12 @@ export async function POST(request: NextRequest) {
     const { data: { session } } = await supabase.auth.getSession();
     const song = await createSong(parseResult.data, 'temp', session?.access_token);
     return NextResponse.json(song);
-  } catch (e: any) {
-    console.error('POST song error:', e.message);
+  } catch (e: unknown) {
+    if (e && typeof e === 'object' && 'message' in e && typeof (e as Error).message === 'string') {
+      console.error('POST song error:', (e as Error).message);
+    } else {
+      console.error('POST song error:', e);
+    }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -168,8 +176,12 @@ export async function PUT(request: NextRequest) {
     const { data: { session } } = await supabase.auth.getSession();
     const song = await updateSong(id, parseResult.data, 'temp', session?.access_token);
     return NextResponse.json(song);
-  } catch (e: any) {
-    console.error('PUT song error:', e.message);
+  } catch (e: unknown) {
+    if (e && typeof e === 'object' && 'message' in e && typeof (e as Error).message === 'string') {
+      console.error('PUT song error:', (e as Error).message);
+    } else {
+      console.error('PUT song error:', e);
+    }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

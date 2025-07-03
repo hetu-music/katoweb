@@ -38,10 +38,14 @@ export default function LoginPage() {
       }
       router.push('/admin');
       router.refresh();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError('Unexpected error during login');
       setLoading(false);
-      console.error('Unexpected login error:', err.message);
+      if (err && typeof err === 'object' && 'message' in err && typeof (err as Error).message === 'string') {
+        console.error('Unexpected login error:', (err as Error).message);
+      } else {
+        console.error('Unexpected login error:', err);
+      }
     }
   };
 

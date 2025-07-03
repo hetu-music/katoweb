@@ -22,13 +22,13 @@ export async function getCSRFCookie(): Promise<string | undefined> {
 }
 
 // 校验 CSRF token
-export async function verifyCSRFToken(request: Request | { headers: any }): Promise<boolean> {
+export async function verifyCSRFToken(request: Request | { headers: Record<string, string> | Headers }) : Promise<boolean> {
   const cookieToken = await getCSRFCookie();
   let headerToken = undefined;
-  if (request.headers?.get) {
-    headerToken = request.headers.get(CSRF_HEADER_NAME);
+  if (request.headers && typeof (request.headers as Headers).get === 'function') {
+    headerToken = (request.headers as Headers).get(CSRF_HEADER_NAME);
   } else if (request.headers && typeof request.headers === 'object') {
-    headerToken = request.headers[CSRF_HEADER_NAME];
+    headerToken = (request.headers as Record<string, string>)[CSRF_HEADER_NAME];
   }
   return !!cookieToken && !!headerToken && cookieToken === headerToken;
 } 
