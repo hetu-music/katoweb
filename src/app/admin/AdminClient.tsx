@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Search, Plus, Edit, Save, X, Eye, EyeOff, ArrowUp } from 'lucide-react';
 import type { Song, SongDetail } from '../lib/types';
 
@@ -104,6 +104,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
   const [searchTerm, setSearchTerm] = useState("");
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+  const [csrfToken, setCsrfToken] = useState('');
 
   // Scroll listener
   React.useEffect(() => {
@@ -112,6 +113,12 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     };
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/auth/csrf-token')
+      .then(res => res.json())
+      .then(data => setCsrfToken(data.csrfToken || ''));
   }, []);
 
   // Debounced search handler
@@ -144,7 +151,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     try {
       setLoading(true);
       const { year, ...songWithoutYear } = newSong;
-      const created = await apiCreateSong(songWithoutYear);
+      const created = await apiCreateSong(songWithoutYear, csrfToken);
       setSongs(prev => [...prev, created]);
       setShowAdd(false);
       setNewSong({ title: "", album: "" });
@@ -153,7 +160,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     } finally {
       setLoading(false);
     }
-  }, [newSong]);
+  }, [newSong, csrfToken]);
 
   const handleEdit = useCallback((song: Song) => {
     setEditSong(song);
@@ -166,7 +173,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     try {
       setLoading(true);
       const { year, ...formWithoutYear } = editForm;
-      const updated = await apiUpdateSong(editSong.id, formWithoutYear);
+      const updated = await apiUpdateSong(editSong.id, formWithoutYear, csrfToken);
       setSongs(prev => prev.map(s => s.id === updated.id ? updated : s));
       setEditSong(null);
     } catch (e: any) {
@@ -174,7 +181,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     } finally {
       setLoading(false);
     }
-  }, [editSong, editForm]);
+  }, [editSong, editForm, csrfToken]);
 
   const toggleRowExpansion = useCallback((id: number) => {
     setExpandedRows(prev => {
@@ -356,20 +363,26 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
 }
 
 // API Functions
-async function apiCreateSong(song: Partial<Song>) {
+async function apiCreateSong(song: Partial<Song>, csrfToken: string) {
   const res = await fetch('/api/admin', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-csrf-token': csrfToken,
+    },
     body: JSON.stringify(song),
   });
   if (!res.ok) throw new Error('新增失败');
   return res.json();
 }
 
-async function apiUpdateSong(id: number, song: Partial<Song>) {
+async function apiUpdateSong(id: number, song: Partial<Song>, csrfToken: string) {
   const res = await fetch('/api/admin', {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-csrf-token': csrfToken,
+    },
     body: JSON.stringify({ id, ...song }),
   });
   if (!res.ok) throw new Error('更新失败');

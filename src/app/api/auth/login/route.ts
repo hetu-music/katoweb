@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { verifyCSRFToken } from '@/app/lib/utils';
 
 export async function POST(request: NextRequest) {
+  if (!(await verifyCSRFToken(request))) {
+    return NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 });
+  }
   const { email, password } = await request.json();
   const cookieStore = await cookies();
   const supabase = createServerClient(

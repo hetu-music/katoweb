@@ -3,6 +3,7 @@ import { getSongs, createSong, updateSong } from '../../lib/supabase';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
+import { verifyCSRFToken } from '@/app/lib/utils';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -100,6 +101,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  if (!(await verifyCSRFToken(request))) {
+    return NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 });
+  }
   const user = await getUserFromRequest(request);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -133,6 +137,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  if (!(await verifyCSRFToken(request))) {
+    return NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 });
+  }
   const user = await getUserFromRequest(request);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
