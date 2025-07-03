@@ -4,28 +4,28 @@ import { Search, Plus, Edit, Save, X, Eye, EyeOff, ArrowUp } from 'lucide-react'
 import type { Song, SongDetail } from '../lib/types';
 
 // Define song fields configuration
-const songFields: { key: keyof SongDetail; label: string; type: 'text' | 'number' | 'array' | 'boolean' | 'date' | 'textarea' }[] = [
-  { key: 'title', label: '标题', type: 'text' },
-  { key: 'album', label: '专辑', type: 'text' },
-  { key: 'genre', label: '流派', type: 'array' },
-  { key: 'lyricist', label: '作词', type: 'array' },
-  { key: 'composer', label: '作曲', type: 'array' },
-  { key: 'artist', label: '演唱', type: 'array' },
-  { key: 'length', label: '时长(秒)', type: 'number' },
+const songFields: { key: keyof SongDetail; label: string; type: 'text' | 'number' | 'array' | 'boolean' | 'date' | 'textarea'; required?: boolean; maxLength?: number; minLength?: number; min?: number; isUrl?: boolean; arrayMaxLength?: number; }[] = [
+  { key: 'title', label: '标题', type: 'text', required: true, minLength: 1, maxLength: 100 },
+  { key: 'album', label: '专辑', type: 'text', maxLength: 100 },
+  { key: 'genre', label: '流派', type: 'array', arrayMaxLength: 30 },
+  { key: 'lyricist', label: '作词', type: 'array', arrayMaxLength: 30 },
+  { key: 'composer', label: '作曲', type: 'array', arrayMaxLength: 30 },
+  { key: 'artist', label: '演唱', type: 'array', arrayMaxLength: 30 },
+  { key: 'length', label: '时长(秒)', type: 'number', min: 1 },
   { key: 'hascover', label: '封面', type: 'boolean' },
-  { key: 'date', label: '日期', type: 'date' },
-  { key: 'type', label: '类型', type: 'array' },
-  { key: 'albumartist', label: '专辑创作', type: 'array' },
-  { key: 'arranger', label: '编曲', type: 'array' },
-  { key: 'comment', label: '备注', type: 'textarea' },
-  { key: 'discnumber', label: '碟号', type: 'number' },
-  { key: 'disctotal', label: '碟总数', type: 'number' },
-  { key: 'lyrics', label: '歌词', type: 'textarea' },
-  { key: 'track', label: '曲号', type: 'number' },
-  { key: 'tracktotal', label: '曲总数', type: 'number' },
-  { key: 'kugolink', label: '酷狗链接', type: 'text' },
-  { key: 'qmlink', label: 'QQ音乐链接', type: 'text' },
-  { key: 'nelink', label: '网易云链接', type: 'text' },
+  { key: 'date', label: '日期', type: 'date', maxLength: 30 },
+  { key: 'type', label: '类型', type: 'array', arrayMaxLength: 30 },
+  { key: 'albumartist', label: '专辑创作', type: 'array', arrayMaxLength: 30 },
+  { key: 'arranger', label: '编曲', type: 'array', arrayMaxLength: 30 },
+  { key: 'comment', label: '备注', type: 'textarea', maxLength: 10000 },
+  { key: 'discnumber', label: '碟号', type: 'number', min: 1 },
+  { key: 'disctotal', label: '碟总数', type: 'number', min: 1 },
+  { key: 'lyrics', label: '歌词', type: 'textarea', maxLength: 10000 },
+  { key: 'track', label: '曲号', type: 'number', min: 1 },
+  { key: 'tracktotal', label: '曲总数', type: 'number', min: 1 },
+  { key: 'kugolink', label: '酷狗链接', type: 'text', maxLength: 200, isUrl: true },
+  { key: 'qmlink', label: 'QQ音乐链接', type: 'text', maxLength: 200, isUrl: true },
+  { key: 'nelink', label: '网易云链接', type: 'text', maxLength: 200, isUrl: true },
 ];
 
 // Debounce utility
@@ -99,8 +99,10 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
   const [error, setError] = useState<string | null>(initialError);
   const [showAdd, setShowAdd] = useState(false);
   const [newSong, setNewSong] = useState<Partial<Song>>({ title: "", album: "" });
+  const [addFormErrors, setAddFormErrors] = useState<Record<string, string>>({});
   const [editSong, setEditSong] = useState<SongDetail | null>(null);
   const [editForm, setEditForm] = useState<Partial<Song>>({});
+  const [editFormErrors, setEditFormErrors] = useState<Record<string, string>>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
@@ -148,6 +150,19 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
 
   const handleAdd = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
+    // 校验所有字段
+    const errors: Record<string, string> = {};
+    songFields.forEach(f => {
+      errors[f.key] = validateField(f, (newSong as any)[f.key]);
+    });
+    setAddFormErrors(errors);
+    const firstErrorKey = Object.keys(errors).find(k => errors[k]);
+    if (firstErrorKey) {
+      // 尝试聚焦第一个有错的字段
+      const el = document.querySelector(`[name='${firstErrorKey}']`);
+      if (el && 'focus' in el) (el as HTMLElement).focus();
+      return;
+    }
     try {
       setLoading(true);
       const { year, ...songWithoutYear } = newSong;
@@ -155,6 +170,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
       setSongs(prev => [...prev, created]);
       setShowAdd(false);
       setNewSong({ title: "", album: "" });
+      setAddFormErrors({});
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -170,12 +186,25 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
   const handleEditSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editSong) return;
+    // 校验所有字段
+    const errors: Record<string, string> = {};
+    songFields.forEach(f => {
+      errors[f.key] = validateField(f, (editForm as any)[f.key]);
+    });
+    setEditFormErrors(errors);
+    const firstErrorKey = Object.keys(errors).find(k => errors[k]);
+    if (firstErrorKey) {
+      const el = document.querySelector(`[name='${firstErrorKey}']`);
+      if (el && 'focus' in el) (el as HTMLElement).focus();
+      return;
+    }
     try {
       setLoading(true);
       const { year, ...formWithoutYear } = editForm;
       const updated = await apiUpdateSong(editSong.id, formWithoutYear, csrfToken);
       setSongs(prev => prev.map(s => s.id === updated.id ? updated : s));
       setEditSong(null);
+      setEditFormErrors({});
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -323,7 +352,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
                 {songFields.map(field => (
                   <div key={field.key} className={(field.type === 'textarea' ? 'md:col-span-2' : '') + ' flex flex-col gap-2 bg-white/5 rounded-xl p-4 border border-white/10 shadow-sm'}>
                     <label className="block text-blue-100 font-semibold mb-1 text-sm tracking-wide">{field.label}:</label>
-                    {renderInput(field, showAdd ? newSong : editForm, showAdd ? setNewSong : setEditForm)}
+                    {renderInput(field, showAdd ? newSong : editForm, showAdd ? setNewSong : setEditForm, showAdd ? addFormErrors : editFormErrors, showAdd ? setAddFormErrors : setEditFormErrors)}
                   </div>
                 ))}
               </div>
@@ -400,109 +429,176 @@ function formatField(val: any, type: string) {
   return val;
 }
 
-function renderInput(f: any, state: any, setState: any) {
+function validateField(f: any, value: any): string {
+  if (f.required && (!value || (typeof value === 'string' && value.trim() === ''))) {
+    return `${f.label}为必填项`;
+  }
+  if (f.type === 'text' || f.type === 'textarea' || f.type === 'date') {
+    if (f.minLength && value && value.length < f.minLength) {
+      return `${f.label}最少${f.minLength}个字符`;
+    }
+    if (f.maxLength && value && value.length > f.maxLength) {
+      return `${f.label}不能超过${f.maxLength}个字符`;
+    }
+    if (f.isUrl && value) {
+      try {
+        new URL(value);
+      } catch {
+        return `${f.label}必须为合法的URL`;
+      }
+    }
+  }
+  if (f.type === 'array' && Array.isArray(value)) {
+    for (let i = 0; i < value.length; i++) {
+      if (f.arrayMaxLength && value[i] && value[i].length > f.arrayMaxLength) {
+        return `${f.label}第${i + 1}项不能超过${f.arrayMaxLength}个字符`;
+      }
+    }
+  }
+  if (f.type === 'number') {
+    if (value !== null && value !== undefined && value !== '') {
+      if (isNaN(value)) return `${f.label}必须为数字`;
+      if (f.min !== undefined && value < f.min) {
+        return `${f.label}不能小于${f.min}`;
+      }
+      if (!Number.isInteger(value)) {
+        return `${f.label}必须为整数`;
+      }
+    }
+  }
+  return '';
+}
+
+function renderInput(f: any, state: any, setState: any, errors: Record<string, string>, setErrors: (e: Record<string, string>) => void) {
   const v = state[f.key];
   const baseInputClass = 'w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/15 transition-all duration-200 rounded-xl';
-  
+  const errorMsg = errors[f.key];
+
+  const handleChange = (val: any) => {
+    setState((s: any) => ({ ...s, [f.key]: val }));
+    const err = validateField(f, val);
+    setErrors({ ...errors, [f.key]: err });
+  };
+
   if (f.type === 'textarea') {
     return (
-      <textarea
-        value={v || ''}
-        onChange={e => setState((s: any) => ({ ...s, [f.key]: e.target.value }))}
-        rows={4}
-        className={baseInputClass + ' resize-vertical'}
-        placeholder={`请输入${f.label}`}
-      />
+      <>
+        <textarea
+          value={v || ''}
+          onChange={e => handleChange(e.target.value)}
+          rows={4}
+          className={baseInputClass + ' resize-vertical'}
+          placeholder={`请输入${f.label}`}
+          maxLength={f.maxLength}
+        />
+        {errorMsg && <div className="text-red-400 text-xs mt-1">{errorMsg}</div>}
+      </>
     );
   }
-  
   if (f.type === 'array') {
     const arr: string[] = Array.isArray(v) ? v : v ? [v] : [];
     return (
-      <div className="space-y-2">
-        {arr.length === 0 && (
-          <div className="text-gray-400 text-xs mb-2 pl-1">暂无{f.label}</div>
-        )}
-        {arr.map((item, idx) => (
-          <div key={idx} className="flex items-center gap-2 mb-1 group">
-            <input
-              value={item}
-              onChange={e => {
-                const newArr = [...arr];
-                newArr[idx] = e.target.value;
-                setState((s: any) => ({ ...s, [f.key]: newArr }));
-              }}
-              className={baseInputClass + ' flex-1 border-l-4 border-transparent group-hover:border-blue-400 focus:border-blue-400 bg-white/15'}
-              placeholder={`请输入${f.label}`}
-            />
-            <button
-              type="button"
-              onClick={() => {
-                const newArr = arr.filter((_, i) => i !== idx);
-                setState((s: any) => ({ ...s, [f.key]: newArr }));
-              }}
-              className="w-8 h-8 flex items-center justify-center rounded-full bg-red-500/20 text-red-200 hover:bg-red-500/60 hover:text-white transition-all duration-200 focus:outline-none"
-              title="删除"
-            >
-              <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 4l8 8M12 4l-8 8"/></svg>
-            </button>
-          </div>
-        ))}
-        <button
-          type="button"
-          onClick={() => setState((s: any) => ({ ...s, [f.key]: [...arr, ''] }))}
-          className="mt-1 flex items-center gap-1 px-3 py-1 rounded-lg bg-blue-500/20 text-blue-200 hover:bg-blue-500/40 hover:text-white transition-all duration-200 text-xs font-medium"
-        >
-          <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M7 2v10M2 7h10"/></svg>
-          添加{f.label}
-        </button>
-      </div>
+      <>
+        <div className="space-y-2">
+          {arr.length === 0 && (
+            <div className="text-gray-400 text-xs mb-2 pl-1">暂无{f.label}</div>
+          )}
+          {arr.map((item, idx) => (
+            <div key={idx} className="flex items-center gap-2 mb-1 group">
+              <input
+                value={item}
+                onChange={e => {
+                  const newArr = [...arr];
+                  newArr[idx] = e.target.value;
+                  handleChange(newArr);
+                }}
+                className={baseInputClass + ' flex-1 border-l-4 border-transparent group-hover:border-blue-400 focus:border-blue-400 bg-white/15'}
+                placeholder={`请输入${f.label}`}
+                maxLength={f.arrayMaxLength}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const newArr = arr.filter((_, i) => i !== idx);
+                  handleChange(newArr);
+                }}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-red-500/20 text-red-200 hover:bg-red-500/60 hover:text-white transition-all duration-200 focus:outline-none"
+                title="删除"
+              >
+                <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 4l8 8M12 4l-8 8"/></svg>
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => handleChange([...arr, ''])}
+            className="mt-1 flex items-center gap-1 px-3 py-1 rounded-lg bg-blue-500/20 text-blue-200 hover:bg-blue-500/40 hover:text-white transition-all duration-200 text-xs font-medium"
+          >
+            <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M7 2v10M2 7h10"/></svg>
+            添加{f.label}
+          </button>
+        </div>
+        {errorMsg && <div className="text-red-400 text-xs mt-1">{errorMsg}</div>}
+      </>
     );
   }
-  
   if (f.type === 'boolean') {
     return (
-      <select
-        value={v === true ? 'true' : v === false ? 'false' : ''}
-        onChange={e => setState((s: any) => ({ ...s, [f.key]: e.target.value === 'true' ? true : e.target.value === 'false' ? false : null }))}
-        className={baseInputClass}
-      >
-        <option value="">白底狐狸（默认）</option>
-        <option value="false">初号机（黑底机器人）</option>
-        <option value="true">定制封面</option>
-      </select>
+      <>
+        <select
+          value={v === true ? 'true' : v === false ? 'false' : ''}
+          onChange={e => handleChange(e.target.value === 'true' ? true : e.target.value === 'false' ? false : null)}
+          className={baseInputClass}
+        >
+          <option value="">白底狐狸（默认）</option>
+          <option value="false">初号机（黑底机器人）</option>
+          <option value="true">定制封面</option>
+        </select>
+        {errorMsg && <div className="text-red-400 text-xs mt-1">{errorMsg}</div>}
+      </>
     );
   }
-  
   if (f.type === 'number') {
     return (
-      <input
-        type="number"
-        value={v ?? ''}
-        onChange={e => setState((s: any) => ({ ...s, [f.key]: e.target.value === '' ? null : Number(e.target.value) }))}
-        className={baseInputClass}
-        placeholder={`请输入${f.label}`}
-      />
+      <>
+        <input
+          type="number"
+          value={v ?? ''}
+          onChange={e => handleChange(e.target.value === '' ? null : Number(e.target.value))}
+          className={baseInputClass}
+          placeholder={`请输入${f.label}`}
+          min={f.min}
+          step={1}
+        />
+        {errorMsg && <div className="text-red-400 text-xs mt-1">{errorMsg}</div>}
+      </>
     );
   }
-  
   if (f.type === 'date') {
     return (
-      <input
-        type="date"
-        value={v ? String(v).slice(0, 10) : ''}
-        onChange={e => setState((s: any) => ({ ...s, [f.key]: e.target.value }))}
-        className={baseInputClass}
-      />
+      <>
+        <input
+          type="date"
+          value={v ? String(v).slice(0, 10) : ''}
+          onChange={e => handleChange(e.target.value)}
+          className={baseInputClass}
+          maxLength={f.maxLength}
+        />
+        {errorMsg && <div className="text-red-400 text-xs mt-1">{errorMsg}</div>}
+      </>
     );
   }
-  
   return (
-    <input
-      value={v ?? ''}
-      onChange={e => setState((s: any) => ({ ...s, [f.key]: e.target.value }))}
-      className={baseInputClass}
-      placeholder={`请输入${f.label}`}
-    />
+    <>
+      <input
+        value={v ?? ''}
+        onChange={e => handleChange(e.target.value)}
+        className={baseInputClass}
+        placeholder={`请输入${f.label}`}
+        maxLength={f.maxLength}
+        type={f.isUrl ? 'url' : 'text'}
+      />
+      {errorMsg && <div className="text-red-400 text-xs mt-1">{errorMsg}</div>}
+    </>
   );
 }
