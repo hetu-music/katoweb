@@ -17,18 +17,9 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     try {
-      // 读取 CSRF token
-      let csrfToken = '';
-      if (typeof document !== 'undefined') {
-        const match = document.cookie.match(/(?:^|; )csrf_token=([^;]*)/);
-        if (match) csrfToken = decodeURIComponent(match[1]);
-      }
       const res = await fetch('/api/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}),
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
       const result = await res.json();
