@@ -94,6 +94,30 @@ const SongRow = React.memo(({ song, idx, expandedRows, toggleRowExpansion, handl
   );
 });
 
+// 工具函数：将对象中的空字符串转为 null
+function convertEmptyStringToNull(obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map(convertEmptyStringToNull);
+  } else if (obj && typeof obj === 'object') {
+    const newObj: any = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        const val = obj[key];
+        if (val === '') {
+          newObj[key] = null;
+        } else if (Array.isArray(val)) {
+          // 对数组做递归处理
+          newObj[key] = val.map(item => item === '' ? null : item);
+        } else {
+          newObj[key] = val;
+        }
+      }
+    }
+    return newObj;
+  }
+  return obj;
+}
+
 export default function AdminClientComponent({ initialSongs, initialError }: { initialSongs: SongDetail[], initialError: string | null }) {
   const [songs, setSongs] = useState<SongDetail[]>(initialSongs);
   const [loading, setLoading] = useState(false);
@@ -168,7 +192,9 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     try {
       setLoading(true);
       const { year, ...songWithoutYear } = newSong;
-      const created = await apiCreateSong(songWithoutYear, csrfToken);
+      // 处理空字符串为 null
+      const songToSubmit = convertEmptyStringToNull(songWithoutYear);
+      const created = await apiCreateSong(songToSubmit, csrfToken);
       setSongs(prev => [...prev, created]);
       setShowAdd(false);
       setNewSong({ title: "", album: "" });
@@ -204,7 +230,9 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
       setLoading(true);
       setEditResultMessage(null);
       const { year, ...formWithoutYear } = editForm;
-      const updated = await apiUpdateSong(editSong.id, formWithoutYear, csrfToken);
+      // 处理空字符串为 null
+      const formToSubmit = convertEmptyStringToNull(formWithoutYear);
+      const updated = await apiUpdateSong(editSong.id, formToSubmit, csrfToken);
       setSongs(prev => prev.map(s => s.id === updated.id ? updated : s));
       setEditFormErrors({});
       setEditResultMessage('保存成功');
