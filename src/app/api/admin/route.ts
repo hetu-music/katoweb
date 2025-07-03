@@ -51,7 +51,14 @@ async function getUserFromRequest(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
   let token: string | undefined;
   if (authHeader) {
-    token = authHeader.replace('Bearer ', '');
+    // 严格校验 Bearer token 格式
+    const match = authHeader.match(/^Bearer ([A-Za-z0-9\-\._~\+\/]+=*)$/);
+    if (match) {
+      token = match[1];
+    } else {
+      // 格式不对直接拒绝
+      return null;
+    }
   } else {
     // 没有 header 时，取 session 里的 access_token
     const { data: { session } } = await supabase.auth.getSession();
