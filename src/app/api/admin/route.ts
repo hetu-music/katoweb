@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSongs, createSong, updateSong, createSupabaseClient } from '../../lib/supabase';
+import { getSongs, createSong, updateSong } from '../../lib/supabase';
+import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
 import { verifyCSRFToken } from '@/app/lib/utils.server';
@@ -29,14 +30,34 @@ const SongSchema = z.object({
   nelink: z.string().url().max(200).nullable().optional(),
 });
 
-async function getUserFromRequest(request: NextRequest) {
+// 创建支持 cookies 的 Supabase 客户端
+async function createSupabaseServerClient() {
+  // 在函数内部读取环境变量
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Missing Supabase environment variables');
+  }
+  
   const cookieStore = await cookies();
   
-  // 使用 supabase.ts 中的函数创建客户端
-  const supabase = createSupabaseClient('temp');
-  if (!supabase) {
-    return null;
-  }
+  return createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          cookieStore.set(name, value, options);
+        });
+      },
+    },
+  });
+}
+
+async function getUserFromRequest(request: NextRequest) {
+  const supabase = await createSupabaseServerClient();
 
   // 优先用 Authorization header
   const authHeader = request.headers.get('authorization');
@@ -68,12 +89,7 @@ export async function GET(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const cookieStore = await cookies();
-    const supabase = createSupabaseClient('temp');
-    if (!supabase) {
-      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
-    }
-    
+    const supabase = await createSupabaseServerClient();
     const { data: { session } } = await supabase.auth.getSession();
     const songs = await getSongs('temp', session?.access_token);
     return NextResponse.json(songs);
@@ -102,12 +118,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid input', details: parseResult.error.errors }, { status: 400 });
     }
     
-    const cookieStore = await cookies();
-    const supabase = createSupabaseClient('temp');
-    if (!supabase) {
-      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
-    }
-    
+    const supabase = await createSupabaseServerClient();
     const { data: { session } } = await supabase.auth.getSession();
     const song = await createSong(parseResult.data, 'temp', session?.access_token);
     return NextResponse.json(song);
@@ -138,12 +149,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid input', details: parseResult.error.errors }, { status: 400 });
     }
     
-    const cookieStore = await cookies();
-    const supabase = createSupabaseClient('temp');
-    if (!supabase) {
-      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
-    }
-    
+    const supabase = await createSupabaseServerClient();
     const { data: { session } } = await supabase.auth.getSession();
     const song = await updateSong(id, parseResult.data, 'temp', session?.access_token);
     return NextResponse.json(song);
