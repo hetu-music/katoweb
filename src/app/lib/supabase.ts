@@ -88,11 +88,11 @@ export async function updateSong(id: number, song: Partial<Song>, table: string 
   if (song.updated_at) {
     query = query.eq('updated_at', song.updated_at);
   }
-  const { data, error, count } = await query.select().single();
+  const { data, error } = await query.select().single();
   if (error) {
     // 乐观锁冲突
     if (error.code === 'PGRST116' || error.message.includes('Results contain 0 rows')) {
-      const conflictError: any = new Error('乐观锁冲突');
+      const conflictError: Error & { status?: number } = new Error('乐观锁冲突');
       conflictError.status = 409;
       throw conflictError;
     }

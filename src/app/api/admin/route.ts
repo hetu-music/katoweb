@@ -153,8 +153,13 @@ export async function PUT(request: NextRequest) {
     // 传递 updated_at
     const song = await updateSong(id, { ...parseResult.data, updated_at }, 'test', session?.access_token);
     return NextResponse.json(song);
-  } catch (e: any) {
-    if (e && (e.status === 409 || (e.message && e.message.includes('乐观锁冲突')))) {
+  } catch (e: unknown) {
+    if (
+      e &&
+      typeof e === 'object' &&
+      ((e as { status?: number; message?: string }).status === 409 ||
+        ((e as { message?: string }).message && (e as { message: string }).message.includes('乐观锁冲突')))
+    ) {
       return NextResponse.json({ error: '数据已被他人修改，请刷新页面后重试' }, { status: 409 });
     }
     if (e && typeof e === 'object' && 'message' in e && typeof (e as Error).message === 'string') {
