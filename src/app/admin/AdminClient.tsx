@@ -90,6 +90,8 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
   const [editResultMessage, setEditResultMessage] = useState<string | null>(null);
   const router = useRouter();
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
+  const [showChangePwd, setShowChangePwd] = useState(false);
 
   // Scroll listener
   React.useEffect(() => {
@@ -198,23 +200,56 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     });
   }, []);
 
+  React.useEffect(() => {
+    if (!showAccountMenu) return;
+    const onClick = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest('.relative')) {
+        setShowAccountMenu(false);
+      }
+    };
+    window.addEventListener('mousedown', onClick);
+    return () => window.removeEventListener('mousedown', onClick);
+  }, [showAccountMenu]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
       <div className="container mx-auto px-6 py-8 max-w-7xl">
         {/* Header Section */}
         <div className="mb-8 flex flex-row items-center justify-between gap-4">
           <h1 className="text-4xl font-bold text-white flex-1 mb-0">管理页面</h1>
-          <button
-            onClick={handleLogout}
-            disabled={logoutLoading}
-            className="flex items-center gap-2 px-6 py-2 rounded-xl bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-400/30 text-blue-100 hover:from-blue-500/30 hover:to-indigo-500/30 hover:text-white transition-all duration-200 shadow-sm font-medium whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed"
-            style={{ minWidth: 0 }}
-          >
-            {logoutLoading && (
-              <span className="inline-block w-5 h-5 mr-2 align-middle animate-spin border-2 border-white border-t-transparent rounded-full"></span>
+          {/* 账号管理下拉菜单 */}
+          <div className="relative">
+            <button
+              onClick={() => setShowAccountMenu(v => !v)}
+              className="flex items-center gap-2 px-6 py-2 rounded-xl bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-400/30 text-blue-100 hover:from-blue-500/30 hover:to-indigo-500/30 hover:text-white transition-all duration-200 shadow-sm font-medium whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed"
+              style={{ minWidth: 0 }}
+              type="button"
+            >
+              管理账号
+            </button>
+            {showAccountMenu && (
+              <div className="absolute right-0 mt-2 w-40 bg-gradient-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-xl shadow-lg z-50 overflow-hidden animate-fade-in">
+                <button
+                  className="w-full text-left px-5 py-3 text-white hover:bg-blue-500/20 transition-all duration-150 border-b border-white/10"
+                  onClick={() => { setShowAccountMenu(false); setShowChangePwd(true); }}
+                  type="button"
+                >
+                  修改密码
+                </button>
+                <button
+                  className="w-full text-left px-5 py-3 text-red-200 hover:bg-red-500/20 transition-all duration-150"
+                  onClick={() => { setShowAccountMenu(false); handleLogout(); }}
+                  disabled={logoutLoading}
+                  type="button"
+                >
+                  {logoutLoading ? (
+                    <span className="inline-block w-5 h-5 mr-2 align-middle animate-spin border-2 border-white border-t-transparent rounded-full"></span>
+                  ) : null}
+                  退出登录
+                </button>
+              </div>
             )}
-            退出登录
-          </button>
+          </div>
         </div>
 
         {/* Search and Add Button */}
@@ -375,6 +410,21 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showChangePwd && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-gradient-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-2xl shadow-2xl p-8 max-w-md w-full">
+            <h2 className="text-xl font-bold text-white mb-4">修改密码</h2>
+            <p className="text-white/80 mb-6">功能开发中，敬请期待。</p>
+            <button
+              onClick={() => setShowChangePwd(false)}
+              className="px-6 py-2 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 font-medium"
+            >
+              关闭
+            </button>
           </div>
         </div>
       )}
