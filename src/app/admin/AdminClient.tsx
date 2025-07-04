@@ -698,9 +698,9 @@ function renderInput(
           onChange={e => handleChange(e.target.value === 'true' ? true : e.target.value === 'false' ? false : null)}
           className={baseInputClass}
         >
-          <option value="">白底狐狸（默认）</option>
-          <option value="false">初号机（黑底机器人）</option>
-          <option value="true">定制封面</option>
+          <option value="" className="filter-option">白底狐狸（默认）</option>
+          <option value="false" className="filter-option">初号机（黑底机器人）</option>
+          <option value="true" className="filter-option">定制封面</option>
         </select>
         {errorMsg && <div className="text-red-400 text-xs mt-1">{errorMsg}</div>}
       </>
