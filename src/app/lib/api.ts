@@ -1,0 +1,46 @@
+// Admin 管理页面 API 封装
+import type { Song } from './types';
+
+// 新增歌曲
+export async function apiCreateSong(song: Partial<Song>, csrfToken: string) {
+  const res = await fetch('/api/admin', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-csrf-token': csrfToken,
+    },
+    body: JSON.stringify(song),
+  });
+  if (!res.ok) throw new Error('新增失败');
+  return res.json();
+}
+
+// 更新歌曲
+export async function apiUpdateSong(id: number, song: Partial<Song>, csrfToken: string) {
+  const res = await fetch('/api/admin', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-csrf-token': csrfToken,
+    },
+    body: JSON.stringify({ id, ...song }),
+  });
+  if (res.status === 409) {
+    throw new Error('数据已被他人修改，请刷新页面后重试');
+  }
+  if (!res.ok) throw new Error('更新失败');
+  return res.json();
+}
+
+// 修改密码
+export async function apiChangePassword(oldPassword: string, newPassword: string, csrfToken: string) {
+  const res = await fetch('/api/auth/change-password', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-csrf-token': csrfToken,
+    },
+    body: JSON.stringify({ oldPassword, newPassword }),
+  });
+  return res.json();
+}

@@ -8,28 +8,6 @@ export function formatTime(seconds: number | null): string {
   return `${min}:${sec}`;
 }
 
-// 类型标签颜色映射
-export const typeColorMap: Record<string, string> = {
-  '翻唱': 'bg-green-500/20 text-green-300 border-green-400/30',
-  '合作': 'bg-yellow-500/20 text-yellow-300 border-yellow-400/30',
-  '原创': 'bg-purple-500/20 text-purple-300 border-purple-400/30',
-  '商业': 'bg-orange-500/20 text-orange-300 border-orange-400/30',
-  '墨宝': 'bg-red-500/20 text-red-300 border-red-400/30',
-};
-
-// 流派标签颜色映射
-export const genreColorMap: Record<string, string> = {
-  '流行': 'bg-red-500/20 text-red-300 border-red-400/30',
-  '古风': 'bg-blue-500/20 text-blue-300 border-blue-400/30',
-  '摇滚': 'bg-gray-500/20 text-gray-300 border-gray-400/30',
-  '民谣': 'bg-green-500/20 text-green-300 border-green-400/30',
-  '电子': 'bg-purple-500/20 text-purple-300 border-purple-400/30',
-  '说唱': 'bg-orange-500/20 text-orange-300 border-orange-400/30',
-  '爵士': 'bg-yellow-500/20 text-yellow-300 border-yellow-400/30',
-  '古典': 'bg-indigo-500/20 text-indigo-300 border-indigo-400/30',
-  '其他': 'bg-pink-500/20 text-pink-300 border-pink-400/30',
-};
-
 // 计算筛选选项
 export function calculateFilterOptions(songsData: Song[]): FilterOptions {
   // 处理类型
@@ -167,12 +145,6 @@ export function generateCSRFToken(): string {
     .map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// 获取 cookie 中的 CSRF token
-export async function getCSRFCookie(): Promise<string | undefined> {
-  // 依赖 next/headers 的实现
-  return undefined;
-}
-
 export function getCoverUrl(song: Song | SongDetail): string {
   if (song.hascover === true) {
     return `https://cover.hetu-music.com/${song.id}.jpg`;
@@ -181,4 +153,91 @@ export function getCoverUrl(song: Song | SongDetail): string {
   } else {
     return 'https://cover.hetu-music.com/default.jpg';
   }
+}
+
+// admin 页面函数
+// 通用防抖函数（适用于回调/输入等场景）
+export function debounce<Args extends unknown[]>(func: (...args: Args) => void, wait: number): (...args: Args) => void {
+  let timeout: NodeJS.Timeout;
+  return (...args: Args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+}
+
+// 工具函数：将对象中的空字符串转为 null
+export function convertEmptyStringToNull<T>(obj: T): T {
+  if (Array.isArray(obj)) {
+    return obj.map(convertEmptyStringToNull) as T;
+  } else if (obj && typeof obj === 'object') {
+    const newObj: Record<string, unknown> = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        const val = (obj as Record<string, unknown>)[key];
+        if (val === '') {
+          newObj[key] = null;
+        } else if (Array.isArray(val)) {
+          newObj[key] = val.map(item => item === '' ? null : item);
+        } else {
+          newObj[key] = val;
+        }
+      }
+    }
+    return newObj as T;
+  }
+  return obj;
+}
+
+// 字段格式化工具（用于表格/详情展示）
+export function formatField(val: unknown, type: 'text' | 'number' | 'array' | 'boolean' | 'date' | 'textarea'): string {
+  if (val == null) return '-';
+  if (type === 'array') return Array.isArray(val) ? (val as string[]).join(', ') : String(val);
+  if (type === 'boolean') return val ? '是' : '否';
+  if (type === 'date') return val ? String(val).slice(0, 10) : '-';
+  if (type === 'textarea' && typeof val === 'string' && val.length > 50) {
+    return val.substring(0, 50) + '...';
+  }
+  return String(val);
+}
+
+// 字段校验工具（用于表单校验）
+import type { SongFieldConfig } from './types';
+export function validateField(f: SongFieldConfig, value: unknown): string {
+  if (f.required && (!value || (typeof value === 'string' && value.trim() === ''))) {
+    return `${f.label}为必填项`;
+  }
+  if ((f.type === 'text' || f.type === 'textarea' || f.type === 'date') && typeof value === 'string') {
+    if (f.minLength && value.length < f.minLength) {
+      return `${f.label}最少${f.minLength}个字符`;
+    }
+    if (f.maxLength && value.length > f.maxLength) {
+      return `${f.label}不能超过${f.maxLength}个字符`;
+    }
+    if (f.isUrl && value) {
+      try {
+        new URL(value);
+      } catch {
+        return `${f.label}必须为合法的URL`;
+      }
+    }
+  }
+  if (f.type === 'array' && Array.isArray(value)) {
+    for (let i = 0; i < value.length; i++) {
+      if (f.arrayMaxLength && value[i] && value[i].length > f.arrayMaxLength) {
+        return `${f.label}第${i + 1}项不能超过${f.arrayMaxLength}个字符`;
+      }
+    }
+  }
+  if (f.type === 'number') {
+    if (value !== null && value !== undefined && value !== '') {
+      if (typeof value !== 'number' || isNaN(value)) return `${f.label}必须为数字`;
+      if (f.min !== undefined && (value as number) < f.min) {
+        return `${f.label}不能小于${f.min}`;
+      }
+      if (!Number.isInteger(value)) {
+        return `${f.label}必须为整数`;
+      }
+    }
+  }
+  return '';
 }

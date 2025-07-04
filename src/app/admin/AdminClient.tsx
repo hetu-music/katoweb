@@ -1,55 +1,12 @@
 'use client';
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Search, Plus, Edit, Save, X, Eye, EyeOff, ArrowUp } from 'lucide-react';
-import type { Song, SongDetail } from '../lib/types';
-import { genreColorMap, typeColorMap, mapAndSortSongs } from '../lib/utils';
-import { useRouter } from 'next/navigation';
-
-// Define song fields configuration
-type SongFieldConfig = {
-  key: keyof SongDetail;
-  label: string;
-  type: 'text' | 'number' | 'array' | 'boolean' | 'date' | 'textarea';
-  required?: boolean;
-  maxLength?: number;
-  minLength?: number;
-  min?: number;
-  isUrl?: boolean;
-  arrayMaxLength?: number;
-};
-
-const songFields: SongFieldConfig[] = [
-  { key: 'title', label: '标题', type: 'text', required: true, minLength: 1, maxLength: 100 },
-  { key: 'album', label: '专辑', type: 'text', maxLength: 100 },
-  { key: 'lyricist', label: '作词', type: 'array', arrayMaxLength: 30 },
-  { key: 'composer', label: '作曲', type: 'array', arrayMaxLength: 30 },
-  { key: 'type', label: '类型', type: 'array', arrayMaxLength: 30 },
-  { key: 'artist', label: '演唱', type: 'array', arrayMaxLength: 30 },
-  { key: 'length', label: '时长(秒)', type: 'number', min: 1 },
-  { key: 'hascover', label: '封面', type: 'boolean' },
-  { key: 'date', label: '日期', type: 'date', maxLength: 30 },
-  { key: 'genre', label: '流派', type: 'array', arrayMaxLength: 30 },
-  { key: 'albumartist', label: '专辑创作', type: 'array', arrayMaxLength: 30 },
-  { key: 'arranger', label: '编曲', type: 'array', arrayMaxLength: 30 },
-  { key: 'comment', label: '备注', type: 'textarea', maxLength: 10000 },
-  { key: 'discnumber', label: '碟号', type: 'number', min: 1 },
-  { key: 'disctotal', label: '碟总数', type: 'number', min: 1 },
-  { key: 'lyrics', label: '歌词', type: 'textarea', maxLength: 10000 },
-  { key: 'track', label: '曲号', type: 'number', min: 1 },
-  { key: 'tracktotal', label: '曲总数', type: 'number', min: 1 },
-  { key: 'kugolink', label: '酷狗链接', type: 'text', maxLength: 200, isUrl: true },
-  { key: 'qmlink', label: 'QQ音乐链接', type: 'text', maxLength: 200, isUrl: true },
-  { key: 'nelink', label: '网易云链接', type: 'text', maxLength: 200, isUrl: true },
-];
-
-// Debounce utility
-function debounce<Args extends unknown[]>(func: (...args: Args) => void, wait: number): (...args: Args) => void {
-  let timeout: NodeJS.Timeout;
-  return (...args: Args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-}
+import type { Song, SongDetail, SongFieldConfig } from '../lib/types';
+import { convertEmptyStringToNull, formatField, validateField } from '../lib/utils';
+import { songFields, genreColorMap, typeColorMap } from '../lib/constants';
+import { apiCreateSong, apiUpdateSong } from '../lib/api';
+import { useSongs } from '../hooks/useSongs';
+import { useAuth } from '../hooks/useAuth';
 
 // Memoized SongRow component
 const SongRow = React.memo(({ song, idx, expandedRows, toggleRowExpansion, handleEdit }: {
@@ -108,47 +65,34 @@ const SongRow = React.memo(({ song, idx, expandedRows, toggleRowExpansion, handl
 });
 SongRow.displayName = 'SongRow';
 
-// 工具函数：将对象中的空字符串转为 null
-function convertEmptyStringToNull<T>(obj: T): T {
-  if (Array.isArray(obj)) {
-    return obj.map(convertEmptyStringToNull) as T;
-  } else if (obj && typeof obj === 'object') {
-    const newObj: Record<string, unknown> = {};
-    for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        const val = (obj as Record<string, unknown>)[key];
-        if (val === '') {
-          newObj[key] = null;
-        } else if (Array.isArray(val)) {
-          // 对数组做递归处理
-          newObj[key] = val.map(item => item === '' ? null : item);
-        } else {
-          newObj[key] = val;
-        }
-      }
-    }
-    return newObj as T;
-  }
-  return obj;
-}
-
 export default function AdminClientComponent({ initialSongs, initialError }: { initialSongs: SongDetail[], initialError: string | null }) {
-  const [songs, setSongs] = useState<SongDetail[]>(initialSongs);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(initialError);
+  const {
+    songs,
+    setSongs,
+    loading,
+    setLoading,
+    error,
+    setError,
+    setSearchTerm,
+    filteredSongs,
+    sortedSongs,
+  } = useSongs(initialSongs, initialError);
+  const { csrfToken, handleLogout, logoutLoading } = useAuth();
   const [showAdd, setShowAdd] = useState(false);
   const [newSong, setNewSong] = useState<Partial<Song>>({ title: "", album: "" });
   const [addFormErrors, setAddFormErrors] = useState<Record<string, string>>({});
   const [editSong, setEditSong] = useState<SongDetail | null>(null);
   const [editForm, setEditForm] = useState<Partial<Song>>({});
   const [editFormErrors, setEditFormErrors] = useState<Record<string, string>>({});
-  const [searchTerm, setSearchTerm] = useState("");
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
-  const [csrfToken, setCsrfToken] = useState('');
   const [editResultMessage, setEditResultMessage] = useState<string | null>(null);
-  const [logoutLoading, setLogoutLoading] = useState(false);
-  const router = useRouter();
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
+  const [showChangePwd, setShowChangePwd] = useState(false);
+  const [pwdForm, setPwdForm] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
+  const [pwdFormError, setPwdFormError] = useState<string | null>(null);
+  const [pwdFormSuccess, setPwdFormSuccess] = useState<string | null>(null);
+  const [pwdFormLoading, setPwdFormLoading] = useState(false);
 
   // Scroll listener
   React.useEffect(() => {
@@ -158,31 +102,6 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-
-  useEffect(() => {
-    fetch('/api/auth/csrf-token')
-      .then(res => res.json())
-      .then(data => setCsrfToken(data.csrfToken || ''));
-  }, []);
-
-  // Debounced search handler
-  const debouncedSetSearchTerm = useMemo(
-    () => debounce((value: string) => setSearchTerm(value), 300),
-    [setSearchTerm]
-  );
-
-  // Memoized filtered songs
-  const filteredSongs = useMemo(() => {
-    return songs.filter(song =>
-      song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      song.album?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (song.lyricist && song.lyricist.some(l => l.toLowerCase().includes(searchTerm.toLowerCase()))) ||
-      (song.composer && song.composer.some(c => c.toLowerCase().includes(searchTerm.toLowerCase())))
-    );
-  }, [songs, searchTerm]);
-
-  // Memoized sorted songs
-  const sortedSongs = useMemo(() => mapAndSortSongs(filteredSongs), [filteredSongs]);
 
   const scrollToTop = useCallback(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -222,9 +141,9 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     } finally {
       setLoading(false);
     }
-  }, [newSong, csrfToken]);
+  }, [newSong, csrfToken, setLoading, setSongs, setError]);
 
-  const handleEdit = useCallback((song: Song) => {
+  const handleEdit = useCallback((song: SongDetail) => {
     setEditSong(song);
     setEditForm({ ...song });
   }, []);
@@ -247,28 +166,32 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     try {
       setLoading(true);
       setEditResultMessage(null);
-      const { /* year, */ ...formWithoutYear } = editForm;
+      const formWithoutYear = editForm;
       // 处理空字符串为 null
       const formToSubmit = convertEmptyStringToNull(formWithoutYear);
-      const updated = await apiUpdateSong(editSong.id, formToSubmit, csrfToken);
+      // 一并传递 updated_at
+      const updated = await apiUpdateSong(editSong.id, { ...formToSubmit, updated_at: editSong.updated_at }, csrfToken);
       setSongs(prev => prev.map(s => s.id === updated.id ? updated : s));
       setEditFormErrors({});
       setEditResultMessage('保存成功');
-      // 延迟1秒后关闭弹窗和清空提示
       setTimeout(() => {
         setEditSong(null);
         setEditResultMessage(null);
       }, 2000);
     } catch (e: unknown) {
       if (e instanceof Error) {
-        setEditResultMessage(e.message || '保存失败');
+        if (e.message.includes('数据已被他人修改')) {
+          setEditResultMessage('数据已被他人修改，请刷新页面后重试');
+        } else {
+          setEditResultMessage(e.message || '保存失败');
+        }
       } else {
         setEditResultMessage('保存失败');
       }
     } finally {
       setLoading(false);
     }
-  }, [editSong, editForm, csrfToken]);
+  }, [editSong, editForm, csrfToken, setLoading, setSongs]);
 
   const toggleRowExpansion = useCallback((id: number) => {
     setExpandedRows(prev => {
@@ -282,26 +205,16 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     });
   }, []);
 
-  const handleLogout = async () => {
-    setLogoutLoading(true);
-    try {
-      const csrfRes = await fetch('/api/auth/csrf-token');
-      const csrfData = await csrfRes.json();
-      const res = await fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-csrf-token': csrfData.csrfToken || '',
-        },
-      });
-      if (res.ok) {
-        router.push('/admin/login');
-        router.refresh();
+  React.useEffect(() => {
+    if (!showAccountMenu) return;
+    const onClick = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest('.relative')) {
+        setShowAccountMenu(false);
       }
-    } finally {
-      setLogoutLoading(false);
-    }
-  };
+    };
+    window.addEventListener('mousedown', onClick);
+    return () => window.removeEventListener('mousedown', onClick);
+  }, [showAccountMenu]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
@@ -309,17 +222,39 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
         {/* Header Section */}
         <div className="mb-8 flex flex-row items-center justify-between gap-4">
           <h1 className="text-4xl font-bold text-white flex-1 mb-0">管理页面</h1>
-          <button
-            onClick={handleLogout}
-            disabled={logoutLoading}
-            className="flex items-center gap-2 px-6 py-2 rounded-xl bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-400/30 text-blue-100 hover:from-blue-500/30 hover:to-indigo-500/30 hover:text-white transition-all duration-200 shadow-sm font-medium whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed"
-            style={{ minWidth: 0 }}
-          >
-            {logoutLoading && (
-              <span className="inline-block w-5 h-5 mr-2 align-middle animate-spin border-2 border-white border-t-transparent rounded-full"></span>
+          {/* 账号管理下拉菜单 */}
+          <div className="relative">
+            <button
+              onClick={() => setShowAccountMenu(v => !v)}
+              className="flex items-center gap-2 px-6 py-2 rounded-xl bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-400/30 text-blue-100 hover:from-blue-500/30 hover:to-indigo-500/30 hover:text-white transition-all duration-200 shadow-sm font-medium whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed"
+              style={{ minWidth: 0 }}
+              type="button"
+            >
+              管理账号
+            </button>
+            {showAccountMenu && (
+              <div className="absolute right-0 mt-2 w-40 bg-gradient-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-xl shadow-lg z-50 overflow-hidden animate-fade-in">
+                <button
+                  className="w-full text-left px-5 py-3 text-white hover:bg-blue-500/20 transition-all duration-150 border-b border-white/10"
+                  onClick={() => { setShowAccountMenu(false); setShowChangePwd(true); }}
+                  type="button"
+                >
+                  修改密码
+                </button>
+                <button
+                  className="w-full text-left px-5 py-3 text-red-200 hover:bg-red-500/20 transition-all duration-150"
+                  onClick={() => { setShowAccountMenu(false); handleLogout(); }}
+                  disabled={logoutLoading}
+                  type="button"
+                >
+                  {logoutLoading ? (
+                    <span className="inline-block w-5 h-5 mr-2 align-middle animate-spin border-2 border-white border-t-transparent rounded-full"></span>
+                  ) : null}
+                  退出登录
+                </button>
+              </div>
             )}
-            退出登录
-          </button>
+          </div>
         </div>
 
         {/* Search and Add Button */}
@@ -331,7 +266,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
             <input
               type="text"
               placeholder="搜索歌曲、专辑、作词、作曲..."
-              onChange={(e) => debouncedSetSearchTerm(e.target.value)}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/15 transition-all duration-200 rounded-r-2xl border-l-0 min-w-0"
               style={{ marginLeft: '-1px' }}
             />
@@ -484,6 +419,101 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
         </div>
       )}
 
+      {showChangePwd && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-gradient-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-2xl shadow-2xl p-8 max-w-md w-full">
+            <h2 className="text-xl font-bold text-white mb-4">修改密码</h2>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setPwdFormError(null);
+                setPwdFormSuccess(null);
+                if (!pwdForm.oldPassword || !pwdForm.newPassword || !pwdForm.confirmPassword) {
+                  setPwdFormError('请填写所有字段');
+                  return;
+                }
+                if (pwdForm.newPassword.length < 6) {
+                  setPwdFormError('新密码长度不能少于6位');
+                  return;
+                }
+                if (pwdForm.newPassword !== pwdForm.confirmPassword) {
+                  setPwdFormError('两次输入的新密码不一致');
+                  return;
+                }
+                setPwdFormLoading(true);
+                try {
+                  const res = await import('../lib/api').then(m => m.apiChangePassword(pwdForm.oldPassword, pwdForm.newPassword, csrfToken));
+                  if (res.success) {
+                    setPwdFormSuccess('密码修改成功');
+                    setPwdForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
+                  } else {
+                    setPwdFormError(res.error || '修改失败');
+                  }
+                } catch {
+                  setPwdFormError('网络错误');
+                } finally {
+                  setPwdFormLoading(false);
+                }
+              }}
+              className="space-y-6"
+            >
+              <div>
+                <label className="block text-blue-100 font-semibold mb-1 text-sm">旧密码</label>
+                <input
+                  type="password"
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  placeholder="请输入旧密码"
+                  value={pwdForm.oldPassword}
+                  onChange={e => setPwdForm(f => ({ ...f, oldPassword: e.target.value }))}
+                  autoComplete="current-password"
+                />
+              </div>
+              <div>
+                <label className="block text-blue-100 font-semibold mb-1 text-sm">新密码</label>
+                <input
+                  type="password"
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  placeholder="请输入新密码（至少6位）"
+                  value={pwdForm.newPassword}
+                  onChange={e => setPwdForm(f => ({ ...f, newPassword: e.target.value }))}
+                  autoComplete="new-password"
+                />
+              </div>
+              <div>
+                <label className="block text-blue-100 font-semibold mb-1 text-sm">确认新密码</label>
+                <input
+                  type="password"
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  placeholder="请再次输入新密码"
+                  value={pwdForm.confirmPassword}
+                  onChange={e => setPwdForm(f => ({ ...f, confirmPassword: e.target.value }))}
+                  autoComplete="new-password"
+                />
+              </div>
+              {pwdFormError && <div className="text-red-400 text-sm mt-2">{pwdFormError}</div>}
+              {pwdFormSuccess && <div className="text-green-400 text-sm mt-2">{pwdFormSuccess}</div>}
+              <div className="flex items-center justify-end gap-4 pt-4">
+                <button
+                  type="button"
+                  onClick={() => { setShowChangePwd(false); setPwdFormError(null); setPwdFormSuccess(null); setPwdForm({ oldPassword: '', newPassword: '', confirmPassword: '' }); }}
+                  className="px-6 py-2 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 font-medium"
+                  disabled={pwdFormLoading}
+                >
+                  关闭
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 rounded-xl bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 text-green-200 hover:from-green-500/30 hover:to-emerald-500/30 hover:text-green-100 transition-all duration-200 font-semibold shadow-sm"
+                  disabled={pwdFormLoading}
+                >
+                  {pwdFormLoading ? '提交中...' : '提交'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Scroll to Top Button */}
       {showScrollTop && (
         <button
@@ -496,84 +526,6 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
       )}
     </div>
   );
-}
-
-// API Functions
-async function apiCreateSong(song: Partial<Song>, csrfToken: string) {
-  const res = await fetch('/api/admin', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-csrf-token': csrfToken,
-    },
-    body: JSON.stringify(song),
-  });
-  if (!res.ok) throw new Error('新增失败');
-  return res.json();
-}
-
-async function apiUpdateSong(id: number, song: Partial<Song>, csrfToken: string) {
-  const res = await fetch('/api/admin', {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-csrf-token': csrfToken,
-    },
-    body: JSON.stringify({ id, ...song }),
-  });
-  if (!res.ok) throw new Error('更新失败');
-  return res.json();
-}
-
-function formatField(val: unknown, type: SongFieldConfig['type']): string {
-  if (val == null) return '-';
-  if (type === 'array') return Array.isArray(val) ? (val as string[]).join(', ') : String(val);
-  if (type === 'boolean') return val ? '是' : '否';
-  if (type === 'date') return val ? String(val).slice(0, 10) : '-';
-  if (type === 'textarea' && typeof val === 'string' && val.length > 50) {
-    return val.substring(0, 50) + '...';
-  }
-  return String(val);
-}
-
-function validateField(f: SongFieldConfig, value: unknown): string {
-  if (f.required && (!value || (typeof value === 'string' && value.trim() === ''))) {
-    return `${f.label}为必填项`;
-  }
-  if ((f.type === 'text' || f.type === 'textarea' || f.type === 'date') && typeof value === 'string') {
-    if (f.minLength && value.length < f.minLength) {
-      return `${f.label}最少${f.minLength}个字符`;
-    }
-    if (f.maxLength && value.length > f.maxLength) {
-      return `${f.label}不能超过${f.maxLength}个字符`;
-    }
-    if (f.isUrl && value) {
-      try {
-        new URL(value);
-      } catch {
-        return `${f.label}必须为合法的URL`;
-      }
-    }
-  }
-  if (f.type === 'array' && Array.isArray(value)) {
-    for (let i = 0; i < value.length; i++) {
-      if (f.arrayMaxLength && value[i] && value[i].length > f.arrayMaxLength) {
-        return `${f.label}第${i + 1}项不能超过${f.arrayMaxLength}个字符`;
-      }
-    }
-  }
-  if (f.type === 'number') {
-    if (value !== null && value !== undefined && value !== '') {
-      if (typeof value !== 'number' || isNaN(value)) return `${f.label}必须为数字`;
-      if (f.min !== undefined && (value as number) < f.min) {
-        return `${f.label}不能小于${f.min}`;
-      }
-      if (!Number.isInteger(value)) {
-        return `${f.label}必须为整数`;
-      }
-    }
-  }
-  return '';
 }
 
 function renderInput(
@@ -698,9 +650,9 @@ function renderInput(
           onChange={e => handleChange(e.target.value === 'true' ? true : e.target.value === 'false' ? false : null)}
           className={baseInputClass}
         >
-          <option value="">白底狐狸（默认）</option>
-          <option value="false">初号机（黑底机器人）</option>
-          <option value="true">定制封面</option>
+          <option value="" className="filter-option">白底狐狸（默认）</option>
+          <option value="false" className="filter-option">初号机（黑底机器人）</option>
+          <option value="true" className="filter-option">定制封面</option>
         </select>
         {errorMsg && <div className="text-red-400 text-xs mt-1">{errorMsg}</div>}
       </>

@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
 import { SongDetailClientProps } from '../../lib/types';
-import { getCoverUrl, typeColorMap, genreColorMap, calculateSongInfo } from '../../lib/utils';
+import { getCoverUrl, calculateSongInfo } from '../../lib/utils';
+import { typeColorMap, genreColorMap } from '../../lib/constants';
 
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const [showScrollTop, setShowScrollTop] = useState(false);
