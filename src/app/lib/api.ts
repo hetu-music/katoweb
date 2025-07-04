@@ -28,3 +28,16 @@ export async function apiUpdateSong(id: number, song: Partial<Song>, csrfToken: 
   if (!res.ok) throw new Error('更新失败');
   return res.json();
 }
+
+// 修改密码
+export async function apiChangePassword(oldPassword: string, newPassword: string, csrfToken: string) {
+  const res = await fetch('/api/auth/change-password', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-csrf-token': csrfToken,
+    },
+    body: JSON.stringify({ oldPassword, newPassword }),
+  });
+  return res.json();
+}
