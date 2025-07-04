@@ -167,12 +167,6 @@ export function generateCSRFToken(): string {
     .map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// 获取 cookie 中的 CSRF token
-export async function getCSRFCookie(): Promise<string | undefined> {
-  // 依赖 next/headers 的实现
-  return undefined;
-}
-
 export function getCoverUrl(song: Song | SongDetail): string {
   if (song.hascover === true) {
     return `https://cover.hetu-music.com/${song.id}.jpg`;
