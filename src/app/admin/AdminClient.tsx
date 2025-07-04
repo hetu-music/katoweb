@@ -5,7 +5,6 @@ import type { Song, SongDetail, SongFieldConfig } from '../lib/types';
 import { convertEmptyStringToNull, formatField, validateField } from '../lib/utils';
 import { songFields, genreColorMap, typeColorMap } from '../lib/constants';
 import { apiCreateSong, apiUpdateSong } from '../lib/api';
-import { useRouter } from 'next/navigation';
 import { useSongs } from '../hooks/useSongs';
 import { useAuth } from '../hooks/useAuth';
 
@@ -74,7 +73,6 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     setLoading,
     error,
     setError,
-    searchTerm,
     setSearchTerm,
     filteredSongs,
     sortedSongs,
@@ -89,7 +87,6 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
   const [editResultMessage, setEditResultMessage] = useState<string | null>(null);
-  const router = useRouter();
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [showChangePwd, setShowChangePwd] = useState(false);
   const [pwdForm, setPwdForm] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
@@ -144,7 +141,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     } finally {
       setLoading(false);
     }
-  }, [newSong, csrfToken]);
+  }, [newSong, csrfToken, setLoading, setSongs, setError]);
 
   const handleEdit = useCallback((song: SongDetail) => {
     setEditSong(song);
@@ -169,7 +166,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     try {
       setLoading(true);
       setEditResultMessage(null);
-      const { updated_at, ...formWithoutYear } = editForm;
+      const formWithoutYear = editForm;
       // 处理空字符串为 null
       const formToSubmit = convertEmptyStringToNull(formWithoutYear);
       // 一并传递 updated_at
@@ -194,7 +191,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     } finally {
       setLoading(false);
     }
-  }, [editSong, editForm, csrfToken]);
+  }, [editSong, editForm, csrfToken, setLoading, setSongs]);
 
   const toggleRowExpansion = useCallback((id: number) => {
     setExpandedRows(prev => {
@@ -452,7 +449,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
                   } else {
                     setPwdFormError(res.error || '修改失败');
                   }
-                } catch (err) {
+                } catch {
                   setPwdFormError('网络错误');
                 } finally {
                   setPwdFormLoading(false);
