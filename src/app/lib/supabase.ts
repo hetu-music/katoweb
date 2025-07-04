@@ -84,7 +84,19 @@ export async function createSong(song: Partial<Song>, table: string = 'music', a
 export async function updateSong(id: number, song: Partial<Song>, table: string = 'music', accessToken?: string): Promise<Song> {
   const supabase = createSupabaseClient(table, accessToken);
   if (!supabase) throw new Error('Supabase client not available');
-  const { data, error } = await supabase.from(table).update(song).eq('id', id).select().single();
-  if (error) throw new Error('Failed to update song');
+  let query = supabase.from(table).update(song).eq('id', id);
+  if (song.updated_at) {
+    query = query.eq('updated_at', song.updated_at);
+  }
+  const { data, error, count } = await query.select().single();
+  if (error) {
+    // 乐观锁冲突
+    if (error.code === 'PGRST116' || error.message.includes('Results contain 0 rows')) {
+      const conflictError: any = new Error('乐观锁冲突');
+      conflictError.status = 409;
+      throw conflictError;
+    }
+    throw new Error('Failed to update song');
+  }
   return data as Song;
 }

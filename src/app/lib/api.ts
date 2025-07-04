@@ -25,6 +25,9 @@ export async function apiUpdateSong(id: number, song: Partial<Song>, csrfToken: 
     },
     body: JSON.stringify({ id, ...song }),
   });
+  if (res.status === 409) {
+    throw new Error('数据已被他人修改，请刷新页面后重试');
+  }
   if (!res.ok) throw new Error('更新失败');
   return res.json();
 }

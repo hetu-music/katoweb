@@ -12,6 +12,7 @@ export type Song = {
   hascover?: boolean | null;
   date?: string | null;
   type?: string[] | null;
+  updated_at: string;
 };
 
 // 详细歌曲类型（包含更多字段）

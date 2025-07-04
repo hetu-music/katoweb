@@ -146,7 +146,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     }
   }, [newSong, csrfToken]);
 
-  const handleEdit = useCallback((song: Song) => {
+  const handleEdit = useCallback((song: SongDetail) => {
     setEditSong(song);
     setEditForm({ ...song });
   }, []);
@@ -169,21 +169,25 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     try {
       setLoading(true);
       setEditResultMessage(null);
-      const { /* year, */ ...formWithoutYear } = editForm;
+      const { updated_at, ...formWithoutYear } = editForm;
       // 处理空字符串为 null
       const formToSubmit = convertEmptyStringToNull(formWithoutYear);
-      const updated = await apiUpdateSong(editSong.id, formToSubmit, csrfToken);
+      // 一并传递 updated_at
+      const updated = await apiUpdateSong(editSong.id, { ...formToSubmit, updated_at: editSong.updated_at }, csrfToken);
       setSongs(prev => prev.map(s => s.id === updated.id ? updated : s));
       setEditFormErrors({});
       setEditResultMessage('保存成功');
-      // 延迟1秒后关闭弹窗和清空提示
       setTimeout(() => {
         setEditSong(null);
         setEditResultMessage(null);
       }, 2000);
     } catch (e: unknown) {
       if (e instanceof Error) {
-        setEditResultMessage(e.message || '保存失败');
+        if (e.message.includes('数据已被他人修改')) {
+          setEditResultMessage('数据已被他人修改，请刷新页面后重试');
+        } else {
+          setEditResultMessage(e.message || '保存失败');
+        }
       } else {
         setEditResultMessage('保存失败');
       }
