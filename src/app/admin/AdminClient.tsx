@@ -1,55 +1,13 @@
 'use client';
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Search, Plus, Edit, Save, X, Eye, EyeOff, ArrowUp } from 'lucide-react';
-import type { Song, SongDetail } from '../lib/types';
-import { genreColorMap, typeColorMap, mapAndSortSongs } from '../lib/utils';
+import type { Song, SongDetail, SongFieldConfig } from '../lib/types';
+import { convertEmptyStringToNull, formatField, validateField } from '../lib/utils';
+import { songFields, genreColorMap, typeColorMap } from '../lib/constants';
+import { apiCreateSong, apiUpdateSong } from '../lib/api';
 import { useRouter } from 'next/navigation';
-
-// Define song fields configuration
-type SongFieldConfig = {
-  key: keyof SongDetail;
-  label: string;
-  type: 'text' | 'number' | 'array' | 'boolean' | 'date' | 'textarea';
-  required?: boolean;
-  maxLength?: number;
-  minLength?: number;
-  min?: number;
-  isUrl?: boolean;
-  arrayMaxLength?: number;
-};
-
-const songFields: SongFieldConfig[] = [
-  { key: 'title', label: '标题', type: 'text', required: true, minLength: 1, maxLength: 100 },
-  { key: 'album', label: '专辑', type: 'text', maxLength: 100 },
-  { key: 'lyricist', label: '作词', type: 'array', arrayMaxLength: 30 },
-  { key: 'composer', label: '作曲', type: 'array', arrayMaxLength: 30 },
-  { key: 'type', label: '类型', type: 'array', arrayMaxLength: 30 },
-  { key: 'artist', label: '演唱', type: 'array', arrayMaxLength: 30 },
-  { key: 'length', label: '时长(秒)', type: 'number', min: 1 },
-  { key: 'hascover', label: '封面', type: 'boolean' },
-  { key: 'date', label: '日期', type: 'date', maxLength: 30 },
-  { key: 'genre', label: '流派', type: 'array', arrayMaxLength: 30 },
-  { key: 'albumartist', label: '专辑创作', type: 'array', arrayMaxLength: 30 },
-  { key: 'arranger', label: '编曲', type: 'array', arrayMaxLength: 30 },
-  { key: 'comment', label: '备注', type: 'textarea', maxLength: 10000 },
-  { key: 'discnumber', label: '碟号', type: 'number', min: 1 },
-  { key: 'disctotal', label: '碟总数', type: 'number', min: 1 },
-  { key: 'lyrics', label: '歌词', type: 'textarea', maxLength: 10000 },
-  { key: 'track', label: '曲号', type: 'number', min: 1 },
-  { key: 'tracktotal', label: '曲总数', type: 'number', min: 1 },
-  { key: 'kugolink', label: '酷狗链接', type: 'text', maxLength: 200, isUrl: true },
-  { key: 'qmlink', label: 'QQ音乐链接', type: 'text', maxLength: 200, isUrl: true },
-  { key: 'nelink', label: '网易云链接', type: 'text', maxLength: 200, isUrl: true },
-];
-
-// Debounce utility
-function debounce<Args extends unknown[]>(func: (...args: Args) => void, wait: number): (...args: Args) => void {
-  let timeout: NodeJS.Timeout;
-  return (...args: Args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-}
+import { useSongs } from '../hooks/useSongs';
+import { useAuth } from '../hooks/useAuth';
 
 // Memoized SongRow component
 const SongRow = React.memo(({ song, idx, expandedRows, toggleRowExpansion, handleEdit }: {
@@ -108,46 +66,29 @@ const SongRow = React.memo(({ song, idx, expandedRows, toggleRowExpansion, handl
 });
 SongRow.displayName = 'SongRow';
 
-// 工具函数：将对象中的空字符串转为 null
-function convertEmptyStringToNull<T>(obj: T): T {
-  if (Array.isArray(obj)) {
-    return obj.map(convertEmptyStringToNull) as T;
-  } else if (obj && typeof obj === 'object') {
-    const newObj: Record<string, unknown> = {};
-    for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        const val = (obj as Record<string, unknown>)[key];
-        if (val === '') {
-          newObj[key] = null;
-        } else if (Array.isArray(val)) {
-          // 对数组做递归处理
-          newObj[key] = val.map(item => item === '' ? null : item);
-        } else {
-          newObj[key] = val;
-        }
-      }
-    }
-    return newObj as T;
-  }
-  return obj;
-}
-
 export default function AdminClientComponent({ initialSongs, initialError }: { initialSongs: SongDetail[], initialError: string | null }) {
-  const [songs, setSongs] = useState<SongDetail[]>(initialSongs);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(initialError);
+  const {
+    songs,
+    setSongs,
+    loading,
+    setLoading,
+    error,
+    setError,
+    searchTerm,
+    setSearchTerm,
+    filteredSongs,
+    sortedSongs,
+  } = useSongs(initialSongs, initialError);
+  const { csrfToken, handleLogout, logoutLoading } = useAuth();
   const [showAdd, setShowAdd] = useState(false);
   const [newSong, setNewSong] = useState<Partial<Song>>({ title: "", album: "" });
   const [addFormErrors, setAddFormErrors] = useState<Record<string, string>>({});
   const [editSong, setEditSong] = useState<SongDetail | null>(null);
   const [editForm, setEditForm] = useState<Partial<Song>>({});
   const [editFormErrors, setEditFormErrors] = useState<Record<string, string>>({});
-  const [searchTerm, setSearchTerm] = useState("");
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
-  const [csrfToken, setCsrfToken] = useState('');
   const [editResultMessage, setEditResultMessage] = useState<string | null>(null);
-  const [logoutLoading, setLogoutLoading] = useState(false);
   const router = useRouter();
 
   // Scroll listener
@@ -158,31 +99,6 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-
-  useEffect(() => {
-    fetch('/api/auth/csrf-token')
-      .then(res => res.json())
-      .then(data => setCsrfToken(data.csrfToken || ''));
-  }, []);
-
-  // Debounced search handler
-  const debouncedSetSearchTerm = useMemo(
-    () => debounce((value: string) => setSearchTerm(value), 300),
-    [setSearchTerm]
-  );
-
-  // Memoized filtered songs
-  const filteredSongs = useMemo(() => {
-    return songs.filter(song =>
-      song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      song.album?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (song.lyricist && song.lyricist.some(l => l.toLowerCase().includes(searchTerm.toLowerCase()))) ||
-      (song.composer && song.composer.some(c => c.toLowerCase().includes(searchTerm.toLowerCase())))
-    );
-  }, [songs, searchTerm]);
-
-  // Memoized sorted songs
-  const sortedSongs = useMemo(() => mapAndSortSongs(filteredSongs), [filteredSongs]);
 
   const scrollToTop = useCallback(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -282,27 +198,6 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     });
   }, []);
 
-  const handleLogout = async () => {
-    setLogoutLoading(true);
-    try {
-      const csrfRes = await fetch('/api/auth/csrf-token');
-      const csrfData = await csrfRes.json();
-      const res = await fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-csrf-token': csrfData.csrfToken || '',
-        },
-      });
-      if (res.ok) {
-        router.push('/admin/login');
-        router.refresh();
-      }
-    } finally {
-      setLogoutLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
       <div className="container mx-auto px-6 py-8 max-w-7xl">
@@ -331,7 +226,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
             <input
               type="text"
               placeholder="搜索歌曲、专辑、作词、作曲..."
-              onChange={(e) => debouncedSetSearchTerm(e.target.value)}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/15 transition-all duration-200 rounded-r-2xl border-l-0 min-w-0"
               style={{ marginLeft: '-1px' }}
             />
@@ -496,84 +391,6 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
       )}
     </div>
   );
-}
-
-// API Functions
-async function apiCreateSong(song: Partial<Song>, csrfToken: string) {
-  const res = await fetch('/api/admin', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-csrf-token': csrfToken,
-    },
-    body: JSON.stringify(song),
-  });
-  if (!res.ok) throw new Error('新增失败');
-  return res.json();
-}
-
-async function apiUpdateSong(id: number, song: Partial<Song>, csrfToken: string) {
-  const res = await fetch('/api/admin', {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-csrf-token': csrfToken,
-    },
-    body: JSON.stringify({ id, ...song }),
-  });
-  if (!res.ok) throw new Error('更新失败');
-  return res.json();
-}
-
-function formatField(val: unknown, type: SongFieldConfig['type']): string {
-  if (val == null) return '-';
-  if (type === 'array') return Array.isArray(val) ? (val as string[]).join(', ') : String(val);
-  if (type === 'boolean') return val ? '是' : '否';
-  if (type === 'date') return val ? String(val).slice(0, 10) : '-';
-  if (type === 'textarea' && typeof val === 'string' && val.length > 50) {
-    return val.substring(0, 50) + '...';
-  }
-  return String(val);
-}
-
-function validateField(f: SongFieldConfig, value: unknown): string {
-  if (f.required && (!value || (typeof value === 'string' && value.trim() === ''))) {
-    return `${f.label}为必填项`;
-  }
-  if ((f.type === 'text' || f.type === 'textarea' || f.type === 'date') && typeof value === 'string') {
-    if (f.minLength && value.length < f.minLength) {
-      return `${f.label}最少${f.minLength}个字符`;
-    }
-    if (f.maxLength && value.length > f.maxLength) {
-      return `${f.label}不能超过${f.maxLength}个字符`;
-    }
-    if (f.isUrl && value) {
-      try {
-        new URL(value);
-      } catch {
-        return `${f.label}必须为合法的URL`;
-      }
-    }
-  }
-  if (f.type === 'array' && Array.isArray(value)) {
-    for (let i = 0; i < value.length; i++) {
-      if (f.arrayMaxLength && value[i] && value[i].length > f.arrayMaxLength) {
-        return `${f.label}第${i + 1}项不能超过${f.arrayMaxLength}个字符`;
-      }
-    }
-  }
-  if (f.type === 'number') {
-    if (value !== null && value !== undefined && value !== '') {
-      if (typeof value !== 'number' || isNaN(value)) return `${f.label}必须为数字`;
-      if (f.min !== undefined && (value as number) < f.min) {
-        return `${f.label}不能小于${f.min}`;
-      }
-      if (!Number.isInteger(value)) {
-        return `${f.label}必须为整数`;
-      }
-    }
-  }
-  return '';
 }
 
 function renderInput(

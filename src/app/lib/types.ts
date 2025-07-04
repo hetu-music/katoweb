@@ -52,3 +52,16 @@ export interface SongInfo {
   creativeInfo: Array<{ label: string; value: string }>;
   basicInfo: Array<{ label: string; value: string }>;
 }
+
+// 歌曲字段配置类型（用于管理页面表单渲染和校验）
+export type SongFieldConfig = {
+  key: keyof SongDetail;
+  label: string;
+  type: 'text' | 'number' | 'array' | 'boolean' | 'date' | 'textarea';
+  required?: boolean;
+  maxLength?: number;
+  minLength?: number;
+  min?: number;
+  isUrl?: boolean;
+  arrayMaxLength?: number;
+};

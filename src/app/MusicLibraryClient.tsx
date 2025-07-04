@@ -5,7 +5,8 @@ import { Search, Grid, List, XCircle, ExternalLink, Mail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { MusicLibraryClientProps } from './lib/types';
-import { getCoverUrl, typeColorMap, genreColorMap, calculateFilterOptions, filterSongs, mapAndSortSongs } from './lib/utils';
+import { getCoverUrl, calculateFilterOptions, filterSongs, mapAndSortSongs } from './lib/utils';
+import { typeColorMap, genreColorMap } from './lib/constants';
 
 const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsData }) => {
   const router = useRouter();
