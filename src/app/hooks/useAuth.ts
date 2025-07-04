@@ -6,10 +6,14 @@ export function useAuth() {
   const [logoutLoading, setLogoutLoading] = useState(false);
   const router = useRouter();
 
+  const fetchCsrfToken = async () => {
+    const res = await fetch('/api/auth/csrf-token');
+    const data = await res.json();
+    setCsrfToken(data.csrfToken || '');
+  };
+
   useEffect(() => {
-    fetch('/api/auth/csrf-token')
-      .then(res => res.json())
-      .then(data => setCsrfToken(data.csrfToken || ''));
+    fetchCsrfToken();
   }, []);
 
   const handleLogout = async () => {
@@ -27,6 +31,7 @@ export function useAuth() {
       if (res.ok) {
         router.push('/admin/login');
         router.refresh();
+        await fetchCsrfToken();
       }
     } finally {
       setLogoutLoading(false);
