@@ -36,7 +36,7 @@ export default async function AdminPage() {
   let songs: Song[] = [];
   let error = null;
   try {
-    songs = await getSongs('test', session.access_token);
+    songs = await getSongs('temp', session.access_token);
   } catch (e: unknown) {
     if (e && typeof e === 'object' && 'message' in e && typeof (e as Error).message === 'string') {
       error = (e as Error).message;

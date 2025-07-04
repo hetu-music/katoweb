@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createSupabaseServerClient();
     const { data: { session } } = await supabase.auth.getSession();
-    const songs = await getSongs('test', session?.access_token);
+    const songs = await getSongs('temp', session?.access_token);
     return NextResponse.json(songs);
   } catch (e: unknown) {
     if (e && typeof e === 'object' && 'message' in e && typeof (e as Error).message === 'string') {
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
     
     const supabase = await createSupabaseServerClient();
     const { data: { session } } = await supabase.auth.getSession();
-    const song = await createSong(parseResult.data, 'test', session?.access_token);
+    const song = await createSong(parseResult.data, 'temp', session?.access_token);
     return NextResponse.json(song);
   } catch (e: unknown) {
     if (e && typeof e === 'object' && 'message' in e && typeof (e as Error).message === 'string') {
@@ -151,7 +151,7 @@ export async function PUT(request: NextRequest) {
     const supabase = await createSupabaseServerClient();
     const { data: { session } } = await supabase.auth.getSession();
     // 传递 updated_at
-    const song = await updateSong(id, { ...parseResult.data, updated_at }, 'test', session?.access_token);
+    const song = await updateSong(id, { ...parseResult.data, updated_at }, 'temp', session?.access_token);
     return NextResponse.json(song);
   } catch (e: unknown) {
     if (
