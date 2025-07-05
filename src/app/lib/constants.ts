@@ -17,7 +17,7 @@ export const songFields: SongFieldConfig[] = [
   { key: 'comment', label: '备注', type: 'textarea', maxLength: 10000 },
   { key: 'discnumber', label: '碟号', type: 'number', min: 1 },
   { key: 'disctotal', label: '碟总数', type: 'number', min: 1 },
-  { key: 'lyrics', label: '歌词', type: 'textarea', maxLength: 10000 },
+  { key: 'lyrics', label: 'LRC歌词', type: 'textarea', maxLength: 10000 },
   { key: 'track', label: '曲号', type: 'number', min: 1 },
   { key: 'tracktotal', label: '曲总数', type: 'number', min: 1 },
   { key: 'kugolink', label: '酷狗链接', type: 'text', maxLength: 200, isUrl: true },

@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import AdminClientComponent from './AdminClient';
-import { getSongs } from '../lib/supabase';
+import { getSongs, TABLE_NAMES } from '../lib/supabase';
 import type { Song } from '../lib/types';
 
 export default async function AdminPage() {
@@ -36,7 +36,7 @@ export default async function AdminPage() {
   let songs: Song[] = [];
   let error = null;
   try {
-    songs = await getSongs('temp', session.access_token);
+    songs = await getSongs(TABLE_NAMES.ADMIN, session.access_token);
   } catch (e: unknown) {
     if (e && typeof e === 'object' && 'message' in e && typeof (e as Error).message === 'string') {
       error = (e as Error).message;
