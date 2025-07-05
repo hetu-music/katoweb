@@ -11,8 +11,7 @@ import { typeColorMap, genreColorMap } from '../../lib/constants';
 
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [lyricsExpanded, setLyricsExpanded] = useState(true);
-  const [lyricsType, setLyricsType] = useState<'lrc' | 'normal'>('lrc');
+  const [lyricsType, setLyricsType] = useState<'normal' | 'lrc'>('normal');
   const router = useRouter();
 
   // scrollToTop 函数
@@ -196,67 +195,40 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         {/* 歌词区块 */}
         <div className="block-panel">
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-4">
-              <h3 className="block-panel-title mb-0">
-                歌词
-              </h3>
-              {/* 歌词类型切换胶囊 */}
-              <div className="flex bg-white/10 rounded-full p-1 border border-white/20">
-                <button
-                  onClick={() => setLyricsType('lrc')}
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                    lyricsType === 'lrc'
-                      ? 'bg-white/20 text-white shadow-sm'
-                      : 'text-white/70 hover:text-white/90'
-                  }`}
-                >
-                  LRC歌词
-                </button>
-                <button
-                  onClick={() => setLyricsType('normal')}
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                    lyricsType === 'normal'
-                      ? 'bg-white/20 text-white shadow-sm'
-                      : 'text-white/70 hover:text-white/90'
-                  }`}
-                >
-                  普通歌词
-                </button>
-              </div>
-            </div>
-            {(song.lyrics && song.lyrics.length > 500) || (song.normalLyrics && song.normalLyrics.length > 500) && (
+            <h3 className="block-panel-title mb-0">
+              歌词
+            </h3>
+            {/* 歌词类型切换胶囊 */}
+            <div className="flex bg-white/10 rounded-full p-1 border border-white/20">
               <button
-                onClick={() => setLyricsExpanded(!lyricsExpanded)}
-                className="flex items-center gap-2 px-3 py-1 rounded-lg bg-white/10 border border-white/20 text-white/80 hover:bg-white/20 transition-all duration-200 text-sm"
+                onClick={() => setLyricsType('normal')}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                  lyricsType === 'normal'
+                    ? 'bg-white/20 text-white shadow-sm'
+                    : 'text-white/70 hover:text-white/90'
+                }`}
               >
-                {lyricsExpanded ? <EyeOff size={16} /> : <Eye size={16} />}
-                {lyricsExpanded ? '收起' : '展开'}
+                普通歌词
               </button>
-            )}
+              <button
+                onClick={() => setLyricsType('lrc')}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                  lyricsType === 'lrc'
+                    ? 'bg-white/20 text-white shadow-sm'
+                    : 'text-white/70 hover:text-white/90'
+                }`}
+              >
+                LRC歌词
+              </button>
+            </div>
           </div>
 
           <div className="whitespace-pre-line leading-relaxed">
             {song.lyrics ? (
               <div className="block-panel-inner">
-                {/* 歌词转换状态指示器 */}
-                {lyricsType === 'normal' && (
-                  <div className="text-xs text-blue-300/70 mb-2 italic">
-                    {song.normalLyrics ? `已转换 ${song.normalLyrics.split('\n').length} 行歌词` : '暂无普通歌词'}
-                  </div>
-                )}
-                <div className={`${!lyricsExpanded && ((song.lyrics && song.lyrics.length > 500) || (song.normalLyrics && song.normalLyrics.length > 500)) ? 'max-h-64 overflow-hidden' : ''} transition-all duration-300`}>
-                  {lyricsType === 'lrc' ? song.lyrics : (song.normalLyrics || '暂无普通歌词')}
+                <div className={`${lyricsType === 'normal' ? 'text-center' : 'text-left'}`}>
+                  {lyricsType === 'normal' ? (song.normalLyrics || '暂无歌词') : song.lyrics}
                 </div>
-                {!lyricsExpanded && ((song.lyrics && song.lyrics.length > 500) || (song.normalLyrics && song.normalLyrics.length > 500)) && (
-                  <div className="mt-2 text-center">
-                    <button
-                      onClick={() => setLyricsExpanded(true)}
-                      className="text-blue-400 hover:text-blue-300 text-sm"
-                    >
-                      点击展开完整歌词
-                    </button>
-                  </div>
-                )}
               </div>
             ) : (
               <div className="text-gray-400 italic text-center py-8">暂无歌词</div>

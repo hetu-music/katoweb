@@ -83,30 +83,7 @@ export interface LyricLine {
     // 按时间戳排序
     lyricLines.sort((a, b) => a.time - b.time);
     
-    // 去重：如果相同时间戳有相同歌词，只保留一个
-    const uniqueLines: LyricLine[] = [];
-    for (const line of lyricLines) {
-      const existing = uniqueLines.find(
-        (ul) => ul.time === line.time && ul.text === line.text
-      );
-      if (!existing) {
-        uniqueLines.push(line);
-      }
-    }
-    
-    // 进一步去重：如果连续多行有相同歌词文本，只保留第一个
-    const finalLines: LyricLine[] = [];
-    for (let i = 0; i < uniqueLines.length; i++) {
-      const currentLine = uniqueLines[i];
-      const previousLine = finalLines[finalLines.length - 1];
-      
-      // 如果当前行与上一行歌词相同，跳过
-      if (previousLine && previousLine.text === currentLine.text) {
-        continue;
-      }
-      
-      finalLines.push(currentLine);
-    }
+    const finalLines = lyricLines;
     
     // 生成普通歌词文本
     const lyrics = finalLines.map(line => line.text).join('\n');
@@ -166,27 +143,5 @@ export interface LyricLine {
     return {
       isValid: errors.length === 0,
       errors
-    };
-  }
-
-  /**
-   * 测试歌词转换功能
-   * @param lrcContent 测试用的LRC内容
-   * @returns 转换结果
-   */
-  export function testLyricsConversion(lrcContent: string): {
-    original: string;
-    converted: string;
-    lineCount: number;
-    isValid: boolean;
-  } {
-    const validation = validateLrcFormat(lrcContent);
-    const processed = processLyrics(lrcContent);
-    
-    return {
-      original: lrcContent,
-      converted: processed.lyrics,
-      lineCount: processed.lines.length,
-      isValid: validation.isValid
     };
   }
