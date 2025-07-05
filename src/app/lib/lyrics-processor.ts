@@ -1,8 +1,3 @@
-/**
- * 歌词处理工具函数
- * 用于处理 LRC 格式的歌词文件，转换为普通歌词格式
- */
-
 export interface LyricLine {
     time: number; // 时间戳（秒）
     text: string; // 歌词文本
@@ -12,12 +7,7 @@ export interface LyricLine {
     lyrics: string; // 处理后的普通歌词文本
     lines: LyricLine[]; // 带时间戳的歌词行数组（用于调试或其他用途）
   }
-  
-  /**
-   * 解析时间戳字符串为秒数
-   * @param timeStr 时间戳字符串，格式如 "01:23.45" 或 "1:23.45"
-   * @returns 时间戳对应的秒数
-   */
+
   function parseTime(timeStr: string): number {
     const match = timeStr.match(/^(\d{1,2}):(\d{2})\.(\d{2})$/);
     if (!match) return 0;
@@ -28,12 +18,7 @@ export interface LyricLine {
     
     return minutes * 60 + seconds + milliseconds / 100;
   }
-  
-  /**
-   * 处理 LRC 格式的歌词
-   * @param lrcContent LRC 格式的歌词内容
-   * @returns 处理后的歌词对象
-   */
+
   export function processLyrics(lrcContent: string): ProcessedLyrics {
     if (!lrcContent || typeof lrcContent !== 'string') {
       return { lyrics: '', lines: [] };
