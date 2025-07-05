@@ -46,8 +46,8 @@ export interface LyricLine {
       const trimmedLine = line.trim();
       if (!trimmedLine) continue;
       
-      // 跳过元数据行（ti:, ar:, al:, by: 等）
-      if (trimmedLine.match(/^\[(?:ti|ar|al|by|offset):/i)) {
+      // 跳过元数据行（ti:, ar:, al:, by:, offset: 等）
+      if (trimmedLine.match(/^\[(?:ti|ar|al|by|offset|re|ve):/i)) {
         continue;
       }
       
@@ -94,48 +94,27 @@ export interface LyricLine {
       }
     }
     
+    // 进一步去重：如果连续多行有相同歌词文本，只保留第一个
+    const finalLines: LyricLine[] = [];
+    for (let i = 0; i < uniqueLines.length; i++) {
+      const currentLine = uniqueLines[i];
+      const previousLine = finalLines[finalLines.length - 1];
+      
+      // 如果当前行与上一行歌词相同，跳过
+      if (previousLine && previousLine.text === currentLine.text) {
+        continue;
+      }
+      
+      finalLines.push(currentLine);
+    }
+    
     // 生成普通歌词文本
-    const lyrics = uniqueLines.map(line => line.text).join('\n');
+    const lyrics = finalLines.map(line => line.text).join('\n');
     
     return {
       lyrics,
-      lines: uniqueLines
+      lines: finalLines
     };
-  }
-  
-  /**
-   * 从文件路径读取并处理 LRC 歌词
-   * @param filePath LRC 文件路径
-   * @returns 处理后的歌词对象
-   */
-  export async function processLyricsFromFile(filePath: string): Promise<ProcessedLyrics> {
-    try {
-      const fs = await import('fs/promises');
-      const content = await fs.readFile(filePath, 'utf-8');
-      return processLyrics(content);
-    } catch (error) {
-      console.error('Error reading lyrics file:', error);
-      return { lyrics: '', lines: [] };
-    }
-  }
-  
-  /**
-   * 从 URL 获取并处理 LRC 歌词
-   * @param url LRC 文件的 URL
-   * @returns 处理后的歌词对象
-   */
-  export async function processLyricsFromUrl(url: string): Promise<ProcessedLyrics> {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const content = await response.text();
-      return processLyrics(content);
-    } catch (error) {
-      console.error('Error fetching lyrics from URL:', error);
-      return { lyrics: '', lines: [] };
-    }
   }
   
   /**
@@ -187,5 +166,27 @@ export interface LyricLine {
     return {
       isValid: errors.length === 0,
       errors
+    };
+  }
+
+  /**
+   * 测试歌词转换功能
+   * @param lrcContent 测试用的LRC内容
+   * @returns 转换结果
+   */
+  export function testLyricsConversion(lrcContent: string): {
+    original: string;
+    converted: string;
+    lineCount: number;
+    isValid: boolean;
+  } {
+    const validation = validateLrcFormat(lrcContent);
+    const processed = processLyrics(lrcContent);
+    
+    return {
+      original: lrcContent,
+      converted: processed.lyrics,
+      lineCount: processed.lines.length,
+      isValid: validation.isValid
     };
   }

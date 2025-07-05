@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { Song, SongDetail } from './types';
 import { mapAndSortSongs } from './utils';
+import { processLyrics } from './lyrics-processor';
 
 // 创建Supabase客户端，根据表名和可选 accessToken 选择不同的密钥
 export function createSupabaseClient(table?: string, accessToken?: string) {
@@ -64,11 +65,25 @@ export async function getSongById(id: number, table: string = 'music', accessTok
     console.log('No song found for id:', id);
     return null;
   }
-  // 映射数据并添加年份
+  
+  // 处理歌词转换
+  let normalLyrics = '';
+  if (data.lyrics) {
+    try {
+      const processed = processLyrics(data.lyrics);
+      normalLyrics = processed.lyrics;
+    } catch (error) {
+      console.error('Error processing lyrics for song', id, ':', error);
+      normalLyrics = '歌词转换失败，请检查LRC格式';
+    }
+  }
+  
+  // 映射数据并添加年份和转换后的歌词
   return {
     ...data,
     year: data.date ? new Date(data.date).getFullYear() : null,
-  } as SongDetail;
+    normalLyrics,
+  } as SongDetail & { normalLyrics: string };
 }
 
 // 新增歌曲

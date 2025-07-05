@@ -23,6 +23,7 @@ export type SongDetail = Song & {
   discnumber?: number | null;
   disctotal?: number | null;
   lyrics?: string | null;
+  normalLyrics?: string | null;
   track?: number | null;
   tracktotal?: number | null;
   kugolink?: string | null;

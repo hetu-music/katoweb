@@ -8,6 +8,7 @@ import { SongDetailClientProps } from '../../lib/types';
 import { getCoverUrl, calculateSongInfo } from '../../lib/utils';
 import { typeColorMap, genreColorMap } from '../../lib/constants';
 
+
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [lyricsExpanded, setLyricsExpanded] = useState(true);
@@ -223,7 +224,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 </button>
               </div>
             </div>
-            {song.lyrics && song.lyrics.length > 500 && (
+            {(song.lyrics && song.lyrics.length > 500) || (song.normalLyrics && song.normalLyrics.length > 500) && (
               <button
                 onClick={() => setLyricsExpanded(!lyricsExpanded)}
                 className="flex items-center gap-2 px-3 py-1 rounded-lg bg-white/10 border border-white/20 text-white/80 hover:bg-white/20 transition-all duration-200 text-sm"
@@ -237,10 +238,16 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
           <div className="whitespace-pre-line leading-relaxed">
             {song.lyrics ? (
               <div className="block-panel-inner">
-                <div className={`${!lyricsExpanded && song.lyrics.length > 500 ? 'max-h-64 overflow-hidden' : ''} transition-all duration-300`}>
-                  {lyricsType === 'lrc' ? song.lyrics : '暂无普通歌词'}
+                {/* 歌词转换状态指示器 */}
+                {lyricsType === 'normal' && (
+                  <div className="text-xs text-blue-300/70 mb-2 italic">
+                    {song.normalLyrics ? `已转换 ${song.normalLyrics.split('\n').length} 行歌词` : '暂无普通歌词'}
+                  </div>
+                )}
+                <div className={`${!lyricsExpanded && ((song.lyrics && song.lyrics.length > 500) || (song.normalLyrics && song.normalLyrics.length > 500)) ? 'max-h-64 overflow-hidden' : ''} transition-all duration-300`}>
+                  {lyricsType === 'lrc' ? song.lyrics : (song.normalLyrics || '暂无普通歌词')}
                 </div>
-                {!lyricsExpanded && song.lyrics.length > 500 && (
+                {!lyricsExpanded && ((song.lyrics && song.lyrics.length > 500) || (song.normalLyrics && song.normalLyrics.length > 500)) && (
                   <div className="mt-2 text-center">
                     <button
                       onClick={() => setLyricsExpanded(true)}
