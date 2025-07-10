@@ -106,7 +106,7 @@ export function calculateSongInfo(song: SongDetail): SongInfo {
     ],
     basicInfo: [
       { label: '专辑', value: song.album || '未知' },
-      { label: '专辑创作', value: (song.albumartist && song.albumartist.length > 0) ? song.albumartist.join(', ') : '未知' },
+      { label: '出品发行', value: (song.albumartist && song.albumartist.length > 0) ? song.albumartist.join(', ') : '未知' },
       { label: '发行日期', value: song.date || '未知' },
       { label: '时长', value: formatTime(song.length) },
       { label: '曲号', value: `${song.track || '未知'}/${song.tracktotal || '未知'}` },

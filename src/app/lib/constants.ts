@@ -12,7 +12,7 @@ export const songFields: SongFieldConfig[] = [
   { key: 'hascover', label: '封面', type: 'boolean' },
   { key: 'date', label: '日期', type: 'date', maxLength: 30 },
   { key: 'genre', label: '流派', type: 'array', arrayMaxLength: 30 },
-  { key: 'albumartist', label: '专辑创作', type: 'array', arrayMaxLength: 30 },
+  { key: 'albumartist', label: '出品发行', type: 'array', arrayMaxLength: 30 },
   { key: 'arranger', label: '编曲', type: 'array', arrayMaxLength: 30 },
   { key: 'comment', label: '备注', type: 'textarea', maxLength: 10000 },
   { key: 'discnumber', label: '碟号', type: 'number', min: 1 },
