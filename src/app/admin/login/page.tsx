@@ -22,11 +22,16 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
+      // 每次登录前都获取最新的 CSRF token
+      const csrfRes = await fetch('/api/auth/csrf-token');
+      const csrfData = await csrfRes.json();
+      const latestCsrfToken = csrfData.csrfToken || '';
+
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-csrf-token': csrfToken,
+          'x-csrf-token': latestCsrfToken,
         },
         body: JSON.stringify({ email, password }),
       });
