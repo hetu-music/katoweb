@@ -104,7 +104,7 @@ const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoadin
           <div className="p-2">
             <button
               className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-blue-500/20 transition-all duration-200 rounded-xl border-b border-white/10 group"
-              onClick={() => { setShowAccountMenu(false); setShowDisplayName(true); fetchDisplayName(); }}
+              onClick={() => { setShowAccountMenu(false); setShowDisplayName(true); setDisplayNameInput(displayName); setDisplayNameError(null); setDisplayNameSuccess(null); }}
               type="button"
             >
               <div className="w-6 h-6 flex items-center justify-center">
