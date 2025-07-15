@@ -72,53 +72,94 @@ const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoadin
     <div className="relative">
       <button
         onClick={() => setShowAccountMenu(v => !v)}
-        className="flex items-center gap-2 px-6 py-2 rounded-xl bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-400/30 text-blue-100 hover:from-blue-500/30 hover:to-indigo-500/30 hover:text-white transition-all duration-200 shadow-sm font-medium whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed"
+        className="group flex items-center gap-4 h-12 px-8 py-1 rounded-2xl bg-gradient-to-r from-blue-500/20 via-indigo-500/20 to-purple-500/20 border border-blue-400/30 text-blue-100 hover:from-blue-500/30 hover:via-indigo-500/30 hover:to-purple-500/30 hover:text-white hover:border-blue-300/50 transition-all duration-300 shadow-lg hover:shadow-xl font-medium whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed backdrop-blur-sm"
         style={{ minWidth: 0 }}
         type="button"
       >
         {displayName ? (
           <>
-            <span className="inline-block max-w-[120px] truncate align-middle">{displayName}</span>
-            <span className="ml-2 text-xs text-blue-200/80 bg-blue-500/10 px-2 py-0.5 rounded">账号</span>
+            <div className="flex items-center gap-4">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-inner">
+                {displayName.charAt(0).toUpperCase()}
+              </div>
+              <span className="inline-block max-w-[120px] truncate align-middle text-lg font-semibold">
+                {displayName}
+              </span>
+            </div>
           </>
         ) : (
-          '管理账号'
+          <>
+            <div className="w-8 h-8 bg-gradient-to-r from-gray-400 to-gray-500 rounded-full flex items-center justify-center text-white shadow-inner">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <span className="inline-block max-w-[120px] truncate align-middle text-lg font-semibold">匿名用户</span>
+          </>
         )}
       </button>
+
       {showAccountMenu && (
-        <div className="absolute right-0 mt-2 w-40 bg-gradient-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-xl shadow-lg z-50 overflow-hidden animate-fade-in">
-          <button
-            className="w-full text-left px-5 py-3 text-white hover:bg-blue-500/20 transition-all duration-150 border-b border-white/10"
-            onClick={() => { setShowAccountMenu(false); setShowDisplayName(true); fetchDisplayName(); }}
-            type="button"
-          >
-            管理用户名
-          </button>
-          <button
-            className="w-full text-left px-5 py-3 text-white hover:bg-blue-500/20 transition-all duration-150 border-b border-white/10"
-            onClick={() => { setShowAccountMenu(false); setShowChangePwd(true); }}
-            type="button"
-          >
-            修改密码
-          </button>
-          <button
-            className="w-full text-left px-5 py-3 text-red-200 hover:bg-red-500/20 transition-all duration-150"
-            onClick={() => { setShowAccountMenu(false); handleLogout(); }}
-            disabled={logoutLoading}
-            type="button"
-          >
-            {logoutLoading ? (
-              <span className="inline-block w-5 h-5 mr-2 align-middle animate-spin border-2 border-white border-t-transparent rounded-full"></span>
-            ) : null}
-            退出登录
-          </button>
+        <div className="absolute right-0 mt-3 w-48 bg-gradient-to-br from-purple-800/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-lg border border-white/20 rounded-2xl shadow-2xl z-50 overflow-hidden animate-fade-in">
+          <div className="p-2">
+            <button
+              className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-blue-500/20 transition-all duration-200 rounded-xl border-b border-white/10 group"
+              onClick={() => { setShowAccountMenu(false); setShowDisplayName(true); fetchDisplayName(); }}
+              type="button"
+            >
+              <div className="w-6 h-6 flex items-center justify-center">
+                <svg className="w-5 h-5 text-blue-300 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              </div>
+              <span className="text-sm font-medium">管理用户名</span>
+            </button>
+            <button
+              className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-blue-500/20 transition-all duration-200 rounded-xl border-b border-white/10 group"
+              onClick={() => { setShowAccountMenu(false); setShowChangePwd(true); }}
+              type="button"
+            >
+              <div className="w-6 h-6 flex items-center justify-center">
+                <svg className="w-5 h-5 text-blue-300 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <span className="text-sm font-medium">修改密码</span>
+            </button>
+            <button
+              className="w-full flex items-center gap-3 px-4 py-3 text-red-200 hover:bg-red-500/20 transition-all duration-200 rounded-xl group"
+              onClick={() => { setShowAccountMenu(false); handleLogout(); }}
+              disabled={logoutLoading}
+              type="button"
+            >
+              <div className="w-6 h-6 flex items-center justify-center">
+                {logoutLoading ? (
+                  <div className="w-5 h-5 animate-spin border-2 border-red-300 border-t-transparent rounded-full"></div>
+                ) : (
+                  <svg className="w-5 h-5 text-red-300 group-hover:text-red-200 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                )}
+              </div>
+              <span className="text-sm font-medium">退出登录</span>
+            </button>
+          </div>
         </div>
       )}
 
+      {/* 修改密码弹窗 */}
       {showChangePwd && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-gradient-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-2xl shadow-2xl p-8 max-w-md w-full">
-            <h2 className="text-xl font-bold text-white mb-4">修改密码</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-gradient-to-br from-purple-800/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl p-8 max-w-md w-full animate-fade-in">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-white">修改密码</h2>
+            </div>
+            
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
@@ -153,56 +194,88 @@ const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoadin
               }}
               className="space-y-6"
             >
-              <div>
-                <label className="block text-blue-100 font-semibold mb-1 text-sm">旧密码</label>
-                <input
-                  type="password"
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  placeholder="请输入旧密码"
-                  value={pwdForm.oldPassword}
-                  onChange={e => setPwdForm(f => ({ ...f, oldPassword: e.target.value }))}
-                  autoComplete="current-password"
-                />
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-blue-100 font-semibold mb-2 text-sm">旧密码</label>
+                  <div className="relative">
+                    <input
+                      type="password"
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 placeholder-white/50"
+                      placeholder="请输入旧密码"
+                      value={pwdForm.oldPassword}
+                      onChange={e => setPwdForm(f => ({ ...f, oldPassword: e.target.value }))}
+                      autoComplete="current-password"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-blue-100 font-semibold mb-2 text-sm">新密码</label>
+                  <div className="relative">
+                    <input
+                      type="password"
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 placeholder-white/50"
+                      placeholder="请输入新密码（至少6位）"
+                      value={pwdForm.newPassword}
+                      onChange={e => setPwdForm(f => ({ ...f, newPassword: e.target.value }))}
+                      autoComplete="new-password"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-blue-100 font-semibold mb-2 text-sm">确认新密码</label>
+                  <div className="relative">
+                    <input
+                      type="password"
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 placeholder-white/50"
+                      placeholder="请再次输入新密码"
+                      value={pwdForm.confirmPassword}
+                      onChange={e => setPwdForm(f => ({ ...f, confirmPassword: e.target.value }))}
+                      autoComplete="new-password"
+                    />
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="block text-blue-100 font-semibold mb-1 text-sm">新密码</label>
-                <input
-                  type="password"
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  placeholder="请输入新密码（至少6位）"
-                  value={pwdForm.newPassword}
-                  onChange={e => setPwdForm(f => ({ ...f, newPassword: e.target.value }))}
-                  autoComplete="new-password"
-                />
-              </div>
-              <div>
-                <label className="block text-blue-100 font-semibold mb-1 text-sm">确认新密码</label>
-                <input
-                  type="password"
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  placeholder="请再次输入新密码"
-                  value={pwdForm.confirmPassword}
-                  onChange={e => setPwdForm(f => ({ ...f, confirmPassword: e.target.value }))}
-                  autoComplete="new-password"
-                />
-              </div>
-              {pwdFormError && <div className="text-red-400 text-sm mt-2">{pwdFormError}</div>}
-              {pwdFormSuccess && <div className="text-green-400 text-sm mt-2">{pwdFormSuccess}</div>}
-              <div className="flex items-center justify-end gap-4 pt-4">
+              
+              {pwdFormError && (
+                <div className="bg-red-500/10 border border-red-400/30 rounded-xl p-3 text-red-300 text-sm flex items-center gap-2">
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {pwdFormError}
+                </div>
+              )}
+              
+              {pwdFormSuccess && (
+                <div className="bg-green-500/10 border border-green-400/30 rounded-xl p-3 text-green-300 text-sm flex items-center gap-2">
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  {pwdFormSuccess}
+                </div>
+              )}
+              
+              <div className="flex items-center justify-end gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => { setShowChangePwd(false); setPwdFormError(null); setPwdFormSuccess(null); setPwdForm({ oldPassword: '', newPassword: '', confirmPassword: '' }); }}
-                  className="px-6 py-2 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 font-medium"
+                  className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 font-medium"
                   disabled={pwdFormLoading}
                 >
                   关闭
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 rounded-xl bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 text-green-200 hover:from-green-500/30 hover:to-emerald-500/30 hover:text-green-100 transition-all duration-200 font-semibold shadow-sm"
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-400/30 text-green-100 hover:from-green-500/40 hover:to-emerald-500/40 hover:text-white transition-all duration-200 font-semibold shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
                   disabled={pwdFormLoading}
                 >
-                  {pwdFormLoading ? '提交中...' : '提交'}
+                  {pwdFormLoading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></div>
+                      <span>提交中...</span>
+                    </div>
+                  ) : (
+                    '确认修改'
+                  )}
                 </button>
               </div>
             </form>
@@ -212,9 +285,17 @@ const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoadin
 
       {/* 用户名管理弹窗 */}
       {showDisplayName && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-gradient-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-2xl shadow-2xl p-8 max-w-md w-full">
-            <h2 className="text-xl font-bold text-white mb-4">管理用户名</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-gradient-to-br from-purple-800/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl p-8 max-w-md w-full animate-fade-in">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-white">管理用户名</h2>
+            </div>
+            
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
@@ -242,35 +323,64 @@ const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoadin
               className="space-y-6"
             >
               <div>
-                <label className="block text-blue-100 font-semibold mb-1 text-sm">用户名</label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  placeholder="请输入用户名"
-                  value={displayNameInput}
-                  onChange={e => setDisplayNameInput(e.target.value)}
-                  autoComplete="off"
-                  maxLength={32}
-                  disabled={displayNameLoading}
-                />
+                <label className="block text-blue-100 font-semibold mb-2 text-sm">用户名</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 placeholder-white/50"
+                    placeholder="请输入用户名"
+                    value={displayNameInput}
+                    onChange={e => setDisplayNameInput(e.target.value)}
+                    autoComplete="off"
+                    maxLength={32}
+                    disabled={displayNameLoading}
+                  />
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-white/50">
+                    {displayNameInput.length}/32
+                  </div>
+                </div>
               </div>
-              {displayNameError && <div className="text-red-400 text-sm mt-2">{displayNameError}</div>}
-              {displayNameSuccess && <div className="text-green-400 text-sm mt-2">{displayNameSuccess}</div>}
-              <div className="flex items-center justify-end gap-4 pt-4">
+              
+              {displayNameError && (
+                <div className="bg-red-500/10 border border-red-400/30 rounded-xl p-3 text-red-300 text-sm flex items-center gap-2">
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {displayNameError}
+                </div>
+              )}
+              
+              {displayNameSuccess && (
+                <div className="bg-green-500/10 border border-green-400/30 rounded-xl p-3 text-green-300 text-sm flex items-center gap-2">
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  {displayNameSuccess}
+                </div>
+              )}
+              
+              <div className="flex items-center justify-end gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => { setShowDisplayName(false); setDisplayNameError(null); setDisplayNameSuccess(null); }}
-                  className="px-6 py-2 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 font-medium"
+                  className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 font-medium"
                   disabled={displayNameLoading}
                 >
                   关闭
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 rounded-xl bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 text-green-200 hover:from-green-500/30 hover:to-emerald-500/30 hover:text-green-100 transition-all duration-200 font-semibold shadow-sm"
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-400/30 text-green-100 hover:from-green-500/40 hover:to-emerald-500/40 hover:text-white transition-all duration-200 font-semibold shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
                   disabled={displayNameLoading}
                 >
-                  {displayNameLoading ? '提交中...' : '保存'}
+                  {displayNameLoading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></div>
+                      <span>保存中...</span>
+                    </div>
+                  ) : (
+                    '保存更改'
+                  )}
                 </button>
               </div>
             </form>
