@@ -9,10 +9,32 @@ interface AccountProps {
 const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoading }) => {
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [showChangePwd, setShowChangePwd] = useState(false);
+  const [showDisplayName, setShowDisplayName] = useState(false);
+  const [displayName, setDisplayName] = useState('');
+  const [displayNameInput, setDisplayNameInput] = useState('');
+  const [displayNameError, setDisplayNameError] = useState<string | null>(null);
+  const [displayNameSuccess, setDisplayNameSuccess] = useState<string | null>(null);
+  const [displayNameLoading, setDisplayNameLoading] = useState(false);
   const [pwdForm, setPwdForm] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
   const [pwdFormError, setPwdFormError] = useState<string | null>(null);
   const [pwdFormSuccess, setPwdFormSuccess] = useState<string | null>(null);
   const [pwdFormLoading, setPwdFormLoading] = useState(false);
+
+  // 自动加载 display name
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const res = await import('../../lib/api').then(m => m.apiGetDisplayName());
+        if (res.displayName !== undefined) {
+          setDisplayName(res.displayName);
+        } else {
+          setDisplayName('');
+        }
+      } catch {
+        setDisplayName('');
+      }
+    })();
+  }, []);
 
   React.useEffect(() => {
     if (!showAccountMenu) return;
@@ -25,6 +47,27 @@ const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoadin
     return () => window.removeEventListener('mousedown', onClick);
   }, [showAccountMenu]);
 
+  // 获取 display name
+  const fetchDisplayName = async () => {
+    setDisplayNameError(null);
+    setDisplayNameSuccess(null);
+    setDisplayNameLoading(true);
+    try {
+      const res = await import('../../lib/api').then(m => m.apiGetDisplayName());
+      if (res.displayName !== undefined) {
+        setDisplayName(res.displayName);
+        setDisplayNameInput(res.displayName);
+      } else {
+        setDisplayName('');
+        setDisplayNameInput('');
+      }
+    } catch {
+      setDisplayNameError('获取用户名失败');
+    } finally {
+      setDisplayNameLoading(false);
+    }
+  };
+
   return (
     <div className="relative">
       <button
@@ -33,10 +76,24 @@ const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoadin
         style={{ minWidth: 0 }}
         type="button"
       >
-        管理账号
+        {displayName ? (
+          <>
+            <span className="inline-block max-w-[120px] truncate align-middle">{displayName}</span>
+            <span className="ml-2 text-xs text-blue-200/80 bg-blue-500/10 px-2 py-0.5 rounded">账号</span>
+          </>
+        ) : (
+          '管理账号'
+        )}
       </button>
       {showAccountMenu && (
         <div className="absolute right-0 mt-2 w-40 bg-gradient-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-xl shadow-lg z-50 overflow-hidden animate-fade-in">
+          <button
+            className="w-full text-left px-5 py-3 text-white hover:bg-blue-500/20 transition-all duration-150 border-b border-white/10"
+            onClick={() => { setShowAccountMenu(false); setShowDisplayName(true); fetchDisplayName(); }}
+            type="button"
+          >
+            管理用户名
+          </button>
           <button
             className="w-full text-left px-5 py-3 text-white hover:bg-blue-500/20 transition-all duration-150 border-b border-white/10"
             onClick={() => { setShowAccountMenu(false); setShowChangePwd(true); }}
@@ -146,6 +203,74 @@ const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoadin
                   disabled={pwdFormLoading}
                 >
                   {pwdFormLoading ? '提交中...' : '提交'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 用户名管理弹窗 */}
+      {showDisplayName && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-gradient-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-2xl shadow-2xl p-8 max-w-md w-full">
+            <h2 className="text-xl font-bold text-white mb-4">管理用户名</h2>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setDisplayNameError(null);
+                setDisplayNameSuccess(null);
+                if (!displayNameInput || displayNameInput.length < 2) {
+                  setDisplayNameError('用户名不能为空且不少于2个字符');
+                  return;
+                }
+                setDisplayNameLoading(true);
+                try {
+                  const res = await import('../../lib/api').then(m => m.apiUpdateDisplayName(displayNameInput, csrfToken));
+                  if (res.success) {
+                    setDisplayNameSuccess('用户名更新成功');
+                    setDisplayName(displayNameInput);
+                  } else {
+                    setDisplayNameError(res.error || '更新失败');
+                  }
+                } catch {
+                  setDisplayNameError('网络错误');
+                } finally {
+                  setDisplayNameLoading(false);
+                }
+              }}
+              className="space-y-6"
+            >
+              <div>
+                <label className="block text-blue-100 font-semibold mb-1 text-sm">用户名</label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  placeholder="请输入用户名"
+                  value={displayNameInput}
+                  onChange={e => setDisplayNameInput(e.target.value)}
+                  autoComplete="off"
+                  maxLength={32}
+                  disabled={displayNameLoading}
+                />
+              </div>
+              {displayNameError && <div className="text-red-400 text-sm mt-2">{displayNameError}</div>}
+              {displayNameSuccess && <div className="text-green-400 text-sm mt-2">{displayNameSuccess}</div>}
+              <div className="flex items-center justify-end gap-4 pt-4">
+                <button
+                  type="button"
+                  onClick={() => { setShowDisplayName(false); setDisplayNameError(null); setDisplayNameSuccess(null); }}
+                  className="px-6 py-2 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 font-medium"
+                  disabled={displayNameLoading}
+                >
+                  关闭
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 rounded-xl bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 text-green-200 hover:from-green-500/30 hover:to-emerald-500/30 hover:text-green-100 transition-all duration-200 font-semibold shadow-sm"
+                  disabled={displayNameLoading}
+                >
+                  {displayNameLoading ? '提交中...' : '保存'}
                 </button>
               </div>
             </form>

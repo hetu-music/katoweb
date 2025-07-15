@@ -44,3 +44,22 @@ export async function apiChangePassword(oldPassword: string, newPassword: string
   });
   return res.json();
 }
+
+// 获取 display name
+export async function apiGetDisplayName() {
+  const res = await fetch('/api/auth/display-name');
+  return res.json();
+}
+
+// 更新 display name
+export async function apiUpdateDisplayName(displayName: string, csrfToken: string) {
+  const res = await fetch('/api/auth/display-name', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-csrf-token': csrfToken,
+    },
+    body: JSON.stringify({ displayName }),
+  });
+  return res.json();
+}
