@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { Search, Grid, List, XCircle, ExternalLink, Mail } from 'lucide-react';
+import { Search, Grid, List, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { MusicLibraryClientProps } from '../lib/types';
