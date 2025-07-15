@@ -21,8 +21,8 @@ async function getCurrentUser() {
       },
     },
   });
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.user || null;
+  const { data: { user } } = await supabase.auth.getUser();
+  return user || null;
 }
 
 export async function GET() {
@@ -30,18 +30,14 @@ export async function GET() {
   if (!user) {
     return NextResponse.json({ error: '未登录或会话失效' }, { status: 401 });
   }
-  // display name 可能在 user.user_metadata.display_name 或 user.user_metadata.full_name
-  const displayName = user.user_metadata?.display_name || user.user_metadata?.full_name || '';
+  // display name
+  const displayName = user.user_metadata?.display_name || '';
   return NextResponse.json({ displayName });
 }
 
 export async function POST(request: NextRequest) {
   if (!(await verifyCSRFToken(request))) {
     return NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 });
-  }
-  const user = await getCurrentUser();
-  if (!user) {
-    return NextResponse.json({ error: '未登录或会话失效' }, { status: 401 });
   }
   const { displayName } = await request.json();
   if (!displayName || typeof displayName !== 'string' || displayName.length < 2) {
@@ -65,6 +61,16 @@ export async function POST(request: NextRequest) {
       },
     },
   });
+
+  // 获取当前用户，只用 email 做鉴权
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) {
+    return NextResponse.json({ error: '未登录或会话失效' }, { status: 401 });
+  }
+  if (!user.email) {
+    return NextResponse.json({ error: '用户邮箱不存在，无法更新用户名' }, { status: 400 });
+  }
+
   // 更新 user_metadata.display_name
   const { error } = await supabase.auth.updateUser({
     data: { display_name: displayName },
