@@ -362,7 +362,12 @@ const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoadin
               <div className="flex items-center justify-end gap-3 pt-4">
                 <button
                   type="button"
-                  onClick={() => { setShowDisplayName(false); setDisplayNameError(null); setDisplayNameSuccess(null); }}
+                  onClick={() => {
+                    setShowDisplayName(false);
+                    setDisplayNameInput(displayName);
+                    setDisplayNameError(null);
+                    setDisplayNameSuccess(null);
+                  }}
                   className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 font-medium"
                   disabled={displayNameLoading}
                 >
