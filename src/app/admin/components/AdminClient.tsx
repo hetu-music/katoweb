@@ -53,7 +53,13 @@ const SongRow = React.memo(({ song, idx, expandedRows, toggleRowExpansion, handl
                 <div key={field.key} className="flex flex-col">
                   <span className="text-blue-300 text-sm font-medium mb-1">{field.label}:</span>
                   <span className="text-white/80 text-sm break-words">
-                    {formatField(song[field.key], field.type)}
+                    {field.key === 'hascover'
+                      ? (song.hascover === true
+                          ? '定制封面'
+                          : song.hascover === false
+                            ? '初号机（黑底机器人）'
+                            : '白底狐狸（默认）')
+                      : formatField(song[field.key], field.type)}
                   </span>
                 </div>
               ))}
