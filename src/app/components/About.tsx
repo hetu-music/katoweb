@@ -8,7 +8,6 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [contributorsError, setContributorsError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (activeTab !== 'maintainer') return;
     setContributorsLoading(true);
     setContributorsError(null);
     fetch('/api/auth/contributors')
@@ -22,7 +21,9 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       })
       .catch(() => setContributorsError('获取贡献者失败'))
       .finally(() => setContributorsLoading(false));
-  }, [activeTab]);
+  }, []);
+
+  const mainContributor = contributors.find((c) => c.sort_order === 2);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
@@ -85,7 +86,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               </span>
               提交反馈。
             </p>
-            <p>特别鸣谢：正版河图吧吧主 @正版河图吧 及众位网友整理的《歌手河图作品发布勘鉴》，为本项目提供了宝贵参考资料。</p>
+            <p>特别鸣谢：正版河图吧吧主 <span className="font-bold text-blue-300">{mainContributor ? mainContributor.name : '顾大一'}</span> 及众位网友整理的《歌手河图作品发布勘鉴》，为本项目提供了宝贵参考资料。</p>
           </div>
         ) : (
           <div className="text-base leading-relaxed space-y-4">
