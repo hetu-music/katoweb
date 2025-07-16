@@ -386,7 +386,7 @@ const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoadin
               </div>
               <div className="flex items-center mt-2">
                 <label htmlFor="display-contributor" className="flex items-center gap-3 cursor-pointer select-none py-2 px-3 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-200 w-full">
-                  <span className="text-blue-100 text-sm font-medium">展示在关于-贡献者中</span>
+                  <span className="text-blue-100 text-sm font-medium">展示我到 关于-维护者 中</span>
                   <span className="flex-1"></span>
                   <span className="relative inline-block w-11 h-6 align-middle select-none">
                     <input
