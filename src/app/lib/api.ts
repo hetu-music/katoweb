@@ -53,7 +53,7 @@ export async function apiGetDisplayName() {
 
 // 更新 display name
 export async function apiUpdateDisplayName(displayName: string, csrfToken: string, display?: boolean) {
-  const body: any = { displayName };
+  const body: { displayName: string; display?: boolean } = { displayName };
   if (typeof display === 'boolean') body.display = display;
   const res = await fetch('/api/auth/account', {
     method: 'POST',
@@ -74,7 +74,7 @@ export async function apiGetAccountInfo() {
 
 // 更新账号信息（displayName, display, intro）
 export async function apiUpdateAccountInfo(displayName: string, csrfToken: string, display?: boolean, intro?: string | null) {
-  const body: any = { displayName };
+  const body: { displayName: string; display?: boolean; intro?: string | null } = { displayName };
   if (typeof display === 'boolean') body.display = display;
   if (typeof intro === 'string' || intro === null) body.intro = intro;
   const res = await fetch('/api/auth/account', {

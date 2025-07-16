@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
   }
 
   // 更新 public.users 表的 name、display 和 intro 字段
-  const updateObj: any = { name: displayName };
+  const updateObj: { name: string; display?: boolean; intro?: string | null } = { name: displayName };
   if (typeof display === 'boolean') updateObj.display = display;
   if (typeof intro === 'string' || intro === null) updateObj.intro = intro;
   const { error: updateError } = await supabase

@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { ExternalLink, Mail } from 'lucide-react';
 
+interface Contributor {
+  name?: string;
+  display?: boolean;
+  intro?: string;
+  sort_order?: number;
+}
+
 const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState<'about' | 'maintainer'>('about');
-  const [contributors, setContributors] = useState<any[]>([]);
+  const [contributors, setContributors] = useState<Contributor[]>([]);
   const [contributorsLoading, setContributorsLoading] = useState(false);
   const [contributorsError, setContributorsError] = useState<string | null>(null);
 
