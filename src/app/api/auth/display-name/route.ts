@@ -29,9 +29,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: '未登录或会话失效' }, { status: 401 });
   }
 
-  // 返回 display name
-  const displayName = user.user_metadata?.display_name || '';
-  return NextResponse.json({ displayName });
+  // 查询 public.users 表的 name 和 display 字段
+  const { data, error } = await supabase
+    .from('users')
+    .select('name, display')
+    .eq('id', user.id)
+    .single();
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ displayName: data?.name || '', display: data?.display ?? false });
 }
 
 export async function POST(request: NextRequest) {
@@ -41,7 +50,7 @@ export async function POST(request: NextRequest) {
   }
 
   // 解析请求体
-  const { displayName } = await request.json();
+  const { displayName, display } = await request.json();
   if (!displayName || typeof displayName !== 'string' || displayName.length < 2) {
     return NextResponse.json({ error: '用户名不能为空且不少于2个字符' }, { status: 400 });
   }
@@ -71,14 +80,17 @@ export async function POST(request: NextRequest) {
   if (userError || !user) {
     return NextResponse.json({ error: '未登录或会话失效' }, { status: 401 });
   }
-  if (!user.email) {
+  if (!user.id) {
     return NextResponse.json({ error: '用户不存在，无法更新用户名' }, { status: 400 });
   }
 
-  // 更新 display name
-  const { error: updateError } = await supabase.auth.updateUser({
-    data: { display_name: displayName },
-  });
+  // 更新 public.users 表的 name 和 display 字段
+  const updateObj: any = { name: displayName };
+  if (typeof display === 'boolean') updateObj.display = display;
+  const { error: updateError } = await supabase
+    .from('users')
+    .update(updateObj)
+    .eq('id', user.id);
   if (updateError) {
     return NextResponse.json({ error: updateError.message || '更新失败' }, { status: 400 });
   }

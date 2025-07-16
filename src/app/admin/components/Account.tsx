@@ -19,8 +19,9 @@ const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoadin
   const [pwdFormError, setPwdFormError] = useState<string | null>(null);
   const [pwdFormSuccess, setPwdFormSuccess] = useState<string | null>(null);
   const [pwdFormLoading, setPwdFormLoading] = useState(false);
+  const [display, setDisplay] = useState(false);
 
-  // 自动加载 display name
+  // 自动加载 display name 和 display
   React.useEffect(() => {
     (async () => {
       try {
@@ -30,8 +31,14 @@ const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoadin
         } else {
           setDisplayName('');
         }
+        if (typeof res.display === 'boolean') {
+          setDisplay(res.display);
+        } else {
+          setDisplay(false);
+        }
       } catch {
         setDisplayName('');
+        setDisplay(false);
       }
     })();
   }, []);
@@ -61,6 +68,11 @@ const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoadin
         setDisplayName('');
         setDisplayNameInput('');
       }
+      if (typeof res.display === 'boolean') {
+        setDisplay(res.display);
+      } else {
+        setDisplay(false);
+      }
     } catch {
       setDisplayNameError('获取用户名失败');
     } finally {
@@ -76,27 +88,14 @@ const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoadin
         style={{ minWidth: 0 }}
         type="button"
       >
-        {displayName ? (
-          <>
-            <div className="flex items-center gap-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-inner">
-                {displayName.charAt(0).toUpperCase()}
-              </div>
-              <span className="inline-block max-w-[120px] truncate align-middle text-lg font-semibold">
-                {displayName}
-              </span>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="w-8 h-8 bg-gradient-to-r from-gray-400 to-gray-500 rounded-full flex items-center justify-center text-white shadow-inner">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-            <span className="inline-block max-w-[120px] truncate align-middle text-lg font-semibold">匿名用户</span>
-          </>
-        )}
+        <div className="flex items-center gap-4">
+          <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-inner">
+            {displayName ? displayName.charAt(0).toUpperCase() : '?'}
+          </div>
+          <span className="inline-block max-w-[120px] truncate align-middle text-lg font-semibold">
+            {displayName}
+          </span>
+        </div>
       </button>
 
       {showAccountMenu && (
@@ -307,9 +306,9 @@ const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoadin
                 }
                 setDisplayNameLoading(true);
                 try {
-                  const res = await import('../../lib/api').then(m => m.apiUpdateDisplayName(displayNameInput, csrfToken));
+                  const res = await import('../../lib/api').then(m => m.apiUpdateDisplayName(displayNameInput, csrfToken, display));
                   if (res.success) {
-                    setDisplayNameSuccess('用户名更新成功');
+                    setDisplayNameSuccess('更新成功');
                     setDisplayName(displayNameInput);
                   } else {
                     setDisplayNameError(res.error || '更新失败');
@@ -340,6 +339,24 @@ const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoadin
                   </div>
                 </div>
               </div>
+              <div className="flex items-center mt-2">
+                <label htmlFor="display-contributor" className="flex items-center gap-3 cursor-pointer select-none py-2 px-3 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-200 w-full">
+                  <span className="text-blue-100 text-sm font-medium">展示在关于-贡献者中</span>
+                  <span className="flex-1"></span>
+                  <span className="relative inline-block w-11 h-6 align-middle select-none">
+                    <input
+                      id="display-contributor"
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={display}
+                      onChange={e => setDisplay(e.target.checked)}
+                      disabled={displayNameLoading}
+                    />
+                    <span className="block w-11 h-6 bg-gray-400 rounded-full peer-checked:bg-blue-500 transition-colors duration-200"></span>
+                    <span className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-200 peer-checked:translate-x-5"></span>
+                  </span>
+                </label>
+              </div>
               
               {displayNameError && (
                 <div className="bg-red-500/10 border border-red-400/30 rounded-xl p-3 text-red-300 text-sm flex items-center gap-2">
@@ -367,6 +384,8 @@ const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoadin
                     setDisplayNameInput(displayName);
                     setDisplayNameError(null);
                     setDisplayNameSuccess(null);
+                    // 关闭时同步当前 display
+                    fetchDisplayName();
                   }}
                   className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 font-medium"
                   disabled={displayNameLoading}

@@ -52,14 +52,16 @@ export async function apiGetDisplayName() {
 }
 
 // 更新 display name
-export async function apiUpdateDisplayName(displayName: string, csrfToken: string) {
+export async function apiUpdateDisplayName(displayName: string, csrfToken: string, display?: boolean) {
+  const body: any = { displayName };
+  if (typeof display === 'boolean') body.display = display;
   const res = await fetch('/api/auth/display-name', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'x-csrf-token': csrfToken,
     },
-    body: JSON.stringify({ displayName }),
+    body: JSON.stringify(body),
   });
   return res.json();
 }
