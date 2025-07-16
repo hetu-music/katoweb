@@ -47,7 +47,7 @@ export async function apiChangePassword(oldPassword: string, newPassword: string
 
 // 获取 display name
 export async function apiGetDisplayName() {
-  const res = await fetch('/api/auth/display-name');
+  const res = await fetch('/api/auth/account');
   return res.json();
 }
 
@@ -55,7 +55,7 @@ export async function apiGetDisplayName() {
 export async function apiUpdateDisplayName(displayName: string, csrfToken: string, display?: boolean) {
   const body: any = { displayName };
   if (typeof display === 'boolean') body.display = display;
-  const res = await fetch('/api/auth/display-name', {
+  const res = await fetch('/api/auth/account', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
