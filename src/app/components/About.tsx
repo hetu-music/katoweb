@@ -3,7 +3,7 @@ import { ExternalLink, Mail } from 'lucide-react';
 
 const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState<'about' | 'maintainer'>('about');
-  const [contributors, setContributors] = useState<string[]>([]);
+  const [contributors, setContributors] = useState<any[]>([]);
   const [contributorsLoading, setContributorsLoading] = useState(false);
   const [contributorsError, setContributorsError] = useState<string | null>(null);
 
@@ -96,13 +96,18 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             ) : contributors.length === 0 ? (
               <div className="flex items-center justify-center h-32 text-gray-400">暂无贡献者</div>
             ) : (
-              <ul className="space-y-2">
-                {contributors.map((name, idx) => (
-                  <li key={idx} className="text-white/90 font-semibold text-lg flex items-center gap-2">
-                    <span className="inline-block w-6 h-6 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 text-white text-center font-bold mr-2">
-                      {name.charAt(0).toUpperCase()}
-                    </span>
-                    {name}
+              <ul className="space-y-4">
+                {contributors.map((contributor, idx) => (
+                  <li key={idx} className="text-white/90 font-semibold text-lg flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-block w-6 h-6 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 text-white text-center font-bold mr-2">
+                        {contributor.name?.charAt(0).toUpperCase() || '?'}
+                      </span>
+                      {contributor.name}
+                    </div>
+                    {contributor.intro && (
+                      <div className="text-white/70 text-base font-normal ml-8 whitespace-pre-line">{contributor.intro}</div>
+                    )}
                   </li>
                 ))}
               </ul>

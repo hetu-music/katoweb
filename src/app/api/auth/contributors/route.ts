@@ -1,44 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createSupabaseClient } from '@/app/lib/supabase';
 
-export async function GET(request: NextRequest) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !supabaseAnonKey) {
+export async function GET() {
+  // 使用高权限API
+  const supabase = createSupabaseClient('music'); // 'music' 表示高权限API
+  if (!supabase) {
     return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
   }
-  const cookieStore = await cookies();
-  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll();
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          cookieStore.set(name, value, options);
-        });
-      },
-    },
-  });
 
-  // 仅管理员可用，或公开（如无敏感信息）
-  // 查询所有有 display_name 的用户
-  // 需要服务端有 RLS 权限或用 service key，或在 supabase dashboard 配置 policy 允许读取 user_metadata
+  // 查询 users 表，获取 name, display, intro, sort_order，按 sort_order 排序，过滤 display=true
   const { data, error } = await supabase
     .from('users')
-    .select('id, user_metadata')
-    .neq('user_metadata->>display_name', '')
-    .order('created_at', { ascending: true });
+    .select('name, display, intro, sort_order')
+    .eq('display', true)
+    .order('sort_order', { ascending: true });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // 提取 display_name
-  const contributors = (data || [])
-    .map((u: any) => u.user_metadata?.display_name)
-    .filter((name: string | undefined) => !!name);
-
-  return NextResponse.json({ contributors });
+  // 直接返回完整信息
+  return NextResponse.json({ contributors: data || [] });
 } 
