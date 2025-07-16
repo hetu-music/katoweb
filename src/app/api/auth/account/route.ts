@@ -29,10 +29,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: '未登录或会话失效' }, { status: 401 });
   }
 
-  // 查询 public.users 表的 name 和 display 字段
+  // 查询 public.users 表的 name、display 和 intro 字段
   const { data, error } = await supabase
     .from('users')
-    .select('name, display')
+    .select('name, display, intro')
     .eq('id', user.id)
     .single();
 
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ displayName: data?.name || '', display: data?.display ?? false });
+  return NextResponse.json({ displayName: data?.name || '', display: data?.display ?? false, intro: data?.intro ?? null });
 }
 
 export async function POST(request: NextRequest) {
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
   }
 
   // 解析请求体
-  const { displayName, display } = await request.json();
+  const { displayName, display, intro } = await request.json();
   if (!displayName || typeof displayName !== 'string' || displayName.length < 2) {
     return NextResponse.json({ error: '用户名不能为空且不少于2个字符' }, { status: 400 });
   }
@@ -84,9 +84,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: '用户不存在，无法更新用户名' }, { status: 400 });
   }
 
-  // 更新 public.users 表的 name 和 display 字段
+  // 更新 public.users 表的 name、display 和 intro 字段
   const updateObj: any = { name: displayName };
   if (typeof display === 'boolean') updateObj.display = display;
+  if (typeof intro === 'string' || intro === null) updateObj.intro = intro;
   const { error: updateError } = await supabase
     .from('users')
     .update(updateObj)

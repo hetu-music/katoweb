@@ -20,12 +20,18 @@ const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoadin
   const [pwdFormSuccess, setPwdFormSuccess] = useState<string | null>(null);
   const [pwdFormLoading, setPwdFormLoading] = useState(false);
   const [display, setDisplay] = useState(false);
+  const [showIntro, setShowIntro] = useState(false);
+  const [intro, setIntro] = useState<string | null>(null);
+  const [introInput, setIntroInput] = useState('');
+  const [introError, setIntroError] = useState<string | null>(null);
+  const [introSuccess, setIntroSuccess] = useState<string | null>(null);
+  const [introLoading, setIntroLoading] = useState(false);
 
-  // 自动加载 display name 和 display
+  // 自动加载 display name、display 和 intro
   React.useEffect(() => {
     (async () => {
       try {
-        const res = await import('../../lib/api').then(m => m.apiGetDisplayName());
+        const res = await import('../../lib/api').then(m => m.apiGetAccountInfo());
         if (res.displayName !== undefined) {
           setDisplayName(res.displayName);
         } else {
@@ -36,9 +42,15 @@ const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoadin
         } else {
           setDisplay(false);
         }
+        if (typeof res.intro === 'string' || res.intro === null) {
+          setIntro(res.intro);
+        } else {
+          setIntro(null);
+        }
       } catch {
         setDisplayName('');
         setDisplay(false);
+        setIntro(null);
       }
     })();
   }, []);
@@ -77,6 +89,27 @@ const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoadin
       setDisplayNameError('获取用户名失败');
     } finally {
       setDisplayNameLoading(false);
+    }
+  };
+
+  // 获取 intro
+  const fetchIntro = async () => {
+    setIntroError(null);
+    setIntroSuccess(null);
+    setIntroLoading(true);
+    try {
+      const res = await import('../../lib/api').then(m => m.apiGetAccountInfo());
+      if (typeof res.intro === 'string' || res.intro === null) {
+        setIntro(res.intro);
+        setIntroInput(res.intro || '');
+      } else {
+        setIntro(null);
+        setIntroInput('');
+      }
+    } catch {
+      setIntroError('获取自我介绍失败');
+    } finally {
+      setIntroLoading(false);
     }
   };
 
@@ -124,6 +157,18 @@ const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoadin
                 </svg>
               </div>
               <span className="text-sm font-medium">修改密码</span>
+            </button>
+            <button
+              className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-blue-500/20 transition-all duration-200 rounded-xl border-b border-white/10 group"
+              onClick={() => { setShowAccountMenu(false); setShowIntro(true); setIntroInput(intro || ''); setIntroError(null); setIntroSuccess(null); }}
+              type="button"
+            >
+              <div className="w-6 h-6 flex items-center justify-center">
+                <svg className="w-5 h-5 text-blue-300 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <span className="text-sm font-medium">自我介绍</span>
             </button>
             <button
               className="w-full flex items-center gap-3 px-4 py-3 text-red-200 hover:bg-red-500/20 transition-all duration-200 rounded-xl group"
@@ -398,6 +443,107 @@ const Account: React.FC<AccountProps> = ({ csrfToken, handleLogout, logoutLoadin
                   disabled={displayNameLoading}
                 >
                   {displayNameLoading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></div>
+                      <span>保存中...</span>
+                    </div>
+                  ) : (
+                    '保存更改'
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* intro（自我介绍）管理弹窗 */}
+      {showIntro && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-gradient-to-br from-purple-800/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl p-8 max-w-md w-full animate-fade-in">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-white">自我介绍</h2>
+            </div>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setIntroError(null);
+                setIntroSuccess(null);
+                if (introInput.length > 512) {
+                  setIntroError('自我介绍不能超过512个字符');
+                  return;
+                }
+                setIntroLoading(true);
+                try {
+                  const res = await import('../../lib/api').then(m => m.apiUpdateAccountInfo(displayName, csrfToken, display, introInput || null));
+                  if (res.success) {
+                    setIntroSuccess('更新成功');
+                    setIntro(introInput || null);
+                  } else {
+                    setIntroError(res.error || '更新失败');
+                  }
+                } catch {
+                  setIntroError('网络错误');
+                } finally {
+                  setIntroLoading(false);
+                }
+              }}
+              className="space-y-6"
+            >
+              <div>
+                <label className="block text-blue-100 font-semibold mb-2 text-sm">自我介绍</label>
+                <textarea
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 placeholder-white/50 min-h-[80px]"
+                  placeholder="请输入自我介绍（可选，最多512字）"
+                  value={introInput}
+                  onChange={e => setIntroInput(e.target.value)}
+                  maxLength={512}
+                  disabled={introLoading}
+                />
+                <div className="text-xs text-white/50 mt-1 text-right">{introInput.length}/512</div>
+              </div>
+              {introError && (
+                <div className="bg-red-500/10 border border-red-400/30 rounded-xl p-3 text-red-300 text-sm flex items-center gap-2">
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {introError}
+                </div>
+              )}
+              {introSuccess && (
+                <div className="bg-green-500/10 border border-green-400/30 rounded-xl p-3 text-green-300 text-sm flex items-center gap-2">
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  {introSuccess}
+                </div>
+              )}
+              <div className="flex items-center justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowIntro(false);
+                    setIntroInput(intro || '');
+                    setIntroError(null);
+                    setIntroSuccess(null);
+                    fetchIntro();
+                  }}
+                  className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 font-medium"
+                  disabled={introLoading}
+                >
+                  关闭
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-400/30 text-green-100 hover:from-green-500/40 hover:to-emerald-500/40 hover:text-white transition-all duration-200 font-semibold shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                  disabled={introLoading}
+                >
+                  {introLoading ? (
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></div>
                       <span>保存中...</span>

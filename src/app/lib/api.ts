@@ -65,3 +65,25 @@ export async function apiUpdateDisplayName(displayName: string, csrfToken: strin
   });
   return res.json();
 }
+
+// 获取账号信息（含 displayName, display, intro）
+export async function apiGetAccountInfo() {
+  const res = await fetch('/api/auth/account');
+  return res.json();
+}
+
+// 更新账号信息（displayName, display, intro）
+export async function apiUpdateAccountInfo(displayName: string, csrfToken: string, display?: boolean, intro?: string | null) {
+  const body: any = { displayName };
+  if (typeof display === 'boolean') body.display = display;
+  if (typeof intro === 'string' || intro === null) body.intro = intro;
+  const res = await fetch('/api/auth/account', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-csrf-token': csrfToken,
+    },
+    body: JSON.stringify(body),
+  });
+  return res.json();
+}
