@@ -96,18 +96,21 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             ) : contributors.length === 0 ? (
               <div className="flex items-center justify-center h-32 text-gray-400">暂无贡献者</div>
             ) : (
-              <ul className="space-y-4">
+              <ul className="space-y-3">
                 {contributors.map((contributor, idx) => (
-                  <li key={idx} className="text-white/90 font-semibold text-lg flex flex-col gap-1">
-                    <div className="flex items-center gap-2">
-                      <span className="inline-block w-6 h-6 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 text-white text-center font-bold mr-2">
-                        {contributor.name?.charAt(0).toUpperCase() || '?'}
-                      </span>
-                      {contributor.name}
+                  <li
+                    key={idx}
+                    className="bg-white/10 border border-white/20 rounded-xl shadow flex items-center px-4 py-3 transition-transform hover:scale-[1.02] hover:bg-white/15"
+                  >
+                    <div className="w-12 h-12 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-500 text-white text-xl font-bold mr-4 shadow-md">
+                      {contributor.name?.charAt(0).toUpperCase() || '?'}
                     </div>
-                    {contributor.intro && (
-                      <div className="text-white/70 text-base font-normal ml-8 whitespace-pre-line">{contributor.intro}</div>
-                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-white font-semibold text-base truncate">{contributor.name}</div>
+                      {contributor.intro && (
+                        <div className="text-white/80 text-sm mt-0.5 whitespace-pre-line break-words">{contributor.intro}</div>
+                      )}
+                    </div>
                   </li>
                 ))}
               </ul>
