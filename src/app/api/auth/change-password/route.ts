@@ -32,13 +32,12 @@ export async function POST(request: NextRequest) {
   });
 
   // 获取当前用户
-  const { data: { session } } = await supabase.auth.getSession();
-  const user = session?.user;
-  if (!user) {
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) {
     return NextResponse.json({ error: '未登录或会话失效' }, { status: 401 });
   }
   if (!user.email) {
-    return NextResponse.json({ error: '用户邮箱不存在，无法验证密码' }, { status: 400 });
+    return NextResponse.json({ error: '用户不存在，无法验证密码' }, { status: 400 });
   }
 
   // 验证旧密码

@@ -1,4 +1,4 @@
-import MusicLibraryClient from './MusicLibraryClient';
+import MusicLibraryClient from './components/MusicLibraryClient';
 import { getSongs } from './lib/supabase';
 
 // 服务端组件 - 使用 ISR

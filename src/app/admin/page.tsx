@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import AdminClientComponent from './AdminClient';
+import AdminClientComponent from './components/AdminClient';
 import { getSongs, TABLE_NAMES } from '../lib/supabase';
 import type { Song } from '../lib/types';
 

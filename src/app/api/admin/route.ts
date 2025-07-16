@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
     // 校验 body
     const parseResult = SongSchema.safeParse(body);
     if (!parseResult.success) {
-      return NextResponse.json({ error: 'Invalid input', details: parseResult.error.errors }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid input', details: parseResult.error.issues }, { status: 400 });
     }
     
     const supabase = await createSupabaseServerClient();
@@ -146,7 +146,7 @@ export async function PUT(request: NextRequest) {
     // 校验 data
     const parseResult = SongSchema.safeParse(data);
     if (!parseResult.success) {
-      return NextResponse.json({ error: 'Invalid input', details: parseResult.error.errors }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid input', details: parseResult.error.issues }, { status: 400 });
     }
     const supabase = await createSupabaseServerClient();
     const { data: { session } } = await supabase.auth.getSession();
