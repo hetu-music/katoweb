@@ -1,4 +1,5 @@
 import { Song, SongDetail, FilterOptions, SongInfo } from './types';
+import { typeColorMap } from './constants';
 
 // 格式化时间
 export function formatTime(seconds: number | null): string {
@@ -20,7 +21,13 @@ export function calculateFilterOptions(songsData: Song[]): FilterOptions {
       song.type.forEach(t => typeSet.add(t));
     }
   });
-  const allTypes = ['全部', ...Array.from(typeSet)];
+  // 按 typeColorMap 顺序排序
+  const preferredOrder = Object.keys(typeColorMap);
+  let allTypes = Array.from(typeSet);
+  allTypes = preferredOrder.filter(t => allTypes.includes(t)).concat(
+    allTypes.filter(t => !preferredOrder.includes(t))
+  );
+  allTypes = ['全部', ...allTypes];
   if (hasUnknownType) allTypes.push('未知');
 
   // 处理年份

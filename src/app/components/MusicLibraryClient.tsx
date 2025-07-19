@@ -9,6 +9,7 @@ import { getCoverUrl, calculateFilterOptions, filterSongs, mapAndSortSongs } fro
 import { typeColorMap, genreColorMap } from '../lib/constants';
 import About from './About';
 import TypeExplanation from './TypeExplanation';
+import SongFilters from './SongFilters';
 
 const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsData }) => {
   const router = useRouter();
@@ -183,72 +184,18 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
                 )}
               </div>
               {/* 筛选框 */}
-              <div className="w-full flex flex-col sm:flex-row gap-3">
-                {/* 类型筛选 */}
-                <div className="filter-container">
-                  <div className="filter-label flex items-center h-full px-4 py-0 rounded-l-2xl border-r-0 bg-white/10 border border-white/20 select-none min-w-[120px] max-w-[140px] w-[120px]">
-                    <span>类型</span>
-                    <button
-                      type="button"
-                      className="ml-1 w-4 h-4 flex items-center justify-center rounded-full bg-white/10 border border-white/20 text-xs text-white/70 hover:text-white hover:bg-white/20 transition-all duration-200 cursor-pointer"
-                      style={{ fontSize: '13px', lineHeight: '1', padding: 0 }}
-                      onClick={() => setTypeExplanationOpen(true)}
-                      aria-label="类型说明"
-                      tabIndex={0}
-                    >
-                      ?
-                    </button>
-                  </div>
-                  <select
-                    value={selectedType}
-                    onChange={(e) => setSelectedType(e.target.value)}
-                    className="filter-select"
-                  >
-                    {filterOptions.allTypes.map(type => (
-                      <option key={type} value={type} className="filter-option">{type}</option>
-                    ))}
-                  </select>
-                </div>
-                {/* 发行日期筛选 */}
-                <div className="filter-container">
-                  <span className="filter-label">发行日期</span>
-                  <select
-                    value={selectedYear}
-                    onChange={(e) => setSelectedYear(e.target.value)}
-                    className="filter-select"
-                  >
-                    {filterOptions.allYears.map(year => (
-                      <option key={year} value={year === null ? '' : year} className="filter-option">{year}</option>
-                    ))}
-                  </select>
-                </div>
-                {/* 作词筛选 */}
-                <div className="filter-container">
-                  <span className="filter-label">作词</span>
-                  <select
-                    value={selectedLyricist}
-                    onChange={(e) => setSelectedLyricist(e.target.value)}
-                    className="filter-select"
-                  >
-                    {filterOptions.allLyricists.map(lyricist => (
-                      <option key={lyricist} value={lyricist} className="filter-option">{lyricist}</option>
-                    ))}
-                  </select>
-                </div>
-                {/* 作曲筛选 */}
-                <div className="filter-container">
-                  <span className="filter-label">作曲</span>
-                  <select
-                    value={selectedComposer}
-                    onChange={(e) => setSelectedComposer(e.target.value)}
-                    className="filter-select"
-                  >
-                    {filterOptions.allComposers.map(composer => (
-                      <option key={composer} value={composer} className="filter-option">{composer}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+              <SongFilters
+                selectedType={selectedType}
+                setSelectedType={setSelectedType}
+                selectedYear={selectedYear}
+                setSelectedYear={setSelectedYear}
+                selectedLyricist={selectedLyricist}
+                setSelectedLyricist={setSelectedLyricist}
+                selectedComposer={selectedComposer}
+                setSelectedComposer={setSelectedComposer}
+                filterOptions={filterOptions}
+                onTypeExplanationOpen={() => setTypeExplanationOpen(true)}
+              />
               {/* 歌曲总数和筛选数统计 */}
               <div className="mt-4 mb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 {/* 统计信息 */}
