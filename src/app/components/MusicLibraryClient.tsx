@@ -109,17 +109,38 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
         <div className="container mx-auto px-6 py-8">
           {/* 头部区域 */}
           <div className="mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center space-x-4">
-                <h1 className="text-4xl font-bold text-white mb-2">河图作品勘鉴</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center w-full">
+                <h1
+                  className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-blue-300 to-indigo-400 drop-shadow-lg tracking-wider mb-2 sm:mb-0"
+                >
+                  河图作品勘鉴
+                </h1>
+                {/* 小屏下按钮行 */}
+                <div className="flex w-full sm:hidden justify-between mt-2">
+                  <button
+                    className="px-4 py-1 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 text-sm font-medium shadow self-start"
+                    onClick={() => setAboutOpen(true)}
+                  >
+                    关于
+                  </button>
+                  <button
+                    onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                    className="p-2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all duration-200 self-end"
+                  >
+                    {viewMode === 'grid' ? <List size={20} /> : <Grid size={20} />}
+                  </button>
+                </div>
+                {/* 大屏下关于按钮 */}
                 <button
-                  className="ml-2 px-4 py-1 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 text-sm font-medium shadow"
+                  className="hidden sm:inline-block sm:ml-4 px-4 py-1 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 text-sm font-medium shadow self-start sm:self-auto"
                   onClick={() => setAboutOpen(true)}
                 >
                   关于
                 </button>
               </div>
-              <div className="flex items-center space-x-4">
+              {/* 大屏下视图切换按钮 */}
+              <div className="hidden sm:flex items-center space-x-4">
                 <button
                   onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
                   className="p-2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all duration-200"
