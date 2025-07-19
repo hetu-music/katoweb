@@ -8,6 +8,7 @@ import { MusicLibraryClientProps } from '../lib/types';
 import { getCoverUrl, calculateFilterOptions, filterSongs, mapAndSortSongs } from '../lib/utils';
 import { typeColorMap, genreColorMap } from '../lib/constants';
 import About from './About';
+import TypeExplanation from './TypeExplanation';
 
 const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsData }) => {
   const router = useRouter();
@@ -24,6 +25,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
   const [showScrollTop, setShowScrollTop] = useState(false);
   const hasRestoredScroll = useRef(false);
   const [restoringScroll, setRestoringScroll] = useState(true);
+  const [typeExplanationOpen, setTypeExplanationOpen] = useState(false);
 
   const songsData = initialSongsData;
 
@@ -104,6 +106,10 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
         {aboutOpen && (
           <About onClose={() => setAboutOpen(false)} />
         )}
+        {/* 类型说明弹窗 */}
+        {typeExplanationOpen && (
+          <TypeExplanation onClose={() => setTypeExplanationOpen(false)} />
+        )}
 
         {/* 主容器 */}
         <div className="container mx-auto px-6 py-8">
@@ -180,7 +186,19 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
               <div className="w-full flex flex-col sm:flex-row gap-3">
                 {/* 类型筛选 */}
                 <div className="filter-container">
-                  <span className="filter-label">类型</span>
+                  <div className="filter-label flex items-center h-full px-4 py-0 rounded-l-2xl border-r-0 bg-white/10 border border-white/20 select-none min-w-[120px] max-w-[140px] w-[120px]">
+                    <span>类型</span>
+                    <button
+                      type="button"
+                      className="ml-1 w-4 h-4 flex items-center justify-center rounded-full bg-white/10 border border-white/20 text-xs text-white/70 hover:text-white hover:bg-white/20 transition-all duration-200 cursor-pointer"
+                      style={{ fontSize: '13px', lineHeight: '1', padding: 0 }}
+                      onClick={() => setTypeExplanationOpen(true)}
+                      aria-label="类型说明"
+                      tabIndex={0}
+                    >
+                      ?
+                    </button>
+                  </div>
                   <select
                     value={selectedType}
                     onChange={(e) => setSelectedType(e.target.value)}
