@@ -2,12 +2,12 @@ import React from 'react';
 import { typeColorMap } from '../lib/constants';
 
 const typeDescriptions: Record<string, string> = {
+  '原创': '河图原创作品。',
   '翻唱': '翻唱他人作品，非原创。',
   '合作': '与其他歌手或音乐人合作完成的作品。',
-  '原创': '河图本人原创作品。',
   '商业': '为商业项目或品牌创作的作品。',
-  '墨宝': '与河图墨宝相关的作品。',
-  '参与': '河图以非主创身份参与的作品。',
+  '墨宝': '与墨明棋妙相关的作品。',
+  '参与': '以非主创身份参与的作品。',
 };
 
 const TypeExplanation: React.FC<{ onClose: () => void }> = ({ onClose }) => {
