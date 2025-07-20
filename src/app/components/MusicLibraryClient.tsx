@@ -124,16 +124,16 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
                   河图作品勘鉴
                 </h1>
                 {/* 小屏下按钮行 */}
-                <div className="flex w-full sm:hidden justify-between mt-2">
+                <div className="flex w-full sm:hidden justify-between mt-2 items-center">
                   <button
-                    className="px-4 py-1 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 text-sm font-medium shadow self-start"
+                    className="px-4 py-1 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 text-sm font-medium shadow"
                     onClick={() => setAboutOpen(true)}
                   >
                     关于
                   </button>
                   <button
                     onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                    className="p-2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all duration-200 self-end"
+                    className="h-10 w-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all duration-200"
                   >
                     {viewMode === 'grid' ? <List size={20} /> : <Grid size={20} />}
                   </button>
