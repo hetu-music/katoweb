@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ExternalLink, Mail } from 'lucide-react';
+import { ExternalLink, Mail, LogIn } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface Contributor {
   name?: string;
@@ -13,6 +14,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [contributorsLoading, setContributorsLoading] = useState(false);
   const [contributorsError, setContributorsError] = useState<string | null>(null);
+  const router = useRouter(); // 初始化 router
 
   useEffect(() => {
     setContributorsLoading(true);
@@ -30,6 +32,11 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       .finally(() => setContributorsLoading(false));
   }, []);
 
+  // 点击登录按钮的处理函数
+  const handleLoginClick = () => {
+    router.push('/admin/login');
+  };
+
   const mainContributor = contributors.find((c) => c.sort_order === 2);
 
   return (
@@ -42,15 +49,14 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         >
           ×
         </button>
-        
+
         {/* 标签页导航 */}
         <div className="flex mb-6 border-b border-white/20">
           <button
-            className={`flex-1 py-2 px-4 text-center font-medium transition-colors relative ${
-              activeTab === 'about'
+            className={`flex-1 py-2 px-4 text-center font-medium transition-colors relative ${activeTab === 'about'
                 ? 'text-white'
                 : 'text-gray-300 hover:text-white'
-            }`}
+              }`}
             onClick={() => setActiveTab('about')}
           >
             关于
@@ -59,11 +65,10 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             )}
           </button>
           <button
-            className={`flex-1 py-2 px-4 text-center font-medium transition-colors relative ${
-              activeTab === 'maintainer'
+            className={`flex-1 py-2 px-4 text-center font-medium transition-colors relative ${activeTab === 'maintainer'
                 ? 'text-white'
                 : 'text-gray-300 hover:text-white'
-            }`}
+              }`}
             onClick={() => setActiveTab('maintainer')}
           >
             维护者
@@ -104,7 +109,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             ) : contributors.length === 0 ? (
               <div className="flex items-center justify-center h-32 text-gray-400">暂无贡献者</div>
             ) : (
-              <ul className="space-y-3">
+              <ul className="space-y-3 mb-16">
                 {contributors.map((contributor, idx) => (
                   <li
                     key={idx}
@@ -124,6 +129,18 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               </ul>
             )}
           </div>
+        )}
+
+        {/* 当 "维护者" 标签页激活时，显示登录按钮 */}
+        {activeTab === 'maintainer' && (
+          <button
+            onClick={handleLoginClick}
+            className="absolute bottom-8 right-8 flex items-center gap-2 px-6 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl shadow-lg text-white font-semibold hover:bg-white/20 active:scale-95 transition-all"
+            aria-label="跳转至登录页面"
+          >
+            <LogIn size={18} />
+            <span>登录</span>
+          </button>
         )}
       </div>
     </div>
