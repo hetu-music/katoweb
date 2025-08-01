@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Share } from 'lucide-react';
 import Image from 'next/image';
 import { SongDetailClientProps } from '../../lib/types';
 import { getCoverUrl, calculateSongInfo } from '../../lib/utils';
@@ -18,6 +18,31 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const scrollToTop = useCallback(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
+
+  // 分享歌曲
+  const handleShare = useCallback(async () => {
+    const shareData = {
+      title: `${song.title} - 歌曲详情`,
+      text: `来听听河图的这首歌：${song.title}${song.artist ? ` - ${song.artist}` : ''}`,
+      url: window.location.href
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch {
+        console.log('分享取消或失败');
+      }
+    } else {
+      // 备用方案：复制链接到剪贴板
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        alert('链接已复制到剪贴板');
+      } catch {
+        console.log('复制失败');
+      }
+    }
+  }, [song.title, song.artist]);
 
   // 滚动监听
   useEffect(() => {
@@ -202,21 +227,19 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
             <div className="flex bg-white/10 rounded-full p-1 border border-white/20">
               <button
                 onClick={() => setLyricsType('normal')}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                  lyricsType === 'normal'
-                    ? 'bg-white/20 text-white shadow-sm'
-                    : 'text-white/70 hover:text-white/90'
-                }`}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${lyricsType === 'normal'
+                  ? 'bg-white/20 text-white shadow-sm'
+                  : 'text-white/70 hover:text-white/90'
+                  }`}
               >
                 普通歌词
               </button>
               <button
                 onClick={() => setLyricsType('lrc')}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                  lyricsType === 'lrc'
-                    ? 'bg-white/20 text-white shadow-sm'
-                    : 'text-white/70 hover:text-white/90'
-                }`}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${lyricsType === 'lrc'
+                  ? 'bg-white/20 text-white shadow-sm'
+                  : 'text-white/70 hover:text-white/90'
+                  }`}
               >
                 LRC歌词
               </button>
@@ -237,18 +260,30 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         </div>
       </div>
 
-      {/* 返回顶部按钮  */}
-      {showScrollTop && (
+      {/* 固定按钮组 */}
+      <div className="fixed bottom-8 right-8 z-40 flex flex-col gap-3">
+        {/* 分享按钮 - 始终显示 */}
         <button
-          onClick={scrollToTop}
-          className="fixed bottom-8 right-8 z-40 p-3 rounded-full bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200"
-          aria-label="返回顶部"
+          onClick={handleShare}
+          className="p-3 rounded-full bg-gradient-to-br from-green-600 via-emerald-600 to-teal-600 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200"
+          aria-label="分享歌曲"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
-          </svg>
+          <Share className="w-6 h-6" />
         </button>
-      )}
+
+        {/* 返回顶部按钮 - 滚动时显示 */}
+        {showScrollTop && (
+          <button
+            onClick={scrollToTop}
+            className="p-3 rounded-full bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200"
+            aria-label="返回顶部"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+            </svg>
+          </button>
+        )}
+      </div>
     </div>
   );
 };

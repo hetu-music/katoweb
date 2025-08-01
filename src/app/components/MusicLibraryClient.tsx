@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { Search, Grid, List, XCircle } from 'lucide-react';
+import { Search, Grid, List, XCircle, Share } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { MusicLibraryClientProps } from '../lib/types';
@@ -71,6 +71,30 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleShare = async () => {
+    const shareData = {
+      title: '河图作品勘鉴',
+      text: '来看看河图所有的作品吧！',
+      url: window.location.href
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch {
+        console.log('分享取消或失败');
+      }
+    } else {
+      // 备用方案：复制链接到剪贴板
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        alert('链接已复制到剪贴板');
+      } catch {
+        console.log('复制失败');
+      }
+    }
   };
 
   // 使用 useMemo 优化筛选选项计算
@@ -436,18 +460,30 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
           )}
         </div>
 
-        {/* 返回顶部按钮 */}
-        {showScrollTop && (
+        {/* 固定按钮组 */}
+        <div className="fixed bottom-8 right-8 z-40 flex flex-col gap-3">
+          {/* 分享按钮 - 始终显示 */}
           <button
-            onClick={scrollToTop}
-            className="fixed bottom-8 right-8 z-40 p-3 rounded-full bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200"
-            aria-label="返回顶部"
+            onClick={handleShare}
+            className="p-3 rounded-full bg-gradient-to-br from-green-600 via-emerald-600 to-teal-600 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200"
+            aria-label="分享页面"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
-            </svg>
+            <Share className="w-6 h-6" />
           </button>
-        )}
+
+          {/* 返回顶部按钮 - 滚动时显示 */}
+          {showScrollTop && (
+            <button
+              onClick={scrollToTop}
+              className="p-3 rounded-full bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200"
+              aria-label="返回顶部"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
