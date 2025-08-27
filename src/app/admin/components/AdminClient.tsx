@@ -55,10 +55,10 @@ const SongRow = React.memo(({ song, idx, expandedRows, toggleRowExpansion, handl
                   <span className="text-white/80 text-sm break-words">
                     {field.key === 'hascover'
                       ? (song.hascover === true
-                          ? '定制封面'
-                          : song.hascover === false
-                            ? '初号机（黑底机器人）'
-                            : '白底狐狸（默认）')
+                        ? '定制封面'
+                        : song.hascover === false
+                          ? '初号机（黑底机器人）'
+                          : '白底狐狸（默认）')
                       : formatField(song[field.key], field.type)}
                   </span>
                 </div>
@@ -93,6 +93,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
   const [editFormErrors, setEditFormErrors] = useState<Record<string, string>>({});
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+  const [addResultMessage, setAddResultMessage] = useState<string | null>(null);
   const [editResultMessage, setEditResultMessage] = useState<string | null>(null);
 
   // Scroll listener
@@ -125,6 +126,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     }
     try {
       setLoading(true);
+      setAddResultMessage(null);
       const { /* year, */ ...songWithoutYear } = newSong;
       // 处理空字符串为 null
       const songToSubmit = convertEmptyStringToNull(songWithoutYear);
@@ -133,16 +135,20 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
       setShowAdd(false);
       setNewSong({ title: "", album: "" });
       setAddFormErrors({});
+      setAddResultMessage('成功');
+      setTimeout(() => {
+        setAddResultMessage(null);
+      }, 2000);
     } catch (e: unknown) {
       if (e instanceof Error) {
-        setError(e.message);
+        setAddResultMessage(e.message || '失败');
       } else {
-        setError('未知错误');
+        setAddResultMessage('失败');
       }
     } finally {
       setLoading(false);
     }
-  }, [newSong, csrfToken, setLoading, setSongs, setError]);
+  }, [newSong, csrfToken, setLoading, setSongs]);
 
   const handleEdit = useCallback((song: SongDetail) => {
     setEditSong(song);
@@ -174,7 +180,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
       const updated = await apiUpdateSong(editSong.id, { ...formToSubmit, updated_at: editSong.updated_at }, csrfToken);
       setSongs(prev => prev.map(s => s.id === updated.id ? updated : s));
       setEditFormErrors({});
-      setEditResultMessage('保存成功');
+      setEditResultMessage('成功');
       setTimeout(() => {
         setEditSong(null);
         setEditResultMessage(null);
@@ -184,10 +190,10 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
         if (e.message.includes('数据已被他人修改')) {
           setEditResultMessage('数据已被他人修改，请刷新页面后重试');
         } else {
-          setEditResultMessage(e.message || '保存失败');
+          setEditResultMessage(e.message || '失败');
         }
       } else {
-        setEditResultMessage('保存失败');
+        setEditResultMessage('失败');
       }
     } finally {
       setLoading(false);
@@ -323,14 +329,14 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white">{showAdd ? '新增' : '编辑'}歌曲</h2>
               <button
-                onClick={() => { setShowAdd(false); setEditSong(null); setEditResultMessage(null); }}
+                onClick={() => { setShowAdd(false); setEditSong(null); setAddResultMessage(null); setEditResultMessage(null); }}
                 className="p-2 rounded-lg bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-all duration-200"
               >
                 <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={showAdd ? handleAdd : handleEditSubmit} className="space-y-8">
+            <form onSubmit={showAdd ? handleAdd : handleEditSubmit} className="space-y-8" id={showAdd ? "add-form" : "edit-form"}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {songFields.map(field => (
                   <div key={field.key} className={(field.type === 'textarea' ? 'md:col-span-2' : '') + ' flex flex-col gap-2 bg-white/5 rounded-xl p-4 border border-white/10 shadow-sm'}>
@@ -339,40 +345,94 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
                   </div>
                 ))}
               </div>
-              <div className="flex items-center justify-end gap-4 pt-8 border-t border-white/20 mt-4">
-                {editSong && editResultMessage && (
-                  <div
-                    className={`mr-4 px-5 py-2 rounded-lg shadow-lg border-2 flex items-center gap-2 text-base font-bold transition-all duration-200
-                      ${editResultMessage === '保存成功'
-                        ? 'bg-green-500/40 text-green-100 border-green-400/80'
-                        : 'bg-red-500/40 text-red-100 border-red-400/80'}
-                    `}
-                    style={{ minWidth: '120px' }}
-                  >
-                    {editResultMessage === '保存成功' ? (
-                      <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#34d399" opacity="0.3"/><path d="M6 10.5l3 3 5-5" stroke="#34d399" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    ) : (
-                      <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#f87171" opacity="0.3"/><path d="M7 7l6 6M13 7l-6 6" stroke="#f87171" strokeWidth="2.2" strokeLinecap="round"/></svg>
-                    )}
-                    <span>{editResultMessage}</span>
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={() => { setShowAdd(false); setEditSong(null); setEditResultMessage(null); }}
-                  className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 font-medium"
-                >
-                  取消
-                </button>
+            </form>
+
+            {/* 悬浮在右下角的操作按钮和提示信息 */}
+            <div className="fixed bottom-8 right-8 z-60 flex flex-col items-end gap-4">
+              {/* 操作按钮 - 竖向排列，圆形设计 */}
+              <div className="flex flex-col items-center gap-3">
                 <button
                   type="submit"
-                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 text-green-200 hover:from-green-500/30 hover:to-emerald-500/30 hover:text-green-100 transition-all duration-200 font-semibold shadow-sm"
+                  form={showAdd ? "add-form" : "edit-form"}
+                  className="w-14 h-14 rounded-full bg-gradient-to-br from-green-500/80 to-emerald-600/80 border-2 border-green-400/60 text-white hover:from-green-500 hover:to-emerald-600 hover:border-green-300 transition-all duration-200 font-semibold shadow-lg backdrop-blur-sm flex items-center justify-center group"
+                  title={showAdd ? '提交' : '保存'}
                 >
-                  <Save size={18} />
-                  {showAdd ? '提交' : '保存'}
+                  <Save size={20} className="group-hover:scale-110 transition-transform duration-200" />
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => { setShowAdd(false); setEditSong(null); setAddResultMessage(null); setEditResultMessage(null); }}
+                  className="w-14 h-14 rounded-full bg-gradient-to-br from-gray-500/80 to-gray-600/80 border-2 border-gray-400/60 text-white hover:from-gray-500 hover:to-gray-600 hover:border-gray-300 transition-all duration-200 font-semibold shadow-lg backdrop-blur-sm flex items-center justify-center group"
+                  title="取消"
+                >
+                  <X size={20} className="group-hover:scale-110 transition-transform duration-200" />
                 </button>
               </div>
-            </form>
+            </div>
+
+            {/* 中央提示消息 */}
+            {addResultMessage || editResultMessage ? (
+              <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                <div className={`relative max-w-sm w-full p-6 rounded-2xl shadow-2xl border-2 backdrop-blur-md transform transition-all duration-300 animate-in zoom-in-95 slide-in-from-bottom-2
+                  ${(addResultMessage === '成功') || (editResultMessage === '成功')
+                    ? 'bg-gradient-to-br from-green-500/90 to-emerald-600/90 border-green-400/60 text-white'
+                    : 'bg-gradient-to-br from-red-500/90 to-red-600/90 border-red-400/60 text-white'}
+                `}>
+                  {/* 装饰性背景元素 */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 to-transparent opacity-50"></div>
+                  
+                  {/* 图标和消息 */}
+                  <div className="relative flex flex-col items-center text-center space-y-4">
+                    <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
+                      (addResultMessage === '成功') || (editResultMessage === '成功')
+                        ? 'bg-green-400/30 border-2 border-green-300/50' 
+                        : 'bg-red-400/30 border-2 border-red-300/50'
+                    }`}>
+                      {(addResultMessage === '成功') || (editResultMessage === '成功') ? (
+                        <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <h3 className={`text-xl font-bold mb-2 ${
+                        (addResultMessage === '成功') || (editResultMessage === '成功') ? 'text-green-100' : 'text-red-100'
+                      }`}>
+                        {(addResultMessage === '成功') || (editResultMessage === '成功') ? '操作成功' : '操作失败'}
+                      </h3>
+                      <p className={`text-sm opacity-90 ${
+                        (addResultMessage === '成功') || (editResultMessage === '成功') ? 'text-green-200' : 'text-red-200'
+                      }`}>
+                        {addResultMessage || editResultMessage}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* 关闭按钮 */}
+                  <button
+                    onClick={() => { setAddResultMessage(null); setEditResultMessage(null); }}
+                    className={`absolute top-3 right-3 p-1 rounded-full hover:bg-white/20 transition-colors duration-200 ${
+                      (addResultMessage === '成功') || (editResultMessage === '成功') ? 'text-green-200' : 'text-red-200'
+                    }`}
+                  >
+                    <X size={16} />
+                  </button>
+                  
+                  {/* 自动关闭倒计时 */}
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 rounded-b-2xl overflow-hidden">
+                    <div className={`h-full transition-all duration-3000 ease-linear ${
+                      (addResultMessage === '成功') || (editResultMessage === '成功') ? 'bg-green-300' : 'bg-red-300'
+                    }`}></div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
       )}
