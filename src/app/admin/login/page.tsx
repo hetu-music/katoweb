@@ -70,16 +70,25 @@ export default function LoginPage() {
           required
         />
         {error && <div className="text-red-400 text-center text-sm font-medium">{error}</div>}
-        <button
-          type="submit"
-          className="h-12 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-semibold rounded-xl shadow transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-          disabled={loading}
-        >
-          {loading && (
-            <span className="inline-block w-5 h-5 mr-2 align-middle animate-spin border-2 border-white border-t-transparent rounded-full"></span>
-          )}
-          {loading ? '登录中...' : '登录'}
-        </button>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => router.push('/')}
+            className="flex-1 h-12 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-semibold rounded-xl shadow transition-all"
+          >
+            返回主页
+          </button>
+          <button
+            type="submit"
+            className="flex-1 h-12 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-semibold rounded-xl shadow transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+            disabled={loading}
+          >
+            {loading && (
+              <span className="inline-block w-5 h-5 mr-2 align-middle animate-spin border-2 border-white border-t-transparent rounded-full"></span>
+            )}
+            {loading ? '登录中...' : '登录'}
+          </button>
+        </div>
       </form>
     </div>
   );
