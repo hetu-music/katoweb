@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
       },
     ],
     minimumCacheTTL: 3600,
+    // 优化图片处理以减少内存占用
   },
   // 压缩配置
   compress: true,

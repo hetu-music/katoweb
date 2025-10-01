@@ -9,6 +9,33 @@ export function formatTime(seconds: number | null): string {
   return `${min}:${sec}`;
 }
 
+// 判断字符串首字母是否为英文
+function startsWithEnglish(str: string): boolean {
+  return /^[a-zA-Z]/.test(str);
+}
+
+// 优化的排序函数：首字母英文的在前按字母表排序，首字母中文的在后按拼音排序
+function sortNamesOptimized(names: string[]): string[] {
+  const englishStartNames: string[] = [];
+  const chineseStartNames: string[] = [];
+
+  names.forEach(name => {
+    if (startsWithEnglish(name)) {
+      englishStartNames.push(name);
+    } else {
+      chineseStartNames.push(name);
+    }
+  });
+
+  // 首字母英文的按字母表排序
+  englishStartNames.sort((a, b) => a.localeCompare(b, 'en', { sensitivity: 'base' }));
+
+  // 首字母中文的按拼音排序
+  chineseStartNames.sort((a, b) => a.localeCompare(b, 'zh-CN', { sensitivity: 'base' }));
+
+  return [...englishStartNames, ...chineseStartNames];
+}
+
 // 计算筛选选项
 export function calculateFilterOptions(songsData: Song[]): FilterOptions {
   // 处理类型
@@ -53,7 +80,8 @@ export function calculateFilterOptions(songsData: Song[]): FilterOptions {
       song.lyricist.forEach(l => lyricistSet.add(l));
     }
   });
-  const allLyricists = ['全部', ...Array.from(lyricistSet)];
+  const sortedLyricists = sortNamesOptimized(Array.from(lyricistSet));
+  const allLyricists = ['全部', ...sortedLyricists];
   if (hasUnknownLyricist) allLyricists.push('未知');
 
   // 处理作曲
@@ -66,10 +94,27 @@ export function calculateFilterOptions(songsData: Song[]): FilterOptions {
       song.composer.forEach(c => composerSet.add(c));
     }
   });
-  const allComposers = ['全部', ...Array.from(composerSet)];
+  const sortedComposers = sortNamesOptimized(Array.from(composerSet));
+  const allComposers = ['全部', ...sortedComposers];
   if (hasUnknownComposer) allComposers.push('未知');
 
-  return { allTypes, allYears, allLyricists, allComposers };
+  // 处理编曲
+  const arrangerSet = new Set<string>();
+  let hasUnknownArranger = false;
+  songsData.forEach(song => {
+    // 需要检查 arranger 字段，如果 Song 类型没有，则从 SongDetail 获取
+    const songDetail = song as SongDetail;
+    if (!songDetail.arranger || songDetail.arranger.length === 0) {
+      hasUnknownArranger = true;
+    } else {
+      songDetail.arranger.forEach(a => arrangerSet.add(a));
+    }
+  });
+  const sortedArrangers = sortNamesOptimized(Array.from(arrangerSet));
+  const allArrangers = ['全部', ...sortedArrangers];
+  if (hasUnknownArranger) allArrangers.push('未知');
+
+  return { allTypes, allYears, allLyricists, allComposers, allArrangers };
 }
 
 // 过滤歌曲
@@ -79,14 +124,17 @@ export function filterSongs(
   selectedType: string,
   selectedYear: string,
   selectedLyricist: string,
-  selectedComposer: string
+  selectedComposer: string,
+  selectedArranger: string
 ): Song[] {
   return songsData.filter(song => {
+    const songDetail = song as SongDetail;
     const matchesSearch = !searchTerm ||
       song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (song.album && song.album.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (song.lyricist && song.lyricist.join(',').toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (song.composer && song.composer.join(',').toLowerCase().includes(searchTerm.toLowerCase()));
+      (song.composer && song.composer.join(',').toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (songDetail.arranger && songDetail.arranger.join(',').toLowerCase().includes(searchTerm.toLowerCase()));
 
     // type 筛选
     const matchesType = selectedType === '全部' ||
@@ -97,8 +145,10 @@ export function filterSongs(
       (selectedLyricist === '未知' ? (!song.lyricist || song.lyricist.length === 0) : (song.lyricist && song.lyricist.includes(selectedLyricist)));
     const matchesComposer = selectedComposer === '全部' ||
       (selectedComposer === '未知' ? (!song.composer || song.composer.length === 0) : (song.composer && song.composer.includes(selectedComposer)));
+    const matchesArranger = selectedArranger === '全部' ||
+      (selectedArranger === '未知' ? (!songDetail.arranger || songDetail.arranger.length === 0) : (songDetail.arranger && songDetail.arranger.includes(selectedArranger)));
 
-    return matchesSearch && matchesType && matchesYear && matchesLyricist && matchesComposer;
+    return matchesSearch && matchesType && matchesYear && matchesLyricist && matchesComposer && matchesArranger;
   });
 }
 

@@ -18,13 +18,27 @@ FROM node:20-alpine AS runner
 
 WORKDIR /app
 
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# 只复制生产环境需要的文件
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/next.config.ts ./next.config.ts
+COPY --from=builder /app/scripts ./scripts
 
+# 只安装生产依赖，减少内存占用
+RUN pnpm install --prod --frozen-lockfile && pnpm store prune
+
+# 安装 curl
+RUN apk add --no-cache curl
+
+# 给启动脚本执行权限
+RUN chmod +x ./scripts/start.sh
+
+# 设置内存限制相关的环境变量
 ENV NODE_ENV=production
 
 EXPOSE 3000
-CMD ["node_modules/.bin/next", "start"]
+
+CMD ["./scripts/start.sh"]

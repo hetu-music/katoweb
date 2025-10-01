@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Search, Grid, List, XCircle, Share } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { MusicLibraryClientProps } from '../lib/types';
+import { MusicLibraryClientProps, SongDetail } from '../lib/types';
 import { getCoverUrl, calculateFilterOptions, filterSongs, mapAndSortSongs } from '../lib/utils';
 import { typeColorMap, genreColorMap } from '../lib/constants';
 import About from './About';
@@ -15,12 +15,18 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
   const router = useRouter();
   const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
 
+  // Helper function to safely get first array element
+  const getFirstElement = (arr: string[] | null | undefined): string => {
+    return (arr && arr.length > 0 && arr[0]) ? arr[0] : '';
+  };
+
   // 1. 状态初始化
   const [searchTerm, setSearchTerm] = useState(() => searchParams?.get('q') || '');
   const [selectedType, setSelectedType] = useState(() => searchParams?.get('type') || '全部');
   const [selectedYear, setSelectedYear] = useState(() => searchParams?.get('year') || '全部');
   const [selectedLyricist, setSelectedLyricist] = useState(() => searchParams?.get('lyricist') || '全部');
   const [selectedComposer, setSelectedComposer] = useState(() => searchParams?.get('composer') || '全部');
+  const [selectedArranger, setSelectedArranger] = useState(() => searchParams?.get('arranger') || '全部');
   const [viewMode, setViewMode] = useState(() => searchParams?.get('view') || 'grid');
   const [aboutOpen, setAboutOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -39,12 +45,13 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
     if (selectedYear && selectedYear !== '全部') params.set('year', selectedYear); else params.delete('year');
     if (selectedLyricist && selectedLyricist !== '全部') params.set('lyricist', selectedLyricist); else params.delete('lyricist');
     if (selectedComposer && selectedComposer !== '全部') params.set('composer', selectedComposer); else params.delete('composer');
+    if (selectedArranger && selectedArranger !== '全部') params.set('arranger', selectedArranger); else params.delete('arranger');
     if (viewMode && viewMode !== 'grid') params.set('view', viewMode); else params.delete('view');
     const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
     if (newUrl !== window.location.pathname + window.location.search) {
       window.history.replaceState(null, '', newUrl);
     }
-  }, [searchTerm, selectedType, selectedYear, selectedLyricist, selectedComposer, viewMode]);
+  }, [searchTerm, selectedType, selectedYear, selectedLyricist, selectedComposer, selectedArranger, viewMode]);
 
   // 3. 滚动位置保存与恢复
   useEffect(() => {
@@ -120,9 +127,10 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
       selectedType,
       selectedYear,
       selectedLyricist,
-      selectedComposer
+      selectedComposer,
+      selectedArranger
     ));
-  }, [debouncedSearchTerm, selectedType, selectedYear, songsData, selectedLyricist, selectedComposer]);
+  }, [debouncedSearchTerm, selectedType, selectedYear, songsData, selectedLyricist, selectedComposer, selectedArranger]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
@@ -190,7 +198,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
                 </div>
                 <input
                   type="text"
-                  placeholder="搜索歌曲、作词、作曲、专辑..."
+                  placeholder="搜索歌曲、作词、作曲、编曲、专辑..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/15 transition-all duration-200 rounded-r-2xl border-l-0 min-w-0 pr-10"
@@ -217,6 +225,8 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
                 setSelectedLyricist={setSelectedLyricist}
                 selectedComposer={selectedComposer}
                 setSelectedComposer={setSelectedComposer}
+                selectedArranger={selectedArranger}
+                setSelectedArranger={setSelectedArranger}
                 filterOptions={filterOptions}
                 onTypeExplanationOpen={() => setTypeExplanationOpen(true)}
               />
@@ -240,7 +250,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
                 </div>
 
                 {/* 筛选状态指示器 */}
-                {(searchTerm || selectedType !== '全部' || selectedYear !== '全部' || selectedLyricist !== '全部' || selectedComposer !== '全部') && (
+                {(searchTerm || selectedType !== '全部' || selectedYear !== '全部' || selectedLyricist !== '全部' || selectedComposer !== '全部' || selectedArranger !== '全部') && (
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-3 py-1.5 shadow-sm min-h-[32px]">
                       <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></div>
@@ -253,6 +263,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
                         setSelectedYear('全部');
                         setSelectedLyricist('全部');
                         setSelectedComposer('全部');
+                        setSelectedArranger('全部');
                       }}
                       className="flex items-center gap-1.5 bg-gradient-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-red-300/30 rounded-full px-3 py-1.5 text-red-200 hover:text-red-100 hover:bg-gradient-to-r hover:from-red-500/30 hover:to-pink-500/30 transition-all duration-200 text-xs font-medium shadow-sm active:scale-95 touch-manipulation min-h-[32px]"
                       title="清除所有筛选"
@@ -388,11 +399,14 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
                       <div className="flex-1 min-w-0">
                         <h3 className="text-white font-medium truncate">{song.title}</h3>
                         <div className="flex flex-wrap gap-1 mt-1">
-                          {song.lyricist && song.lyricist.length > 0 && (
-                            <span className="text-gray-300 text-sm truncate">{song.lyricist[0]}</span>
+                          {getFirstElement(song.lyricist) && (
+                            <span className="text-gray-300 text-sm truncate">{getFirstElement(song.lyricist)}</span>
                           )}
-                          {song.composer && song.composer.length > 0 && (
-                            <span className="text-gray-300 text-sm truncate">{song.composer[0]}</span>
+                          {getFirstElement(song.composer) && (
+                            <span className="text-gray-300 text-sm truncate">{getFirstElement(song.composer)}</span>
+                          )}
+                          {getFirstElement((song as SongDetail).arranger) && (
+                            <span className="text-gray-300 text-sm truncate">{getFirstElement((song as SongDetail).arranger)}</span>
                           )}
                         </div>
                       </div>
@@ -422,8 +436,9 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
                         <p className="text-gray-400 text-sm">{song.album || '未知'} • {song.year || '未知'}</p>
                       </div>
                       <div className="flex items-center space-x-6 text-gray-400 text-sm">
-                        <span>作词: {(song.lyricist && song.lyricist.length > 0) ? song.lyricist[0] : '未知'}</span>
-                        <span>作曲: {(song.composer && song.composer.length > 0) ? song.composer[0] : '未知'}</span>
+                        <span>作词: {getFirstElement(song.lyricist) || '未知'}</span>
+                        <span>作曲: {getFirstElement(song.composer) || '未知'}</span>
+                        <span>编曲: {getFirstElement((song as SongDetail).arranger) || '未知'}</span>
                         <span>{song.length ? `${Math.floor(song.length / 60)}:${(song.length % 60).toString().padStart(2, '0')}` : '未知'}</span>
                         <div className="flex flex-wrap gap-1 ml-4">
                           {(song.genre || []).map((g: string) => (

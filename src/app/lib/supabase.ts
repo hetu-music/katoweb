@@ -13,11 +13,17 @@ export const TABLE_NAMES = {
   ADMIN: ADMIN_TABLE,
 } as const;
 
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+// 客户端缓存
+const clientCache = new Map<string, SupabaseClient>();
+
 // 创建Supabase客户端，根据表名和可选 accessToken 选择不同的密钥
 export function createSupabaseClient(table?: string, accessToken?: string) {
   let supabaseUrl: string | undefined;
   let supabaseKey: string | undefined;
   const options: { global?: { headers: { Authorization: string } } } = {};
+
   if (table === MAIN_TABLE) {
     supabaseUrl = process.env.SUPABASE_URL;
     supabaseKey = process.env.SUPABASE_SECRET_API;
@@ -29,12 +35,34 @@ export function createSupabaseClient(table?: string, accessToken?: string) {
       options.global = { headers: { Authorization: `Bearer ${accessToken}` } };
     }
   }
+
   if (!supabaseUrl || !supabaseKey ||
     supabaseUrl === 'placeholder' || supabaseKey === 'placeholder') {
     console.log('Using placeholder environment variables');
     return null;
   }
-  return createClient(supabaseUrl, supabaseKey, options);
+
+  // 创建缓存键
+  const cacheKey = `${supabaseUrl}-${supabaseKey}-${accessToken || 'no-token'}`;
+
+  // 检查缓存
+  if (clientCache.has(cacheKey)) {
+    return clientCache.get(cacheKey);
+  }
+
+  // 创建新客户端并缓存
+  const client = createClient(supabaseUrl, supabaseKey, options);
+  clientCache.set(cacheKey, client);
+
+  // 限制缓存大小，防止内存泄漏
+  if (clientCache.size > 10) {
+    const firstKey = clientCache.keys().next().value;
+    if (firstKey) {
+      clientCache.delete(firstKey);
+    }
+  }
+
+  return client;
 }
 
 // 获取所有歌曲数据
@@ -75,7 +103,7 @@ export async function getSongById(id: number, table: string = MAIN_TABLE, access
     console.log('No song found for id:', id);
     return null;
   }
-  
+
   // 处理歌词转换
   let normalLyrics = '';
   if (data.lyrics) {
@@ -87,7 +115,7 @@ export async function getSongById(id: number, table: string = MAIN_TABLE, access
       normalLyrics = '歌词转换失败，请检查LRC格式';
     }
   }
-  
+
   // 映射数据并添加年份和转换后的歌词
   return {
     ...data,
