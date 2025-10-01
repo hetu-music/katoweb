@@ -69,7 +69,22 @@ export function calculateFilterOptions(songsData: Song[]): FilterOptions {
   const allComposers = ['全部', ...Array.from(composerSet)];
   if (hasUnknownComposer) allComposers.push('未知');
 
-  return { allTypes, allYears, allLyricists, allComposers };
+  // 处理编曲
+  const arrangerSet = new Set<string>();
+  let hasUnknownArranger = false;
+  songsData.forEach(song => {
+    // 需要检查 arranger 字段，如果 Song 类型没有，则从 SongDetail 获取
+    const songDetail = song as SongDetail;
+    if (!songDetail.arranger || songDetail.arranger.length === 0) {
+      hasUnknownArranger = true;
+    } else {
+      songDetail.arranger.forEach(a => arrangerSet.add(a));
+    }
+  });
+  const allArrangers = ['全部', ...Array.from(arrangerSet)];
+  if (hasUnknownArranger) allArrangers.push('未知');
+
+  return { allTypes, allYears, allLyricists, allComposers, allArrangers };
 }
 
 // 过滤歌曲
@@ -79,14 +94,17 @@ export function filterSongs(
   selectedType: string,
   selectedYear: string,
   selectedLyricist: string,
-  selectedComposer: string
+  selectedComposer: string,
+  selectedArranger: string
 ): Song[] {
   return songsData.filter(song => {
+    const songDetail = song as SongDetail;
     const matchesSearch = !searchTerm ||
       song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (song.album && song.album.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (song.lyricist && song.lyricist.join(',').toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (song.composer && song.composer.join(',').toLowerCase().includes(searchTerm.toLowerCase()));
+      (song.composer && song.composer.join(',').toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (songDetail.arranger && songDetail.arranger.join(',').toLowerCase().includes(searchTerm.toLowerCase()));
 
     // type 筛选
     const matchesType = selectedType === '全部' ||
@@ -97,8 +115,10 @@ export function filterSongs(
       (selectedLyricist === '未知' ? (!song.lyricist || song.lyricist.length === 0) : (song.lyricist && song.lyricist.includes(selectedLyricist)));
     const matchesComposer = selectedComposer === '全部' ||
       (selectedComposer === '未知' ? (!song.composer || song.composer.length === 0) : (song.composer && song.composer.includes(selectedComposer)));
+    const matchesArranger = selectedArranger === '全部' ||
+      (selectedArranger === '未知' ? (!songDetail.arranger || songDetail.arranger.length === 0) : (songDetail.arranger && songDetail.arranger.includes(selectedArranger)));
 
-    return matchesSearch && matchesType && matchesYear && matchesLyricist && matchesComposer;
+    return matchesSearch && matchesType && matchesYear && matchesLyricist && matchesComposer && matchesArranger;
   });
 }
 

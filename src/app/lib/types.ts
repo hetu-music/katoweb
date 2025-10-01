@@ -47,6 +47,7 @@ export interface FilterOptions {
   allYears: (string | number)[];
   allLyricists: string[];
   allComposers: string[];
+  allArrangers: string[];
 }
 
 // 歌曲信息类型

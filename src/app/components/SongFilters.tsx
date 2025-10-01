@@ -9,11 +9,14 @@ interface SongFiltersProps {
   setSelectedLyricist: (lyricist: string) => void;
   selectedComposer: string;
   setSelectedComposer: (composer: string) => void;
+  selectedArranger: string;
+  setSelectedArranger: (arranger: string) => void;
   filterOptions: {
     allTypes: string[];
     allYears: (string | number | null)[];
     allLyricists: string[];
     allComposers: string[];
+    allArrangers: string[];
   };
   onTypeExplanationOpen: () => void;
 }
@@ -27,6 +30,8 @@ const SongFilters: React.FC<SongFiltersProps> = ({
   setSelectedLyricist,
   selectedComposer,
   setSelectedComposer,
+  selectedArranger,
+  setSelectedArranger,
   filterOptions,
   onTypeExplanationOpen,
 }) => {
@@ -93,6 +98,19 @@ const SongFilters: React.FC<SongFiltersProps> = ({
         >
           {filterOptions.allComposers.map(composer => (
             <option key={composer} value={composer} className="filter-option">{composer}</option>
+          ))}
+        </select>
+      </div>
+      {/* 编曲筛选 */}
+      <div className="filter-container">
+        <span className="filter-label">编曲</span>
+        <select
+          value={selectedArranger}
+          onChange={(e) => setSelectedArranger(e.target.value)}
+          className="filter-select"
+        >
+          {filterOptions.allArrangers.map(arranger => (
+            <option key={arranger} value={arranger} className="filter-option">{arranger}</option>
           ))}
         </select>
       </div>
