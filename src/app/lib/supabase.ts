@@ -13,8 +13,10 @@ export const TABLE_NAMES = {
   ADMIN: ADMIN_TABLE,
 } as const;
 
+import type { SupabaseClient } from '@supabase/supabase-js';
+
 // 客户端缓存
-const clientCache = new Map<string, any>();
+const clientCache = new Map<string, SupabaseClient>();
 
 // 创建Supabase客户端，根据表名和可选 accessToken 选择不同的密钥
 export function createSupabaseClient(table?: string, accessToken?: string) {

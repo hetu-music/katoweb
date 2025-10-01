@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Search, Grid, List, XCircle, Share } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { MusicLibraryClientProps } from '../lib/types';
+import { MusicLibraryClientProps, SongDetail } from '../lib/types';
 import { getCoverUrl, calculateFilterOptions, filterSongs, mapAndSortSongs } from '../lib/utils';
 import { typeColorMap, genreColorMap } from '../lib/constants';
 import About from './About';
@@ -14,6 +14,11 @@ import SongFilters from './SongFilters';
 const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsData }) => {
   const router = useRouter();
   const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+
+  // Helper function to safely get first array element
+  const getFirstElement = (arr: string[] | null | undefined): string => {
+    return (arr && arr.length > 0 && arr[0]) ? arr[0] : '';
+  };
 
   // 1. 状态初始化
   const [searchTerm, setSearchTerm] = useState(() => searchParams?.get('q') || '');
@@ -394,14 +399,14 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
                       <div className="flex-1 min-w-0">
                         <h3 className="text-white font-medium truncate">{song.title}</h3>
                         <div className="flex flex-wrap gap-1 mt-1">
-                          {song.lyricist && song.lyricist.length > 0 && (
-                            <span className="text-gray-300 text-sm truncate">{song.lyricist[0]}</span>
+                          {getFirstElement(song.lyricist) && (
+                            <span className="text-gray-300 text-sm truncate">{getFirstElement(song.lyricist)}</span>
                           )}
-                          {song.composer && song.composer.length > 0 && (
-                            <span className="text-gray-300 text-sm truncate">{song.composer[0]}</span>
+                          {getFirstElement(song.composer) && (
+                            <span className="text-gray-300 text-sm truncate">{getFirstElement(song.composer)}</span>
                           )}
-                          {(song as any).arranger && (song as any).arranger.length > 0 && (
-                            <span className="text-gray-300 text-sm truncate">{(song as any).arranger[0]}</span>
+                          {getFirstElement((song as SongDetail).arranger) && (
+                            <span className="text-gray-300 text-sm truncate">{getFirstElement((song as SongDetail).arranger)}</span>
                           )}
                         </div>
                       </div>
@@ -431,9 +436,9 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({ initialSongsDat
                         <p className="text-gray-400 text-sm">{song.album || '未知'} • {song.year || '未知'}</p>
                       </div>
                       <div className="flex items-center space-x-6 text-gray-400 text-sm">
-                        <span>作词: {(song.lyricist && song.lyricist.length > 0) ? song.lyricist[0] : '未知'}</span>
-                        <span>作曲: {(song.composer && song.composer.length > 0) ? song.composer[0] : '未知'}</span>
-                        <span>编曲: {((song as any).arranger && (song as any).arranger.length > 0) ? (song as any).arranger[0] : '未知'}</span>
+                        <span>作词: {getFirstElement(song.lyricist) || '未知'}</span>
+                        <span>作曲: {getFirstElement(song.composer) || '未知'}</span>
+                        <span>编曲: {getFirstElement((song as SongDetail).arranger) || '未知'}</span>
                         <span>{song.length ? `${Math.floor(song.length / 60)}:${(song.length % 60).toString().padStart(2, '0')}` : '未知'}</span>
                         <div className="flex flex-wrap gap-1 ml-4">
                           {(song.genre || []).map((g: string) => (
