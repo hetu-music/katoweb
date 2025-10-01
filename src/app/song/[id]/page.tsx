@@ -29,4 +29,4 @@ export async function generateStaticParams() {
 }
 
 // 配置 ISR
-export const revalidate = 3600;
+export const revalidate = 7200;

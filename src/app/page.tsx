@@ -23,5 +23,5 @@ export default async function MusicLibraryPage() {
   }
 }
 
-// 启用 ISR - 每30分钟重新生成页面
-export const revalidate = 3600;
+// 启用 ISR - 每2小时重新生成页面，减少服务器负载
+export const revalidate = 7200;
