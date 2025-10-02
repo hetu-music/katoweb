@@ -1,6 +1,6 @@
 'use client';
-import React, { useState, useCallback } from 'react';
-import { Search, Plus, Edit, Save, X, Eye, EyeOff, ArrowUp } from 'lucide-react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { Search, Plus, Edit, Save, X, Eye, EyeOff, ArrowUp, Bell } from 'lucide-react';
 import type { Song, SongDetail, SongFieldConfig } from '../../lib/types';
 import { convertEmptyStringToNull, formatField, validateField } from '../../lib/utils';
 import { songFields, genreColorMap, typeColorMap } from '../../lib/constants';
@@ -8,6 +8,7 @@ import { apiCreateSong, apiUpdateSong } from '../../lib/api';
 import { useSongs } from '../../hooks/useSongs';
 import { useAuth } from '../../hooks/useAuth';
 import Account from './Account';
+import Notification from './Notification';
 
 // Memoized SongRow component
 const SongRow = React.memo(({ song, idx, expandedRows, toggleRowExpansion, handleEdit }: {
@@ -95,6 +96,7 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
   const [addResultMessage, setAddResultMessage] = useState<string | null>(null);
   const [editResultMessage, setEditResultMessage] = useState<string | null>(null);
+  const [showNotification, setShowNotification] = useState(false);
 
   // Scroll listener
   React.useEffect(() => {
@@ -103,6 +105,25 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
     };
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // 自动弹出通知逻辑
+  useEffect(() => {
+    // 检查是否是新的登录会话
+    const lastNotificationTime = localStorage.getItem('lastNotificationTime');
+    const currentTime = new Date().getTime();
+    const oneHour = 60 * 60 * 1000; // 1小时的毫秒数
+    
+    // 如果没有记录或者距离上次显示超过1小时，则显示通知
+    if (!lastNotificationTime || (currentTime - parseInt(lastNotificationTime)) > oneHour) {
+      // 延迟1秒显示，让页面先加载完成
+      const timer = setTimeout(() => {
+        setShowNotification(true);
+        localStorage.setItem('lastNotificationTime', currentTime.toString());
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   const scrollToTop = useCallback(() => {
@@ -217,7 +238,18 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
       <div className="container mx-auto px-6 py-8 max-w-7xl">
         {/* Header Section */}
         <div className="mb-8 flex flex-row items-center justify-between gap-4">
-          <h1 className="text-4xl font-bold text-white flex-1 mb-0">管理页面</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-4xl font-bold text-white mb-0">管理页面</h1>
+            {/* 通知按钮 */}
+            <button
+              onClick={() => setShowNotification(true)}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-400/30 text-blue-200 hover:from-blue-500/30 hover:to-purple-500/30 hover:text-blue-100 transition-all duration-200 shadow-sm font-medium"
+              title="查看管理规则"
+            >
+              <Bell size={16} />
+              <span className="hidden sm:inline text-sm">规则</span>
+            </button>
+          </div>
           <Account csrfToken={csrfToken} handleLogout={handleLogout} logoutLoading={logoutLoading} />
         </div>
 
@@ -448,6 +480,11 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
         >
           <ArrowUp size={24} />
         </button>
+      )}
+
+      {/* 通知模态框 */}
+      {showNotification && (
+        <Notification onClose={() => setShowNotification(false)} />
       )}
     </div>
   );
