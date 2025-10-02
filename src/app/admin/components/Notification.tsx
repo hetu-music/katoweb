@@ -8,8 +8,8 @@ interface NotificationProps {
 
 const Notification: React.FC<NotificationProps> = ({ onClose }) => {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-gradient-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-2xl shadow-2xl p-8 max-w-2xl w-full mx-4 relative text-white max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div className="bg-gradient-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-2xl shadow-2xl p-8 w-full max-w-4xl relative text-white max-h-[90vh] overflow-hidden">
         <button
           className="absolute top-4 right-4 text-gray-300 hover:text-white text-xl font-bold transition-colors"
           onClick={onClose}
@@ -27,7 +27,7 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
         </div>
 
         {/* 内容区域 */}
-        <div className="space-y-6 max-h-96 overflow-y-auto">
+        <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
           {/* 重要提示 */}
           <div className="relative p-5 rounded-xl bg-gradient-to-r from-red-500/25 to-orange-500/25 border-2 border-red-400/50 shadow-lg">
             {/* 装饰性背景 */}
@@ -61,35 +61,56 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
             </div>
           </div>
           {/* 数据管理规则 */}
-          <div className="p-4 rounded-xl bg-blue-500/20 border border-blue-400/30">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 mt-0.5">
-                <Database className="w-5 h-5 text-blue-300" />
+          <div className="p-5 rounded-xl bg-blue-500/20 border border-blue-400/30">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 mt-1">
+                <Database className="w-6 h-6 text-blue-300" />
               </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-white mb-2">数据编辑</h4>
-                <ul className="text-sm text-white/80 leading-relaxed space-y-1">
-                  <li>• 新增歌曲时请确保标题和专辑信息准确无误</li>
-                  <li>• 作词、作曲、编曲、演唱、出品发行支持多人，请每个输入框只填写一人</li>
-                  <li>• 歌曲时长需要换算成秒</li>
-                  <li>• 歌词只需填写LRC歌词</li>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-white mb-3 text-lg">数据编辑</h4>
+                <ul className="text-sm text-white/80 leading-relaxed space-y-2">
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-300 font-bold mt-0.5">•</span>
+                    <span>新增歌曲时请确保标题和专辑信息准确无误</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-300 font-bold mt-0.5">•</span>
+                    <span>作词、作曲、编曲、演唱、出品发行支持多人，请每个输入框只填写一人</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-300 font-bold mt-0.5">•</span>
+                    <span>歌曲时长需要换算成秒</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-300 font-bold mt-0.5">•</span>
+                    <span>歌词只需填写LRC歌词</span>
+                  </li>
                 </ul>
               </div>
             </div>
           </div>
 
           {/* 权限管理规则 */}
-          <div className="p-4 rounded-xl bg-green-500/20 border border-green-400/30">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 mt-0.5">
-                <Shield className="w-5 h-5 text-green-300" />
+          <div className="p-5 rounded-xl bg-green-500/20 border border-green-400/30">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 mt-1">
+                <Shield className="w-6 h-6 text-green-300" />
               </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-white mb-2">权限安全</h4>
-                <ul className="text-sm text-white/80 leading-relaxed space-y-1">
-                  <li>• 请妥善保管账号，不要与他人分享</li>
-                  <li>• 定期检查数据变更，确保信息准确性</li>
-                  <li>• 如发现异常操作请及时联系管理员</li>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-white mb-3 text-lg">权限安全</h4>
+                <ul className="text-sm text-white/80 leading-relaxed space-y-2">
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-300 font-bold mt-0.5">•</span>
+                    <span>请妥善保管账号，不要与他人分享</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-300 font-bold mt-0.5">•</span>
+                    <span>定期检查数据变更，确保信息准确性</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-300 font-bold mt-0.5">•</span>
+                    <span>如发现异常操作请及时联系管理员</span>
+                  </li>
                 </ul>
               </div>
             </div>

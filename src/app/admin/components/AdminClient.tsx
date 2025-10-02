@@ -244,10 +244,10 @@ export default function AdminClientComponent({ initialSongs, initialError }: { i
             <button
               onClick={() => setShowNotification(true)}
               className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-400/30 text-blue-200 hover:from-blue-500/30 hover:to-purple-500/30 hover:text-blue-100 transition-all duration-200 shadow-sm font-medium"
-              title="查看管理规则"
+              title="查看操作说明"
             >
               <Bell size={16} />
-              <span className="hidden sm:inline text-sm">规则</span>
+              <span className="hidden sm:inline text-sm">说明</span>
             </button>
           </div>
           <Account csrfToken={csrfToken} handleLogout={handleLogout} logoutLoading={logoutLoading} />
