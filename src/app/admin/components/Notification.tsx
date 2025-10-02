@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Bell, X, BookOpen, Shield, Database, Users } from 'lucide-react';
+import { Bell, X, Shield, Database, AlertTriangle } from 'lucide-react';
 
 interface NotificationProps {
   onClose: () => void;
@@ -23,11 +23,43 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
           <div className="p-2 rounded-lg bg-blue-500/20 text-blue-300">
             <Bell className="w-6 h-6" />
           </div>
-          <h2 className="text-2xl font-bold text-white">管理规则</h2>
+          <h2 className="text-2xl font-bold text-white">说明与注意</h2>
         </div>
 
         {/* 内容区域 */}
         <div className="space-y-6 max-h-96 overflow-y-auto">
+          {/* 重要提示 */}
+          <div className="relative p-5 rounded-xl bg-gradient-to-r from-red-500/25 to-orange-500/25 border-2 border-red-400/50 shadow-lg">
+            {/* 装饰性背景 */}
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-red-400/10 to-orange-400/10 opacity-50"></div>
+
+            {/* 闪烁动画的边框 */}
+            <div className="absolute inset-0 rounded-xl border-2 border-red-400/30 animate-pulse"></div>
+
+            <div className="relative flex items-start gap-4">
+              <div className="flex-shrink-0 mt-0.5 p-2 rounded-full bg-red-500/30 border border-red-400/50">
+                <AlertTriangle className="w-6 h-6 text-red-200" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-3">
+                  <h4 className="font-bold text-red-100 text-lg">⚠️ 重要提示</h4>
+                  <span className="px-2 py-1 bg-red-500/40 border border-red-400/60 rounded-full text-xs text-red-100 font-medium animate-pulse">
+                    必读
+                  </span>
+                </div>
+                <ul className="text-sm text-red-100/90 leading-relaxed space-y-2 font-medium">
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-300 font-bold mt-0.5">•</span>
+                    <span>数据更改不会立刻同步到主页面</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-300 font-bold mt-0.5">•</span>
+                    <span>在本页面修改完成就是变更成功</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
           {/* 数据管理规则 */}
           <div className="p-4 rounded-xl bg-blue-500/20 border border-blue-400/30">
             <div className="flex items-start gap-3">
@@ -35,12 +67,12 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
                 <Database className="w-5 h-5 text-blue-300" />
               </div>
               <div className="flex-1">
-                <h4 className="font-semibold text-white mb-2">数据管理规范</h4>
+                <h4 className="font-semibold text-white mb-2">数据编辑</h4>
                 <ul className="text-sm text-white/80 leading-relaxed space-y-1">
                   <li>• 新增歌曲时请确保标题和专辑信息准确无误</li>
-                  <li>• 作词、作曲信息支持多人，请用逗号分隔</li>
-                  <li>• 发布日期格式为 YYYY-MM-DD</li>
-                  <li>• 编辑数据前请先展开查看完整信息</li>
+                  <li>• 作词、作曲、编曲、演唱、出品发行支持多人，请每个输入框只填写一人</li>
+                  <li>• 歌曲时长需要换算成秒</li>
+                  <li>• 歌词只需填写LRC歌词</li>
                 </ul>
               </div>
             </div>
@@ -53,48 +85,11 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
                 <Shield className="w-5 h-5 text-green-300" />
               </div>
               <div className="flex-1">
-                <h4 className="font-semibold text-white mb-2">权限与安全</h4>
+                <h4 className="font-semibold text-white mb-2">权限安全</h4>
                 <ul className="text-sm text-white/80 leading-relaxed space-y-1">
-                  <li>• 请妥善保管登录凭证，不要与他人分享</li>
+                  <li>• 请妥善保管账号，不要与他人分享</li>
                   <li>• 定期检查数据变更，确保信息准确性</li>
                   <li>• 如发现异常操作请及时联系管理员</li>
-                  <li>• 系统会自动记录所有操作日志</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          {/* 操作指南 */}
-          <div className="p-4 rounded-xl bg-purple-500/20 border border-purple-400/30">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 mt-0.5">
-                <BookOpen className="w-5 h-5 text-purple-300" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-white mb-2">操作指南</h4>
-                <ul className="text-sm text-white/80 leading-relaxed space-y-1">
-                  <li>• 使用搜索功能快速定位目标歌曲</li>
-                  <li>• 点击眼睛图标查看歌曲详细信息</li>
-                  <li>• 编辑时系统会自动校验数据格式</li>
-                  <li>• 保存前请仔细核对所有信息</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          {/* 协作规范 */}
-          <div className="p-4 rounded-xl bg-yellow-500/20 border border-yellow-400/30">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 mt-0.5">
-                <Users className="w-5 h-5 text-yellow-300" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-white mb-2">协作规范</h4>
-                <ul className="text-sm text-white/80 leading-relaxed space-y-1">
-                  <li>• 多人同时编辑时请注意避免冲突</li>
-                  <li>• 重要变更建议先与团队成员沟通</li>
-                  <li>• 遇到问题可通过邮件或GitHub反馈</li>
-                  <li>• 定期备份重要数据，确保数据安全</li>
                 </ul>
               </div>
             </div>
@@ -104,7 +99,7 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
         {/* 底部操作区域 */}
         <div className="mt-6 pt-4 border-t border-white/20 flex justify-between items-center">
           <div className="text-sm text-white/60">
-            管理规则 · 请仔细阅读并遵守
+            注意事项 · 请仔细阅读并遵守
           </div>
           <button
             onClick={onClose}
