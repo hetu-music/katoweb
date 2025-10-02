@@ -1,6 +1,6 @@
-'use client';
-import React from 'react';
-import { Bell, X, Shield, Database, AlertTriangle } from 'lucide-react';
+"use client";
+import React from "react";
+import { Bell, X, Shield, Database, AlertTriangle } from "lucide-react";
 
 interface NotificationProps {
   onClose: () => void;
@@ -42,18 +42,24 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-3">
-                  <h4 className="font-bold text-red-100 text-lg">⚠️ 重要提示</h4>
+                  <h4 className="font-bold text-red-100 text-lg">
+                    ⚠️ 重要提示
+                  </h4>
                   <span className="px-2 py-1 bg-red-500/40 border border-red-400/60 rounded-full text-xs text-red-100 font-medium animate-pulse">
                     必读
                   </span>
                 </div>
                 <ul className="text-sm text-red-100/90 leading-relaxed space-y-2 font-medium">
                   <li className="flex items-start gap-2">
-                    <span className="text-red-300 font-bold flex-shrink-0 leading-relaxed">•</span>
+                    <span className="text-red-300 font-bold flex-shrink-0 leading-relaxed">
+                      •
+                    </span>
                     <span>数据更改不会立刻同步到主页面</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-red-300 font-bold flex-shrink-0 leading-relaxed">•</span>
+                    <span className="text-red-300 font-bold flex-shrink-0 leading-relaxed">
+                      •
+                    </span>
                     <span>在本页面修改完成就是变更成功</span>
                   </li>
                 </ul>
@@ -67,22 +73,34 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
                 <Database className="w-6 h-6 text-blue-300" />
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-white mb-3 text-lg">数据编辑</h4>
+                <h4 className="font-semibold text-white mb-3 text-lg">
+                  数据编辑
+                </h4>
                 <ul className="text-sm text-white/80 leading-relaxed space-y-2">
                   <li className="flex items-start gap-2">
-                    <span className="text-blue-300 font-bold flex-shrink-0 leading-relaxed">•</span>
+                    <span className="text-blue-300 font-bold flex-shrink-0 leading-relaxed">
+                      •
+                    </span>
                     <span>新增歌曲时请确保标题和专辑信息准确无误</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-blue-300 font-bold flex-shrink-0 leading-relaxed">•</span>
-                    <span>作词、作曲、编曲、演唱、出品发行支持多人，请每个输入框只填写一人</span>
+                    <span className="text-blue-300 font-bold flex-shrink-0 leading-relaxed">
+                      •
+                    </span>
+                    <span>
+                      作词、作曲、编曲、演唱、出品发行支持多人，请每个输入框只填写一人
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-blue-300 font-bold flex-shrink-0 leading-relaxed">•</span>
+                    <span className="text-blue-300 font-bold flex-shrink-0 leading-relaxed">
+                      •
+                    </span>
                     <span>歌曲时长需要换算成秒</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-blue-300 font-bold flex-shrink-0 leading-relaxed">•</span>
+                    <span className="text-blue-300 font-bold flex-shrink-0 leading-relaxed">
+                      •
+                    </span>
                     <span>歌词只需填写LRC歌词</span>
                   </li>
                 </ul>
@@ -97,18 +115,26 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
                 <Shield className="w-6 h-6 text-green-300" />
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-white mb-3 text-lg">权限安全</h4>
+                <h4 className="font-semibold text-white mb-3 text-lg">
+                  权限安全
+                </h4>
                 <ul className="text-sm text-white/80 leading-relaxed space-y-2">
                   <li className="flex items-start gap-2">
-                    <span className="text-green-300 font-bold flex-shrink-0 leading-relaxed">•</span>
+                    <span className="text-green-300 font-bold flex-shrink-0 leading-relaxed">
+                      •
+                    </span>
                     <span>请妥善保管账号，不要与他人分享</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-green-300 font-bold flex-shrink-0 leading-relaxed">•</span>
+                    <span className="text-green-300 font-bold flex-shrink-0 leading-relaxed">
+                      •
+                    </span>
                     <span>定期检查数据变更，确保信息准确性</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-green-300 font-bold flex-shrink-0 leading-relaxed">•</span>
+                    <span className="text-green-300 font-bold flex-shrink-0 leading-relaxed">
+                      •
+                    </span>
                     <span>如发现异常操作请及时联系管理员</span>
                   </li>
                 </ul>

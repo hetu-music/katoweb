@@ -1,7 +1,7 @@
-import { cookies as nextCookies } from 'next/headers';
+import { cookies as nextCookies } from "next/headers";
 
-const CSRF_COOKIE_NAME = 'csrf-token';
-const CSRF_HEADER_NAME = 'x-csrf-token';
+const CSRF_COOKIE_NAME = "csrf-token";
+const CSRF_HEADER_NAME = "x-csrf-token";
 
 // 设置 CSRF token 到 cookie
 export async function setCSRFCookie(token: string) {
@@ -9,8 +9,8 @@ export async function setCSRFCookie(token: string) {
   cookies.set(CSRF_COOKIE_NAME, token, {
     httpOnly: true,
     secure: true,
-    sameSite: 'strict',
-    path: '/',
+    sameSite: "strict",
+    path: "/",
     maxAge: 60 * 60, // 1小时
   });
 }
@@ -22,18 +22,28 @@ export async function getCSRFCookie(): Promise<string | undefined> {
 }
 
 // 校验 CSRF token
-export async function verifyCSRFToken(request: Request | { headers: Record<string, string> | Headers }) : Promise<boolean> {
+export async function verifyCSRFToken(
+  request: Request | { headers: Record<string, string> | Headers },
+): Promise<boolean> {
   const cookieToken = await getCSRFCookie();
   let headerToken: string | undefined = undefined;
-  if (request.headers && typeof (request.headers as Headers).get === 'function') {
-    headerToken = (request.headers as Headers).get(CSRF_HEADER_NAME) ?? undefined;
-  } else if (request.headers && typeof request.headers === 'object') {
+  if (
+    request.headers &&
+    typeof (request.headers as Headers).get === "function"
+  ) {
+    headerToken =
+      (request.headers as Headers).get(CSRF_HEADER_NAME) ?? undefined;
+  } else if (request.headers && typeof request.headers === "object") {
     headerToken = (request.headers as Record<string, string>)[CSRF_HEADER_NAME];
   }
 
   // 更严格的校验：token 必须为非空字符串且不能全为空白
   const isValidToken = (token: unknown): token is string =>
-    typeof token === 'string' && token.trim().length > 0;
+    typeof token === "string" && token.trim().length > 0;
 
-  return isValidToken(cookieToken) && isValidToken(headerToken) && cookieToken === headerToken;
-} 
+  return (
+    isValidToken(cookieToken) &&
+    isValidToken(headerToken) &&
+    cookieToken === headerToken
+  );
+}

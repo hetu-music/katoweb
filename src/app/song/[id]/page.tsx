@@ -1,15 +1,19 @@
-import React from 'react';
-import { notFound } from 'next/navigation';
-import SongDetailClient from './SongDetailClient';
-import { getSongById } from '../../lib/supabase';
+import React from "react";
+import { notFound } from "next/navigation";
+import SongDetailClient from "./SongDetailClient";
+import { getSongById } from "../../lib/supabase";
 
 // 服务端组件
-export default async function SongDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function SongDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   try {
     const songId = parseInt(id);
     if (isNaN(songId)) {
-      console.log('Invalid song ID:', id);
+      console.log("Invalid song ID:", id);
       notFound();
     }
     const song = await getSongById(songId);
@@ -18,7 +22,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
     }
     return <SongDetailClient song={song} />;
   } catch (error) {
-    console.error('Error in SongDetailPage:', error);
+    console.error("Error in SongDetailPage:", error);
     notFound();
   }
 }

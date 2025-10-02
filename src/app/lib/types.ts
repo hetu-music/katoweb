@@ -60,7 +60,7 @@ export interface SongInfo {
 export type SongFieldConfig = {
   key: keyof SongDetail;
   label: string;
-  type: 'text' | 'number' | 'array' | 'boolean' | 'date' | 'textarea';
+  type: "text" | "number" | "array" | "boolean" | "date" | "textarea";
   required?: boolean;
   maxLength?: number;
   minLength?: number;

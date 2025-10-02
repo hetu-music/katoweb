@@ -33,11 +33,11 @@ function parseTime(timeStr: string): number {
 }
 
 export function processLyrics(lrcContent: string): ProcessedLyrics {
-  if (!lrcContent || typeof lrcContent !== 'string') {
-    return { lyrics: '', lines: [] };
+  if (!lrcContent || typeof lrcContent !== "string") {
+    return { lyrics: "", lines: [] };
   }
 
-  const lines = lrcContent.split('\n');
+  const lines = lrcContent.split("\n");
   const lyricLines: LyricLine[] = [];
 
   for (const line of lines) {
@@ -64,7 +64,9 @@ export function processLyrics(lrcContent: string): ProcessedLyrics {
     }
 
     // 获取歌词文本（去掉所有时间戳）
-    const text = trimmedLine.replace(/\[\d{1,2}:\d{2}(?:\.\d{2,3})?\]/g, '').trim();
+    const text = trimmedLine
+      .replace(/\[\d{1,2}:\d{2}(?:\.\d{2,3})?\]/g, "")
+      .trim();
 
     // 如果没有歌词文本，跳过
     if (!text) {
@@ -84,11 +86,11 @@ export function processLyrics(lrcContent: string): ProcessedLyrics {
   const finalLines = lyricLines;
 
   // 生成普通歌词文本
-  const lyrics = finalLines.map(line => line.text).join('\n');
+  const lyrics = finalLines.map((line) => line.text).join("\n");
 
   return {
     lyrics,
-    lines: finalLines
+    lines: finalLines,
   };
 }
 
@@ -103,12 +105,12 @@ export function validateLrcFormat(lrcContent: string): {
 } {
   const errors: string[] = [];
 
-  if (!lrcContent || typeof lrcContent !== 'string') {
-    errors.push('LRC content is empty or not a string');
+  if (!lrcContent || typeof lrcContent !== "string") {
+    errors.push("LRC content is empty or not a string");
     return { isValid: false, errors };
   }
 
-  const lines = lrcContent.split('\n');
+  const lines = lrcContent.split("\n");
   let hasValidTimestamp = false;
 
   for (let i = 0; i < lines.length; i++) {
@@ -135,11 +137,11 @@ export function validateLrcFormat(lrcContent: string): {
   }
 
   if (!hasValidTimestamp) {
-    errors.push('No valid timestamps found in LRC content');
+    errors.push("No valid timestamps found in LRC content");
   }
 
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   };
 }

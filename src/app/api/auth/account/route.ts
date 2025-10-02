@@ -1,13 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-import { verifyCSRFToken } from '@/app/lib/utils.server';
+import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { verifyCSRFToken } from "@/app/lib/utils.server";
 
 export async function GET() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!supabaseUrl || !supabaseAnonKey) {
-    return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    return NextResponse.json(
+      { error: "Server configuration error" },
+      { status: 500 },
+    );
   }
   const cookieStore = await cookies();
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
@@ -24,42 +27,59 @@ export async function GET() {
   });
 
   // 获取当前用户
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
   if (userError || !user) {
-    return NextResponse.json({ error: '未登录或会话失效' }, { status: 401 });
+    return NextResponse.json({ error: "未登录或会话失效" }, { status: 401 });
   }
 
   // 查询 public.users 表的 name、display 和 intro 字段
   const { data, error } = await supabase
-    .from('users')
-    .select('name, display, intro')
-    .eq('id', user.id)
+    .from("users")
+    .select("name, display, intro")
+    .eq("id", user.id)
     .single();
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ displayName: data?.name || '', display: data?.display ?? false, intro: data?.intro ?? null });
+  return NextResponse.json({
+    displayName: data?.name || "",
+    display: data?.display ?? false,
+    intro: data?.intro ?? null,
+  });
 }
 
 export async function POST(request: NextRequest) {
   // CSRF 验证
   if (!(await verifyCSRFToken(request))) {
-    return NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 });
+    return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
   }
 
   // 解析请求体
   const { displayName, display, intro } = await request.json();
-  if (!displayName || typeof displayName !== 'string' || displayName.length < 2) {
-    return NextResponse.json({ error: '用户名不能为空且不少于2个字符' }, { status: 400 });
+  if (
+    !displayName ||
+    typeof displayName !== "string" ||
+    displayName.length < 2
+  ) {
+    return NextResponse.json(
+      { error: "用户名不能为空且不少于2个字符" },
+      { status: 400 },
+    );
   }
 
   // 初始化 Supabase 客户端
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!supabaseUrl || !supabaseAnonKey) {
-    return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    return NextResponse.json(
+      { error: "Server configuration error" },
+      { status: 500 },
+    );
   }
   const cookieStore = await cookies();
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
@@ -76,24 +96,34 @@ export async function POST(request: NextRequest) {
   });
 
   // 获取当前用户
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
   if (userError || !user) {
-    return NextResponse.json({ error: '未登录或会话失效' }, { status: 401 });
+    return NextResponse.json({ error: "未登录或会话失效" }, { status: 401 });
   }
   if (!user.id) {
-    return NextResponse.json({ error: '用户不存在，无法更新用户名' }, { status: 400 });
+    return NextResponse.json(
+      { error: "用户不存在，无法更新用户名" },
+      { status: 400 },
+    );
   }
 
   // 更新 public.users 表的 name、display 和 intro 字段
-  const updateObj: { name: string; display?: boolean; intro?: string | null } = { name: displayName };
-  if (typeof display === 'boolean') updateObj.display = display;
-  if (typeof intro === 'string' || intro === null) updateObj.intro = intro;
+  const updateObj: { name: string; display?: boolean; intro?: string | null } =
+    { name: displayName };
+  if (typeof display === "boolean") updateObj.display = display;
+  if (typeof intro === "string" || intro === null) updateObj.intro = intro;
   const { error: updateError } = await supabase
-    .from('users')
+    .from("users")
     .update(updateObj)
-    .eq('id', user.id);
+    .eq("id", user.id);
   if (updateError) {
-    return NextResponse.json({ error: updateError.message || '更新失败' }, { status: 400 });
+    return NextResponse.json(
+      { error: updateError.message || "更新失败" },
+      { status: 400 },
+    );
   }
 
   return NextResponse.json({ success: true });

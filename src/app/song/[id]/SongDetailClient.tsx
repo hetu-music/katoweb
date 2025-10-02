@@ -1,45 +1,44 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Share } from 'lucide-react';
-import Image from 'next/image';
-import { SongDetailClientProps } from '../../lib/types';
-import { getCoverUrl, calculateSongInfo } from '../../lib/utils';
-import { typeColorMap, genreColorMap } from '../../lib/constants';
-
+import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Share } from "lucide-react";
+import Image from "next/image";
+import { SongDetailClientProps } from "../../lib/types";
+import { getCoverUrl, calculateSongInfo } from "../../lib/utils";
+import { typeColorMap, genreColorMap } from "../../lib/constants";
 
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [lyricsType, setLyricsType] = useState<'normal' | 'lrc'>('normal');
+  const [lyricsType, setLyricsType] = useState<"normal" | "lrc">("normal");
   const router = useRouter();
 
   // scrollToTop 函数
   const scrollToTop = useCallback(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   // 分享歌曲
   const handleShare = useCallback(async () => {
     const shareData = {
       title: `${song.title} - 歌曲详情`,
-      text: `来听听河图的这首歌：${song.title}${song.artist ? ` - ${song.artist}` : ''}`,
-      url: window.location.href
+      text: `来听听河图的这首歌：${song.title}${song.artist ? ` - ${song.artist}` : ""}`,
+      url: window.location.href,
     };
 
     if (navigator.share) {
       try {
         await navigator.share(shareData);
       } catch {
-        console.log('分享取消或失败');
+        console.log("分享取消或失败");
       }
     } else {
       // 备用方案：复制链接到剪贴板
       try {
         await navigator.clipboard.writeText(window.location.href);
-        alert('链接已复制到剪贴板');
+        alert("链接已复制到剪贴板");
       } catch {
-        console.log('复制失败');
+        console.log("复制失败");
       }
     }
   }, [song.title, song.artist]);
@@ -49,8 +48,8 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
     const onScroll = () => {
       setShowScrollTop(window.scrollY > 200);
     };
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   // songInfo 计算逻辑
@@ -67,24 +66,28 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
           <button
             onClick={(e) => {
               // 返回主页时带上原有的查询参数
-              const search = typeof window !== 'undefined' ? window.location.search : '';
+              const search =
+                typeof window !== "undefined" ? window.location.search : "";
 
-              if (typeof window !== 'undefined' && window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
+              if (
+                typeof window !== "undefined" &&
+                window.matchMedia("(hover: none) and (pointer: coarse)").matches
+              ) {
                 const target = e.currentTarget;
 
                 // 立即添加按下效果
-                target.classList.add('touch-active-pressed');
+                target.classList.add("touch-active-pressed");
 
                 // 短暂延迟后开始导航
                 setTimeout(() => {
-                  target.classList.remove('touch-active-pressed');
-                  target.classList.add('touch-navigating');
+                  target.classList.remove("touch-active-pressed");
+                  target.classList.add("touch-navigating");
 
                   // 立即开始导航，不等待动画完成
-                  router.push('/' + search);
+                  router.push("/" + search);
                 }, 120);
               } else {
-                router.push('/' + search);
+                router.push("/" + search);
               }
             }}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 shadow-sm touch-active"
@@ -104,7 +107,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
               width={192}
               height={192}
               className="w-48 h-48 object-cover rounded-2xl shadow-lg"
-              style={{ objectFit: 'cover' }}
+              style={{ objectFit: "cover" }}
               priority
             />
           </div>
@@ -112,21 +115,28 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
           {/* 歌曲主信息 */}
           <div className="flex-1 text-white space-y-4 w-full">
             <div>
-              <h1 className="text-3xl font-bold mb-3 break-words">{song.title}</h1>
+              <h1 className="text-3xl font-bold mb-3 break-words">
+                {song.title}
+              </h1>
               <div className="flex flex-wrap gap-2">
                 {(song.genre || []).map((g: string) => (
-                  <span key={g} className={`px-3 py-1 text-xs rounded-full border ${genreColorMap[g] || 'bg-blue-500/20 text-blue-300 border-blue-400/30'}`}>
+                  <span
+                    key={g}
+                    className={`px-3 py-1 text-xs rounded-full border ${genreColorMap[g] || "bg-blue-500/20 text-blue-300 border-blue-400/30"}`}
+                  >
                     {g}
                   </span>
                 ))}
-                {(song.type && song.type.length > 0 ? song.type : ['原创']).map((t: string) => (
-                  <span
-                    key={t}
-                    className={`px-3 py-1 text-xs rounded-full border ${typeColorMap[t] || 'bg-gray-500/20 text-gray-300 border-gray-400/30'}`}
-                  >
-                    {t}
-                  </span>
-                ))}
+                {(song.type && song.type.length > 0 ? song.type : ["原创"]).map(
+                  (t: string) => (
+                    <span
+                      key={t}
+                      className={`px-3 py-1 text-xs rounded-full border ${typeColorMap[t] || "bg-gray-500/20 text-gray-300 border-gray-400/30"}`}
+                    >
+                      {t}
+                    </span>
+                  ),
+                )}
               </div>
             </div>
 
@@ -136,8 +146,12 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 block-panel-inner">
                 {songInfo?.creativeInfo.map((item, index) => (
                   <div key={index} className="flex items-start">
-                    <span className="font-semibold text-blue-300 text-base min-w-[4rem]">{item.label}：</span>
-                    <span className="text-white/90 break-words text-base">{item.value}</span>
+                    <span className="font-semibold text-blue-300 text-base min-w-[4rem]">
+                      {item.label}：
+                    </span>
+                    <span className="text-white/90 break-words text-base">
+                      {item.value}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -149,8 +163,12 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 block-panel-inner">
                 {songInfo?.basicInfo.map((item, index) => (
                   <div key={index} className="flex items-start">
-                    <span className="font-semibold text-blue-300 text-base min-w-[6rem]">{item.label}：</span>
-                    <span className="text-white/90 break-words text-base">{item.value}</span>
+                    <span className="font-semibold text-blue-300 text-base min-w-[6rem]">
+                      {item.label}：
+                    </span>
+                    <span className="text-white/90 break-words text-base">
+                      {item.value}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -160,16 +178,14 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
         {/* 备注区块 */}
         <div className="block-panel mb-8">
-          <h3 className="block-panel-title mb-3">
-            备注
-          </h3>
+          <h3 className="block-panel-title mb-3">备注</h3>
           <div className="whitespace-pre-line leading-relaxed">
             {song.comment ? (
-              <div className="block-panel-inner">
-                {song.comment}
-              </div>
+              <div className="block-panel-inner">{song.comment}</div>
             ) : (
-              <div className="text-gray-400 italic text-center py-4">暂无备注</div>
+              <div className="text-gray-400 italic text-center py-4">
+                暂无备注
+              </div>
             )}
           </div>
         </div>
@@ -177,9 +193,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         {/* 音乐平台链接区块 */}
         {(song.kugolink || song.qmlink || song.nelink) && (
           <div className="block-panel mb-8">
-            <h3 className="block-panel-title mb-3">
-              收听平台
-            </h3>
+            <h3 className="block-panel-title mb-3">收听平台</h3>
             <div className="block-panel-inner mb-2 text-center">
               <div className="flex flex-row flex-wrap sm:flex-row items-center justify-center gap-3 sm:gap-6">
                 {song.kugolink && (
@@ -220,26 +234,26 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         {/* 歌词区块 */}
         <div className="block-panel">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="block-panel-title mb-0">
-              歌词
-            </h3>
+            <h3 className="block-panel-title mb-0">歌词</h3>
             {/* 歌词类型切换胶囊 */}
             <div className="flex bg-white/10 rounded-full p-1 border border-white/20">
               <button
-                onClick={() => setLyricsType('normal')}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${lyricsType === 'normal'
-                  ? 'bg-white/20 text-white shadow-sm'
-                  : 'text-white/70 hover:text-white/90'
-                  }`}
+                onClick={() => setLyricsType("normal")}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                  lyricsType === "normal"
+                    ? "bg-white/20 text-white shadow-sm"
+                    : "text-white/70 hover:text-white/90"
+                }`}
               >
                 普通歌词
               </button>
               <button
-                onClick={() => setLyricsType('lrc')}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${lyricsType === 'lrc'
-                  ? 'bg-white/20 text-white shadow-sm'
-                  : 'text-white/70 hover:text-white/90'
-                  }`}
+                onClick={() => setLyricsType("lrc")}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                  lyricsType === "lrc"
+                    ? "bg-white/20 text-white shadow-sm"
+                    : "text-white/70 hover:text-white/90"
+                }`}
               >
                 LRC歌词
               </button>
@@ -249,12 +263,18 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
           <div className="whitespace-pre-line leading-relaxed">
             {song.lyrics ? (
               <div className="block-panel-inner">
-                <div className={`${lyricsType === 'normal' ? 'text-center' : 'text-left'}`}>
-                  {lyricsType === 'normal' ? (song.normalLyrics || '暂无歌词') : song.lyrics}
+                <div
+                  className={`${lyricsType === "normal" ? "text-center" : "text-left"}`}
+                >
+                  {lyricsType === "normal"
+                    ? song.normalLyrics || "暂无歌词"
+                    : song.lyrics}
                 </div>
               </div>
             ) : (
-              <div className="text-gray-400 italic text-center py-8">暂无歌词</div>
+              <div className="text-gray-400 italic text-center py-8">
+                暂无歌词
+              </div>
             )}
           </div>
         </div>
@@ -278,8 +298,19 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
             className="p-3 rounded-full bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200"
             aria-label="返回顶部"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M5 15l7-7 7 7"
+              />
             </svg>
           </button>
         )}

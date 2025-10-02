@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface SongFiltersProps {
   selectedType: string;
@@ -44,7 +44,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
           <button
             type="button"
             className="ml-1 w-4 h-4 flex items-center justify-center rounded-full bg-white/10 border border-white/20 text-xs text-white/70 hover:text-white hover:bg-white/20 transition-all duration-200 cursor-pointer"
-            style={{ fontSize: '13px', lineHeight: '1', padding: 0 }}
+            style={{ fontSize: "13px", lineHeight: "1", padding: 0 }}
             onClick={onTypeExplanationOpen}
             aria-label="类型说明"
             tabIndex={0}
@@ -57,8 +57,10 @@ const SongFilters: React.FC<SongFiltersProps> = ({
           onChange={(e) => setSelectedType(e.target.value)}
           className="filter-select"
         >
-          {filterOptions.allTypes.map(type => (
-            <option key={type} value={type} className="filter-option">{type}</option>
+          {filterOptions.allTypes.map((type) => (
+            <option key={type} value={type} className="filter-option">
+              {type}
+            </option>
           ))}
         </select>
       </div>
@@ -70,8 +72,14 @@ const SongFilters: React.FC<SongFiltersProps> = ({
           onChange={(e) => setSelectedYear(e.target.value)}
           className="filter-select"
         >
-          {filterOptions.allYears.map(year => (
-            <option key={year ?? ''} value={year === null ? '' : year} className="filter-option">{year}</option>
+          {filterOptions.allYears.map((year) => (
+            <option
+              key={year ?? ""}
+              value={year === null ? "" : year}
+              className="filter-option"
+            >
+              {year}
+            </option>
           ))}
         </select>
       </div>
@@ -83,8 +91,10 @@ const SongFilters: React.FC<SongFiltersProps> = ({
           onChange={(e) => setSelectedLyricist(e.target.value)}
           className="filter-select"
         >
-          {filterOptions.allLyricists.map(lyricist => (
-            <option key={lyricist} value={lyricist} className="filter-option">{lyricist}</option>
+          {filterOptions.allLyricists.map((lyricist) => (
+            <option key={lyricist} value={lyricist} className="filter-option">
+              {lyricist}
+            </option>
           ))}
         </select>
       </div>
@@ -96,8 +106,10 @@ const SongFilters: React.FC<SongFiltersProps> = ({
           onChange={(e) => setSelectedComposer(e.target.value)}
           className="filter-select"
         >
-          {filterOptions.allComposers.map(composer => (
-            <option key={composer} value={composer} className="filter-option">{composer}</option>
+          {filterOptions.allComposers.map((composer) => (
+            <option key={composer} value={composer} className="filter-option">
+              {composer}
+            </option>
           ))}
         </select>
       </div>
@@ -109,8 +121,10 @@ const SongFilters: React.FC<SongFiltersProps> = ({
           onChange={(e) => setSelectedArranger(e.target.value)}
           className="filter-select"
         >
-          {filterOptions.allArrangers.map(arranger => (
-            <option key={arranger} value={arranger} className="filter-option">{arranger}</option>
+          {filterOptions.allArrangers.map((arranger) => (
+            <option key={arranger} value={arranger} className="filter-option">
+              {arranger}
+            </option>
           ))}
         </select>
       </div>
@@ -118,4 +132,4 @@ const SongFilters: React.FC<SongFiltersProps> = ({
   );
 };
 
-export default SongFilters; 
+export default SongFilters;
