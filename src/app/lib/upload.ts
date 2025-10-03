@@ -1,19 +1,13 @@
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
-
 export interface UploadConfig {
   maxFileSize: number; // 最大文件大小（字节）
   allowedTypes: string[]; // 允许的文件类型
-  uploadDir: string; // 上传目录
   baseUrl: string; // 基础URL
 }
 
 export const coverUploadConfig: UploadConfig = {
-  maxFileSize: 100 * 1024 * 1024,
+  maxFileSize: 5 * 1024 * 1024, // 5MB
   allowedTypes: ['image/jpeg', 'image/jpg'],
-  uploadDir: process.env.COVER_UPLOAD_DIR || join(process.cwd(), 'public', 'covers'),
-  baseUrl: process.env.COVER_BASE_URL || 'https://cover.hetu-music.com',
+  baseUrl: 'https://cover.hetu-music.com',
 };
 
 export async function uploadCoverFile(
@@ -22,24 +16,27 @@ export async function uploadCoverFile(
   config: UploadConfig = coverUploadConfig
 ): Promise<{ success: boolean; coverUrl?: string; error?: string }> {
   try {
-    // 确保上传目录存在
-    if (!existsSync(config.uploadDir)) {
-      await mkdir(config.uploadDir, { recursive: true });
-    }
-
-    // 生成文件名
+    // 生成文件名和上传URL
     const fileName = `${songId}.jpg`;
-    const filePath = join(config.uploadDir, fileName);
+    const uploadUrl = `${config.baseUrl}/${fileName}`;
 
-    // 写入文件
-    await writeFile(filePath, buffer);
+    // 直接上传到R2存储
+    const response = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'image/jpeg',
+        'Content-Length': buffer.length.toString(),
+      },
+      body: new Uint8Array(buffer),
+    });
 
-    // 生成访问URL
-    const coverUrl = `${config.baseUrl}/${fileName}`;
+    if (!response.ok) {
+      throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
+    }
 
     return {
       success: true,
-      coverUrl,
+      coverUrl: uploadUrl,
     };
   } catch (error) {
     console.error('Upload error:', error);
