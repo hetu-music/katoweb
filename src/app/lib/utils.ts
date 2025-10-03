@@ -293,11 +293,11 @@ export function generateCSRFToken(): string {
 
 export function getCoverUrl(song: Song | SongDetail): string {
   if (song.hascover === true) {
-    return `https://cover.hetu-music.com/cover/${song.id}.jpg`;
+    return `https://cover.hetu-music.com/${song.id}.jpg`;
   } else if (song.hascover === false) {
-    return "https://cover.hetu-music.com/cover/proto.jpg";
+    return "https://cover.hetu-music.com/proto.jpg";
   } else {
-    return "https://cover.hetu-music.com/cover/default.jpg";
+    return "https://cover.hetu-music.com/default.jpg";
   }
 }
 

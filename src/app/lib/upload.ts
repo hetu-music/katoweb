@@ -10,10 +10,10 @@ export interface UploadConfig {
 }
 
 export const coverUploadConfig: UploadConfig = {
-  maxFileSize: 5 * 1024 * 1024, // 5MB
+  maxFileSize: 100 * 1024 * 1024,
   allowedTypes: ['image/jpeg', 'image/jpg'],
   uploadDir: process.env.COVER_UPLOAD_DIR || join(process.cwd(), 'public', 'covers'),
-  baseUrl: process.env.COVER_BASE_URL || 'https://cover.hetu-music.com/cover',
+  baseUrl: process.env.COVER_BASE_URL || 'https://cover.hetu-music.com',
 };
 
 export async function uploadCoverFile(
