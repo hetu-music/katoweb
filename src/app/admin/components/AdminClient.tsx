@@ -23,6 +23,7 @@ import { useSongs } from "../../hooks/useSongs";
 import { useAuth } from "../../hooks/useAuth";
 import Account from "./Account";
 import Notification from "./Notification";
+import CoverUpload from "./CoverUpload";
 
 // Memoized SongRow component
 const SongRow = React.memo(
@@ -500,6 +501,7 @@ export default function AdminClientComponent({
                       showAdd ? setNewSong : setEditForm,
                       showAdd ? addFormErrors : editFormErrors,
                       showAdd ? setAddFormErrors : setEditFormErrors,
+                      csrfToken,
                     )}
                   </div>
                 ))}
@@ -679,6 +681,7 @@ function renderInput(
   setState: React.Dispatch<React.SetStateAction<Partial<SongDetail>>>,
   errors: Record<string, string>,
   setErrors: (e: Record<string, string>) => void,
+  csrfToken: string,
 ) {
   const v = state[f.key];
   const baseInputClass =
@@ -821,6 +824,58 @@ function renderInput(
     );
   }
   if (f.type === "boolean") {
+    // 特殊处理封面字段
+    if (f.key === "hascover") {
+      return (
+        <>
+          <select
+            value={v === true ? "true" : v === false ? "false" : ""}
+            onChange={(e) =>
+              handleChange(
+                e.target.value === "true"
+                  ? true
+                  : e.target.value === "false"
+                    ? false
+                    : null,
+              )
+            }
+            className={baseInputClass}
+          >
+            <option value="" className="filter-option">
+              白底狐狸（默认）
+            </option>
+            <option value="false" className="filter-option">
+              初号机（黑底机器人）
+            </option>
+            <option value="true" className="filter-option">
+              定制封面
+            </option>
+          </select>
+          
+          {/* 当选择定制封面时显示上传组件 */}
+          {v === true && (
+            <div className="mt-4 p-4 bg-white/5 rounded-lg border border-white/10">
+              <CoverUpload
+                songId={typeof state.id === "number" ? state.id : undefined}
+                csrfToken={csrfToken}
+                onUploadSuccess={(coverUrl) => {
+                  console.log("Cover uploaded successfully:", coverUrl);
+                }}
+                onUploadError={(error) => {
+                  console.error("Cover upload error:", error);
+                }}
+              />
+            </div>
+          )}
+          
+          {errorMsg && (
+            <div className="text-red-400 text-xs mt-1">{errorMsg}</div>
+          )}
+        </>
+      );
+    }
+    
+    // 其他boolean字段的默认处理
     return (
       <>
         <select
@@ -836,15 +891,9 @@ function renderInput(
           }
           className={baseInputClass}
         >
-          <option value="" className="filter-option">
-            白底狐狸（默认）
-          </option>
-          <option value="false" className="filter-option">
-            初号机（黑底机器人）
-          </option>
-          <option value="true" className="filter-option">
-            定制封面
-          </option>
+          <option value="">请选择</option>
+          <option value="true">是</option>
+          <option value="false">否</option>
         </select>
         {errorMsg && (
           <div className="text-red-400 text-xs mt-1">{errorMsg}</div>
