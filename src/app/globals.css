@@ -92,11 +92,11 @@ body {
 }
 /* 壁纸相关样式 */
 .wallpaper-controls {
-  @apply flex flex-col gap-2;
+  @apply flex flex-col gap-3 items-center;
 }
 
 .wallpaper-control-button {
-  @apply p-3 rounded-full shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200;
+  @apply p-3 rounded-full shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200 w-12 h-12 flex items-center justify-center;
 }
 
 
@@ -120,11 +120,11 @@ body {
 /* 响应式壁纸控制按钮布局 */
 @media (max-width: 640px) {
   .wallpaper-controls {
-    @apply gap-1.5;
+    @apply gap-2;
   }
   
   .wallpaper-control-button {
-    @apply p-2.5;
+    @apply w-10 h-10;
   }
   
   .wallpaper-control-button svg {
@@ -136,6 +136,20 @@ body {
   @apply fixed right-8 top-1/2 -translate-y-1/2 z-40;
 }
 
+/* 右下角浮动按钮组样式 */
+.floating-buttons-bottom {
+  @apply fixed bottom-8 right-8 z-40 flex flex-col gap-3 items-center;
+}
+
+/* 浮动操作按钮统一样式 */
+.floating-action-button {
+  @apply w-12 h-12 flex items-center justify-center rounded-full shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-300;
+}
+
+.floating-action-icon {
+  @apply w-6 h-6;
+}
+
 /* 移动端优化 */
 @media (max-width: 640px) {
   .wallpaper-controls-middle {
@@ -144,7 +158,21 @@ body {
   
   /* 确保按钮不会与其他元素重叠 */
   .wallpaper-controls-middle .wallpaper-controls {
-    @apply gap-1;
+    @apply gap-2;
+  }
+  
+  /* 移动端右下角按钮组对齐 */
+  .floating-buttons-bottom {
+    @apply right-4 bottom-6 gap-2;
+  }
+  
+  /* 移动端浮动按钮大小调整 */
+  .floating-action-button {
+    @apply w-10 h-10;
+  }
+  
+  .floating-action-icon {
+    @apply w-5 h-5;
   }
 }
 
