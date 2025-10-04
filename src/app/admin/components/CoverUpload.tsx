@@ -37,10 +37,10 @@ export default function CoverUpload({
     }
 
     // 验证文件大小 (5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    if (file.size > 100 * 1024 * 1024) {
       setUploadStatus("error");
-      setUploadMessage("文件大小不能超过5MB");
-      onUploadError?.("文件大小不能超过5MB");
+      setUploadMessage("文件大小不能超过100MB");
+      onUploadError?.("文件大小不能超过100MB");
       return;
     }
 

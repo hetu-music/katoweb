@@ -37,10 +37,10 @@ export default function ScoreUpload({
     }
 
     // 验证文件大小 (50MB)
-    if (file.size > 50 * 1024 * 1024) {
+    if (file.size > 100 * 1024 * 1024) {
       setUploadStatus("error");
-      setUploadMessage("文件大小不能超过50MB");
-      onUploadError?.("文件大小不能超过50MB");
+      setUploadMessage("文件大小不能超过100MB");
+      onUploadError?.("文件大小不能超过100MB");
       return;
     }
 
@@ -177,7 +177,7 @@ export default function ScoreUpload({
       {/* 说明文字 */}
       <div className="text-xs text-gray-400 space-y-1">
         <div>• 只支持JPG格式的乐谱文件</div>
-        <div>• 文件大小不超过50MB</div>
+        <div>• 文件大小不超过100MB</div>
       </div>
     </div>
   );

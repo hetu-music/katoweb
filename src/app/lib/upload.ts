@@ -7,11 +7,11 @@ export interface UploadConfig {
 export const coverUploadConfig: UploadConfig = {
   maxFileSize: 100 * 1024 * 1024,
   allowedTypes: ["image/jpeg", "image/jpg"],
-  baseUrl: "https://cover.hetu-music.com",
+  baseUrl: "https://cover.hetu-music.com/cover",
 };
 
 export const scoreUploadConfig: UploadConfig = {
-  maxFileSize: 50 * 1024 * 1024,
+  maxFileSize: 100 * 1024 * 1024,
   allowedTypes: ["image/jpeg", "image/jpg"],
   baseUrl: "https://cover.hetu-music.com/nmn",
 };
