@@ -99,12 +99,25 @@ const ImageModal: React.FC<ImageModalProps> = ({
     setIsDragging(false);
   }, []);
 
-  // 滚轮缩放
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    setScale(prev => Math.min(Math.max(prev * delta, 0.5), 5));
-  }, []);
+  // 滚轮缩放处理
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (isOpen && imageRef.current?.contains(e.target as Node)) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? 0.9 : 1.1;
+        setScale(prev => Math.min(Math.max(prev * delta, 0.5), 5));
+      }
+    };
+
+    if (isOpen) {
+      // 使用 passive: false 来允许 preventDefault
+      document.addEventListener('wheel', handleWheel, { passive: false });
+    }
+
+    return () => {
+      document.removeEventListener('wheel', handleWheel);
+    };
+  }, [isOpen]);
 
   // 双击重置
   const handleDoubleClick = useCallback(() => {
@@ -200,7 +213,6 @@ const ImageModal: React.FC<ImageModalProps> = ({
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
-            onWheel={handleWheel}
             onDoubleClick={handleDoubleClick}
           >
             <Image
