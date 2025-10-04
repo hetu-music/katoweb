@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import Image from "next/image";
+import React, { useState, useEffect } from "react";
 import { useWallpaper } from "../context/WallpaperContext";
 
 const GlobalWallpaperBackground: React.FC = () => {
@@ -9,7 +8,6 @@ const GlobalWallpaperBackground: React.FC = () => {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [currentWallpaper, setCurrentWallpaper] = useState<string | null>(null);
   const [showWallpaper, setShowWallpaper] = useState(false);
-  const imageRef = useRef<HTMLImageElement>(null);
 
   // 当壁纸URL变化时，重置加载状态
   useEffect(() => {
@@ -47,42 +45,29 @@ const GlobalWallpaperBackground: React.FC = () => {
     }
   }, [isImageLoaded, wallpaperEnabled, wallpaper?.url]);
 
+  // 使用伪元素设置壁纸背景
+  useEffect(() => {
+    if (wallpaperEnabled && wallpaper?.url && showWallpaper) {
+      document.documentElement.style.setProperty('--wallpaper-url', `url("${wallpaper.url}")`);
+      document.documentElement.classList.add('wallpaper-active');
+    } else {
+      document.documentElement.style.removeProperty('--wallpaper-url');
+      document.documentElement.classList.remove('wallpaper-active');
+    }
+
+    // 清理函数
+    return () => {
+      document.documentElement.style.removeProperty('--wallpaper-url');
+      document.documentElement.classList.remove('wallpaper-active');
+    };
+  }, [wallpaperEnabled, wallpaper?.url, showWallpaper]);
+
   // 如果还没有hydrated，不渲染任何内容，避免闪动
   if (!isHydrated) {
     return null;
   }
 
-  return (
-    <>
-      {/* 壁纸背景 - 仅在启用且有壁纸时显示 */}
-      {wallpaperEnabled && wallpaper?.url && (
-        <div
-          className={`fixed inset-0 z-0 wallpaper-background-image transition-opacity duration-700 ease-out ${showWallpaper ? "opacity-100" : "opacity-0"}`}
-        >
-          <Image
-            ref={imageRef}
-            src={wallpaper.url}
-            alt="背景壁纸"
-            fill
-            className="wallpaper-image"
-            style={{ objectFit: "cover" }}
-            priority
-            quality={95}
-            unoptimized={false}
-            onLoad={() => {
-              setIsImageLoaded(true);
-            }}
-            onError={() => {
-              setIsImageLoaded(false);
-              setShowWallpaper(false);
-            }}
-          />
-          {/* 轻微的深色遮罩层，确保内容可读性 */}
-          <div className="wallpaper-overlay" />
-        </div>
-      )}
-    </>
-  );
+  return null; // 使用伪元素，不需要渲染DOM元素
 };
 
 export default GlobalWallpaperBackground;
