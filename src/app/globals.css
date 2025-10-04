@@ -99,13 +99,7 @@ body {
   @apply p-3 rounded-full shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200;
 }
 
-.wallpaper-info-tooltip {
-  @apply absolute right-full mr-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none;
-}
 
-.wallpaper-info-card {
-  @apply bg-black/80 backdrop-blur-md text-white text-sm rounded-lg p-3 shadow-xl border border-white/20 max-w-xs;
-}
 
 /* 壁纸背景过渡效果 */
 .wallpaper-background {

@@ -77,11 +77,6 @@ export default function LoginPage() {
             isLoading={wallpaperLoading}
             onToggle={toggleWallpaper}
             onRefresh={refreshWallpaper}
-            wallpaperInfo={wallpaper ? {
-              title: wallpaper.title,
-              copyright: wallpaper.copyright,
-              source: wallpaper.source,
-            } : null}
           />
         </div>
 

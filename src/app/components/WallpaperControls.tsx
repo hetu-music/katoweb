@@ -1,18 +1,13 @@
 "use client";
 
 import React from 'react';
-import { Image as ImageIcon, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { RefreshCw, Eye, EyeOff } from 'lucide-react';
 
 interface WallpaperControlsProps {
   enabled: boolean;
   isLoading: boolean;
   onToggle: () => void;
   onRefresh: () => void;
-  wallpaperInfo?: {
-    title: string;
-    copyright: string;
-    source: string;
-  } | null;
 }
 
 const WallpaperControls: React.FC<WallpaperControlsProps> = ({
@@ -20,7 +15,6 @@ const WallpaperControls: React.FC<WallpaperControlsProps> = ({
   isLoading,
   onToggle,
   onRefresh,
-  wallpaperInfo,
 }) => {
   return (
     <div className="wallpaper-controls">
@@ -50,26 +44,6 @@ const WallpaperControls: React.FC<WallpaperControlsProps> = ({
           title="刷新壁纸"
         >
           <RefreshCw className={`w-6 h-6 ${isLoading ? 'animate-spin' : ''}`} />
-        </button>
-      )}
-
-      {/* 壁纸信息按钮 - 仅在有壁纸信息时显示 */}
-      {enabled && wallpaperInfo && (
-        <button
-          className="wallpaper-control-button bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white group relative"
-          aria-label="壁纸信息"
-          title={`${wallpaperInfo.title}\n${wallpaperInfo.copyright}`}
-        >
-          <ImageIcon className="w-6 h-6" />
-          
-          {/* 悬停显示的信息卡片 */}
-          <div className="wallpaper-info-tooltip">
-            <div className="wallpaper-info-card">
-              <div className="font-medium mb-1">{wallpaperInfo.title}</div>
-              <div className="text-gray-300 text-xs">{wallpaperInfo.copyright}</div>
-              <div className="text-gray-400 text-xs mt-1">来源: {wallpaperInfo.source === 'bing' ? 'Bing' : 'Lorem Picsum'}</div>
-            </div>
-          </div>
         </button>
       )}
     </div>

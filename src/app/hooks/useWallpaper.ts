@@ -19,7 +19,13 @@ interface UseWallpaperReturn {
 }
 
 export const useWallpaper = (): UseWallpaperReturn => {
-  const [wallpaper, setWallpaper] = useState<WallpaperData | null>(null);
+  const [wallpaper, setWallpaper] = useState<WallpaperData | null>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('current-wallpaper');
+      return saved ? JSON.parse(saved) : null;
+    }
+    return null;
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [wallpaperEnabled, setWallpaperEnabled] = useState(() => {
@@ -30,8 +36,11 @@ export const useWallpaper = (): UseWallpaperReturn => {
     return false;
   });
 
-  const fetchWallpaper = useCallback(async () => {
+  const fetchWallpaper = useCallback(async (forceRefresh = false) => {
     if (!wallpaperEnabled) return;
+    
+    // 如果不是强制刷新且已有壁纸，则不重新获取
+    if (!forceRefresh && wallpaper) return;
     
     setIsLoading(true);
     setError(null);
@@ -44,16 +53,18 @@ export const useWallpaper = (): UseWallpaperReturn => {
       
       const data = await response.json();
       setWallpaper(data);
+      // 保存到 localStorage
+      localStorage.setItem('current-wallpaper', JSON.stringify(data));
     } catch (err) {
       setError(err instanceof Error ? err.message : '未知错误');
       console.error('壁纸加载失败:', err);
     } finally {
       setIsLoading(false);
     }
-  }, [wallpaperEnabled]);
+  }, [wallpaperEnabled, wallpaper]);
 
   const refreshWallpaper = useCallback(() => {
-    fetchWallpaper();
+    fetchWallpaper(true); // 强制刷新
   }, [fetchWallpaper]);
 
   const toggleWallpaper = useCallback(() => {
@@ -63,12 +74,15 @@ export const useWallpaper = (): UseWallpaperReturn => {
     
     if (!newEnabled) {
       setWallpaper(null);
+      localStorage.removeItem('current-wallpaper');
     }
   }, [wallpaperEnabled]);
 
   useEffect(() => {
-    fetchWallpaper();
-  }, [fetchWallpaper]);
+    if (wallpaperEnabled && !wallpaper) {
+      fetchWallpaper(false); // 仅在没有壁纸时获取
+    }
+  }, [wallpaperEnabled, wallpaper, fetchWallpaper]);
 
   return {
     wallpaper,

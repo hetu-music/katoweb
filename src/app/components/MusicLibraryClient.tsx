@@ -641,11 +641,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
             isLoading={wallpaperLoading}
             onToggle={toggleWallpaper}
             onRefresh={refreshWallpaper}
-            wallpaperInfo={wallpaper ? {
-              title: wallpaper.title,
-              copyright: wallpaper.copyright,
-              source: wallpaper.source,
-            } : null}
           />
 
           {/* 返回顶部按钮 - 带动画的显示/隐藏 */}
