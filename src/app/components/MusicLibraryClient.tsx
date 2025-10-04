@@ -285,7 +285,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
             {/* 搜索和筛选区域 - 上下布局，保证两端对齐 */}
             <div className="w-full flex flex-col gap-3">
               {/* 搜索框 */}
-              <div className="w-full flex items-center relative">
+              <div className="search-container">
                 <div className="h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white rounded-l-2xl select-none min-w-[60px] max-w-[60px] w-[60px]">
                   <Search size={20} />
                 </div>
@@ -294,7 +294,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   placeholder="搜索歌曲、作词、作曲、编曲、专辑..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/15 transition-all duration-200 rounded-r-2xl border-l-0 min-w-0 pr-10"
+                  className="search-input"
                   style={{ marginLeft: "-1px" }}
                 />
                 {searchTerm && (
@@ -357,42 +357,42 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   selectedLyricist !== "全部" ||
                   selectedComposer !== "全部" ||
                   selectedArranger !== "全部") && (
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-3 py-1.5 shadow-sm min-h-[32px]">
-                      <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></div>
-                      <span className="text-amber-200 font-medium text-xs">
-                        已应用筛选
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setSearchTerm("");
-                        setSelectedType("全部");
-                        setSelectedYear("全部");
-                        setSelectedLyricist("全部");
-                        setSelectedComposer("全部");
-                        setSelectedArranger("全部");
-                      }}
-                      className="flex items-center gap-1.5 bg-gradient-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-red-300/30 rounded-full px-3 py-1.5 text-red-200 hover:text-red-100 hover:bg-gradient-to-r hover:from-red-500/30 hover:to-pink-500/30 transition-all duration-200 text-xs font-medium shadow-sm active:scale-95 touch-manipulation min-h-[32px]"
-                      title="清除所有筛选"
-                    >
-                      <svg
-                        className="w-3 h-3"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-3 py-1.5 shadow-sm min-h-[32px]">
+                        <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></div>
+                        <span className="text-amber-200 font-medium text-xs">
+                          已应用筛选
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setSearchTerm("");
+                          setSelectedType("全部");
+                          setSelectedYear("全部");
+                          setSelectedLyricist("全部");
+                          setSelectedComposer("全部");
+                          setSelectedArranger("全部");
+                        }}
+                        className="flex items-center gap-1.5 bg-gradient-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-red-300/30 rounded-full px-3 py-1.5 text-red-200 hover:text-red-100 hover:bg-gradient-to-r hover:from-red-500/30 hover:to-pink-500/30 transition-all duration-200 text-xs font-medium shadow-sm active:scale-95 touch-manipulation min-h-[32px]"
+                        title="清除所有筛选"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                      <span>清除</span>
-                    </button>
-                  </div>
-                )}
+                        <svg
+                          className="w-3 h-3"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                        <span>清除</span>
+                      </button>
+                    </div>
+                  )}
               </div>
             </div>
           </div>

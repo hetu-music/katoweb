@@ -78,6 +78,25 @@ body {
   backdrop-filter: blur(8px);
 }
 
+/* 搜索框样式 */
+.search-container {
+  @apply w-full flex items-center relative rounded-2xl transition-all duration-200;
+}
+
+/* 当搜索框获得焦点时，整个容器显示增强的蓝色光圈效果 */
+.search-container:focus-within {
+  box-shadow: 0 0 14px rgba(96, 165, 250, 0.2);
+}
+
+.search-input {
+  @apply h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-300 focus:outline-none transition-all duration-200 rounded-r-2xl border-l-0 min-w-0 pr-10;
+}
+
+/* 搜索框获得焦点时轻微变亮 */
+.search-input:focus {
+  @apply bg-white/0;
+}
+
 /* 信息界面区块样式 */
 .block-panel {
   @apply bg-white/5 backdrop-blur-sm rounded-2xl p-6 text-white/90 border border-white/10 shadow-lg;
