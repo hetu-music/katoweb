@@ -1,6 +1,9 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import WallpaperBackground from "../../components/WallpaperBackground";
+import WallpaperControls from "../../components/WallpaperControls";
+import { useWallpaper } from "../../hooks/useWallpaper";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -8,6 +11,16 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  // 壁纸功能
+  const {
+    wallpaper,
+    isLoading: wallpaperLoading,
+    error: wallpaperError,
+    refreshWallpaper,
+    wallpaperEnabled,
+    toggleWallpaper,
+  } = useWallpaper();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,8 +65,27 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-      <form
+    <WallpaperBackground 
+      wallpaperUrl={wallpaper?.url || null} 
+      enabled={wallpaperEnabled}
+    >
+      <div className="min-h-screen flex items-center justify-center relative">
+        {/* 壁纸控制按钮 */}
+        <div className="fixed top-8 right-8 z-40">
+          <WallpaperControls
+            enabled={wallpaperEnabled}
+            isLoading={wallpaperLoading}
+            onToggle={toggleWallpaper}
+            onRefresh={refreshWallpaper}
+            wallpaperInfo={wallpaper ? {
+              title: wallpaper.title,
+              copyright: wallpaper.copyright,
+              source: wallpaper.source,
+            } : null}
+          />
+        </div>
+
+        <form
         onSubmit={handleLogin}
         className="flex flex-col gap-5 w-full max-w-sm p-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl"
       >
@@ -101,6 +133,7 @@ export default function LoginPage() {
           </button>
         </div>
       </form>
-    </div>
+      </div>
+    </WallpaperBackground>
   );
 }

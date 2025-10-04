@@ -15,6 +15,9 @@ import { typeColorMap, genreColorMap } from "../lib/constants";
 import About from "./About";
 import TypeExplanation from "./TypeExplanation";
 import SongFilters from "./SongFilters";
+import WallpaperBackground from "./WallpaperBackground";
+import WallpaperControls from "./WallpaperControls";
+import { useWallpaper } from "../hooks/useWallpaper";
 
 const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   initialSongsData,
@@ -57,6 +60,16 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   const hasRestoredScroll = useRef(false);
   const [restoringScroll, setRestoringScroll] = useState(true);
   const [typeExplanationOpen, setTypeExplanationOpen] = useState(false);
+
+  // 壁纸功能
+  const {
+    wallpaper,
+    isLoading: wallpaperLoading,
+    error: wallpaperError,
+    refreshWallpaper,
+    wallpaperEnabled,
+    toggleWallpaper,
+  } = useWallpaper();
 
   const songsData = initialSongsData;
 
@@ -187,7 +200,10 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   ]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <WallpaperBackground 
+      wallpaperUrl={wallpaper?.url || null} 
+      enabled={wallpaperEnabled}
+    >
       <div
         style={{ opacity: restoringScroll ? 0 : 1, transition: "opacity 0.2s" }}
       >
@@ -619,6 +635,19 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
         {/* 固定按钮组 */}
         <div className="fixed bottom-8 right-8 z-40 flex flex-col gap-3">
+          {/* 壁纸控制按钮 */}
+          <WallpaperControls
+            enabled={wallpaperEnabled}
+            isLoading={wallpaperLoading}
+            onToggle={toggleWallpaper}
+            onRefresh={refreshWallpaper}
+            wallpaperInfo={wallpaper ? {
+              title: wallpaper.title,
+              copyright: wallpaper.copyright,
+              source: wallpaper.source,
+            } : null}
+          />
+
           {/* 返回顶部按钮 - 带动画的显示/隐藏 */}
           <button
             onClick={scrollToTop}
@@ -655,7 +684,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </WallpaperBackground>
   );
 };
 

@@ -8,6 +8,9 @@ import { SongDetailClientProps } from "../../lib/types";
 import { getCoverUrl, calculateSongInfo, getNmnUrl } from "../../lib/utils";
 import { typeColorMap, genreColorMap } from "../../lib/constants";
 import ImageModal from "../../components/ImageModal";
+import WallpaperBackground from "../../components/WallpaperBackground";
+import WallpaperControls from "../../components/WallpaperControls";
+import { useWallpaper } from "../../hooks/useWallpaper";
 
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -26,6 +29,16 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const [coverImageLoaded, setCoverImageLoaded] = useState(true);
   const [scoreImageLoaded, setScoreImageLoaded] = useState(true);
   const router = useRouter();
+
+  // 壁纸功能
+  const {
+    wallpaper,
+    isLoading: wallpaperLoading,
+    error: wallpaperError,
+    refreshWallpaper,
+    wallpaperEnabled,
+    toggleWallpaper,
+  } = useWallpaper();
 
   // scrollToTop 函数
   const scrollToTop = useCallback(() => {
@@ -106,7 +119,10 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
   // 渲染逻辑
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <WallpaperBackground 
+      wallpaperUrl={wallpaper?.url || null} 
+      enabled={wallpaperEnabled}
+    >
       <div className="container mx-auto px-6 py-8 max-w-5xl">
         {/* 顶部操作栏 */}
         <div className="flex items-center justify-between mb-6">
@@ -394,6 +410,19 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
       {/* 固定按钮组 */}
       <div className="fixed bottom-8 right-8 z-40 flex flex-col gap-3">
+        {/* 壁纸控制按钮 */}
+        <WallpaperControls
+          enabled={wallpaperEnabled}
+          isLoading={wallpaperLoading}
+          onToggle={toggleWallpaper}
+          onRefresh={refreshWallpaper}
+          wallpaperInfo={wallpaper ? {
+            title: wallpaper.title,
+            copyright: wallpaper.copyright,
+            source: wallpaper.source,
+          } : null}
+        />
+
         {/* 返回顶部按钮 - 带动画的显示/隐藏 */}
         <button
           onClick={scrollToTop}
@@ -437,7 +466,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         alt={imageModal.alt}
         title={imageModal.title}
       />
-    </div>
+    </WallpaperBackground>
   );
 };
 
