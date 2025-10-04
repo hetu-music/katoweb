@@ -1,7 +1,15 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, ArrowLeft, Feather, LogIn, Eye, EyeOff } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  ArrowLeft,
+  Feather,
+  LogIn,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 
 import FloatingActionButtons from "../../components/FloatingActionButtons";
 

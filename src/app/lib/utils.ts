@@ -130,52 +130,58 @@ export function processLyricsForSearch(lrcLyrics: string | null): string {
   if (!lrcLyrics) return "";
 
   // 1. 过滤掉头部信息行 (ar:, ti:, al:, by:, offset:, re:, ve: 等)
-  let processedText = lrcLyrics.replace(/^\[(?:ar|ti|al|by|offset|re|ve):[^\]]*\]\s*$/gm, '');
+  let processedText = lrcLyrics.replace(
+    /^\[(?:ar|ti|al|by|offset|re|ve):[^\]]*\]\s*$/gm,
+    "",
+  );
 
   // 2. 移除时间戳 [00:26.87] [00:15.365] 等
-  processedText = processedText.replace(/\[\d{1,2}:\d{2}(?:\.\d{1,3})?\]/g, '');
+  processedText = processedText.replace(/\[\d{1,2}:\d{2}(?:\.\d{1,3})?\]/g, "");
 
   // 3. 清理多余的空白字符和空行
-  const lines = processedText.split('\n')
-    .map(line => line.trim())
-    .filter(line => line.length > 0);
+  const lines = processedText
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
 
-  return lines.join(' ');
+  return lines.join(" ");
 }
 
 // 创建 Fuse.js 搜索实例
 function createFuseInstance(songs: Song[]) {
   // 为每首歌准备搜索数据
-  const searchData = songs.map(song => {
+  const searchData = songs.map((song) => {
     const songDetail = song as SongDetail;
     return {
       ...song,
       searchableContent: [
         song.title,
-        song.album || '',
-        (song.lyricist || []).join(' '),
-        (song.composer || []).join(' '),
-        (songDetail.arranger || []).join(' '),
-        processLyricsForSearch(songDetail.lyrics || null) // 使用 LRC 歌词
-      ].filter(Boolean).join(' ')
+        song.album || "",
+        (song.lyricist || []).join(" "),
+        (song.composer || []).join(" "),
+        (songDetail.arranger || []).join(" "),
+        processLyricsForSearch(songDetail.lyrics || null), // 使用 LRC 歌词
+      ]
+        .filter(Boolean)
+        .join(" "),
     };
   });
 
   return new Fuse(searchData, {
     keys: [
-      { name: 'title', weight: 0.25 },
-      { name: 'album', weight: 0.2 },
-      { name: 'lyricist', weight: 0.2 },
-      { name: 'composer', weight: 0.1 },
-      { name: 'arranger', weight: 0.1 },
-      { name: 'searchableContent', weight: 0.15 } // 提高歌词权重
+      { name: "title", weight: 0.25 },
+      { name: "album", weight: 0.2 },
+      { name: "lyricist", weight: 0.2 },
+      { name: "composer", weight: 0.1 },
+      { name: "arranger", weight: 0.1 },
+      { name: "searchableContent", weight: 0.15 }, // 提高歌词权重
     ],
     threshold: 0.4, // 放宽阈值，对中文更友好
     includeScore: true,
     ignoreLocation: true,
     findAllMatches: true,
     minMatchCharLength: 1, // 允许单字符匹配
-    shouldSort: true
+    shouldSort: true,
   });
 }
 
@@ -195,7 +201,7 @@ export function filterSongs(
   if (searchTerm.trim()) {
     const fuse = createFuseInstance(songsData);
     const searchResults = fuse.search(searchTerm);
-    filteredBySearch = searchResults.map(result => result.item);
+    filteredBySearch = searchResults.map((result) => result.item);
   }
 
   // 应用其他筛选条件
@@ -232,7 +238,7 @@ export function filterSongs(
       (selectedArranger === "未知"
         ? !songDetail.arranger || songDetail.arranger.length === 0
         : songDetail.arranger &&
-        songDetail.arranger.includes(selectedArranger));
+          songDetail.arranger.includes(selectedArranger));
 
     return (
       matchesType &&
