@@ -33,11 +33,11 @@ const ImageModal: React.FC<ImageModalProps> = ({
 
   // 缩放控制
   const zoomIn = useCallback(() => {
-    setScale(prev => Math.min(prev * 1.5, 5));
+    setScale((prev) => Math.min(prev * 1.5, 5));
   }, []);
 
   const zoomOut = useCallback(() => {
-    setScale(prev => Math.max(prev / 1.5, 0.5));
+    setScale((prev) => Math.max(prev / 1.5, 0.5));
   }, []);
 
   // 处理键盘事件
@@ -76,24 +76,30 @@ const ImageModal: React.FC<ImageModalProps> = ({
   }, [isOpen, resetTransform]);
 
   // 鼠标拖拽
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (scale > 1) {
-      setIsDragging(true);
-      setDragStart({
-        x: e.clientX - position.x,
-        y: e.clientY - position.y,
-      });
-    }
-  }, [scale, position]);
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (scale > 1) {
+        setIsDragging(true);
+        setDragStart({
+          x: e.clientX - position.x,
+          y: e.clientY - position.y,
+        });
+      }
+    },
+    [scale, position],
+  );
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (isDragging && scale > 1) {
-      setPosition({
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y,
-      });
-    }
-  }, [isDragging, scale, dragStart]);
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (isDragging && scale > 1) {
+        setPosition({
+          x: e.clientX - dragStart.x,
+          y: e.clientY - dragStart.y,
+        });
+      }
+    },
+    [isDragging, scale, dragStart],
+  );
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
@@ -105,7 +111,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
       if (isOpen && imageRef.current?.contains(e.target as Node)) {
         e.preventDefault();
         const delta = e.deltaY > 0 ? 0.9 : 1.1;
-        setScale(prev => Math.min(Math.max(prev * delta, 0.5), 5));
+        setScale((prev) => Math.min(Math.max(prev * delta, 0.5), 5));
       }
     };
 
@@ -199,7 +205,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
           style={{
             maxWidth: "90vw",
             maxHeight: "75vh",
-            cursor: scale > 1 ? (isDragging ? "grabbing" : "grab") : "default"
+            cursor: scale > 1 ? (isDragging ? "grabbing" : "grab") : "default",
           }}
         >
           <div

@@ -19,7 +19,7 @@ export const scoreUploadConfig: UploadConfig = {
 export async function uploadCoverFile(
   buffer: Buffer,
   songId: string,
-  config: UploadConfig = coverUploadConfig
+  config: UploadConfig = coverUploadConfig,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // 生成文件名和上传URL
@@ -71,7 +71,7 @@ export async function uploadCoverFile(
 export async function uploadScoreFile(
   buffer: Buffer,
   songId: string,
-  config: UploadConfig = scoreUploadConfig
+  config: UploadConfig = scoreUploadConfig,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // 生成文件名和上传URL
@@ -122,13 +122,15 @@ export async function uploadScoreFile(
 
 export function validateFile(
   file: File,
-  config: UploadConfig = coverUploadConfig
+  config: UploadConfig = coverUploadConfig,
 ): { valid: boolean; error?: string } {
   // 检查文件类型
-  if (!config.allowedTypes.some(type => file.type.includes(type.split("/")[1]))) {
+  if (
+    !config.allowedTypes.some((type) => file.type.includes(type.split("/")[1]))
+  ) {
     return {
       valid: false,
-      error: `只允许上传 ${config.allowedTypes.map(t => t.split("/")[1].toUpperCase()).join(", ")} 格式的文件`,
+      error: `只允许上传 ${config.allowedTypes.map((t) => t.split("/")[1].toUpperCase()).join(", ")} 格式的文件`,
     };
   }
 
@@ -146,7 +148,7 @@ export function validateFile(
 
 export function validateScoreFile(
   file: File,
-  config: UploadConfig = scoreUploadConfig
+  config: UploadConfig = scoreUploadConfig,
 ): { valid: boolean; error?: string } {
   return validateFile(file, config);
 }

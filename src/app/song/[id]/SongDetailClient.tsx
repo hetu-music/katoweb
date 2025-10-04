@@ -70,14 +70,17 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   }, [song]);
 
   // 打开图片放大模态框
-  const openImageModal = useCallback((src: string, alt: string, title: string) => {
-    setImageModal({
-      isOpen: true,
-      src,
-      alt,
-      title,
-    });
-  }, []);
+  const openImageModal = useCallback(
+    (src: string, alt: string, title: string) => {
+      setImageModal({
+        isOpen: true,
+        src,
+        alt,
+        title,
+      });
+    },
+    [],
+  );
 
   // 关闭图片放大模态框
   const closeImageModal = useCallback(() => {
@@ -139,7 +142,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 openImageModal(
                   getCoverUrl(song),
                   song.album || song.title,
-                  `${song.title} - 专辑封面`
+                  `${song.title} - 专辑封面`,
                 )
               }
             >
@@ -288,18 +291,20 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
             <div className="flex bg-white/10 rounded-full p-1 border border-white/20">
               <button
                 onClick={() => setLyricsType("normal")}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${lyricsType === "normal"
-                  ? "bg-white/20 text-white shadow-sm"
-                  : "text-white/70 hover:text-white/90"
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                  lyricsType === "normal"
+                    ? "bg-white/20 text-white shadow-sm"
+                    : "text-white/70 hover:text-white/90"
                 }`}
               >
                 普通歌词
               </button>
               <button
                 onClick={() => setLyricsType("lrc")}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${lyricsType === "lrc"
-                  ? "bg-white/20 text-white shadow-sm"
-                  : "text-white/70 hover:text-white/90"
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                  lyricsType === "lrc"
+                    ? "bg-white/20 text-white shadow-sm"
+                    : "text-white/70 hover:text-white/90"
                 }`}
               >
                 LRC歌词
@@ -337,7 +342,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                   openImageModal(
                     getNmnUrl(song),
                     `${song.title} - 乐谱`,
-                    `${song.title} - 乐谱`
+                    `${song.title} - 乐谱`,
                   )
                 }
               >
@@ -354,7 +359,8 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                     target.style.display = "none";
                     const parent = target.parentElement;
                     if (parent) {
-                      parent.innerHTML = '<div class="text-gray-400 italic text-center py-8">乐谱暂时无法加载</div>';
+                      parent.innerHTML =
+                        '<div class="text-gray-400 italic text-center py-8">乐谱暂时无法加载</div>';
                     }
                   }}
                 />

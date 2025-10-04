@@ -74,17 +74,14 @@ export async function POST(request: NextRequest) {
     if (!file || !songId) {
       return NextResponse.json(
         { error: "Missing file or songId" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // 验证文件
     const validation = validateScoreFile(file);
     if (!validation.valid) {
-      return NextResponse.json(
-        { error: validation.error },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
     // 获取文件内容
@@ -97,21 +94,20 @@ export async function POST(request: NextRequest) {
     if (!uploadResult.success) {
       return NextResponse.json(
         { error: uploadResult.error || "Upload failed" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     return NextResponse.json({
       success: true,
       message: "乐谱上传成功",
-      fileName: `${songId}.jpg`
+      fileName: `${songId}.jpg`,
     });
-
   } catch (error) {
     console.error("Upload score error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

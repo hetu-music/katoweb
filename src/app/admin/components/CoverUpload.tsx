@@ -16,11 +16,15 @@ export default function CoverUpload({
   onUploadError,
 }: CoverUploadProps) {
   const [uploading, setUploading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState<"idle" | "success" | "error">("idle");
+  const [uploadStatus, setUploadStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
   const [uploadMessage, setUploadMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -84,7 +88,6 @@ export default function CoverUpload({
         setUploadStatus("idle");
         setUploadMessage("");
       }, 3000);
-
     } catch (error) {
       console.error("Upload error:", error);
       const errorMessage = error instanceof Error ? error.message : "上传失败";
@@ -120,10 +123,10 @@ export default function CoverUpload({
           className={`
             flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200
             ${
-    uploading || !songId
-      ? "bg-gray-500/20 text-gray-400 cursor-not-allowed"
-      : "bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200 border border-blue-400/30"
-    }
+              uploading || !songId
+                ? "bg-gray-500/20 text-gray-400 cursor-not-allowed"
+                : "bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200 border border-blue-400/30"
+            }
           `}
         >
           <Upload size={16} />
@@ -131,9 +134,7 @@ export default function CoverUpload({
         </button>
 
         {!songId && (
-          <span className="text-yellow-400 text-xs">
-            请先保存歌曲
-          </span>
+          <span className="text-yellow-400 text-xs">请先保存歌曲</span>
         )}
       </div>
 
@@ -152,12 +153,12 @@ export default function CoverUpload({
           className={`
             flex items-center gap-2 p-3 rounded-lg text-sm
             ${
-        uploadStatus === "success"
-          ? "bg-green-500/20 text-green-300 border border-green-400/30"
-          : uploadStatus === "error"
-            ? "bg-red-500/20 text-red-300 border border-red-400/30"
-            : "bg-blue-500/20 text-blue-300 border border-blue-400/30"
-        }
+              uploadStatus === "success"
+                ? "bg-green-500/20 text-green-300 border border-green-400/30"
+                : uploadStatus === "error"
+                  ? "bg-red-500/20 text-red-300 border border-red-400/30"
+                  : "bg-blue-500/20 text-blue-300 border border-blue-400/30"
+            }
           `}
         >
           {uploadStatus === "success" && <Check size={16} />}
