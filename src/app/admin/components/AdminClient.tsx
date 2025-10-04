@@ -901,10 +901,10 @@ function renderInput(
             className={baseInputClass}
           >
             <option value="false" className="filter-option">
-              否
+              无乐谱
             </option>
             <option value="true" className="filter-option">
-              是
+              有乐谱
             </option>
           </select>
 
