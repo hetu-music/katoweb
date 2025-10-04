@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import WallpaperBackground from "../../components/WallpaperBackground";
-import WallpaperControls from "../../components/WallpaperControls";
+import FloatingActionButtons from "../../components/FloatingActionButtons";
 import { useWallpaper } from "../../hooks/useWallpaper";
 
 export default function LoginPage() {
@@ -71,16 +71,16 @@ export default function LoginPage() {
       enabled={wallpaperEnabled}
     >
       <div className="min-h-screen flex items-center justify-center relative">
-        {/* 壁纸控制按钮 - 右边中间 */}
-        <div className="wallpaper-controls-middle">
-          <WallpaperControls
-            enabled={wallpaperEnabled}
-            isLoading={wallpaperLoading}
-            onToggle={toggleWallpaper}
-            onRefresh={refreshWallpaper}
-            isHydrated={isHydrated}
-          />
-        </div>
+        {/* 浮动操作按钮组 - 仅壁纸控制，无返回顶部（登录页面不需要） */}
+        <FloatingActionButtons
+          showScrollTop={false}
+          onScrollToTop={() => {}} // 空函数，不会显示按钮
+          wallpaperEnabled={wallpaperEnabled}
+          wallpaperLoading={wallpaperLoading}
+          onWallpaperToggle={toggleWallpaper}
+          onWallpaperRefresh={refreshWallpaper}
+          isHydrated={isHydrated}
+        />
 
         <form
         onSubmit={handleLogin}

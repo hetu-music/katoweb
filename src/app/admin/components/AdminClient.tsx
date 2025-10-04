@@ -17,7 +17,7 @@ import {
   validateField,
 } from "../../lib/utils";
 import { songFields, genreColorMap, typeColorMap } from "../../lib/constants";
-import ScrollToTopButton from "../../components/ScrollToTopButton";
+import FloatingActionButtons from "../../components/FloatingActionButtons";
 import { apiCreateSong, apiUpdateSong } from "../../lib/api";
 import { useSongs } from "../../hooks/useSongs";
 import { useAuth } from "../../hooks/useAuth";
@@ -661,8 +661,8 @@ export default function AdminClientComponent({
         </div>
       ) : null}
 
-      {/* 返回顶部按钮 */}
-      <ScrollToTopButton
+      {/* 浮动操作按钮组 - 仅返回顶部 */}
+      <FloatingActionButtons
         showScrollTop={showScrollTop}
         onScrollToTop={scrollToTop}
       />

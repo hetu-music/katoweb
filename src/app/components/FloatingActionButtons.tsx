@@ -9,14 +9,14 @@ interface FloatingActionButtonsProps {
   showScrollTop: boolean;
   onScrollToTop: () => void;
   
-  // 分享相关
-  onShare: () => void;
+  // 分享相关 - 可选
+  onShare?: () => void;
   
-  // 壁纸相关
-  wallpaperEnabled: boolean;
-  wallpaperLoading: boolean;
-  onWallpaperToggle: () => void;
-  onWallpaperRefresh: () => void;
+  // 壁纸相关 - 可选
+  wallpaperEnabled?: boolean;
+  wallpaperLoading?: boolean;
+  onWallpaperToggle?: () => void;
+  onWallpaperRefresh?: () => void;
   isHydrated?: boolean;
 }
 
@@ -30,18 +30,23 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
   onWallpaperRefresh,
   isHydrated = true,
 }) => {
+  // 检查是否需要显示壁纸控制
+  const showWallpaperControls = wallpaperEnabled !== undefined && onWallpaperToggle && onWallpaperRefresh;
+  
   return (
     <>
-      {/* 壁纸控制按钮 - 右边中间 */}
-      <div className="wallpaper-controls-middle">
-        <WallpaperControls
-          enabled={wallpaperEnabled}
-          isLoading={wallpaperLoading}
-          onToggle={onWallpaperToggle}
-          onRefresh={onWallpaperRefresh}
-          isHydrated={isHydrated}
-        />
-      </div>
+      {/* 壁纸控制按钮 - 右边中间 - 仅在需要时显示 */}
+      {showWallpaperControls && (
+        <div className="wallpaper-controls-middle">
+          <WallpaperControls
+            enabled={wallpaperEnabled!}
+            isLoading={wallpaperLoading || false}
+            onToggle={onWallpaperToggle!}
+            onRefresh={onWallpaperRefresh!}
+            isHydrated={isHydrated}
+          />
+        </div>
+      )}
 
       {/* 固定按钮组 - 右下角 */}
       <div className="fixed bottom-8 right-8 z-40 flex flex-col gap-3">
@@ -71,14 +76,16 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
           </svg>
         </button>
 
-        {/* 分享按钮 - 始终显示 */}
-        <button
-          onClick={onShare}
-          className="p-3 rounded-full bg-gradient-to-br from-green-600 via-emerald-600 to-teal-600 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200"
-          aria-label="分享页面"
-        >
-          <Share className="w-6 h-6" />
-        </button>
+        {/* 分享按钮 - 仅在提供分享函数时显示 */}
+        {onShare && (
+          <button
+            onClick={onShare}
+            className="p-3 rounded-full bg-gradient-to-br from-green-600 via-emerald-600 to-teal-600 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200"
+            aria-label="分享页面"
+          >
+            <Share className="w-6 h-6" />
+          </button>
+        )}
       </div>
     </>
   );
