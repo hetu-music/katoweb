@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 
 interface WallpaperData {
   url: string;
   copyright: string;
   title: string;
   source: 'bing' | 'picsum';
-  timestamp: number; // 添加时间戳用于过期检查
+  timestamp: number;
 }
 
-interface UseWallpaperReturn {
+interface WallpaperContextType {
   wallpaper: WallpaperData | null;
   isLoading: boolean;
   error: string | null;
@@ -20,10 +20,12 @@ interface UseWallpaperReturn {
   isHydrated: boolean;
 }
 
+const WallpaperContext = createContext<WallpaperContextType | undefined>(undefined);
+
 // 壁纸过期时间：24小时（毫秒）
 const WALLPAPER_EXPIRE_TIME = 24 * 60 * 60 * 1000;
 
-export const useWallpaper = (): UseWallpaperReturn => {
+export const WallpaperProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [wallpaper, setWallpaper] = useState<WallpaperData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,21 +34,24 @@ export const useWallpaper = (): UseWallpaperReturn => {
 
   // 在客户端初始化时从 localStorage 读取数据
   useEffect(() => {
-    setIsHydrated(true);
-
+    // 同步读取所有数据，减少状态变化次数
     const savedEnabled = localStorage.getItem('wallpaper-enabled');
+    const savedWallpaper = localStorage.getItem('current-wallpaper');
+    
+    let enabledValue = false;
+    let wallpaperValue = null;
+
     if (savedEnabled !== null) {
-      setWallpaperEnabled(JSON.parse(savedEnabled));
+      enabledValue = JSON.parse(savedEnabled);
     }
 
-    const savedWallpaper = localStorage.getItem('current-wallpaper');
     if (savedWallpaper) {
       try {
         const wallpaperData = JSON.parse(savedWallpaper);
         // 检查壁纸是否过期
         const now = Date.now();
         if (wallpaperData.timestamp && (now - wallpaperData.timestamp < WALLPAPER_EXPIRE_TIME)) {
-          setWallpaper(wallpaperData);
+          wallpaperValue = wallpaperData;
         } else {
           // 壁纸已过期，清除缓存
           localStorage.removeItem('current-wallpaper');
@@ -56,6 +61,11 @@ export const useWallpaper = (): UseWallpaperReturn => {
         localStorage.removeItem('current-wallpaper');
       }
     }
+
+    // 批量更新状态，减少重渲染
+    setWallpaperEnabled(enabledValue);
+    setWallpaper(wallpaperValue);
+    setIsHydrated(true);
   }, []);
 
   const fetchWallpaper = useCallback(async (forceRefresh = false) => {
@@ -93,34 +103,45 @@ export const useWallpaper = (): UseWallpaperReturn => {
   }, [wallpaperEnabled, wallpaper, isHydrated]);
 
   const refreshWallpaper = useCallback(() => {
-    if (!isHydrated) return; // 防止在 hydration 之前执行
-    fetchWallpaper(true); // 强制刷新
+    if (!isHydrated) return;
+    fetchWallpaper(true);
   }, [fetchWallpaper, isHydrated]);
 
   const toggleWallpaper = useCallback(() => {
-    if (!isHydrated) return; // 防止在 hydration 之前执行
+    if (!isHydrated) return;
 
     const newEnabled = !wallpaperEnabled;
     setWallpaperEnabled(newEnabled);
     localStorage.setItem('wallpaper-enabled', JSON.stringify(newEnabled));
-
-    // 关闭壁纸时不清除壁纸数据，保留缓存供下次使用
-    // 壁纸会在24小时后自动过期
   }, [wallpaperEnabled, isHydrated]);
 
   useEffect(() => {
     if (isHydrated && wallpaperEnabled && !wallpaper) {
-      fetchWallpaper(false); // 仅在没有壁纸时获取
+      fetchWallpaper(false);
     }
   }, [wallpaperEnabled, wallpaper, fetchWallpaper, isHydrated]);
 
-  return {
-    wallpaper,
-    isLoading,
-    error,
-    refreshWallpaper,
-    wallpaperEnabled,
-    toggleWallpaper,
-    isHydrated,
-  };
+  return (
+    <WallpaperContext.Provider
+      value={{
+        wallpaper,
+        isLoading,
+        error,
+        refreshWallpaper,
+        wallpaperEnabled,
+        toggleWallpaper,
+        isHydrated,
+      }}
+    >
+      {children}
+    </WallpaperContext.Provider>
+  );
+};
+
+export const useWallpaper = (): WallpaperContextType => {
+  const context = useContext(WallpaperContext);
+  if (context === undefined) {
+    throw new Error('useWallpaper must be used within a WallpaperProvider');
+  }
+  return context;
 };

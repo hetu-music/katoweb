@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import WallpaperBackground from "../../components/WallpaperBackground";
 import FloatingActionButtons from "../../components/FloatingActionButtons";
-import { useWallpaper } from "../../hooks/useWallpaper";
+import { useWallpaper } from "../../context/WallpaperContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -66,10 +66,7 @@ export default function LoginPage() {
   };
 
   return (
-    <WallpaperBackground 
-      wallpaperUrl={wallpaper?.url || null} 
-      enabled={wallpaperEnabled}
-    >
+    <WallpaperBackground>
       <div className="min-h-screen flex items-center justify-center relative">
         {/* 浮动操作按钮组 - 仅壁纸控制，无返回顶部（登录页面不需要） */}
         <FloatingActionButtons

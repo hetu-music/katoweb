@@ -10,7 +10,7 @@ import { typeColorMap, genreColorMap } from "../../lib/constants";
 import ImageModal from "../../components/ImageModal";
 import WallpaperBackground from "../../components/WallpaperBackground";
 import FloatingActionButtons from "../../components/FloatingActionButtons";
-import { useWallpaper } from "../../hooks/useWallpaper";
+import { useWallpaper } from "../../context/WallpaperContext";
 
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -120,10 +120,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
   // 渲染逻辑
   return (
-    <WallpaperBackground 
-      wallpaperUrl={wallpaper?.url || null} 
-      enabled={wallpaperEnabled}
-    >
+    <WallpaperBackground>
       <div className="container mx-auto px-6 py-8 max-w-5xl">
         {/* 顶部操作栏 */}
         <div className="flex items-center justify-between mb-6">

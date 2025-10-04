@@ -17,7 +17,7 @@ import TypeExplanation from "./TypeExplanation";
 import SongFilters from "./SongFilters";
 import WallpaperBackground from "./WallpaperBackground";
 import FloatingActionButtons from "./FloatingActionButtons";
-import { useWallpaper } from "../hooks/useWallpaper";
+import { useWallpaper } from "../context/WallpaperContext";
 
 const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   initialSongsData,
@@ -201,10 +201,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   ]);
 
   return (
-    <WallpaperBackground 
-      wallpaperUrl={wallpaper?.url || null} 
-      enabled={wallpaperEnabled}
-    >
+    <WallpaperBackground>
       <div
         style={{ opacity: restoringScroll ? 0 : 1, transition: "opacity 0.2s" }}
       >
