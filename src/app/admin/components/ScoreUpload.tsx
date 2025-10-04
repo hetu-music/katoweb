@@ -25,10 +25,10 @@ export default function ScoreUpload({
     if (!file) return;
 
     // 验证文件类型
-    if (!file.type.includes("pdf")) {
+    if (!file.type.includes("jpeg") && !file.type.includes("jpg")) {
       setUploadStatus("error");
-      setUploadMessage("只允许上传PDF格式的乐谱文件");
-      onUploadError?.("只允许上传PDF格式的乐谱文件");
+      setUploadMessage("只允许上传JPG格式的乐谱文件");
+      onUploadError?.("只允许上传JPG格式的乐谱文件");
       return;
     }
 
@@ -127,7 +127,7 @@ export default function ScoreUpload({
           `}
         >
           <Upload size={16} />
-          {uploading ? "上传中..." : "选择PDF文件"}
+          {uploading ? "上传中..." : "选择JPG文件"}
         </button>
 
         {!songId && (
@@ -141,7 +141,7 @@ export default function ScoreUpload({
       <input
         ref={fileInputRef}
         type="file"
-        accept=".pdf,application/pdf"
+        accept=".jpg,.jpeg,image/jpeg"
         onChange={handleFileSelect}
         className="hidden"
       />
@@ -175,7 +175,7 @@ export default function ScoreUpload({
 
       {/* 说明文字 */}
       <div className="text-xs text-gray-400 space-y-1">
-        <div>• 只支持PDF格式的乐谱文件</div>
+        <div>• 只支持JPG格式的乐谱文件</div>
         <div>• 文件大小不超过50MB</div>
       </div>
     </div>

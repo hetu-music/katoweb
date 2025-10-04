@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ 
       success: true, 
       message: "乐谱上传成功",
-      fileName: `${songId}.pdf`
+      fileName: `${songId}.jpg`
     });
 
   } catch (error) {
