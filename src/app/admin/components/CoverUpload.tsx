@@ -29,17 +29,22 @@ export default function CoverUpload({
   // 检查文件是否存在
   const checkFileExists = async (id: number) => {
     if (!id) return false;
-    
+
     setCheckingFile(true);
     try {
       const response = await fetch(`https://cover.hetu-music.com/cover/${id}.jpg`, {
         method: 'HEAD', // 只检查头部，不下载文件内容
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+        },
       });
-      const exists = response.ok;
+
+      // 根据R2存储的设置：存在返回200，不存在返回404
+      const exists = response.status === 200;
       setFileExists(exists);
       return exists;
     } catch (error) {
-      console.error('检查文件存在性失败:', error);
+      console.error('检查封面文件存在性失败:', error);
       setFileExists(false);
       return false;
     } finally {
@@ -157,10 +162,9 @@ export default function CoverUpload({
           disabled={uploading || !songId}
           className={`
             flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200
-            ${
-              uploading || !songId
-                ? "bg-gray-500/20 text-gray-400 cursor-not-allowed"
-                : "bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200 border border-blue-400/30"
+            ${uploading || !songId
+              ? "bg-gray-500/20 text-gray-400 cursor-not-allowed"
+              : "bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200 border border-blue-400/30"
             }
           `}
         >
@@ -209,12 +213,11 @@ export default function CoverUpload({
         <div
           className={`
             flex items-center gap-2 p-3 rounded-lg text-sm
-            ${
-              uploadStatus === "success"
-                ? "bg-green-500/20 text-green-300 border border-green-400/30"
-                : uploadStatus === "error"
-                  ? "bg-red-500/20 text-red-300 border border-red-400/30"
-                  : "bg-blue-500/20 text-blue-300 border border-blue-400/30"
+            ${uploadStatus === "success"
+              ? "bg-green-500/20 text-green-300 border border-green-400/30"
+              : uploadStatus === "error"
+                ? "bg-red-500/20 text-red-300 border border-red-400/30"
+                : "bg-blue-500/20 text-blue-300 border border-blue-400/30"
             }
           `}
         >

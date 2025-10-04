@@ -34,12 +34,17 @@ export default function ScoreUpload({
     try {
       const response = await fetch(`https://cover.hetu-music.com/nmn/${id}.jpg`, {
         method: 'HEAD', // 只检查头部，不下载文件内容
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+        },
       });
-      const exists = response.ok;
+      
+      // 根据R2存储的设置：存在返回200，不存在返回404
+      const exists = response.status === 200;
       setFileExists(exists);
       return exists;
     } catch (error) {
-      console.error('检查文件存在性失败:', error);
+      console.error('检查乐谱文件存在性失败:', error);
       setFileExists(false);
       return false;
     } finally {
