@@ -8,7 +8,7 @@ import { SongDetailClientProps } from "../../lib/types";
 import { getCoverUrl, calculateSongInfo, getNmnUrl } from "../../lib/utils";
 import { typeColorMap, genreColorMap } from "../../lib/constants";
 import ImageModal from "../../components/ImageModal";
-import WallpaperBackground from "../../components/WallpaperBackground";
+
 import FloatingActionButtons from "../../components/FloatingActionButtons";
 
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
@@ -108,7 +108,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
   // 渲染逻辑
   return (
-    <WallpaperBackground>
+    <div className="relative min-h-screen">
       <div className="container mx-auto px-6 py-8 max-w-5xl">
         {/* 顶部操作栏 */}
         <div className="flex items-center justify-between mb-6">
@@ -411,7 +411,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         alt={imageModal.alt}
         title={imageModal.title}
       />
-    </WallpaperBackground>
+    </div>
   );
 };
 

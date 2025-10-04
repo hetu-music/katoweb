@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, ArrowLeft, LogIn, Eye, EyeOff } from "lucide-react";
-import WallpaperBackground from "../../components/WallpaperBackground";
+
 import FloatingActionButtons from "../../components/FloatingActionButtons";
 
 export default function LoginPage() {
@@ -56,7 +56,7 @@ export default function LoginPage() {
   };
 
   return (
-    <WallpaperBackground>
+    <div className="relative min-h-screen">
       <div className="min-h-screen flex items-center justify-center relative p-4">
         {/* 浮动操作按钮组 - 仅返回顶部（登录页面不需要，所以不显示） */}
         <FloatingActionButtons
@@ -88,8 +88,8 @@ export default function LoginPage() {
                 邮箱地址
               </label>
               <div className="relative">
-                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
-                  <Mail className="w-4 h-4 text-white/90" />
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white/50 backdrop-blur-sm rounded-lg flex items-center justify-center shadow-md border border-white/40 z-10">
+                  <Mail className="w-4 h-4 text-gray-700 font-semibold" />
                 </div>
                 <input
                   type="email"
@@ -108,8 +108,8 @@ export default function LoginPage() {
                 登录密码
               </label>
               <div className="relative">
-                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
-                  <Lock className="w-4 h-4 text-white/90" />
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white/50 backdrop-blur-sm rounded-lg flex items-center justify-center shadow-md border border-white/40 z-10">
+                  <Lock className="w-4 h-4 text-gray-700 font-semibold" />
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
@@ -122,12 +122,12 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 transition-all duration-200"
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white/50 backdrop-blur-sm rounded-lg flex items-center justify-center hover:bg-white/60 transition-all duration-200 shadow-md border border-white/40 z-10"
                 >
                   {showPassword ? (
-                    <EyeOff className="w-4 h-4 text-white/90" />
+                    <EyeOff className="w-4 h-4 text-gray-700 font-semibold" />
                   ) : (
-                    <Eye className="w-4 h-4 text-white/90" />
+                    <Eye className="w-4 h-4 text-gray-700 font-semibold" />
                   )}
                 </button>
               </div>
@@ -168,9 +168,9 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => router.push("/")}
-                className="w-full h-12 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 active:bg-white/30 text-white/90 font-medium rounded-xl border border-white/20 shadow-md transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]"
+                className="w-full h-12 flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 active:bg-white/40 text-indigo-700 font-semibold rounded-xl border border-white/30 shadow-lg backdrop-blur-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] hover:shadow-xl"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-5 h-5" />
                 <span>返回主页</span>
               </button>
             </div>
@@ -178,12 +178,10 @@ export default function LoginPage() {
 
           {/* 底部提示 */}
           <div className="text-center pb-6 px-6 sm:pb-8 sm:px-8">
-            <p className="text-white/50 text-xs">
-              登录即表示您同意遵守管理规范
-            </p>
+            <p className="text-white/50 text-xs">如有疑问请联系管理员</p>
           </div>
         </div>
       </div>
-    </WallpaperBackground>
+    </div>
   );
 }

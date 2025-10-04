@@ -15,7 +15,7 @@ import { typeColorMap, genreColorMap } from "../lib/constants";
 import About from "./About";
 import TypeExplanation from "./TypeExplanation";
 import SongFilters from "./SongFilters";
-import WallpaperBackground from "./WallpaperBackground";
+
 import WallpaperControls from "./WallpaperControls";
 import FloatingActionButtons from "./FloatingActionButtons";
 import { useWallpaper } from "../context/WallpaperContext";
@@ -200,7 +200,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   ]);
 
   return (
-    <WallpaperBackground>
+    <div className="relative min-h-screen">
       <div
         style={{ opacity: restoringScroll ? 0 : 1, transition: "opacity 0.2s" }}
       >
@@ -653,7 +653,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
           onShare={handleShare}
         />
       </div>
-    </WallpaperBackground>
+    </div>
   );
 };
 
