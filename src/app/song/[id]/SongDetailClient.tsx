@@ -134,7 +134,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
           {/* 封面 */}
           <div className="w-full md:w-48 flex-shrink-0 flex justify-center md:justify-start">
             <div
-              className="cursor-pointer group relative"
+              className="cursor-pointer group relative w-48 h-48 rounded-2xl overflow-hidden shadow-lg"
               onClick={() =>
                 openImageModal(
                   getCoverUrl(song),
@@ -148,12 +148,12 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 alt={song.album || song.title}
                 width={192}
                 height={192}
-                className="w-48 h-48 object-cover rounded-2xl shadow-lg transition-transform duration-200 group-hover:scale-105"
+                className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
                 style={{ objectFit: "cover" }}
                 priority
               />
               {/* 悬停提示 */}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 rounded-2xl transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
                 <span className="text-white text-sm font-medium bg-black/50 px-3 py-1 rounded-full">
                   点击放大
                 </span>
@@ -332,7 +332,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
             <h3 className="block-panel-title mb-3">乐谱</h3>
             <div className="bg-white/5 rounded-2xl p-6 border border-white/10 max-w-4xl mx-auto">
               <div
-                className="cursor-pointer group relative"
+                className="cursor-pointer group relative rounded-lg overflow-hidden"
                 onClick={() =>
                   openImageModal(
                     getNmnUrl(song),
@@ -346,7 +346,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                   alt={`${song.title} - 乐谱`}
                   width={800}
                   height={600}
-                  className="w-full h-auto rounded-lg bg-white transition-transform duration-200 group-hover:scale-[1.02]"
+                  className="w-full h-auto bg-white transition-transform duration-200 group-hover:scale-[1.02]"
                   style={{ objectFit: "contain" }}
                   onError={(e) => {
                     // 如果图片加载失败，隐藏图片并显示提示
@@ -359,7 +359,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                   }}
                 />
                 {/* 悬停提示 */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-lg transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
                   <span className="text-white text-sm font-medium bg-black/50 px-3 py-1 rounded-full">
                     点击放大
                   </span>
