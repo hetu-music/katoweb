@@ -36,17 +36,17 @@ export default defineConfig([
     rules: {
       "no-unused-vars": ["warn"],
       "no-undef": ["warn"],
-      // 移除与 Prettier 冲突的格式化规则
-      // "quotes": ["warn", "double", { "avoidEscape": true }],
-      // "semi": ["warn", "always"],
-      // "indent": ["warn", 2],
       "class-methods-use-this": "warn",
-      // "eol-last": ["warn", "always"],
       "no-unused-expressions": ["warn"],
-      // "no-multiple-empty-lines": ["error", { "max": 1 }],
-      // "no-trailing-spaces": ["warn"],
       "no-useless-constructor": 0,
       "no-loop-func": 0,
+      "jsx-a11y/alt-text": [
+        "error",
+        {
+          "elements": ["img", "object", "area", "input[type='image']"],
+          "exclude": ["Image", "ImageOff"]
+        }
+      ]
     }
   },
 
