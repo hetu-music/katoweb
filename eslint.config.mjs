@@ -35,14 +35,15 @@ export default defineConfig([
     rules: {
       "no-unused-vars": ["warn"],
       "no-undef": ["warn"],
-      "quotes": ["warn", "double", { "avoidEscape": true }],
-      "semi": ["warn", "always"],
-      "indent": ["warn", 2],
+      // 移除与 Prettier 冲突的格式化规则
+      // "quotes": ["warn", "double", { "avoidEscape": true }],
+      // "semi": ["warn", "always"],
+      // "indent": ["warn", 2],
       "class-methods-use-this": "warn",
-      "eol-last": ["warn", "always"],
+      // "eol-last": ["warn", "always"],
       "no-unused-expressions": ["warn"],
-      "no-multiple-empty-lines": ["error", { "max": 1 }],
-      "no-trailing-spaces": ["warn"],
+      // "no-multiple-empty-lines": ["error", { "max": 1 }],
+      // "no-trailing-spaces": ["warn"],
       "no-useless-constructor": 0,
       "no-loop-func": 0,
     }
@@ -50,4 +51,6 @@ export default defineConfig([
 
   js.configs.recommended,
   tseslint.configs.recommended,
+  // 添加 Prettier 配置，必须放在最后以覆盖冲突规则
+  ...compat.extends("prettier"),
 ]);
