@@ -5,8 +5,7 @@ import {
   updateSong,
   TABLE_NAMES,
 } from "../../lib/supabase";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { createSupabaseServerClient } from "../../lib/supabase-server";
 import { z } from "zod";
 import { verifyCSRFToken } from "@/app/lib/utils.server";
 
@@ -36,31 +35,7 @@ const SongSchema = z.object({
   nmn_status: z.boolean().nullable().optional(),
 });
 
-// 创建支持 cookies 的 Supabase 客户端
-async function createSupabaseServerClient() {
-  // 在函数内部读取环境变量
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error("Missing Supabase environment variables");
-  }
-
-  const cookieStore = await cookies();
-
-  return createServerClient(supabaseUrl, supabaseAnonKey, {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll();
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          cookieStore.set(name, value, options);
-        });
-      },
-    },
-  });
-}
 
 async function getUserFromRequest(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
