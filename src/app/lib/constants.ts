@@ -23,6 +23,7 @@ export const songFields: SongFieldConfig[] = [
   { key: "albumartist", label: "出品发行", type: "array", arrayMaxLength: 30 },
   { key: "comment", label: "备注", type: "textarea", maxLength: 10000 },
   { key: "lyrics", label: "LRC歌词", type: "textarea", maxLength: 10000 },
+  { key: "nmn_status", label: "乐谱", type: "boolean" },
   { key: "track", label: "曲号", type: "number", min: 1 },
   { key: "tracktotal", label: "曲总数", type: "number", min: 1 },
   { key: "discnumber", label: "碟号", type: "number", min: 1 },

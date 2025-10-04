@@ -1,26 +1,11 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AdminClientComponent from "./components/AdminClient";
 import { getSongs, TABLE_NAMES } from "../lib/supabase";
+import { createSupabaseServerClient } from "../lib/supabase-server";
 import type { Song } from "../lib/types";
 
 export default async function AdminPage() {
-  const cookieStore = await cookies();
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll();
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          cookieStore.set(name, value, options);
-        });
-      },
-    },
-  });
+  const supabase = await createSupabaseServerClient();
 
   const {
     data: { session },

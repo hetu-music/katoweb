@@ -29,6 +29,7 @@ export type SongDetail = Song & {
   kugolink?: string | null;
   qmlink?: string | null;
   nelink?: string | null;
+  nmn_status?: boolean | null;
 };
 
 // 音乐库客户端组件属性

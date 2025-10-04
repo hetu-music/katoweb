@@ -5,12 +5,24 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Share } from "lucide-react";
 import Image from "next/image";
 import { SongDetailClientProps } from "../../lib/types";
-import { getCoverUrl, calculateSongInfo } from "../../lib/utils";
+import { getCoverUrl, calculateSongInfo, getNmnUrl } from "../../lib/utils";
 import { typeColorMap, genreColorMap } from "../../lib/constants";
+import ImageModal from "../../components/ImageModal";
 
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [lyricsType, setLyricsType] = useState<"normal" | "lrc">("normal");
+  const [imageModal, setImageModal] = useState<{
+    isOpen: boolean;
+    src: string;
+    alt: string;
+    title: string;
+  }>({
+    isOpen: false,
+    src: "",
+    alt: "",
+    title: "",
+  });
   const router = useRouter();
 
   // scrollToTop 函数
@@ -57,6 +69,29 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
     return calculateSongInfo(song);
   }, [song]);
 
+  // 打开图片放大模态框
+  const openImageModal = useCallback(
+    (src: string, alt: string, title: string) => {
+      setImageModal({
+        isOpen: true,
+        src,
+        alt,
+        title,
+      });
+    },
+    [],
+  );
+
+  // 关闭图片放大模态框
+  const closeImageModal = useCallback(() => {
+    setImageModal({
+      isOpen: false,
+      src: "",
+      alt: "",
+      title: "",
+    });
+  }, []);
+
   // 渲染逻辑
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
@@ -101,15 +136,32 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         <div className="flex flex-col md:flex-row gap-8 items-start bg-white/10 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/20 mb-8">
           {/* 封面 */}
           <div className="w-full md:w-48 flex-shrink-0 flex justify-center md:justify-start">
-            <Image
-              src={getCoverUrl(song)}
-              alt={song.album || song.title}
-              width={192}
-              height={192}
-              className="w-48 h-48 object-cover rounded-2xl shadow-lg"
-              style={{ objectFit: "cover" }}
-              priority
-            />
+            <div
+              className="cursor-pointer group relative w-48 h-48 rounded-2xl overflow-hidden shadow-lg"
+              onClick={() =>
+                openImageModal(
+                  getCoverUrl(song),
+                  song.album || song.title,
+                  `${song.title} - 封面`,
+                )
+              }
+            >
+              <Image
+                src={getCoverUrl(song)}
+                alt={song.album || song.title}
+                width={192}
+                height={192}
+                className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+                style={{ objectFit: "cover" }}
+                priority
+              />
+              {/* 悬停提示 */}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                <span className="text-white text-sm font-medium bg-black/50 px-3 py-1 rounded-full">
+                  点击放大
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* 歌曲主信息 */}
@@ -232,7 +284,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         )}
 
         {/* 歌词区块 */}
-        <div className="block-panel">
+        <div className="block-panel mb-8">
           <div className="flex items-center justify-between mb-3">
             <h3 className="block-panel-title mb-0">歌词</h3>
             {/* 歌词类型切换胶囊 */}
@@ -278,10 +330,80 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
             )}
           </div>
         </div>
+
+        {/* 乐谱区块 */}
+        {song.nmn_status === true && (
+          <div className="block-panel">
+            <h3 className="block-panel-title mb-3">乐谱</h3>
+            <div className="bg-white/5 rounded-2xl p-6 border border-white/10 max-w-4xl mx-auto">
+              <div
+                className="cursor-pointer group relative rounded-lg overflow-hidden"
+                onClick={() =>
+                  openImageModal(
+                    getNmnUrl(song),
+                    `${song.title} - 乐谱`,
+                    `${song.title} - 乐谱`,
+                  )
+                }
+              >
+                <Image
+                  src={getNmnUrl(song)}
+                  alt={`${song.title} - 乐谱`}
+                  width={800}
+                  height={600}
+                  className="w-full h-auto bg-white transition-transform duration-200 group-hover:scale-[1.02]"
+                  style={{ objectFit: "contain" }}
+                  onError={(e) => {
+                    // 如果图片加载失败，隐藏图片并显示提示
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = "none";
+                    const parent = target.parentElement;
+                    if (parent) {
+                      parent.innerHTML =
+                        '<div class="text-gray-400 italic text-center py-8">乐谱暂时无法加载</div>';
+                    }
+                  }}
+                />
+                {/* 悬停提示 */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                  <span className="text-white text-sm font-medium bg-black/50 px-3 py-1 rounded-full">
+                    点击放大
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 固定按钮组 */}
       <div className="fixed bottom-8 right-8 z-40 flex flex-col gap-3">
+        {/* 返回顶部按钮 - 带动画的显示/隐藏 */}
+        <button
+          onClick={scrollToTop}
+          className={`p-3 rounded-full bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-300 ${
+            showScrollTop
+              ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
+              : "opacity-0 scale-75 translate-y-2 pointer-events-none"
+          }`}
+          aria-label="返回顶部"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-6 h-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M5 15l7-7 7 7"
+            />
+          </svg>
+        </button>
+
         {/* 分享按钮 - 始终显示 */}
         <button
           onClick={handleShare}
@@ -290,31 +412,16 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         >
           <Share className="w-6 h-6" />
         </button>
-
-        {/* 返回顶部按钮 - 滚动时显示 */}
-        {showScrollTop && (
-          <button
-            onClick={scrollToTop}
-            className="p-3 rounded-full bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200"
-            aria-label="返回顶部"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-6 h-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M5 15l7-7 7 7"
-              />
-            </svg>
-          </button>
-        )}
       </div>
+
+      {/* 图片放大模态框 */}
+      <ImageModal
+        isOpen={imageModal.isOpen}
+        onClose={closeImageModal}
+        src={imageModal.src}
+        alt={imageModal.alt}
+        title={imageModal.title}
+      />
     </div>
   );
 };

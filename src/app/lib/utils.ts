@@ -293,12 +293,17 @@ export function generateCSRFToken(): string {
 
 export function getCoverUrl(song: Song | SongDetail): string {
   if (song.hascover === true) {
-    return `https://cover.hetu-music.com/${song.id}.jpg`;
+    return `https://cover.hetu-music.com/cover/${song.id}.jpg`;
   } else if (song.hascover === false) {
-    return "https://cover.hetu-music.com/proto.jpg";
+    return "https://cover.hetu-music.com/cover/proto.jpg";
   } else {
-    return "https://cover.hetu-music.com/default.jpg";
+    return "https://cover.hetu-music.com/cover/default.jpg";
   }
+}
+
+// 获取乐谱图片 URL
+export function getNmnUrl(song: Song | SongDetail): string {
+  return `https://cover.hetu-music.com/nmn/${song.id}.jpg`;
 }
 
 // admin 页面函数

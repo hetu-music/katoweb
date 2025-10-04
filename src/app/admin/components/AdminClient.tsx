@@ -23,6 +23,8 @@ import { useSongs } from "../../hooks/useSongs";
 import { useAuth } from "../../hooks/useAuth";
 import Account from "./Account";
 import Notification from "./Notification";
+import CoverUpload from "./CoverUpload";
+import ScoreUpload from "./ScoreUpload";
 
 // Memoized SongRow component
 const SongRow = React.memo(
@@ -99,7 +101,11 @@ const SongRow = React.memo(
                           : song.hascover === false
                             ? "初号机（黑底机器人）"
                             : "白底狐狸（默认）"
-                        : formatField(song[field.key], field.type)}
+                        : field.key === "nmn_status"
+                          ? song.nmn_status === true
+                            ? "有乐谱"
+                            : "无乐谱"
+                          : formatField(song[field.key], field.type)}
                     </span>
                   </div>
                 ))}
@@ -500,6 +506,7 @@ export default function AdminClientComponent({
                       showAdd ? setNewSong : setEditForm,
                       showAdd ? addFormErrors : editFormErrors,
                       showAdd ? setAddFormErrors : setEditFormErrors,
+                      csrfToken,
                     )}
                   </div>
                 ))}
@@ -654,16 +661,18 @@ export default function AdminClientComponent({
         </div>
       ) : null}
 
-      {/* Scroll to Top Button */}
-      {showScrollTop && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-8 right-8 z-40 p-3 rounded-full bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200"
-          aria-label="返回顶部"
-        >
-          <ArrowUp size={24} />
-        </button>
-      )}
+      {/* Scroll to Top Button - 带动画的显示/隐藏 */}
+      <button
+        onClick={scrollToTop}
+        className={`fixed bottom-8 right-8 z-40 p-3 rounded-full bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-300 ${
+          showScrollTop
+            ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
+            : "opacity-0 scale-75 translate-y-2 pointer-events-none"
+        }`}
+        aria-label="返回顶部"
+      >
+        <ArrowUp size={24} />
+      </button>
 
       {/* 通知模态框 */}
       {showNotification && (
@@ -679,6 +688,7 @@ function renderInput(
   setState: React.Dispatch<React.SetStateAction<Partial<SongDetail>>>,
   errors: Record<string, string>,
   setErrors: (e: Record<string, string>) => void,
+  csrfToken: string,
 ) {
   const v = state[f.key];
   const baseInputClass =
@@ -821,6 +831,106 @@ function renderInput(
     );
   }
   if (f.type === "boolean") {
+    // 特殊处理封面字段
+    if (f.key === "hascover") {
+      return (
+        <>
+          <select
+            value={v === true ? "true" : v === false ? "false" : ""}
+            onChange={(e) =>
+              handleChange(
+                e.target.value === "true"
+                  ? true
+                  : e.target.value === "false"
+                    ? false
+                    : null,
+              )
+            }
+            className={baseInputClass}
+          >
+            <option value="" className="filter-option">
+              白底狐狸（默认）
+            </option>
+            <option value="false" className="filter-option">
+              初号机（黑底机器人）
+            </option>
+            <option value="true" className="filter-option">
+              定制封面
+            </option>
+          </select>
+
+          {/* 当选择定制封面时显示上传组件 */}
+          {v === true && (
+            <div className="mt-4 p-4 bg-white/5 rounded-lg border border-white/10">
+              <CoverUpload
+                songId={typeof state.id === "number" ? state.id : undefined}
+                csrfToken={csrfToken}
+                onUploadSuccess={() => {
+                  console.log("Cover uploaded successfully");
+                }}
+                onUploadError={(error) => {
+                  console.error("Cover upload error:", error);
+                }}
+              />
+            </div>
+          )}
+
+          {errorMsg && (
+            <div className="text-red-400 text-xs mt-1">{errorMsg}</div>
+          )}
+        </>
+      );
+    }
+
+    // 特殊处理乐谱字段
+    if (f.key === "nmn_status") {
+      return (
+        <>
+          <select
+            value={v === true ? "true" : v === false ? "false" : ""}
+            onChange={(e) =>
+              handleChange(
+                e.target.value === "true"
+                  ? true
+                  : e.target.value === "false"
+                    ? false
+                    : null,
+              )
+            }
+            className={baseInputClass}
+          >
+            <option value="false" className="filter-option">
+              否
+            </option>
+            <option value="true" className="filter-option">
+              是
+            </option>
+          </select>
+
+          {/* 当选择是时显示上传组件 */}
+          {v === true && (
+            <div className="mt-4 p-4 bg-white/5 rounded-lg border border-white/10">
+              <ScoreUpload
+                songId={typeof state.id === "number" ? state.id : undefined}
+                csrfToken={csrfToken}
+                onUploadSuccess={() => {
+                  console.log("Score uploaded successfully");
+                }}
+                onUploadError={(error) => {
+                  console.error("Score upload error:", error);
+                }}
+              />
+            </div>
+          )}
+
+          {errorMsg && (
+            <div className="text-red-400 text-xs mt-1">{errorMsg}</div>
+          )}
+        </>
+      );
+    }
+
+    // 其他boolean字段的默认处理
     return (
       <>
         <select
@@ -836,15 +946,9 @@ function renderInput(
           }
           className={baseInputClass}
         >
-          <option value="" className="filter-option">
-            白底狐狸（默认）
-          </option>
-          <option value="false" className="filter-option">
-            初号机（黑底机器人）
-          </option>
-          <option value="true" className="filter-option">
-            定制封面
-          </option>
+          <option value="">请选择</option>
+          <option value="true">是</option>
+          <option value="false">否</option>
         </select>
         {errorMsg && (
           <div className="text-red-400 text-xs mt-1">{errorMsg}</div>

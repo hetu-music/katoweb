@@ -5,8 +5,7 @@ import {
   updateSong,
   TABLE_NAMES,
 } from "../../lib/supabase";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { createSupabaseServerClient } from "../../lib/supabase-server";
 import { z } from "zod";
 import { verifyCSRFToken } from "@/app/lib/utils.server";
 
@@ -30,36 +29,11 @@ const SongSchema = z.object({
   lyrics: z.string().max(10000).nullable().optional(),
   track: z.number().int().min(1).nullable().optional(),
   tracktotal: z.number().int().min(1).nullable().optional(),
-  kugolink: z.string().url().max(200).nullable().optional(),
-  qmlink: z.string().url().max(200).nullable().optional(),
-  nelink: z.string().url().max(200).nullable().optional(),
+  kugolink: z.url().max(200).nullable().optional(),
+  qmlink: z.url().max(200).nullable().optional(),
+  nelink: z.url().max(200).nullable().optional(),
+  nmn_status: z.boolean().nullable().optional(),
 });
-
-// 创建支持 cookies 的 Supabase 客户端
-async function createSupabaseServerClient() {
-  // 在函数内部读取环境变量
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error("Missing Supabase environment variables");
-  }
-
-  const cookieStore = await cookies();
-
-  return createServerClient(supabaseUrl, supabaseAnonKey, {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll();
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          cookieStore.set(name, value, options);
-        });
-      },
-    },
-  });
-}
 
 async function getUserFromRequest(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
@@ -69,7 +43,7 @@ async function getUserFromRequest(request: NextRequest) {
   let token: string | undefined;
   if (authHeader) {
     // 严格校验 Bearer token 格式
-    const match = authHeader.match(/^Bearer ([A-Za-z0-9\-\._~\+\/]+=*)$/);
+    const match = authHeader.match(/^Bearer ([A-Za-z0-9\-._~+/]+=*)$/);
     if (match) {
       token = match[1];
     } else {
