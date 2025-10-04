@@ -38,7 +38,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
   // 处理选择后失去焦点
   const handleSelectChange = (
     setValue: (value: string) => void,
-    event: React.ChangeEvent<HTMLSelectElement>
+    event: React.ChangeEvent<HTMLSelectElement>,
   ) => {
     setValue(event.target.value);
     // 选择完成后让下拉框失去焦点

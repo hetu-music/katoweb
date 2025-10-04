@@ -48,8 +48,6 @@ body {
   box-shadow: 0 0 12px rgba(96, 165, 250, 0.2);
 }
 
-
-
 .filter-label {
   @apply h-[48px] flex sm:hidden lg:flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-blue-200 text-base font-semibold rounded-l-2xl select-none tracking-wide w-[120px] min-w-[120px] max-w-[140px] transition-all duration-200;
 }
@@ -130,7 +128,7 @@ body {
 
 /* 使用伪元素实现壁纸背景，解决移动端滚动延迟问题 */
 html.wallpaper-active::before {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
@@ -156,7 +154,7 @@ html.wallpaper-active::before {
 
 /* 壁纸遮罩层 */
 html.wallpaper-active::after {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;

@@ -48,17 +48,20 @@ const GlobalWallpaperBackground: React.FC = () => {
   // 使用伪元素设置壁纸背景
   useEffect(() => {
     if (wallpaperEnabled && wallpaper?.url && showWallpaper) {
-      document.documentElement.style.setProperty('--wallpaper-url', `url("${wallpaper.url}")`);
-      document.documentElement.classList.add('wallpaper-active');
+      document.documentElement.style.setProperty(
+        "--wallpaper-url",
+        `url("${wallpaper.url}")`,
+      );
+      document.documentElement.classList.add("wallpaper-active");
     } else {
-      document.documentElement.style.removeProperty('--wallpaper-url');
-      document.documentElement.classList.remove('wallpaper-active');
+      document.documentElement.style.removeProperty("--wallpaper-url");
+      document.documentElement.classList.remove("wallpaper-active");
     }
 
     // 清理函数
     return () => {
-      document.documentElement.style.removeProperty('--wallpaper-url');
-      document.documentElement.classList.remove('wallpaper-active');
+      document.documentElement.style.removeProperty("--wallpaper-url");
+      document.documentElement.classList.remove("wallpaper-active");
     };
   }, [wallpaperEnabled, wallpaper?.url, showWallpaper]);
 
