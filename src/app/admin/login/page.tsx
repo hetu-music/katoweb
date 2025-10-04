@@ -73,7 +73,7 @@ export default function LoginPage() {
         {/* 浮动操作按钮组 - 仅壁纸控制，无返回顶部（登录页面不需要） */}
         <FloatingActionButtons
           showScrollTop={false}
-          onScrollToTop={() => {}} // 空函数，不会显示按钮
+          onScrollToTop={() => { }} // 空函数，不会显示按钮
           wallpaperEnabled={wallpaperEnabled}
           wallpaperLoading={wallpaperLoading}
           onWallpaperToggle={toggleWallpaper}
@@ -81,68 +81,69 @@ export default function LoginPage() {
           isHydrated={isHydrated}
         />
 
-        {/* 登录卡片 */}
-        <div className="w-full max-w-md">
+        {/* 统一的竖向长容器 */}
+        <div className="w-full max-w-md bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl transition-all duration-300 hover:bg-white/15">
           {/* 主标题区域 */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4 shadow-lg">
-              <LogIn className="w-8 h-8 text-white" />
+          <div className="text-center pt-10 pb-8 px-8">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl mb-6 shadow-xl">
+              <LogIn className="w-10 h-10 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2 tracking-wide">
+            <h1 className="text-4xl font-bold text-white mb-3 tracking-wide">
               管理后台
             </h1>
-            <p className="text-white/70 text-sm">
+            <p className="text-white/70 text-base">
               请使用您的管理员账户登录
             </p>
           </div>
 
           {/* 登录表单 */}
-          <form
-            onSubmit={handleLogin}
-            className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-8 shadow-2xl space-y-6 transition-all duration-300 hover:bg-white/15"
-          >
+          <form onSubmit={handleLogin} className="px-8 pb-8 space-y-6">
             {/* 邮箱输入框 */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               <label className="text-white/90 text-sm font-medium block">
                 邮箱地址
               </label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/50" />
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
+                  <Mail className="w-4 h-4 text-white/90" />
+                </div>
                 <input
                   type="email"
                   placeholder="请输入您的邮箱"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full h-14 pl-12 pr-4 rounded-xl border border-white/20 bg-white/10 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:bg-white/20 transition-all duration-200"
+                  className="w-full h-14 pl-14 pr-4 rounded-xl border border-white/30 bg-white/15 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:bg-white/25 transition-all duration-200"
                   required
                 />
               </div>
             </div>
 
             {/* 密码输入框 */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               <label className="text-white/90 text-sm font-medium block">
                 登录密码
               </label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/50" />
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
+                  <Lock className="w-4 h-4 text-white/90" />
+                </div>
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="请输入您的密码"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-14 pl-12 pr-12 rounded-xl border border-white/20 bg-white/10 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:bg-white/20 transition-all duration-200"
+                  className="w-full h-14 pl-14 pr-14 rounded-xl border border-white/30 bg-white/15 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:bg-white/25 transition-all duration-200"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors"
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 transition-all duration-200"
                 >
                   {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
+                    <EyeOff className="w-4 h-4 text-white/90" />
                   ) : (
-                    <Eye className="w-5 h-5" />
+                    <Eye className="w-4 h-4 text-white/90" />
                   )}
                 </button>
               </div>
@@ -150,24 +151,21 @@ export default function LoginPage() {
 
             {/* 错误信息 */}
             {error && (
-              <div className="bg-red-500/20 border border-red-400/30 rounded-xl p-4 text-red-200 text-sm text-center backdrop-blur-sm">
-                {error}
+              <div className="bg-red-500/20 border border-red-400/40 rounded-xl p-4 text-red-200 text-sm text-center backdrop-blur-sm">
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 bg-red-400/30 rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-red-300 rounded-full"></div>
+                  </div>
+                  <span>{error}</span>
+                </div>
               </div>
             )}
 
             {/* 按钮组 */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => router.push("/")}
-                className="flex-1 h-14 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 active:bg-white/30 text-white font-semibold rounded-xl border border-white/20 shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                <span>返回主页</span>
-              </button>
+            <div className="flex flex-col gap-3 pt-4">
               <button
                 type="submit"
-                className="flex-1 h-14 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 active:from-blue-700 active:to-purple-800 text-white font-semibold rounded-xl shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="w-full h-14 flex items-center justify-center gap-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 active:from-blue-700 active:to-purple-800 text-white font-semibold rounded-xl shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
                 disabled={loading}
               >
                 {loading ? (
@@ -182,11 +180,20 @@ export default function LoginPage() {
                   </>
                 )}
               </button>
+
+              <button
+                type="button"
+                onClick={() => router.push("/")}
+                className="w-full h-12 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 active:bg-white/30 text-white/90 font-medium rounded-xl border border-white/20 shadow-md transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>返回主页</span>
+              </button>
             </div>
           </form>
 
           {/* 底部提示 */}
-          <div className="text-center mt-6">
+          <div className="text-center pb-8 px-8">
             <p className="text-white/50 text-xs">
               登录即表示您同意遵守管理规范
             </p>
