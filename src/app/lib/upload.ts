@@ -25,18 +25,30 @@ export async function uploadCoverFile(
       method: 'PUT',
       headers: {
         'Content-Type': 'image/jpeg',
-        'Content-Length': buffer.length.toString(),
       },
       body: new Uint8Array(buffer),
     });
 
     if (!response.ok) {
-      throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
+      // 尝试解析错误响应
+      let errorMessage = `Upload failed: ${response.status} ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        if (errorData.error) {
+          errorMessage = errorData.error;
+        }
+      } catch {
+        // 如果无法解析JSON，使用默认错误消息
+      }
+      throw new Error(errorMessage);
     }
 
+    // 解析成功响应
+    const result = await response.json();
+    
     return {
       success: true,
-      coverUrl: uploadUrl,
+      coverUrl: result.url || uploadUrl, // 使用R2返回的URL，如果没有则使用原URL
     };
   } catch (error) {
     console.error('Upload error:', error);

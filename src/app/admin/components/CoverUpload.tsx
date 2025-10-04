@@ -68,12 +68,13 @@ export default function CoverUpload({
         body: formData,
       });
 
-      const result = await response.json();
-
       if (!response.ok) {
+        const result = await response.json();
         throw new Error(result.error || "上传失败");
       }
 
+      const result = await response.json();
+      
       setUploadStatus("success");
       setUploadMessage(result.message || "封面上传成功");
       onUploadSuccess?.(result.coverUrl);
