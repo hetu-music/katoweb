@@ -28,6 +28,7 @@ COPY --from=builder /app/next.config.ts ./next.config.ts
 COPY --from=builder /app/scripts ./scripts
 COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY --from=builder /app/eslint.config.mjs ./eslint.config.mjs
 
 # 只安装生产依赖，减少内存占用
 RUN pnpm install --prod --frozen-lockfile && pnpm store prune
