@@ -865,6 +865,7 @@ function renderInput(
               <CoverUpload
                 songId={typeof state.id === "number" ? state.id : undefined}
                 csrfToken={csrfToken}
+                hasExistingFile={state.hascover === true}
                 onUploadSuccess={() => {
                   console.log("Cover uploaded successfully");
                 }}
@@ -913,6 +914,7 @@ function renderInput(
               <ScoreUpload
                 songId={typeof state.id === "number" ? state.id : undefined}
                 csrfToken={csrfToken}
+                hasExistingFile={state.nmn_status === true}
                 onUploadSuccess={() => {
                   console.log("Score uploaded successfully");
                 }}

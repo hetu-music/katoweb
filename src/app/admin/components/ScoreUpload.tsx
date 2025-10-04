@@ -1,12 +1,13 @@
 "use client";
-import React, { useState, useRef } from "react";
-import { Upload, X, Check, AlertCircle } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { Upload, X, Check, AlertCircle, FileCheck, FileX } from "lucide-react";
 
 interface ScoreUploadProps {
   songId?: number;
   csrfToken: string;
   onUploadSuccess?: () => void;
   onUploadError?: (error: string) => void;
+  hasExistingFile?: boolean; // 是否已有文件
 }
 
 export default function ScoreUpload({
@@ -14,13 +15,46 @@ export default function ScoreUpload({
   csrfToken,
   onUploadSuccess,
   onUploadError,
+  hasExistingFile = false,
 }: ScoreUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
   const [uploadMessage, setUploadMessage] = useState("");
+  const [fileExists, setFileExists] = useState(hasExistingFile);
+  const [checkingFile, setCheckingFile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 检查文件是否存在
+  const checkFileExists = async (id: number) => {
+    if (!id) return false;
+    
+    setCheckingFile(true);
+    try {
+      const response = await fetch(`https://cover.hetu-music.com/nmn/${id}.jpg`, {
+        method: 'HEAD', // 只检查头部，不下载文件内容
+      });
+      const exists = response.ok;
+      setFileExists(exists);
+      return exists;
+    } catch (error) {
+      console.error('检查文件存在性失败:', error);
+      setFileExists(false);
+      return false;
+    } finally {
+      setCheckingFile(false);
+    }
+  };
+
+  // 当songId变化时检查文件
+  useEffect(() => {
+    if (songId) {
+      checkFileExists(songId);
+    } else {
+      setFileExists(false);
+    }
+  }, [songId]);
 
   const handleFileSelect = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -81,6 +115,7 @@ export default function ScoreUpload({
 
       setUploadStatus("success");
       setUploadMessage(result.message || "乐谱上传成功");
+      setFileExists(true); // 上传成功后更新文件存在状态
       onUploadSuccess?.();
 
       // 3秒后清除状态
@@ -114,7 +149,7 @@ export default function ScoreUpload({
 
   return (
     <div className="space-y-3">
-      {/* 上传按钮 */}
+      {/* 上传按钮和状态提示 */}
       <div className="flex items-center gap-3">
         <button
           type="button"
@@ -132,6 +167,28 @@ export default function ScoreUpload({
           <Upload size={16} />
           {uploading ? "上传中..." : "选择JPG文件"}
         </button>
+
+        {/* 文件状态提示 */}
+        {songId && (
+          <div className="flex items-center gap-2">
+            {checkingFile ? (
+              <span className="text-gray-400 text-xs flex items-center gap-1">
+                <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                检查中...
+              </span>
+            ) : fileExists ? (
+              <span className="text-green-400 text-xs flex items-center gap-1">
+                <FileCheck size={14} />
+                已有乐谱
+              </span>
+            ) : (
+              <span className="text-orange-400 text-xs flex items-center gap-1">
+                <FileX size={14} />
+                未上传
+              </span>
+            )}
+          </div>
+        )}
 
         {!songId && (
           <span className="text-yellow-400 text-xs">请先保存歌曲</span>
