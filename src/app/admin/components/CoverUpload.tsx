@@ -176,9 +176,7 @@ export default function CoverUpload({
       {/* 说明文字 */}
       <div className="text-xs text-gray-400 space-y-1">
         <div>• 只支持JPG格式的图片文件</div>
-        <div>• 文件大小不超过5MB</div>
-        <div>• 上传后将重命名为 {songId || "[歌曲ID]"}.jpg</div>
-        <div>• 封面将保存到 https://cover.hetu-music.com/{songId || "[歌曲ID]"}.jpg</div>
+        <div>• 文件大小不超过100MB</div>
       </div>
     </div>
   );
