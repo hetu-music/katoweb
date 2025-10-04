@@ -87,6 +87,8 @@ export async function getSongs(
     console.error("Supabase error:", error);
     throw new Error("Failed to fetch songs");
   }
+  
+  // 直接返回数据，不需要处理歌词转换（搜索时直接使用 LRC 歌词）
   return mapAndSortSongs(data);
 }
 

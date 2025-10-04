@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import type { SongDetail } from "../lib/types";
-import { mapAndSortSongs } from "../lib/utils";
+import { mapAndSortSongs, filterSongs } from "../lib/utils";
 
 export function useSongs(
   initialSongs: SongDetail[],
@@ -11,20 +11,16 @@ export function useSongs(
   const [error, setError] = useState<string | null>(initialError);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // 过滤
+  // 使用统一的 filterSongs 函数，只传入搜索词，其他筛选条件设为默认值
   const filteredSongs = useMemo(() => {
-    return songs.filter(
-      (song) =>
-        song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        song.album?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (song.lyricist &&
-          song.lyricist.some((l) =>
-            l.toLowerCase().includes(searchTerm.toLowerCase()),
-          )) ||
-        (song.composer &&
-          song.composer.some((c) =>
-            c.toLowerCase().includes(searchTerm.toLowerCase()),
-          )),
+    return filterSongs(
+      songs,
+      searchTerm,
+      "全部", // selectedType
+      "全部", // selectedYear
+      "全部", // selectedLyricist
+      "全部", // selectedComposer
+      "全部"  // selectedArranger
     );
   }, [songs, searchTerm]);
 

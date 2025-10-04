@@ -338,7 +338,7 @@ export default function AdminClientComponent({
             </div>
             <input
               type="text"
-              placeholder="搜索歌曲、专辑、作词、作曲..."
+              placeholder="搜索歌曲、专辑等..."
               onChange={(e) => setSearchTerm(e.target.value)}
               className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/15 transition-all duration-200 rounded-r-2xl border-l-0 min-w-0"
               style={{ marginLeft: "-1px" }}

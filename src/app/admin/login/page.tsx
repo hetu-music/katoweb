@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, ArrowLeft, LogIn, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, ArrowLeft, Feather, LogIn, Eye, EyeOff } from "lucide-react";
 
 import FloatingActionButtons from "../../components/FloatingActionButtons";
 
@@ -69,12 +69,12 @@ export default function LoginPage() {
           {/* 主标题区域 */}
           <div className="text-center pt-8 pb-6 px-6 sm:pt-10 sm:pb-8 sm:px-8">
             <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl mb-4 sm:mb-6 shadow-xl">
-              <LogIn className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+              <Feather className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3 tracking-wide">
-              管理后台
+              管理页面
             </h1>
-            <p className="text-white/70 text-base">请使用您的管理员账户登录</p>
+            <p className="text-white/70 text-base">请使用您的账户登录</p>
           </div>
 
           {/* 登录表单 */}
