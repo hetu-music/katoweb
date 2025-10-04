@@ -103,7 +103,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
-      coverUrl: uploadResult.coverUrl,
       message: "封面上传成功",
       fileName: `${songId}.jpg`
     });

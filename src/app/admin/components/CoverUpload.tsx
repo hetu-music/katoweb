@@ -5,7 +5,7 @@ import { Upload, X, Check, AlertCircle } from "lucide-react";
 interface CoverUploadProps {
   songId?: number;
   csrfToken: string;
-  onUploadSuccess?: (coverUrl: string) => void;
+  onUploadSuccess?: () => void;
   onUploadError?: (error: string) => void;
 }
 
@@ -77,7 +77,7 @@ export default function CoverUpload({
       
       setUploadStatus("success");
       setUploadMessage(result.message || "封面上传成功");
-      onUploadSuccess?.(result.coverUrl);
+      onUploadSuccess?.();
 
       // 3秒后清除状态
       setTimeout(() => {

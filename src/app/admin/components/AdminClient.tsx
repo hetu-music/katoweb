@@ -858,8 +858,8 @@ function renderInput(
               <CoverUpload
                 songId={typeof state.id === "number" ? state.id : undefined}
                 csrfToken={csrfToken}
-                onUploadSuccess={(coverUrl) => {
-                  console.log("Cover uploaded successfully:", coverUrl);
+                onUploadSuccess={() => {
+                  console.log("Cover uploaded successfully");
                 }}
                 onUploadError={(error) => {
                   console.error("Cover upload error:", error);

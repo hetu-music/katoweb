@@ -14,7 +14,7 @@ export async function uploadCoverFile(
   buffer: Buffer,
   songId: string,
   config: UploadConfig = coverUploadConfig
-): Promise<{ success: boolean; coverUrl?: string; error?: string }> {
+): Promise<{ success: boolean; error?: string }> {
   try {
     // 生成文件名和上传URL
     const fileName = `${songId}.jpg`;
@@ -43,12 +43,15 @@ export async function uploadCoverFile(
       throw new Error(errorMessage);
     }
 
-    // 解析成功响应
+    // 解析成功响应（验证上传成功）
     const result = await response.json();
-    
+
+    if (!result.success) {
+      throw new Error(result.error || 'Upload failed');
+    }
+
     return {
       success: true,
-      coverUrl: result.url || uploadUrl, // 使用R2返回的URL，如果没有则使用原URL
     };
   } catch (error) {
     console.error('Upload error:', error);
