@@ -30,9 +30,9 @@ const SongSchema = z.object({
   lyrics: z.string().max(10000).nullable().optional(),
   track: z.number().int().min(1).nullable().optional(),
   tracktotal: z.number().int().min(1).nullable().optional(),
-  kugolink: z.string().url().max(200).nullable().optional(),
-  qmlink: z.string().url().max(200).nullable().optional(),
-  nelink: z.string().url().max(200).nullable().optional(),
+  kugolink: z.url().max(200).nullable().optional(),
+  qmlink: z.url().max(200).nullable().optional(),
+  nelink: z.url().max(200).nullable().optional(),
   nmn_status: z.boolean().nullable().optional(),
 });
 
