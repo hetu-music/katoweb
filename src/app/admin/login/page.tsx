@@ -70,8 +70,8 @@ export default function LoginPage() {
       enabled={wallpaperEnabled}
     >
       <div className="min-h-screen flex items-center justify-center relative">
-        {/* 壁纸控制按钮 */}
-        <div className="fixed top-8 right-8 z-40">
+        {/* 壁纸控制按钮 - 右边中间 */}
+        <div className="wallpaper-controls-middle">
           <WallpaperControls
             enabled={wallpaperEnabled}
             isLoading={wallpaperLoading}

@@ -408,16 +408,18 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         )}
       </div>
 
-      {/* 固定按钮组 */}
-      <div className="fixed bottom-8 right-8 z-40 flex flex-col gap-3">
-        {/* 壁纸控制按钮 */}
+      {/* 壁纸控制按钮 - 右边中间 */}
+      <div className="wallpaper-controls-middle">
         <WallpaperControls
           enabled={wallpaperEnabled}
           isLoading={wallpaperLoading}
           onToggle={toggleWallpaper}
           onRefresh={refreshWallpaper}
         />
+      </div>
 
+      {/* 固定按钮组 - 右下角 */}
+      <div className="fixed bottom-8 right-8 z-40 flex flex-col gap-3">
         {/* 返回顶部按钮 - 带动画的显示/隐藏 */}
         <button
           onClick={scrollToTop}

@@ -130,4 +130,27 @@ body {
   .wallpaper-control-button svg {
     @apply w-5 h-5;
   }
+}/* 壁纸控
+制按钮位置优化 */
+.wallpaper-controls-middle {
+  @apply fixed right-8 top-1/2 -translate-y-1/2 z-40;
+}
+
+/* 移动端优化 */
+@media (max-width: 640px) {
+  .wallpaper-controls-middle {
+    @apply right-4 top-1/2;
+  }
+  
+  /* 确保按钮不会与其他元素重叠 */
+  .wallpaper-controls-middle .wallpaper-controls {
+    @apply gap-1;
+  }
+}
+
+/* 确保壁纸按钮在所有屏幕尺寸下都可见 */
+@media (max-height: 500px) {
+  .wallpaper-controls-middle {
+    @apply top-20 translate-y-0;
+  }
 }
