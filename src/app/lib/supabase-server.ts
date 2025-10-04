@@ -1,8 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-
-// 服务端 Supabase 客户端缓存
-const serverClientCache = new Map<string, any>();
+import type { NextRequest, NextResponse } from "next/server";
 
 /**
  * 创建服务端 Supabase 客户端，用于处理认证和 cookies
@@ -16,10 +14,6 @@ export async function createSupabaseServerClient() {
     throw new Error("Missing Supabase environment variables");
   }
 
-  // 对于服务端客户端，我们不能简单地缓存，因为每个请求的 cookies 都不同
-  // 但我们可以缓存客户端配置
-  const cacheKey = `${supabaseUrl}-${supabaseAnonKey}`;
-  
   const cookieStore = await cookies();
 
   return createServerClient(supabaseUrl, supabaseAnonKey, {
@@ -39,7 +33,7 @@ export async function createSupabaseServerClient() {
 /**
  * 创建用于 middleware 的 Supabase 客户端
  */
-export function createSupabaseMiddlewareClient(request: any, response: any) {
+export function createSupabaseMiddlewareClient(request: NextRequest, response: NextResponse) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
