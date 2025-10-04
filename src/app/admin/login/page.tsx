@@ -70,15 +70,10 @@ export default function LoginPage() {
   return (
     <WallpaperBackground>
       <div className="min-h-screen flex items-center justify-center relative p-4">
-        {/* 浮动操作按钮组 - 仅壁纸控制，无返回顶部（登录页面不需要） */}
+        {/* 浮动操作按钮组 - 仅返回顶部（登录页面不需要，所以不显示） */}
         <FloatingActionButtons
           showScrollTop={false}
           onScrollToTop={() => { }} // 空函数，不会显示按钮
-          wallpaperEnabled={wallpaperEnabled}
-          wallpaperLoading={wallpaperLoading}
-          onWallpaperToggle={toggleWallpaper}
-          onWallpaperRefresh={refreshWallpaper}
-          isHydrated={isHydrated}
         />
 
         {/* 统一的竖向长容器 */}

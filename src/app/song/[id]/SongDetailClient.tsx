@@ -411,11 +411,6 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         showScrollTop={showScrollTop}
         onScrollToTop={scrollToTop}
         onShare={handleShare}
-        wallpaperEnabled={wallpaperEnabled}
-        wallpaperLoading={wallpaperLoading}
-        onWallpaperToggle={toggleWallpaper}
-        onWallpaperRefresh={refreshWallpaper}
-        isHydrated={isHydrated}
       />
 
       {/* 图片放大模态框 */}
