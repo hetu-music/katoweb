@@ -35,7 +35,7 @@ async function getUserFromRequest(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
   let token: string | undefined;
   if (authHeader) {
-    const match = authHeader.match(/^Bearer ([A-Za-z0-9\-\._~\+\/]+=*)$/);
+    const match = authHeader.match(/^Bearer ([A-Za-z0-9\-._~+/]+=*)$/);
     if (match) {
       token = match[1];
     } else {

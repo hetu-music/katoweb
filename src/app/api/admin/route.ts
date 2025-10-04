@@ -70,7 +70,7 @@ async function getUserFromRequest(request: NextRequest) {
   let token: string | undefined;
   if (authHeader) {
     // 严格校验 Bearer token 格式
-    const match = authHeader.match(/^Bearer ([A-Za-z0-9\-\._~\+\/]+=*)$/);
+    const match = authHeader.match(/^Bearer ([A-Za-z0-9\-._~+/]+=*)$/);
     if (match) {
       token = match[1];
     } else {
