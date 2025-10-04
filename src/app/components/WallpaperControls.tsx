@@ -21,6 +21,7 @@ const WallpaperControls: React.FC<WallpaperControlsProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // 检测屏幕尺寸
   useEffect(() => {
@@ -32,6 +33,27 @@ const WallpaperControls: React.FC<WallpaperControlsProps> = ({
     window.addEventListener('resize', checkScreenSize);
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
+
+  // 点击外部区域关闭面板
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        // 清除延迟定时器
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+        setIsExpanded(false);
+      }
+    };
+
+    if (isExpanded) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isExpanded]);
 
   // 清理定时器
   useEffect(() => {
@@ -74,6 +96,7 @@ const WallpaperControls: React.FC<WallpaperControlsProps> = ({
 
   return (
     <div 
+      ref={containerRef}
       className="relative"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
