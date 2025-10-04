@@ -231,57 +231,27 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
           </div>
         )}
 
-        {/* 乐谱区块 */}
-        {song.nmn_status === true && (
-          <div className="block-panel mb-8">
-            <h3 className="block-panel-title mb-3">乐谱</h3>
-            <div className="block-panel-inner">
-              <div className="flex justify-center">
-                <Image
-                  src={getNmnUrl(song)}
-                  alt={`${song.title} - 乐谱`}
-                  width={800}
-                  height={600}
-                  className="max-w-full h-auto rounded-lg shadow-lg"
-                  style={{ objectFit: "contain" }}
-                  onError={(e) => {
-                    // 如果图片加载失败，隐藏图片并显示提示
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = "none";
-                    const parent = target.parentElement;
-                    if (parent) {
-                      parent.innerHTML = '<div class="text-gray-400 italic text-center py-8">乐谱暂时无法加载</div>';
-                    }
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* 歌词区块 */}
-        <div className="block-panel">
+        <div className="block-panel mb-8">
           <div className="flex items-center justify-between mb-3">
             <h3 className="block-panel-title mb-0">歌词</h3>
             {/* 歌词类型切换胶囊 */}
             <div className="flex bg-white/10 rounded-full p-1 border border-white/20">
               <button
                 onClick={() => setLyricsType("normal")}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                  lyricsType === "normal"
-                    ? "bg-white/20 text-white shadow-sm"
-                    : "text-white/70 hover:text-white/90"
-                }`}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${lyricsType === "normal"
+                  ? "bg-white/20 text-white shadow-sm"
+                  : "text-white/70 hover:text-white/90"
+                  }`}
               >
                 普通歌词
               </button>
               <button
                 onClick={() => setLyricsType("lrc")}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                  lyricsType === "lrc"
-                    ? "bg-white/20 text-white shadow-sm"
-                    : "text-white/70 hover:text-white/90"
-                }`}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${lyricsType === "lrc"
+                  ? "bg-white/20 text-white shadow-sm"
+                  : "text-white/70 hover:text-white/90"
+                  }`}
               >
                 LRC歌词
               </button>
@@ -306,6 +276,32 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
             )}
           </div>
         </div>
+
+        {/* 乐谱区块 */}
+        {song.nmn_status === true && (
+          <div className="block-panel">
+            <h3 className="block-panel-title mb-3">乐谱</h3>
+            <div className="bg-white/5 rounded-2xl p-6 border border-white/10 max-w-4xl mx-auto">
+              <Image
+                src={getNmnUrl(song)}
+                alt={`${song.title} - 乐谱`}
+                width={800}
+                height={600}
+                className="w-full h-auto rounded-lg bg-white"
+                style={{ objectFit: "contain" }}
+                onError={(e) => {
+                  // 如果图片加载失败，隐藏图片并显示提示
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = "none";
+                  const parent = target.parentElement;
+                  if (parent) {
+                    parent.innerHTML = '<div class="text-gray-400 italic text-center py-8">乐谱暂时无法加载</div>';
+                  }
+                }}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 固定按钮组 */}
