@@ -35,6 +35,17 @@ const SongFilters: React.FC<SongFiltersProps> = ({
   filterOptions,
   onTypeExplanationOpen,
 }) => {
+  // 处理选择后失去焦点
+  const handleSelectChange = (
+    setValue: (value: string) => void,
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    setValue(event.target.value);
+    // 选择完成后让下拉框失去焦点
+    setTimeout(() => {
+      event.target.blur();
+    }, 100);
+  };
   return (
     <div className="w-full flex flex-col sm:flex-row gap-3">
       {/* 类型筛选 */}
@@ -54,7 +65,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
         </div>
         <select
           value={selectedType}
-          onChange={(e) => setSelectedType(e.target.value)}
+          onChange={(e) => handleSelectChange(setSelectedType, e)}
           className="filter-select"
         >
           {filterOptions.allTypes.map((type) => (
@@ -69,7 +80,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
         <span className="filter-label">发行日期</span>
         <select
           value={selectedYear}
-          onChange={(e) => setSelectedYear(e.target.value)}
+          onChange={(e) => handleSelectChange(setSelectedYear, e)}
           className="filter-select"
         >
           {filterOptions.allYears.map((year) => (
@@ -88,7 +99,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
         <span className="filter-label">作词</span>
         <select
           value={selectedLyricist}
-          onChange={(e) => setSelectedLyricist(e.target.value)}
+          onChange={(e) => handleSelectChange(setSelectedLyricist, e)}
           className="filter-select"
         >
           {filterOptions.allLyricists.map((lyricist) => (
@@ -103,7 +114,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
         <span className="filter-label">作曲</span>
         <select
           value={selectedComposer}
-          onChange={(e) => setSelectedComposer(e.target.value)}
+          onChange={(e) => handleSelectChange(setSelectedComposer, e)}
           className="filter-select"
         >
           {filterOptions.allComposers.map((composer) => (
@@ -118,7 +129,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
         <span className="filter-label">编曲</span>
         <select
           value={selectedArranger}
-          onChange={(e) => setSelectedArranger(e.target.value)}
+          onChange={(e) => handleSelectChange(setSelectedArranger, e)}
           className="filter-select"
         >
           {filterOptions.allArrangers.map((arranger) => (

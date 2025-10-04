@@ -40,19 +40,44 @@ body {
 
 /* 筛选框样式 */
 .filter-container {
-  @apply flex items-center flex-1 min-w-0;
+  @apply flex items-center flex-1 min-w-0 relative rounded-2xl transition-all duration-200;
 }
 
+/* 当下拉框获得焦点时，整个容器显示增强的蓝色光圈效果 */
+.filter-container:focus-within {
+  box-shadow: 0 0 12px rgba(96, 165, 250, 0.2);
+}
+
+
+
 .filter-label {
-  @apply h-[48px] flex sm:hidden lg:flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-blue-200 text-base font-semibold rounded-l-2xl select-none tracking-wide w-[120px] min-w-[120px] max-w-[140px];
+  @apply h-[48px] flex sm:hidden lg:flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-blue-200 text-base font-semibold rounded-l-2xl select-none tracking-wide w-[120px] min-w-[120px] max-w-[140px] transition-all duration-200;
 }
 
 .filter-select {
-  @apply h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-l-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px];
+  @apply h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none appearance-none cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-l-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px] text-center font-medium transition-all duration-200;
 }
 
+/* 下拉框获得焦点时轻微变亮 */
+.filter-select:focus {
+  @apply bg-white/15;
+}
+
+/* 下拉选项样式优化 */
 .filter-option {
-  @apply bg-gray-800 text-white;
+  @apply bg-gray-900/95 text-white text-center py-2 px-4 hover:bg-blue-600/80 transition-colors duration-150;
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.filter-option:last-child {
+  border-bottom: none;
+}
+
+/* 为不同浏览器优化下拉菜单样式 */
+.filter-select option {
+  @apply bg-gray-900/95 text-white text-center py-2;
+  backdrop-filter: blur(8px);
 }
 
 /* 信息界面区块样式 */
@@ -93,6 +118,7 @@ body {
 .scrollbar-track-transparent::-webkit-scrollbar-track {
   background: transparent;
 }
+
 /* 壁纸相关样式 */
 .wallpaper-controls {
   @apply flex flex-col gap-3 items-center;
@@ -114,7 +140,8 @@ html.wallpaper-active::before {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: scroll; /* 关键：避免iOS Safari的fixed背景问题 */
+  background-attachment: scroll;
+  /* 关键：避免iOS Safari的fixed背景问题 */
   z-index: 0;
   opacity: 1;
   transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1);
@@ -164,7 +191,7 @@ html.wallpaper-active::after {
     /* 确保在移动设备上的性能 */
     -webkit-overflow-scrolling: touch;
   }
-  
+
   html.wallpaper-active::after {
     transform: translate3d(0, 0, 0);
     -webkit-transform: translate3d(0, 0, 0);
@@ -181,7 +208,8 @@ html {
 /* 防止页面切换时的白屏闪动 */
 html,
 body {
-  background-color: #581c87; /* 紫色作为备用颜色 */
+  background-color: #581c87;
+  /* 紫色作为备用颜色 */
   /* 确保页面切换时的平滑过渡 */
   transition: background-color 0.3s ease-out;
 }
@@ -218,7 +246,9 @@ body {
   .wallpaper-control-button svg {
     @apply w-5 h-5;
   }
-} /* 壁纸控
+}
+
+/* 壁纸控
 制按钮位置优化 */
 .wallpaper-controls-middle {
   @apply fixed right-8 top-1/2 -translate-y-1/2 z-40;
