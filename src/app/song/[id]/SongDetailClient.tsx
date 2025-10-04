@@ -148,38 +148,41 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         <div className="flex flex-col md:flex-row gap-8 items-start bg-white/10 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/20 mb-8">
           {/* 封面 */}
           <div className="w-full md:w-48 flex-shrink-0 flex justify-center md:justify-start">
-            <div
-              className={`group relative w-48 h-48 rounded-2xl overflow-hidden shadow-lg ${coverImageLoaded ? "cursor-pointer" : "cursor-default"
-                }`}
-              onClick={() =>
-                coverImageLoaded &&
-                openImageModal(
-                  getCoverUrl(song),
-                  song.album || song.title,
-                  `${song.title} - 封面`,
-                )
-              }
-            >
-              <Image
-                src={getCoverUrl(song)}
-                alt={song.album || song.title}
-                width={192}
-                height={192}
-                className={`w-full h-full object-cover transition-transform duration-200 ${coverImageLoaded ? "group-hover:scale-105" : ""
-                  }`}
-                style={{ objectFit: "cover" }}
-                priority
-                onError={handleCoverImageError}
-              />
-              {/* 悬停提示 */}
-              {coverImageLoaded && (
+            {coverImageLoaded ? (
+              <div
+                className="cursor-pointer group relative w-48 h-48 rounded-2xl overflow-hidden shadow-lg"
+                onClick={() =>
+                  openImageModal(
+                    getCoverUrl(song),
+                    song.album || song.title,
+                    `${song.title} - 封面`,
+                  )
+                }
+              >
+                <Image
+                  src={getCoverUrl(song)}
+                  alt={song.album || song.title}
+                  width={192}
+                  height={192}
+                  className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+                  style={{ objectFit: "cover" }}
+                  priority
+                  onError={handleCoverImageError}
+                />
+                {/* 悬停提示 */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
                   <span className="text-white text-sm font-medium bg-black/50 px-3 py-1 rounded-full">
                     点击放大
                   </span>
                 </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="w-48 px-4 py-6 rounded-2xl bg-gray-800/50 border border-gray-600/30 shadow-lg">
+                <div className="text-gray-300 text-sm text-center">
+                  封面暂时无法加载
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 歌曲主信息 */}
@@ -310,8 +313,8 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
               <button
                 onClick={() => setLyricsType("normal")}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${lyricsType === "normal"
-                    ? "bg-white/20 text-white shadow-sm"
-                    : "text-white/70 hover:text-white/90"
+                  ? "bg-white/20 text-white shadow-sm"
+                  : "text-white/70 hover:text-white/90"
                   }`}
               >
                 普通歌词
@@ -319,8 +322,8 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
               <button
                 onClick={() => setLyricsType("lrc")}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${lyricsType === "lrc"
-                    ? "bg-white/20 text-white shadow-sm"
-                    : "text-white/70 hover:text-white/90"
+                  ? "bg-white/20 text-white shadow-sm"
+                  : "text-white/70 hover:text-white/90"
                   }`}
               >
                 LRC歌词
@@ -352,42 +355,38 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
           <div className="block-panel">
             <h3 className="block-panel-title mb-3">乐谱</h3>
             <div className="bg-white/5 rounded-2xl p-6 border border-white/10 max-w-4xl mx-auto">
-              <div
-                className={`group relative rounded-lg overflow-hidden ${scoreImageLoaded ? "cursor-pointer" : "cursor-default"
-                  }`}
-                onClick={() =>
-                  scoreImageLoaded &&
-                  openImageModal(
-                    getNmnUrl(song),
-                    `${song.title} - 乐谱`,
-                    `${song.title} - 乐谱`,
-                  )
-                }
-              >
-                <Image
-                  src={getNmnUrl(song)}
-                  alt={`${song.title} - 乐谱`}
-                  width={800}
-                  height={600}
-                  className={`w-full h-auto bg-white transition-transform duration-200 ${scoreImageLoaded ? "group-hover:scale-[1.02]" : ""
-                    }`}
-                  style={{ objectFit: "contain" }}
-                  onError={handleScoreImageError}
-                />
-                {/* 悬停提示 */}
-                {scoreImageLoaded && (
+              {scoreImageLoaded ? (
+                <div
+                  className="cursor-pointer group relative rounded-lg overflow-hidden"
+                  onClick={() =>
+                    openImageModal(
+                      getNmnUrl(song),
+                      `${song.title} - 乐谱`,
+                      `${song.title} - 乐谱`,
+                    )
+                  }
+                >
+                  <Image
+                    src={getNmnUrl(song)}
+                    alt={`${song.title} - 乐谱`}
+                    width={800}
+                    height={600}
+                    className="w-full h-auto bg-white transition-transform duration-200 group-hover:scale-[1.02]"
+                    style={{ objectFit: "contain" }}
+                    onError={handleScoreImageError}
+                  />
+                  {/* 悬停提示 */}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
                     <span className="text-white text-sm font-medium bg-black/50 px-3 py-1 rounded-full">
                       点击放大
                     </span>
                   </div>
-                )}
-                {!scoreImageLoaded && (
-                  <div className="text-gray-400 italic text-center py-8">
-                    乐谱暂时无法加载
-                  </div>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="text-gray-400 italic text-center py-8">
+                  乐谱暂时无法加载
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -399,8 +398,8 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         <button
           onClick={scrollToTop}
           className={`p-3 rounded-full bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-300 ${showScrollTop
-              ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
-              : "opacity-0 scale-75 translate-y-2 pointer-events-none"
+            ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
+            : "opacity-0 scale-75 translate-y-2 pointer-events-none"
             }`}
           aria-label="返回顶部"
         >
