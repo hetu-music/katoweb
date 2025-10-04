@@ -82,13 +82,13 @@ export default function LoginPage() {
         />
 
         {/* 统一的竖向长容器 */}
-        <div className="w-full max-w-md bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl transition-all duration-300 hover:bg-white/15">
+        <div className="w-full max-w-sm sm:max-w-md bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl transition-all duration-300 hover:bg-white/15">
           {/* 主标题区域 */}
-          <div className="text-center pt-10 pb-8 px-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl mb-6 shadow-xl">
-              <LogIn className="w-10 h-10 text-white" />
+          <div className="text-center pt-8 pb-6 px-6 sm:pt-10 sm:pb-8 sm:px-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl mb-4 sm:mb-6 shadow-xl">
+              <LogIn className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
             </div>
-            <h1 className="text-4xl font-bold text-white mb-3 tracking-wide">
+            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3 tracking-wide">
               管理后台
             </h1>
             <p className="text-white/70 text-base">
@@ -97,7 +97,7 @@ export default function LoginPage() {
           </div>
 
           {/* 登录表单 */}
-          <form onSubmit={handleLogin} className="px-8 pb-8 space-y-6">
+          <form onSubmit={handleLogin} className="px-6 pb-6 space-y-5 sm:px-8 sm:pb-8 sm:space-y-6">
             {/* 邮箱输入框 */}
             <div className="space-y-3">
               <label className="text-white/90 text-sm font-medium block">
@@ -193,7 +193,7 @@ export default function LoginPage() {
           </form>
 
           {/* 底部提示 */}
-          <div className="text-center pb-8 px-8">
+          <div className="text-center pb-6 px-6 sm:pb-8 sm:px-8">
             <p className="text-white/50 text-xs">
               登录即表示您同意遵守管理规范
             </p>
