@@ -1,33 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
 import { verifyCSRFToken } from "@/app/lib/utils.server";
 import { uploadCoverFile, validateFile } from "@/app/lib/upload";
-
-// 创建支持 cookies 的 Supabase 客户端
-async function createSupabaseServerClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error("Missing Supabase environment variables");
-  }
-
-  const cookieStore = await cookies();
-
-  return createServerClient(supabaseUrl, supabaseAnonKey, {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll();
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          cookieStore.set(name, value, options);
-        });
-      },
-    },
-  });
-}
+import { createSupabaseServerClient } from "@/app/lib/supabase-server";
 
 async function getUserFromRequest(request: NextRequest) {
   const supabase = await createSupabaseServerClient();

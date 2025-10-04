@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
 import { verifyCSRFToken } from "@/app/lib/utils.server";
+import { createSupabaseServerClient } from "@/app/lib/supabase-server";
 
 export async function POST(request: NextRequest) {
   if (!(await verifyCSRFToken(request))) {
@@ -12,27 +11,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "缺少参数" }, { status: 400 });
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return NextResponse.json(
-      { error: "Server configuration error" },
-      { status: 500 },
-    );
-  }
-  const cookieStore = await cookies();
-  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll();
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          cookieStore.set(name, value, options);
-        });
-      },
-    },
-  });
+  try {
+    const supabase = await createSupabaseServerClient();
 
   // 获取当前用户
   const {
@@ -58,15 +38,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "旧密码错误" }, { status: 400 });
   }
 
-  // 修改密码
-  const { error: updateError } = await supabase.auth.updateUser({
-    password: newPassword,
-  });
-  if (updateError) {
+    // 修改密码
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+    if (updateError) {
+      return NextResponse.json(
+        { error: updateError.message || "修改失败" },
+        { status: 400 },
+      );
+    }
+    return NextResponse.json({ success: true });
+  } catch (error) {
     return NextResponse.json(
-      { error: updateError.message || "修改失败" },
-      { status: 400 },
+      { error: "Server configuration error" },
+      { status: 500 },
     );
   }
-  return NextResponse.json({ success: true });
 }
