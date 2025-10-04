@@ -10,7 +10,7 @@ import { typeColorMap, genreColorMap } from "../../lib/constants";
 import ImageModal from "../../components/ImageModal";
 import WallpaperBackground from "../../components/WallpaperBackground";
 import FloatingActionButtons from "../../components/FloatingActionButtons";
-import { useWallpaper } from "../../context/WallpaperContext";
+
 
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -29,9 +29,6 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const [coverImageLoaded, setCoverImageLoaded] = useState(true);
   const [scoreImageLoaded, setScoreImageLoaded] = useState(true);
   const router = useRouter();
-
-  // 壁纸功能 - 只保留实际使用的变量
-  const {} = useWallpaper();
 
   // scrollToTop 函数
   const scrollToTop = useCallback(() => {

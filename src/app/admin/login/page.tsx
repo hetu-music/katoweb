@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { Mail, Lock, ArrowLeft, LogIn, Eye, EyeOff } from "lucide-react";
 import WallpaperBackground from "../../components/WallpaperBackground";
 import FloatingActionButtons from "../../components/FloatingActionButtons";
-import { useWallpaper } from "../../context/WallpaperContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -13,9 +12,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-
-  // 壁纸功能 - 只保留实际使用的变量
-  const {} = useWallpaper();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
