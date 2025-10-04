@@ -628,29 +628,31 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
             <Share className="w-6 h-6" />
           </button>
 
-          {/* 返回顶部按钮 - 滚动时显示 */}
-          {showScrollTop && (
-            <button
-              onClick={scrollToTop}
-              className="p-3 rounded-full bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200"
-              aria-label="返回顶部"
+          {/* 返回顶部按钮 - 带动画的显示/隐藏 */}
+          <button
+            onClick={scrollToTop}
+            className={`p-3 rounded-full bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-300 ${
+              showScrollTop 
+                ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' 
+                : 'opacity-0 scale-75 translate-y-2 pointer-events-none'
+            }`}
+            aria-label="返回顶部"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-6 h-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M5 15l7-7 7 7"
-                />
-              </svg>
-            </button>
-          )}
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M5 15l7-7 7 7"
+              />
+            </svg>
+          </button>
         </div>
       </div>
     </div>

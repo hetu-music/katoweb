@@ -655,16 +655,17 @@ export default function AdminClientComponent({
         </div>
       ) : null}
 
-      {/* Scroll to Top Button */}
-      {showScrollTop && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-8 right-8 z-40 p-3 rounded-full bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200"
-          aria-label="返回顶部"
-        >
-          <ArrowUp size={24} />
-        </button>
-      )}
+      {/* Scroll to Top Button - 带动画的显示/隐藏 */}
+      <button
+        onClick={scrollToTop}
+        className={`fixed bottom-8 right-8 z-40 p-3 rounded-full bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-300 ${showScrollTop
+          ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
+          : 'opacity-0 scale-75 translate-y-2 pointer-events-none'
+          }`}
+        aria-label="返回顶部"
+      >
+        <ArrowUp size={24} />
+      </button>
 
       {/* 通知模态框 */}
       {showNotification && (
