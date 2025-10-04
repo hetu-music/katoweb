@@ -231,6 +231,13 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                     关于
                   </button>
                   <div className="flex items-center space-x-4">
+                    <WallpaperControls
+                      enabled={wallpaperEnabled}
+                      isLoading={wallpaperLoading}
+                      onToggle={toggleWallpaper}
+                      onRefresh={refreshWallpaper}
+                      isHydrated={isHydrated}
+                    />
                     <button
                       onClick={() =>
                         setViewMode(viewMode === "grid" ? "list" : "grid")
@@ -243,13 +250,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                         <Grid size={20} />
                       )}
                     </button>
-                    <WallpaperControls
-                      enabled={wallpaperEnabled}
-                      isLoading={wallpaperLoading}
-                      onToggle={toggleWallpaper}
-                      onRefresh={refreshWallpaper}
-                      isHydrated={isHydrated}
-                    />
                   </div>
                 </div>
                 {/* 大屏下关于按钮 */}
@@ -260,8 +260,15 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   关于
                 </button>
               </div>
-              {/* 大屏下视图切换按钮和壁纸控制 */}
+              {/* 大屏下壁纸控制和视图切换按钮 */}
               <div className="hidden sm:flex items-center space-x-4">
+                <WallpaperControls
+                  enabled={wallpaperEnabled}
+                  isLoading={wallpaperLoading}
+                  onToggle={toggleWallpaper}
+                  onRefresh={refreshWallpaper}
+                  isHydrated={isHydrated}
+                />
                 <button
                   onClick={() =>
                     setViewMode(viewMode === "grid" ? "list" : "grid")
@@ -274,13 +281,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                     <Grid size={20} />
                   )}
                 </button>
-                <WallpaperControls
-                  enabled={wallpaperEnabled}
-                  isLoading={wallpaperLoading}
-                  onToggle={toggleWallpaper}
-                  onRefresh={refreshWallpaper}
-                  isHydrated={isHydrated}
-                />
               </div>
             </div>
 
