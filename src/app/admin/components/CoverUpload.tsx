@@ -34,9 +34,6 @@ export default function CoverUpload({
     try {
       const response = await fetch(`https://cover.hetu-music.com/cover/${id}.jpg`, {
         method: 'HEAD', // 只检查头部，不下载文件内容
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-        },
       });
 
       // 根据R2存储的设置：存在返回200，不存在返回404
