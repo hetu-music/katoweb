@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { RefreshCw, Image, ImageOff, Settings } from 'lucide-react';
 
 interface WallpaperControlsProps {
@@ -19,6 +19,53 @@ const WallpaperControls: React.FC<WallpaperControlsProps> = ({
   isHydrated = true,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 检测屏幕尺寸
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsLargeScreen(window.innerWidth >= 640); // sm breakpoint
+    };
+    
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  // 清理定时器
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleMouseEnter = () => {
+    if (isLargeScreen) {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      setIsExpanded(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isLargeScreen) {
+      // 延迟 800ms 后消失
+      timeoutRef.current = setTimeout(() => {
+        setIsExpanded(false);
+      }, 500);
+    }
+  };
+
+  const handleClick = () => {
+    if (!isLargeScreen) {
+      // 小屏幕使用点击切换
+      setIsExpanded(!isExpanded);
+    }
+  };
 
   // 在 hydration 完成之前不渲染，避免 hydration 错误
   if (!isHydrated) {
@@ -28,12 +75,12 @@ const WallpaperControls: React.FC<WallpaperControlsProps> = ({
   return (
     <div 
       className="relative"
-      onMouseEnter={() => setIsExpanded(true)}
-      onMouseLeave={() => setIsExpanded(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {/* 主触发按钮 - 与视图切换按钮样式一致 */}
       <button
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={handleClick}
         className="p-2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all duration-200"
         aria-label="壁纸设置"
         title="壁纸设置"
@@ -42,10 +89,14 @@ const WallpaperControls: React.FC<WallpaperControlsProps> = ({
       </button>
 
       {/* 展开的控制面板 */}
-      <div className={`absolute top-12 right-0 flex flex-row gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-3 shadow-lg transition-all duration-300 z-50 ${isExpanded
-        ? 'opacity-100 scale-100 pointer-events-auto'
-        : 'opacity-0 scale-95 pointer-events-none'
-        }`}>
+      <div 
+        className={`absolute top-12 right-0 flex flex-row gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-3 shadow-lg transition-all duration-300 z-50 ${isExpanded
+          ? 'opacity-100 scale-100 pointer-events-auto'
+          : 'opacity-0 scale-95 pointer-events-none'
+        }`}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
         {/* 刷新壁纸按钮 */}
         <button
           onClick={onRefresh}
