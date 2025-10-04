@@ -8,7 +8,6 @@ import {
   X,
   Eye,
   EyeOff,
-  ArrowUp,
   Bell,
 } from "lucide-react";
 import type { Song, SongDetail, SongFieldConfig } from "../../lib/types";
@@ -18,6 +17,7 @@ import {
   validateField,
 } from "../../lib/utils";
 import { songFields, genreColorMap, typeColorMap } from "../../lib/constants";
+import FloatingActionButtons from "../../components/FloatingActionButtons";
 import { apiCreateSong, apiUpdateSong } from "../../lib/api";
 import { useSongs } from "../../hooks/useSongs";
 import { useAuth } from "../../hooks/useAuth";
@@ -661,18 +661,11 @@ export default function AdminClientComponent({
         </div>
       ) : null}
 
-      {/* Scroll to Top Button - 带动画的显示/隐藏 */}
-      <button
-        onClick={scrollToTop}
-        className={`fixed bottom-8 right-8 z-40 p-3 rounded-full bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-300 ${
-          showScrollTop
-            ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
-            : "opacity-0 scale-75 translate-y-2 pointer-events-none"
-        }`}
-        aria-label="返回顶部"
-      >
-        <ArrowUp size={24} />
-      </button>
+      {/* 浮动操作按钮组 - 仅返回顶部 */}
+      <FloatingActionButtons
+        showScrollTop={showScrollTop}
+        onScrollToTop={scrollToTop}
+      />
 
       {/* 通知模态框 */}
       {showNotification && (
@@ -865,6 +858,7 @@ function renderInput(
               <CoverUpload
                 songId={typeof state.id === "number" ? state.id : undefined}
                 csrfToken={csrfToken}
+                hasExistingFile={state.hascover === true}
                 onUploadSuccess={() => {
                   console.log("Cover uploaded successfully");
                 }}
@@ -900,10 +894,10 @@ function renderInput(
             className={baseInputClass}
           >
             <option value="false" className="filter-option">
-              否
+              无乐谱
             </option>
             <option value="true" className="filter-option">
-              是
+              有乐谱
             </option>
           </select>
 
@@ -913,6 +907,7 @@ function renderInput(
               <ScoreUpload
                 songId={typeof state.id === "number" ? state.id : undefined}
                 csrfToken={csrfToken}
+                hasExistingFile={state.nmn_status === true}
                 onUploadSuccess={() => {
                   console.log("Score uploaded successfully");
                 }}

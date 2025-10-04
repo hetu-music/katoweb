@@ -4,6 +4,9 @@ body {
   margin: 0;
   padding: 0;
   font-family: Arial, Helvetica, sans-serif;
+  /* 确保页面切换时有一致的背景 */
+  background: linear-gradient(135deg, #581c87 0%, #1e3a8a 50%, #312e81 100%);
+  background-attachment: fixed;
 }
 
 /* 触摸动画，仅在触摸设备生效 */
@@ -89,4 +92,141 @@ body {
 
 .scrollbar-track-transparent::-webkit-scrollbar-track {
   background: transparent;
+}
+/* 壁纸相关样式 */
+.wallpaper-controls {
+  @apply flex flex-col gap-3 items-center;
+}
+
+.wallpaper-control-button {
+  @apply p-3 rounded-full shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200 w-12 h-12 flex items-center justify-center;
+}
+
+
+
+/* 壁纸背景过渡效果 */
+.wallpaper-background-image {
+  transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity;
+}
+
+.wallpaper-overlay {
+  @apply absolute inset-0 bg-black/15;
+  transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 确保壁纸图片清晰显示 */
+.wallpaper-image {
+  @apply object-cover w-full h-full;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  transition: transform 0.3s ease-out;
+}
+
+/* 防止图片加载时的闪动 */
+.wallpaper-image[data-loaded="false"] {
+  opacity: 0;
+}
+
+.wallpaper-image[data-loaded="true"] {
+  opacity: 1;
+}
+
+/* 页面切换过渡优化 */
+html {
+  /* 确保根元素也有背景，防止闪动 */
+  background: linear-gradient(135deg, #581c87 0%, #1e3a8a 50%, #312e81 100%);
+  background-attachment: fixed;
+}
+
+/* 防止页面切换时的白屏闪动 */
+html, body {
+  background-color: #581c87; /* 紫色作为备用颜色 */
+  /* 确保页面切换时的平滑过渡 */
+  transition: background-color 0.3s ease-out;
+}
+
+/* 页面过渡动画 */
+.page-transition {
+  @apply transition-opacity duration-300 ease-in-out;
+}
+
+.page-transition-enter {
+  @apply opacity-0;
+}
+
+.page-transition-enter-active {
+  @apply opacity-100;
+}
+
+/* 确保全局背景始终可见 */
+#__next {
+  min-height: 100vh;
+  background: transparent;
+}
+
+/* 响应式壁纸控制按钮布局 */
+@media (max-width: 640px) {
+  .wallpaper-controls {
+    @apply gap-2;
+  }
+  
+  .wallpaper-control-button {
+    @apply w-10 h-10;
+  }
+  
+  .wallpaper-control-button svg {
+    @apply w-5 h-5;
+  }
+}/* 壁纸控
+制按钮位置优化 */
+.wallpaper-controls-middle {
+  @apply fixed right-8 top-1/2 -translate-y-1/2 z-40;
+}
+
+/* 右下角浮动按钮组样式 */
+.floating-buttons-bottom {
+  @apply fixed bottom-8 right-8 z-40 flex flex-col gap-3 items-center;
+}
+
+/* 浮动操作按钮统一样式 */
+.floating-action-button {
+  @apply w-12 h-12 flex items-center justify-center rounded-full shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-300;
+}
+
+.floating-action-icon {
+  @apply w-6 h-6;
+}
+
+/* 移动端优化 */
+@media (max-width: 640px) {
+  .wallpaper-controls-middle {
+    @apply right-4 top-1/2;
+  }
+  
+  /* 确保按钮不会与其他元素重叠 */
+  .wallpaper-controls-middle .wallpaper-controls {
+    @apply gap-2;
+  }
+  
+  /* 移动端右下角按钮组对齐 */
+  .floating-buttons-bottom {
+    @apply right-4 bottom-6 gap-2;
+  }
+  
+  /* 移动端浮动按钮大小调整 */
+  .floating-action-button {
+    @apply w-10 h-10;
+  }
+  
+  .floating-action-icon {
+    @apply w-5 h-5;
+  }
+}
+
+/* 确保壁纸按钮在所有屏幕尺寸下都可见 */
+@media (max-height: 500px) {
+  .wallpaper-controls-middle {
+    @apply top-20 translate-y-0;
+  }
 }

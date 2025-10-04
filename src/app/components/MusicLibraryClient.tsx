@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import { Search, Grid, List, XCircle, Share } from "lucide-react";
+import { Search, Grid, List, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MusicLibraryClientProps, SongDetail } from "../lib/types";
@@ -15,6 +15,10 @@ import { typeColorMap, genreColorMap } from "../lib/constants";
 import About from "./About";
 import TypeExplanation from "./TypeExplanation";
 import SongFilters from "./SongFilters";
+import WallpaperBackground from "./WallpaperBackground";
+import WallpaperControls from "./WallpaperControls";
+import FloatingActionButtons from "./FloatingActionButtons";
+import { useWallpaper } from "../context/WallpaperContext";
 
 const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   initialSongsData,
@@ -57,6 +61,15 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   const hasRestoredScroll = useRef(false);
   const [restoringScroll, setRestoringScroll] = useState(true);
   const [typeExplanationOpen, setTypeExplanationOpen] = useState(false);
+
+  // 壁纸功能
+  const {
+    isLoading: wallpaperLoading,
+    refreshWallpaper,
+    wallpaperEnabled,
+    toggleWallpaper,
+    isHydrated,
+  } = useWallpaper();
 
   const songsData = initialSongsData;
 
@@ -187,7 +200,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   ]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <WallpaperBackground>
       <div
         style={{ opacity: restoringScroll ? 0 : 1, transition: "opacity 0.2s" }}
       >
@@ -215,18 +228,27 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   >
                     关于
                   </button>
-                  <button
-                    onClick={() =>
-                      setViewMode(viewMode === "grid" ? "list" : "grid")
-                    }
-                    className="h-10 w-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all duration-200"
-                  >
-                    {viewMode === "grid" ? (
-                      <List size={20} />
-                    ) : (
-                      <Grid size={20} />
-                    )}
-                  </button>
+                  <div className="flex items-center space-x-4">
+                    <WallpaperControls
+                      enabled={wallpaperEnabled}
+                      isLoading={wallpaperLoading}
+                      onToggle={toggleWallpaper}
+                      onRefresh={refreshWallpaper}
+                      isHydrated={isHydrated}
+                    />
+                    <button
+                      onClick={() =>
+                        setViewMode(viewMode === "grid" ? "list" : "grid")
+                      }
+                      className="h-10 w-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all duration-200"
+                    >
+                      {viewMode === "grid" ? (
+                        <List size={20} />
+                      ) : (
+                        <Grid size={20} />
+                      )}
+                    </button>
+                  </div>
                 </div>
                 {/* 大屏下关于按钮 */}
                 <button
@@ -236,8 +258,15 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   关于
                 </button>
               </div>
-              {/* 大屏下视图切换按钮 */}
+              {/* 大屏下壁纸控制和视图切换按钮 */}
               <div className="hidden sm:flex items-center space-x-4">
+                <WallpaperControls
+                  enabled={wallpaperEnabled}
+                  isLoading={wallpaperLoading}
+                  onToggle={toggleWallpaper}
+                  onRefresh={refreshWallpaper}
+                  isHydrated={isHydrated}
+                />
                 <button
                   onClick={() =>
                     setViewMode(viewMode === "grid" ? "list" : "grid")
@@ -328,42 +357,42 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   selectedLyricist !== "全部" ||
                   selectedComposer !== "全部" ||
                   selectedArranger !== "全部") && (
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-3 py-1.5 shadow-sm min-h-[32px]">
-                      <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></div>
-                      <span className="text-amber-200 font-medium text-xs">
-                        已应用筛选
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setSearchTerm("");
-                        setSelectedType("全部");
-                        setSelectedYear("全部");
-                        setSelectedLyricist("全部");
-                        setSelectedComposer("全部");
-                        setSelectedArranger("全部");
-                      }}
-                      className="flex items-center gap-1.5 bg-gradient-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-red-300/30 rounded-full px-3 py-1.5 text-red-200 hover:text-red-100 hover:bg-gradient-to-r hover:from-red-500/30 hover:to-pink-500/30 transition-all duration-200 text-xs font-medium shadow-sm active:scale-95 touch-manipulation min-h-[32px]"
-                      title="清除所有筛选"
-                    >
-                      <svg
-                        className="w-3 h-3"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-3 py-1.5 shadow-sm min-h-[32px]">
+                        <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></div>
+                        <span className="text-amber-200 font-medium text-xs">
+                          已应用筛选
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setSearchTerm("");
+                          setSelectedType("全部");
+                          setSelectedYear("全部");
+                          setSelectedLyricist("全部");
+                          setSelectedComposer("全部");
+                          setSelectedArranger("全部");
+                        }}
+                        className="flex items-center gap-1.5 bg-gradient-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-red-300/30 rounded-full px-3 py-1.5 text-red-200 hover:text-red-100 hover:bg-gradient-to-r hover:from-red-500/30 hover:to-pink-500/30 transition-all duration-200 text-xs font-medium shadow-sm active:scale-95 touch-manipulation min-h-[32px]"
+                        title="清除所有筛选"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                      <span>清除</span>
-                    </button>
-                  </div>
-                )}
+                        <svg
+                          className="w-3 h-3"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                        <span>清除</span>
+                      </button>
+                    </div>
+                  )}
               </div>
             </div>
           </div>
@@ -617,45 +646,14 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
           )}
         </div>
 
-        {/* 固定按钮组 */}
-        <div className="fixed bottom-8 right-8 z-40 flex flex-col gap-3">
-          {/* 返回顶部按钮 - 带动画的显示/隐藏 */}
-          <button
-            onClick={scrollToTop}
-            className={`p-3 rounded-full bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-300 ${
-              showScrollTop
-                ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
-                : "opacity-0 scale-75 translate-y-2 pointer-events-none"
-            }`}
-            aria-label="返回顶部"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-6 h-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M5 15l7-7 7 7"
-              />
-            </svg>
-          </button>
-
-          {/* 分享按钮 - 始终显示 */}
-          <button
-            onClick={handleShare}
-            className="p-3 rounded-full bg-gradient-to-br from-green-600 via-emerald-600 to-teal-600 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200"
-            aria-label="分享页面"
-          >
-            <Share className="w-6 h-6" />
-          </button>
-        </div>
+        {/* 浮动操作按钮组 */}
+        <FloatingActionButtons
+          showScrollTop={showScrollTop}
+          onScrollToTop={scrollToTop}
+          onShare={handleShare}
+        />
       </div>
-    </div>
+    </WallpaperBackground>
   );
 };
 
