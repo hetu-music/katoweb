@@ -619,15 +619,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
         {/* 固定按钮组 */}
         <div className="fixed bottom-8 right-8 z-40 flex flex-col gap-3">
-          {/* 分享按钮 - 始终显示 */}
-          <button
-            onClick={handleShare}
-            className="p-3 rounded-full bg-gradient-to-br from-green-600 via-emerald-600 to-teal-600 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200"
-            aria-label="分享页面"
-          >
-            <Share className="w-6 h-6" />
-          </button>
-
           {/* 返回顶部按钮 - 带动画的显示/隐藏 */}
           <button
             onClick={scrollToTop}
@@ -652,6 +643,15 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                 d="M5 15l7-7 7 7"
               />
             </svg>
+          </button>
+
+          {/* 分享按钮 - 始终显示 */}
+          <button
+            onClick={handleShare}
+            className="p-3 rounded-full bg-gradient-to-br from-green-600 via-emerald-600 to-teal-600 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200"
+            aria-label="分享页面"
+          >
+            <Share className="w-6 h-6" />
           </button>
         </div>
       </div>
