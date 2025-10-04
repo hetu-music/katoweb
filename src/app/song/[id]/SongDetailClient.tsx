@@ -291,7 +291,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${lyricsType === "normal"
                   ? "bg-white/20 text-white shadow-sm"
                   : "text-white/70 hover:text-white/90"
-                  }`}
+                }`}
               >
                 普通歌词
               </button>
@@ -300,7 +300,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${lyricsType === "lrc"
                   ? "bg-white/20 text-white shadow-sm"
                   : "text-white/70 hover:text-white/90"
-                  }`}
+                }`}
               >
                 LRC歌词
               </button>
@@ -376,9 +376,9 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         <button
           onClick={scrollToTop}
           className={`p-3 rounded-full bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-300 ${
-            showScrollTop 
-              ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' 
-              : 'opacity-0 scale-75 translate-y-2 pointer-events-none'
+            showScrollTop
+              ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
+              : "opacity-0 scale-75 translate-y-2 pointer-events-none"
           }`}
           aria-label="返回顶部"
         >

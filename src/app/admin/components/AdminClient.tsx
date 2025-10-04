@@ -557,9 +557,9 @@ export default function AdminClientComponent({
           <div
             className={`relative max-w-sm w-full p-6 rounded-2xl shadow-2xl border-2 backdrop-blur-md transform transition-all duration-300 animate-in zoom-in-95 slide-in-from-bottom-2
             ${addResultMessage === "成功" || editResultMessage === "成功"
-                ? "bg-gradient-to-br from-green-500/90 to-emerald-600/90 border-green-400/60 text-white"
-                : "bg-gradient-to-br from-red-500/90 to-red-600/90 border-red-400/60 text-white"
-              }
+          ? "bg-gradient-to-br from-green-500/90 to-emerald-600/90 border-green-400/60 text-white"
+          : "bg-gradient-to-br from-red-500/90 to-red-600/90 border-red-400/60 text-white"
+        }
           `}
           >
             {/* 装饰性背景元素 */}
@@ -571,7 +571,7 @@ export default function AdminClientComponent({
                 className={`w-16 h-16 rounded-full flex items-center justify-center ${addResultMessage === "成功" || editResultMessage === "成功"
                   ? "bg-green-400/30 border-2 border-green-300/50"
                   : "bg-red-400/30 border-2 border-red-300/50"
-                  }`}
+                }`}
               >
                 {addResultMessage === "成功" || editResultMessage === "成功" ? (
                   <svg
@@ -611,7 +611,7 @@ export default function AdminClientComponent({
                   className={`text-xl font-bold mb-2 ${addResultMessage === "成功" || editResultMessage === "成功"
                     ? "text-green-100"
                     : "text-red-100"
-                    }`}
+                  }`}
                 >
                   {addResultMessage === "成功" || editResultMessage === "成功"
                     ? "操作成功"
@@ -621,7 +621,7 @@ export default function AdminClientComponent({
                   className={`text-sm opacity-90 ${addResultMessage === "成功" || editResultMessage === "成功"
                     ? "text-green-200"
                     : "text-red-200"
-                    }`}
+                  }`}
                 >
                   {addResultMessage || editResultMessage}
                 </p>
@@ -637,7 +637,7 @@ export default function AdminClientComponent({
               className={`absolute top-3 right-3 p-1 rounded-full hover:bg-white/20 transition-colors duration-200 ${addResultMessage === "成功" || editResultMessage === "成功"
                 ? "text-green-200"
                 : "text-red-200"
-                }`}
+              }`}
             >
               <X size={16} />
             </button>
@@ -648,7 +648,7 @@ export default function AdminClientComponent({
                 className={`h-full transition-all duration-3000 ease-linear ${addResultMessage === "成功" || editResultMessage === "成功"
                   ? "bg-green-300"
                   : "bg-red-300"
-                  }`}
+                }`}
               ></div>
             </div>
           </div>
@@ -659,9 +659,9 @@ export default function AdminClientComponent({
       <button
         onClick={scrollToTop}
         className={`fixed bottom-8 right-8 z-40 p-3 rounded-full bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-300 ${showScrollTop
-          ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
-          : 'opacity-0 scale-75 translate-y-2 pointer-events-none'
-          }`}
+          ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
+          : "opacity-0 scale-75 translate-y-2 pointer-events-none"
+        }`}
         aria-label="返回顶部"
       >
         <ArrowUp size={24} />

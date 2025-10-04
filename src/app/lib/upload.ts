@@ -6,14 +6,14 @@ export interface UploadConfig {
 
 export const coverUploadConfig: UploadConfig = {
   maxFileSize: 100 * 1024 * 1024,
-  allowedTypes: ['image/jpeg', 'image/jpg'],
-  baseUrl: 'https://cover.hetu-music.com',
+  allowedTypes: ["image/jpeg", "image/jpg"],
+  baseUrl: "https://cover.hetu-music.com",
 };
 
 export const scoreUploadConfig: UploadConfig = {
   maxFileSize: 50 * 1024 * 1024,
-  allowedTypes: ['image/jpeg', 'image/jpg'],
-  baseUrl: 'https://cover.hetu-music.com/nmn',
+  allowedTypes: ["image/jpeg", "image/jpg"],
+  baseUrl: "https://cover.hetu-music.com/nmn",
 };
 
 export async function uploadCoverFile(
@@ -28,9 +28,9 @@ export async function uploadCoverFile(
 
     // 直接上传到R2存储
     const response = await fetch(uploadUrl, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'Content-Type': 'image/jpeg',
+        "Content-Type": "image/jpeg",
       },
       body: new Uint8Array(buffer),
     });
@@ -53,17 +53,17 @@ export async function uploadCoverFile(
     const result = await response.json();
 
     if (!result.success) {
-      throw new Error(result.error || 'Upload failed');
+      throw new Error(result.error || "Upload failed");
     }
 
     return {
       success: true,
     };
   } catch (error) {
-    console.error('Upload error:', error);
+    console.error("Upload error:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Upload failed',
+      error: error instanceof Error ? error.message : "Upload failed",
     };
   }
 }
@@ -80,9 +80,9 @@ export async function uploadScoreFile(
 
     // 直接上传到R2存储
     const response = await fetch(uploadUrl, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'Content-Type': 'image/jpeg',
+        "Content-Type": "image/jpeg",
       },
       body: new Uint8Array(buffer),
     });
@@ -105,17 +105,17 @@ export async function uploadScoreFile(
     const result = await response.json();
 
     if (!result.success) {
-      throw new Error(result.error || 'Upload failed');
+      throw new Error(result.error || "Upload failed");
     }
 
     return {
       success: true,
     };
   } catch (error) {
-    console.error('Upload score error:', error);
+    console.error("Upload score error:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Upload failed',
+      error: error instanceof Error ? error.message : "Upload failed",
     };
   }
 }
@@ -125,10 +125,10 @@ export function validateFile(
   config: UploadConfig = coverUploadConfig
 ): { valid: boolean; error?: string } {
   // 检查文件类型
-  if (!config.allowedTypes.some(type => file.type.includes(type.split('/')[1]))) {
+  if (!config.allowedTypes.some(type => file.type.includes(type.split("/")[1]))) {
     return {
       valid: false,
-      error: `只允许上传 ${config.allowedTypes.map(t => t.split('/')[1].toUpperCase()).join(', ')} 格式的文件`,
+      error: `只允许上传 ${config.allowedTypes.map(t => t.split("/")[1].toUpperCase()).join(", ")} 格式的文件`,
     };
   }
 

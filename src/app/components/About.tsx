@@ -56,9 +56,9 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         <div className="flex mb-6 border-b border-white/20">
           <button
             className={`flex-1 py-2 px-4 text-center font-medium transition-colors relative ${activeTab === "about"
-                ? "text-white"
-                : "text-gray-300 hover:text-white"
-              }`}
+              ? "text-white"
+              : "text-gray-300 hover:text-white"
+            }`}
             onClick={() => setActiveTab("about")}
           >
             关于
@@ -68,9 +68,9 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </button>
           <button
             className={`flex-1 py-2 px-4 text-center font-medium transition-colors relative ${activeTab === "maintainer"
-                ? "text-white"
-                : "text-gray-300 hover:text-white"
-              }`}
+              ? "text-white"
+              : "text-gray-300 hover:text-white"
+            }`}
             onClick={() => setActiveTab("maintainer")}
           >
             维护者

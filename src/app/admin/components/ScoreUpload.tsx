@@ -74,7 +74,7 @@ export default function ScoreUpload({
       }
 
       const result = await response.json();
-      
+
       setUploadStatus("success");
       setUploadMessage(result.message || "乐谱上传成功");
       onUploadSuccess?.();
@@ -120,10 +120,10 @@ export default function ScoreUpload({
           className={`
             flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200
             ${
-              uploading || !songId
-                ? "bg-gray-500/20 text-gray-400 cursor-not-allowed"
-                : "bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200 border border-blue-400/30"
-            }
+    uploading || !songId
+      ? "bg-gray-500/20 text-gray-400 cursor-not-allowed"
+      : "bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200 border border-blue-400/30"
+    }
           `}
         >
           <Upload size={16} />
@@ -152,12 +152,12 @@ export default function ScoreUpload({
           className={`
             flex items-center gap-2 p-3 rounded-lg text-sm
             ${
-              uploadStatus === "success"
-                ? "bg-green-500/20 text-green-300 border border-green-400/30"
-                : uploadStatus === "error"
-                ? "bg-red-500/20 text-red-300 border border-red-400/30"
-                : "bg-blue-500/20 text-blue-300 border border-blue-400/30"
-            }
+        uploadStatus === "success"
+          ? "bg-green-500/20 text-green-300 border border-green-400/30"
+          : uploadStatus === "error"
+            ? "bg-red-500/20 text-red-300 border border-red-400/30"
+            : "bg-blue-500/20 text-blue-300 border border-blue-400/30"
+        }
           `}
         >
           {uploadStatus === "success" && <Check size={16} />}

@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
 
     // 上传文件
     const uploadResult = await uploadScoreFile(buffer, songId);
-    
+
     if (!uploadResult.success) {
       return NextResponse.json(
         { error: uploadResult.error || "Upload failed" },
@@ -101,8 +101,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: "乐谱上传成功",
       fileName: `${songId}.jpg`
     });

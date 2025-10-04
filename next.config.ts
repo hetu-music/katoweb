@@ -4,8 +4,8 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'cover.hetu-music.com',
+        protocol: "https",
+        hostname: "cover.hetu-music.com",
       },
     ],
     minimumCacheTTL: 3600,

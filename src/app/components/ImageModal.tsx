@@ -111,11 +111,11 @@ const ImageModal: React.FC<ImageModalProps> = ({
 
     if (isOpen) {
       // 使用 passive: false 来允许 preventDefault
-      document.addEventListener('wheel', handleWheel, { passive: false });
+      document.addEventListener("wheel", handleWheel, { passive: false });
     }
 
     return () => {
-      document.removeEventListener('wheel', handleWheel);
+      document.removeEventListener("wheel", handleWheel);
     };
   }, [isOpen]);
 
@@ -137,7 +137,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
         className="absolute inset-0 bg-black/80 backdrop-blur-sm"
         onClick={onClose}
       />
-      
+
       {/* 模态框内容 */}
       <div className="relative max-w-[95vw] max-h-[95vh] flex flex-col items-center">
         {/* 标题和控制按钮 */}
@@ -148,7 +148,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
               <h3 className="text-white text-lg font-semibold">{title}</h3>
             </div>
           )}
-          
+
           {/* 控制按钮组 */}
           <div className="flex items-center gap-2 ml-4">
             <button
@@ -159,11 +159,11 @@ const ImageModal: React.FC<ImageModalProps> = ({
             >
               <ZoomOut size={16} />
             </button>
-            
+
             <span className="text-white text-sm min-w-[3rem] text-center">
               {Math.round(scale * 100)}%
             </span>
-            
+
             <button
               onClick={zoomIn}
               className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
@@ -172,7 +172,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
             >
               <ZoomIn size={16} />
             </button>
-            
+
             <button
               onClick={resetTransform}
               className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
@@ -181,7 +181,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
             >
               <RotateCcw size={16} />
             </button>
-            
+
             <button
               onClick={onClose}
               className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
@@ -194,12 +194,12 @@ const ImageModal: React.FC<ImageModalProps> = ({
         </div>
 
         {/* 图片容器 */}
-        <div 
+        <div
           className="relative overflow-hidden rounded-lg bg-white/5 shadow-2xl"
-          style={{ 
-            maxWidth: '90vw', 
-            maxHeight: '75vh',
-            cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default'
+          style={{
+            maxWidth: "90vw",
+            maxHeight: "75vh",
+            cursor: scale > 1 ? (isDragging ? "grabbing" : "grab") : "default"
           }}
         >
           <div
@@ -207,7 +207,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
             className="relative select-none"
             style={{
               transform: `scale(${scale}) translate(${position.x / scale}px, ${position.y / scale}px)`,
-              transition: isDragging ? 'none' : 'transform 0.2s ease-out',
+              transition: isDragging ? "none" : "transform 0.2s ease-out",
             }}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
@@ -227,7 +227,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
             />
           </div>
         </div>
-        
+
         {/* 操作提示 */}
         <div className="mt-3 text-center">
           <p className="text-white/70 text-sm">
