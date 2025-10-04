@@ -103,6 +103,12 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
                     </span>
                     <span>歌词只需填写LRC歌词</span>
                   </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-300 font-bold flex-shrink-0 leading-relaxed">
+                      •
+                    </span>
+                    <span>修改完成务必点击保存按钮保存</span>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -146,7 +152,7 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
         {/* 底部操作区域 */}
         <div className="mt-6 pt-4 border-t border-white/20 flex justify-between items-center">
           <div className="text-sm text-white/60">
-            注意事项 · 请仔细阅读并遵守
+            注意事项 · 请仔细阅读
           </div>
           <button
             onClick={onClose}

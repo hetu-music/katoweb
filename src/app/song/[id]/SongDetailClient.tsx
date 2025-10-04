@@ -142,7 +142,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 openImageModal(
                   getCoverUrl(song),
                   song.album || song.title,
-                  `${song.title} - 专辑封面`,
+                  `${song.title} - 封面`,
                 )
               }
             >
