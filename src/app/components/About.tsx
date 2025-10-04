@@ -180,7 +180,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         {activeTab === "maintainer" && (
           <button
             onClick={handleLoginClick}
-            className="absolute bottom-8 right-8 flex items-center gap-2 px-6 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl shadow-lg text-white font-semibold hover:bg-white/20 active:scale-95 transition-all"
+            className="absolute bottom-8 right-10 flex items-center gap-2 px-6 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl shadow-lg text-white font-semibold hover:bg-white/20 active:scale-95 transition-all"
             aria-label="跳转至登录页面"
           >
             <LogIn size={18} />
