@@ -14,16 +14,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
-  // 壁纸功能
-  const {
-    wallpaper,
-    isLoading: wallpaperLoading,
-    error: wallpaperError,
-    refreshWallpaper,
-    wallpaperEnabled,
-    toggleWallpaper,
-    isHydrated,
-  } = useWallpaper();
+  // 壁纸功能 - 只保留实际使用的变量
+  const {} = useWallpaper();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

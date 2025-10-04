@@ -64,9 +64,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
   // 壁纸功能
   const {
-    wallpaper,
     isLoading: wallpaperLoading,
-    error: wallpaperError,
     refreshWallpaper,
     wallpaperEnabled,
     toggleWallpaper,

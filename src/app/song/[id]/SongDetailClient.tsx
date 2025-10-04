@@ -30,16 +30,8 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const [scoreImageLoaded, setScoreImageLoaded] = useState(true);
   const router = useRouter();
 
-  // 壁纸功能
-  const {
-    wallpaper,
-    isLoading: wallpaperLoading,
-    error: wallpaperError,
-    refreshWallpaper,
-    wallpaperEnabled,
-    toggleWallpaper,
-    isHydrated,
-  } = useWallpaper();
+  // 壁纸功能 - 只保留实际使用的变量
+  const {} = useWallpaper();
 
   // scrollToTop 函数
   const scrollToTop = useCallback(() => {

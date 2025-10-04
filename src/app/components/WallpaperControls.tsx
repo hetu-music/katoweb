@@ -145,7 +145,7 @@ const WallpaperControls: React.FC<WallpaperControlsProps> = ({
           aria-label={enabled ? "关闭壁纸" : "开启壁纸"}
           title={enabled ? "关闭壁纸" : "开启壁纸"}
         >
-          {enabled ? <Image className="w-5 h-5" /> : <ImageOff className="w-5 h-5" />}
+          {enabled ? <Image className="w-5 h-5" aria-hidden="true" /> : <ImageOff className="w-5 h-5" aria-hidden="true" />}
         </button>
       </div>
     </div>
