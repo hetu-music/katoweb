@@ -2,14 +2,14 @@
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Share } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import { SongDetailClientProps } from "../../lib/types";
 import { getCoverUrl, calculateSongInfo, getNmnUrl } from "../../lib/utils";
 import { typeColorMap, genreColorMap } from "../../lib/constants";
 import ImageModal from "../../components/ImageModal";
 import WallpaperBackground from "../../components/WallpaperBackground";
-import WallpaperControls from "../../components/WallpaperControls";
+import FloatingActionButtons from "../../components/FloatingActionButtons";
 import { useWallpaper } from "../../hooks/useWallpaper";
 
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
@@ -409,53 +409,17 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         )}
       </div>
 
-      {/* 壁纸控制按钮 - 右边中间 */}
-      <div className="wallpaper-controls-middle">
-        <WallpaperControls
-          enabled={wallpaperEnabled}
-          isLoading={wallpaperLoading}
-          onToggle={toggleWallpaper}
-          onRefresh={refreshWallpaper}
-          isHydrated={isHydrated}
-        />
-      </div>
-
-      {/* 固定按钮组 - 右下角 */}
-      <div className="fixed bottom-8 right-8 z-40 flex flex-col gap-3">
-        {/* 返回顶部按钮 - 带动画的显示/隐藏 */}
-        <button
-          onClick={scrollToTop}
-          className={`p-3 rounded-full bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-300 ${showScrollTop
-            ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
-            : "opacity-0 scale-75 translate-y-2 pointer-events-none"
-            }`}
-          aria-label="返回顶部"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-6 h-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M5 15l7-7 7 7"
-            />
-          </svg>
-        </button>
-
-        {/* 分享按钮 - 始终显示 */}
-        <button
-          onClick={handleShare}
-          className="p-3 rounded-full bg-gradient-to-br from-green-600 via-emerald-600 to-teal-600 text-white shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200"
-          aria-label="分享歌曲"
-        >
-          <Share className="w-6 h-6" />
-        </button>
-      </div>
+      {/* 浮动操作按钮组 */}
+      <FloatingActionButtons
+        showScrollTop={showScrollTop}
+        onScrollToTop={scrollToTop}
+        onShare={handleShare}
+        wallpaperEnabled={wallpaperEnabled}
+        wallpaperLoading={wallpaperLoading}
+        onWallpaperToggle={toggleWallpaper}
+        onWallpaperRefresh={refreshWallpaper}
+        isHydrated={isHydrated}
+      />
 
       {/* 图片放大模态框 */}
       <ImageModal
