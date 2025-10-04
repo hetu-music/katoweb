@@ -1,6 +1,16 @@
 "use client";
 import React, { useState, useCallback, useEffect } from "react";
-import { Search, Plus, Edit, Save, X, Eye, EyeOff, Bell } from "lucide-react";
+import {
+  Search,
+  Plus,
+  Edit,
+  Save,
+  X,
+  Eye,
+  EyeOff,
+  Bell,
+  XCircle,
+} from "lucide-react";
 import type { Song, SongDetail, SongFieldConfig } from "../../lib/types";
 import {
   convertEmptyStringToNull,
@@ -124,6 +134,7 @@ export default function AdminClientComponent({
     setLoading,
     error,
     setError,
+    searchTerm,
     setSearchTerm,
     filteredSongs,
     sortedSongs,
@@ -332,17 +343,28 @@ export default function AdminClientComponent({
 
         {/* Search and Add Button */}
         <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="flex-1 flex items-center relative">
+          <div className="flex-1 search-container">
             <div className="h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white rounded-l-2xl select-none min-w-[60px] max-w-[60px] w-[60px]">
               <Search size={20} />
             </div>
             <input
               type="text"
               placeholder="搜索歌曲、专辑等..."
+              value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/15 transition-all duration-200 rounded-r-2xl border-l-0 min-w-0"
+              className="search-input"
               style={{ marginLeft: "-1px" }}
             />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full text-gray-300 hover:text-white focus:outline-none bg-transparent active:bg-white/10 transition-all"
+                aria-label="清空搜索"
+              >
+                <XCircle size={24} />
+              </button>
+            )}
           </div>
           <button
             onClick={() => setShowAdd(true)}
