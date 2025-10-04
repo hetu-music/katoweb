@@ -14,29 +14,29 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createSupabaseServerClient();
 
-  // 获取当前用户
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-  if (userError || !user) {
-    return NextResponse.json({ error: "未登录或会话失效" }, { status: 401 });
-  }
-  if (!user.email) {
-    return NextResponse.json(
-      { error: "用户不存在，无法验证密码" },
-      { status: 400 },
-    );
-  }
+    // 获取当前用户
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return NextResponse.json({ error: "未登录或会话失效" }, { status: 401 });
+    }
+    if (!user.email) {
+      return NextResponse.json(
+        { error: "用户不存在，无法验证密码" },
+        { status: 400 },
+      );
+    }
 
-  // 验证旧密码
-  const { error: verifyError } = await supabase.auth.signInWithPassword({
-    email: user.email,
-    password: oldPassword,
-  });
-  if (verifyError) {
-    return NextResponse.json({ error: "旧密码错误" }, { status: 400 });
-  }
+    // 验证旧密码
+    const { error: verifyError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: oldPassword,
+    });
+    if (verifyError) {
+      return NextResponse.json({ error: "旧密码错误" }, { status: 400 });
+    }
 
     // 修改密码
     const { error: updateError } = await supabase.auth.updateUser({

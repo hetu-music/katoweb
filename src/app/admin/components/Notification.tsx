@@ -151,9 +151,7 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
 
         {/* 底部操作区域 */}
         <div className="mt-6 pt-4 border-t border-white/20 flex justify-between items-center">
-          <div className="text-sm text-white/60">
-            注意事项 · 请仔细阅读
-          </div>
+          <div className="text-sm text-white/60">注意事项 · 请仔细阅读</div>
           <button
             onClick={onClose}
             className="px-6 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white font-medium hover:bg-white/20 transition-all"

@@ -35,8 +35,6 @@ const SongSchema = z.object({
   nmn_status: z.boolean().nullable().optional(),
 });
 
-
-
 async function getUserFromRequest(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
 

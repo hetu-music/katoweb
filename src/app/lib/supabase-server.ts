@@ -33,7 +33,10 @@ export async function createSupabaseServerClient() {
 /**
  * 创建用于 middleware 的 Supabase 客户端
  */
-export function createSupabaseMiddlewareClient(request: NextRequest, response: NextResponse) {
+export function createSupabaseMiddlewareClient(
+  request: NextRequest,
+  response: NextResponse,
+) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
