@@ -7,6 +7,7 @@ interface WallpaperData {
   copyright: string;
   title: string;
   source: 'bing' | 'picsum';
+  timestamp: number; // 添加时间戳用于过期检查
 }
 
 interface UseWallpaperReturn {
@@ -18,6 +19,9 @@ interface UseWallpaperReturn {
   toggleWallpaper: () => void;
   isHydrated: boolean;
 }
+
+// 壁纸过期时间：24小时（毫秒）
+const WALLPAPER_EXPIRE_TIME = 24 * 60 * 60 * 1000;
 
 export const useWallpaper = (): UseWallpaperReturn => {
   const [wallpaper, setWallpaper] = useState<WallpaperData | null>(null);
@@ -38,7 +42,15 @@ export const useWallpaper = (): UseWallpaperReturn => {
     const savedWallpaper = localStorage.getItem('current-wallpaper');
     if (savedWallpaper) {
       try {
-        setWallpaper(JSON.parse(savedWallpaper));
+        const wallpaperData = JSON.parse(savedWallpaper);
+        // 检查壁纸是否过期
+        const now = Date.now();
+        if (wallpaperData.timestamp && (now - wallpaperData.timestamp < WALLPAPER_EXPIRE_TIME)) {
+          setWallpaper(wallpaperData);
+        } else {
+          // 壁纸已过期，清除缓存
+          localStorage.removeItem('current-wallpaper');
+        }
       } catch (err) {
         console.error('Failed to parse saved wallpaper:', err);
         localStorage.removeItem('current-wallpaper');
@@ -62,10 +74,15 @@ export const useWallpaper = (): UseWallpaperReturn => {
       }
 
       const data = await response.json();
-      setWallpaper(data);
+      // 添加时间戳
+      const wallpaperWithTimestamp = {
+        ...data,
+        timestamp: Date.now()
+      };
+      setWallpaper(wallpaperWithTimestamp);
       // 保存到 localStorage
       if (typeof window !== 'undefined') {
-        localStorage.setItem('current-wallpaper', JSON.stringify(data));
+        localStorage.setItem('current-wallpaper', JSON.stringify(wallpaperWithTimestamp));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '未知错误');
@@ -87,10 +104,8 @@ export const useWallpaper = (): UseWallpaperReturn => {
     setWallpaperEnabled(newEnabled);
     localStorage.setItem('wallpaper-enabled', JSON.stringify(newEnabled));
 
-    if (!newEnabled) {
-      setWallpaper(null);
-      localStorage.removeItem('current-wallpaper');
-    }
+    // 关闭壁纸时不清除壁纸数据，保留缓存供下次使用
+    // 壁纸会在24小时后自动过期
   }, [wallpaperEnabled, isHydrated]);
 
   useEffect(() => {
