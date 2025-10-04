@@ -55,11 +55,10 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         {/* 标签页导航 */}
         <div className="flex mb-6 border-b border-white/20">
           <button
-            className={`flex-1 py-2 px-4 text-center font-medium transition-colors relative ${
-              activeTab === "about"
+            className={`flex-1 py-2 px-4 text-center font-medium transition-colors relative ${activeTab === "about"
                 ? "text-white"
                 : "text-gray-300 hover:text-white"
-            }`}
+              }`}
             onClick={() => setActiveTab("about")}
           >
             关于
@@ -68,11 +67,10 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             )}
           </button>
           <button
-            className={`flex-1 py-2 px-4 text-center font-medium transition-colors relative ${
-              activeTab === "maintainer"
+            className={`flex-1 py-2 px-4 text-center font-medium transition-colors relative ${activeTab === "maintainer"
                 ? "text-white"
                 : "text-gray-300 hover:text-white"
-            }`}
+              }`}
             onClick={() => setActiveTab("maintainer")}
           >
             维护者
@@ -128,42 +126,52 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </p>
           </div>
         ) : (
-          <div className="text-base leading-relaxed space-y-4">
+          <div className="text-base leading-relaxed">
             {contributorsLoading ? (
               <div className="flex items-center justify-center h-32 text-gray-400">
-                加载中...
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                  <span>加载中...</span>
+                </div>
               </div>
             ) : contributorsError ? (
-              <div className="flex items-center justify-center h-32 text-red-400">
-                {contributorsError}
+              <div className="flex flex-col items-center justify-center h-32 text-red-400 space-y-2">
+                <div className="text-lg">⚠️</div>
+                <div>{contributorsError}</div>
               </div>
             ) : contributors.length === 0 ? (
-              <div className="flex items-center justify-center h-32 text-gray-400">
-                暂无贡献者
+              <div className="flex flex-col items-center justify-center h-32 text-gray-400 space-y-2">
+                <div className="text-lg">👥</div>
+                <div>暂无贡献者</div>
               </div>
             ) : (
-              <ul className="space-y-3 mb-16">
-                {contributors.map((contributor, idx) => (
-                  <li
-                    key={idx}
-                    className="bg-white/10 border border-white/20 rounded-xl shadow flex items-center px-4 py-3 transition-transform hover:scale-[1.02] hover:bg-white/15"
-                  >
-                    <div className="w-12 h-12 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-500 text-white text-xl font-bold mr-4 shadow-md">
-                      {contributor.name?.charAt(0).toUpperCase() || "?"}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-white font-semibold text-base truncate">
-                        {contributor.name}
+              <div className="max-h-64 overflow-y-auto pr-2 space-y-3 mb-16 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+                {contributors
+                  .sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999))
+                  .map((contributor, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-white/10 border border-white/20 rounded-xl shadow flex items-start px-4 py-3 transition-all duration-200 hover:bg-white/15 hover:border-white/30 hover:shadow-lg"
+                    >
+                      {/* 头像 */}
+                      <div className="w-12 h-12 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-500 text-white text-xl font-bold mr-4 shadow-md flex-shrink-0">
+                        {contributor.name?.charAt(0).toUpperCase() || "?"}
                       </div>
-                      {contributor.intro && (
-                        <div className="text-white/80 text-sm mt-0.5 whitespace-pre-line break-words">
-                          {contributor.intro}
+
+                      {/* 信息区域 */}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-white font-semibold text-base truncate mb-1">
+                          {contributor.name || "未知贡献者"}
                         </div>
-                      )}
+                        {contributor.intro && (
+                          <div className="text-white/80 text-sm leading-relaxed whitespace-pre-line break-words">
+                            {contributor.intro}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </li>
-                ))}
-              </ul>
+                  ))}
+              </div>
             )}
           </div>
         )}
