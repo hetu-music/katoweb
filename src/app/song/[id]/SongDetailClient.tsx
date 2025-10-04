@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Share } from "lucide-react";
 import Image from "next/image";
 import { SongDetailClientProps } from "../../lib/types";
-import { getCoverUrl, calculateSongInfo } from "../../lib/utils";
+import { getCoverUrl, calculateSongInfo, getNmnUrl } from "../../lib/utils";
 import { typeColorMap, genreColorMap } from "../../lib/constants";
 
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
@@ -226,6 +226,34 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                     QQ音乐
                   </a>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 乐谱区块 */}
+        {song.nmn_status === true && (
+          <div className="block-panel mb-8">
+            <h3 className="block-panel-title mb-3">乐谱</h3>
+            <div className="block-panel-inner">
+              <div className="flex justify-center">
+                <Image
+                  src={getNmnUrl(song)}
+                  alt={`${song.title} - 乐谱`}
+                  width={800}
+                  height={600}
+                  className="max-w-full h-auto rounded-lg shadow-lg"
+                  style={{ objectFit: "contain" }}
+                  onError={(e) => {
+                    // 如果图片加载失败，隐藏图片并显示提示
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = "none";
+                    const parent = target.parentElement;
+                    if (parent) {
+                      parent.innerHTML = '<div class="text-gray-400 italic text-center py-8">乐谱暂时无法加载</div>';
+                    }
+                  }}
+                />
               </div>
             </div>
           </div>

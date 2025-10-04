@@ -301,6 +301,11 @@ export function getCoverUrl(song: Song | SongDetail): string {
   }
 }
 
+// 获取乐谱图片 URL
+export function getNmnUrl(song: Song | SongDetail): string {
+  return `https://cover.hetu-music.com/nmn/${song.id}.jpg`;
+}
+
 // admin 页面函数
 // 通用防抖函数（适用于回调/输入等场景）
 export function debounce<Args extends unknown[]>(
