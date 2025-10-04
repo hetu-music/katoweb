@@ -69,6 +69,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     refreshWallpaper,
     wallpaperEnabled,
     toggleWallpaper,
+    isHydrated,
   } = useWallpaper();
 
   const songsData = initialSongsData;
@@ -640,6 +641,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
             isLoading={wallpaperLoading}
             onToggle={toggleWallpaper}
             onRefresh={refreshWallpaper}
+            isHydrated={isHydrated}
           />
         </div>
 

@@ -38,6 +38,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
     refreshWallpaper,
     wallpaperEnabled,
     toggleWallpaper,
+    isHydrated,
   } = useWallpaper();
 
   // scrollToTop 函数
@@ -415,6 +416,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
           isLoading={wallpaperLoading}
           onToggle={toggleWallpaper}
           onRefresh={refreshWallpaper}
+          isHydrated={isHydrated}
         />
       </div>
 

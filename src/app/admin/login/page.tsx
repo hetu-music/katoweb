@@ -20,6 +20,7 @@ export default function LoginPage() {
     refreshWallpaper,
     wallpaperEnabled,
     toggleWallpaper,
+    isHydrated,
   } = useWallpaper();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -77,6 +78,7 @@ export default function LoginPage() {
             isLoading={wallpaperLoading}
             onToggle={toggleWallpaper}
             onRefresh={refreshWallpaper}
+            isHydrated={isHydrated}
           />
         </div>
 

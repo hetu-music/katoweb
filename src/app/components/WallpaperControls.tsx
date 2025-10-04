@@ -8,6 +8,7 @@ interface WallpaperControlsProps {
   isLoading: boolean;
   onToggle: () => void;
   onRefresh: () => void;
+  isHydrated?: boolean;
 }
 
 const WallpaperControls: React.FC<WallpaperControlsProps> = ({
@@ -15,7 +16,13 @@ const WallpaperControls: React.FC<WallpaperControlsProps> = ({
   isLoading,
   onToggle,
   onRefresh,
+  isHydrated = true,
 }) => {
+  // 在 hydration 完成之前不渲染，避免 hydration 错误
+  if (!isHydrated) {
+    return null;
+  }
+
   return (
     <div className="wallpaper-controls">
       {/* 壁纸开关按钮 */}
