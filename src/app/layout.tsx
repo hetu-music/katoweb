@@ -31,9 +31,7 @@ export default function RootLayout({
       >
         <WallpaperProvider>
           <GlobalWallpaperBackground />
-          <div className="relative z-10 min-h-screen">
-            {children}
-          </div>
+          <div className="relative z-10 min-h-screen">{children}</div>
         </WallpaperProvider>
       </body>
     </html>

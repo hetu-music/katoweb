@@ -1,7 +1,7 @@
 "use client";
 
-import React from 'react';
-import { Share } from 'lucide-react';
+import React from "react";
+import { Share } from "lucide-react";
 
 interface FloatingActionButtonsProps {
   // 返回顶部相关
@@ -22,10 +22,11 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
       {/* 返回顶部按钮 - 带动画的显示/隐藏 */}
       <button
         onClick={onScrollToTop}
-        className={`floating-action-button bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white ${showScrollTop
-          ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
-          : "opacity-0 scale-75 translate-y-2 pointer-events-none"
-          }`}
+        className={`floating-action-button bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white ${
+          showScrollTop
+            ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
+            : "opacity-0 scale-75 translate-y-2 pointer-events-none"
+        }`}
         aria-label="返回顶部"
       >
         <svg

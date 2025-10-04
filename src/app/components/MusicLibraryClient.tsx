@@ -357,42 +357,42 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   selectedLyricist !== "全部" ||
                   selectedComposer !== "全部" ||
                   selectedArranger !== "全部") && (
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-3 py-1.5 shadow-sm min-h-[32px]">
-                        <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></div>
-                        <span className="text-amber-200 font-medium text-xs">
-                          已应用筛选
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => {
-                          setSearchTerm("");
-                          setSelectedType("全部");
-                          setSelectedYear("全部");
-                          setSelectedLyricist("全部");
-                          setSelectedComposer("全部");
-                          setSelectedArranger("全部");
-                        }}
-                        className="flex items-center gap-1.5 bg-gradient-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-red-300/30 rounded-full px-3 py-1.5 text-red-200 hover:text-red-100 hover:bg-gradient-to-r hover:from-red-500/30 hover:to-pink-500/30 transition-all duration-200 text-xs font-medium shadow-sm active:scale-95 touch-manipulation min-h-[32px]"
-                        title="清除所有筛选"
-                      >
-                        <svg
-                          className="w-3 h-3"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                        <span>清除</span>
-                      </button>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-3 py-1.5 shadow-sm min-h-[32px]">
+                      <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></div>
+                      <span className="text-amber-200 font-medium text-xs">
+                        已应用筛选
+                      </span>
                     </div>
-                  )}
+                    <button
+                      onClick={() => {
+                        setSearchTerm("");
+                        setSelectedType("全部");
+                        setSelectedYear("全部");
+                        setSelectedLyricist("全部");
+                        setSelectedComposer("全部");
+                        setSelectedArranger("全部");
+                      }}
+                      className="flex items-center gap-1.5 bg-gradient-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-red-300/30 rounded-full px-3 py-1.5 text-red-200 hover:text-red-100 hover:bg-gradient-to-r hover:from-red-500/30 hover:to-pink-500/30 transition-all duration-200 text-xs font-medium shadow-sm active:scale-95 touch-manipulation min-h-[32px]"
+                      title="清除所有筛选"
+                    >
+                      <svg
+                        className="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                      <span>清除</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

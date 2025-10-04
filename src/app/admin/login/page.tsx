@@ -61,7 +61,7 @@ export default function LoginPage() {
         {/* 浮动操作按钮组 - 仅返回顶部（登录页面不需要，所以不显示） */}
         <FloatingActionButtons
           showScrollTop={false}
-          onScrollToTop={() => { }} // 空函数，不会显示按钮
+          onScrollToTop={() => {}} // 空函数，不会显示按钮
         />
 
         {/* 统一的竖向长容器 */}
@@ -74,13 +74,14 @@ export default function LoginPage() {
             <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3 tracking-wide">
               管理后台
             </h1>
-            <p className="text-white/70 text-base">
-              请使用您的管理员账户登录
-            </p>
+            <p className="text-white/70 text-base">请使用您的管理员账户登录</p>
           </div>
 
           {/* 登录表单 */}
-          <form onSubmit={handleLogin} className="px-6 pb-6 space-y-5 sm:px-8 sm:pb-8 sm:space-y-6">
+          <form
+            onSubmit={handleLogin}
+            className="px-6 pb-6 space-y-5 sm:px-8 sm:pb-8 sm:space-y-6"
+          >
             {/* 邮箱输入框 */}
             <div className="space-y-3">
               <label className="text-white/90 text-sm font-medium block">

@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
@@ -14,12 +14,12 @@ export async function GET() {
         `https://www.bing.com/HPImageArchive.aspx?format=js&idx=${randomIdx}&n=1&mkt=zh-CN`,
         {
           // 不缓存，每次都随机
-          cache: 'no-store'
-        }
+          cache: "no-store",
+        },
       );
 
       if (!response.ok) {
-        throw new Error('Failed to fetch Bing wallpaper');
+        throw new Error("Failed to fetch Bing wallpaper");
       }
 
       const data = await response.json();
@@ -31,7 +31,7 @@ export async function GET() {
           url: imageUrl,
           copyright: data.images[0].copyright,
           title: data.images[0].title,
-          source: 'bing',
+          source: "bing",
         });
       }
     }
@@ -42,20 +42,20 @@ export async function GET() {
 
     return NextResponse.json({
       url: loremUrl,
-      copyright: 'Lorem Picsum - Free random images',
-      title: 'Random Photo',
-      source: 'picsum',
+      copyright: "Lorem Picsum - Free random images",
+      title: "Random Photo",
+      source: "picsum",
     });
   } catch (error) {
-    console.error('Error fetching wallpaper:', error);
+    console.error("Error fetching wallpaper:", error);
 
     // 如果出错，返回 Lorem Picsum 作为备用
     const loremUrl = `https://picsum.photos/1920/1080?random=${Date.now()}`;
     return NextResponse.json({
       url: loremUrl,
-      copyright: 'Lorem Picsum - Free random images',
-      title: 'Random Photo',
-      source: 'picsum',
+      copyright: "Lorem Picsum - Free random images",
+      title: "Random Photo",
+      source: "picsum",
     });
   }
 }

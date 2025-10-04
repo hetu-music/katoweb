@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
-import { useWallpaper } from '../context/WallpaperContext';
+import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
+import { useWallpaper } from "../context/WallpaperContext";
 
 const GlobalWallpaperBackground: React.FC = () => {
   const { wallpaper, wallpaperEnabled, isHydrated } = useWallpaper();
@@ -56,14 +56,16 @@ const GlobalWallpaperBackground: React.FC = () => {
     <>
       {/* 壁纸背景 - 仅在启用且有壁纸时显示 */}
       {wallpaperEnabled && wallpaper?.url && (
-        <div className={`fixed inset-0 z-0 wallpaper-background-image transition-opacity duration-700 ease-out ${showWallpaper ? 'opacity-100' : 'opacity-0'}`}>
+        <div
+          className={`fixed inset-0 z-0 wallpaper-background-image transition-opacity duration-700 ease-out ${showWallpaper ? "opacity-100" : "opacity-0"}`}
+        >
           <Image
             ref={imageRef}
             src={wallpaper.url}
             alt="背景壁纸"
             fill
             className="wallpaper-image"
-            style={{ objectFit: 'cover' }}
+            style={{ objectFit: "cover" }}
             priority
             quality={95}
             unoptimized={false}

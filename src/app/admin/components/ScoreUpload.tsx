@@ -29,19 +29,22 @@ export default function ScoreUpload({
   // 检查文件是否存在
   const checkFileExists = async (id: number) => {
     if (!id) return false;
-    
+
     setCheckingFile(true);
     try {
-      const response = await fetch(`https://cover.hetu-music.com/nmn/${id}.jpg`, {
-        method: 'HEAD', // 只检查头部，不下载文件内容
-      });
-      
+      const response = await fetch(
+        `https://cover.hetu-music.com/nmn/${id}.jpg`,
+        {
+          method: "HEAD", // 只检查头部，不下载文件内容
+        },
+      );
+
       // 根据R2存储的设置：存在返回200，不存在返回404
       const exists = response.status === 200;
       setFileExists(exists);
       return exists;
     } catch (error) {
-      console.error('检查乐谱文件存在性失败:', error);
+      console.error("检查乐谱文件存在性失败:", error);
       setFileExists(false);
       return false;
     } finally {

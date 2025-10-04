@@ -102,8 +102,6 @@ body {
   @apply p-3 rounded-full shadow-lg border border-white/20 backdrop-blur-md hover:scale-110 transition-all duration-200 w-12 h-12 flex items-center justify-center;
 }
 
-
-
 /* 壁纸背景过渡效果 */
 .wallpaper-background-image {
   transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1);
@@ -140,7 +138,8 @@ html {
 }
 
 /* 防止页面切换时的白屏闪动 */
-html, body {
+html,
+body {
   background-color: #581c87; /* 紫色作为备用颜色 */
   /* 确保页面切换时的平滑过渡 */
   transition: background-color 0.3s ease-out;
@@ -170,15 +169,15 @@ html, body {
   .wallpaper-controls {
     @apply gap-2;
   }
-  
+
   .wallpaper-control-button {
     @apply w-10 h-10;
   }
-  
+
   .wallpaper-control-button svg {
     @apply w-5 h-5;
   }
-}/* 壁纸控
+} /* 壁纸控
 制按钮位置优化 */
 .wallpaper-controls-middle {
   @apply fixed right-8 top-1/2 -translate-y-1/2 z-40;
@@ -203,22 +202,22 @@ html, body {
   .wallpaper-controls-middle {
     @apply right-4 top-1/2;
   }
-  
+
   /* 确保按钮不会与其他元素重叠 */
   .wallpaper-controls-middle .wallpaper-controls {
     @apply gap-2;
   }
-  
+
   /* 移动端右下角按钮组对齐 */
   .floating-buttons-bottom {
     @apply right-4 bottom-6 gap-2;
   }
-  
+
   /* 移动端浮动按钮大小调整 */
   .floating-action-button {
     @apply w-10 h-10;
   }
-  
+
   .floating-action-icon {
     @apply w-5 h-5;
   }
