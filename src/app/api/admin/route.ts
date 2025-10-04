@@ -33,6 +33,7 @@ const SongSchema = z.object({
   kugolink: z.string().url().max(200).nullable().optional(),
   qmlink: z.string().url().max(200).nullable().optional(),
   nelink: z.string().url().max(200).nullable().optional(),
+  nmn_status: z.boolean().nullable().optional(),
 });
 
 // 创建支持 cookies 的 Supabase 客户端
