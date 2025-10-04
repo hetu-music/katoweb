@@ -15,36 +15,33 @@ const WallpaperBackground: React.FC<WallpaperBackgroundProps> = ({
   children,
 }) => {
   return (
-    <div className="relative min-h-screen wallpaper-background">
-      {/* 壁纸背景 */}
+    <div className="relative min-h-screen">
+      {/* 壁纸背景 - 仅在启用且有壁纸时显示 */}
       {enabled && wallpaperUrl && (
         <div className="fixed inset-0 z-0">
           <Image
             src={wallpaperUrl}
             alt="背景壁纸"
             fill
-            className="object-cover transition-opacity duration-500"
+            className="wallpaper-image"
             style={{ objectFit: 'cover' }}
             priority
-            quality={85}
+            quality={95}
+            unoptimized={false}
           />
-          {/* 深色遮罩层，确保内容可读性 */}
+          {/* 轻微的深色遮罩层，确保内容可读性 */}
           <div className="wallpaper-overlay" />
         </div>
       )}
-      
-      {/* 原有渐变背景（作为备用或叠加） */}
-      <div 
-        className={`transition-all duration-500 ${
-          enabled && wallpaperUrl 
-            ? 'absolute inset-0 bg-gradient-to-br from-purple-900/60 via-blue-900/60 to-indigo-900/60' 
-            : 'min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900'
-        }`}
-      >
-        {/* 内容区域 */}
-        <div className="relative z-10">
-          {children}
-        </div>
+
+      {/* 渐变背景 - 作为备用背景或在未启用壁纸时显示 */}
+      {(!enabled || !wallpaperUrl) && (
+        <div className="fixed inset-0 z-0 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900" />
+      )}
+
+      {/* 内容区域 */}
+      <div className="relative z-10 min-h-screen">
+        {children}
       </div>
     </div>
   );
