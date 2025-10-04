@@ -24,6 +24,7 @@ import { useAuth } from "../../hooks/useAuth";
 import Account from "./Account";
 import Notification from "./Notification";
 import CoverUpload from "./CoverUpload";
+import ScoreUpload from "./ScoreUpload";
 
 // Memoized SongRow component
 const SongRow = React.memo(
@@ -861,6 +862,54 @@ function renderInput(
                 }}
                 onUploadError={(error) => {
                   console.error("Cover upload error:", error);
+                }}
+              />
+            </div>
+          )}
+
+          {errorMsg && (
+            <div className="text-red-400 text-xs mt-1">{errorMsg}</div>
+          )}
+        </>
+      );
+    }
+
+    // 特殊处理乐谱字段
+    if (f.key === "nmn_status") {
+      return (
+        <>
+          <select
+            value={v === true ? "true" : v === false ? "false" : ""}
+            onChange={(e) =>
+              handleChange(
+                e.target.value === "true"
+                  ? true
+                  : e.target.value === "false"
+                    ? false
+                    : null,
+              )
+            }
+            className={baseInputClass}
+          >
+            <option value="false" className="filter-option">
+              否
+            </option>
+            <option value="true" className="filter-option">
+              是
+            </option>
+          </select>
+
+          {/* 当选择是时显示上传组件 */}
+          {v === true && (
+            <div className="mt-4 p-4 bg-white/5 rounded-lg border border-white/10">
+              <ScoreUpload
+                songId={typeof state.id === "number" ? state.id : undefined}
+                csrfToken={csrfToken}
+                onUploadSuccess={() => {
+                  console.log("Score uploaded successfully");
+                }}
+                onUploadError={(error) => {
+                  console.error("Score upload error:", error);
                 }}
               />
             </div>
