@@ -231,22 +231,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     initialPage: currentPageState,
   });
 
-  // 当筛选条件变化时，重置到第一页（暂时禁用以测试分页功能）
-  // useEffect(() => {
-  //   if (isInitialized) {
-  //     setCurrentPageState(1);
-  //     setPaginationPage(1);
-  //   }
-  // }, [
-  //   debouncedSearchTerm,
-  //   selectedType,
-  //   selectedYear,
-  //   selectedLyricist,
-  //   selectedComposer,
-  //   selectedArranger,
-  //   isInitialized,
-  //   setPaginationPage,
-  // ]);
+
 
   // 包装分页函数以同步URL
   const setCurrentPage = (page: number) => {
@@ -272,7 +257,22 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
           <div className="mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-2">
               <div className="flex flex-col sm:flex-row sm:items-center w-full">
-                <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-blue-300 to-indigo-400 drop-shadow-lg tracking-wider mb-2 sm:mb-0">
+                <h1 
+                  className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-blue-300 to-indigo-400 drop-shadow-lg tracking-wider mb-2 sm:mb-0 cursor-pointer hover:from-purple-200 hover:via-blue-200 hover:to-indigo-300 transition-all duration-300 select-none"
+                  onClick={() => {
+                    // 重置所有筛选条件和页面
+                    setSearchTerm("");
+                    setSelectedType("全部");
+                    setSelectedYear("全部");
+                    setSelectedLyricist("全部");
+                    setSelectedComposer("全部");
+                    setSelectedArranger("全部");
+                    setViewMode("grid");
+                    setCurrentPageState(1);
+                    setPaginationPage(1);
+                  }}
+                  title="点击重置所有筛选条件"
+                >
                   河图作品勘鉴
                 </h1>
                 {/* 小屏下按钮行 */}

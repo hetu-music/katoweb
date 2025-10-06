@@ -237,13 +237,7 @@ export default function AdminClientComponent({
     }
   }, [searchTerm, currentPageState, isClient]);
 
-  // 当搜索条件变化时，重置到第一页（暂时禁用以测试分页功能）
-  // useEffect(() => {
-  //   if (isInitialized) {
-  //     setCurrentPageState(1);
-  //     setPaginationPage(1);
-  //   }
-  // }, [searchTerm, isInitialized, setPaginationPage]);
+
 
   // 自动弹出通知逻辑
   useEffect(() => {
@@ -398,7 +392,18 @@ export default function AdminClientComponent({
         {/* Header Section */}
         <div className="mb-8 flex flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <h1 className="text-4xl font-bold text-white mb-0">管理页面</h1>
+            <h1
+              className="text-4xl font-bold text-white mb-0 cursor-pointer hover:text-blue-200 transition-colors duration-300 select-none"
+              onClick={() => {
+                // 重置搜索条件和页面
+                setSearchTerm("");
+                setCurrentPageState(1);
+                setPaginationPage(1);
+              }}
+              title="点击重置搜索条件"
+            >
+              管理页面
+            </h1>
             {/* 通知按钮 */}
             <button
               onClick={() => setShowNotification(true)}
