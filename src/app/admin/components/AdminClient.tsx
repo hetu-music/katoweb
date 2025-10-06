@@ -160,18 +160,11 @@ export default function AdminClientComponent({
     isClient ? searchParams?.get("q") || "" : "",
   );
 
-  // 分页状态 - 使用默认值避免 hydration 错误
-  const [currentPageState, setCurrentPageState] = useState(1);
-
-  // 在客户端挂载后更新分页状态
-  useEffect(() => {
-    if (isClient && searchParams) {
-      const pageFromUrl = parseInt(searchParams.get("page") || "1", 10);
-      if (pageFromUrl !== currentPageState) {
-        setCurrentPageState(pageFromUrl);
-      }
-    }
-  }, [isClient, searchParams, currentPageState]);
+  // 直接从 URL 获取初始页面，避免额外的状态
+  const getInitialPage = () => {
+    if (!isClient || !searchParams) return 1;
+    return parseInt(searchParams.get("page") || "1", 10);
+  };
 
   // 分页功能
   const {
@@ -184,14 +177,27 @@ export default function AdminClientComponent({
   } = usePagination({
     data: sortedSongs,
     itemsPerPage: 25,
-    initialPage: currentPageState,
+    initialPage: getInitialPage(),
+    resetOnDataChange: false, // 由 URL 同步逻辑处理重置
   });
 
   // 包装分页函数以同步URL
-  const setCurrentPage = (page: number) => {
-    setCurrentPageState(page);
-    // 不需要调用 setPaginationPage，因为 usePagination 会通过 initialPage 自动更新
-  };
+  const setCurrentPage = useCallback((page: number) => {
+    setPaginationPage(page);
+    
+    // 同步更新 URL
+    if (isClient && typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (page !== 1) {
+        params.set("page", page.toString());
+      } else {
+        params.delete("page");
+      }
+      const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
+      window.history.replaceState(null, "", newUrl);
+      setSearchParams(new URLSearchParams(params.toString()));
+    }
+  }, [setPaginationPage, isClient, setSearchParams]);
   const { csrfToken, handleLogout, logoutLoading } = useAuth();
   const [showAdd, setShowAdd] = useState(false);
   const [newSong, setNewSong] = useState<Partial<Song>>({
@@ -223,23 +229,31 @@ export default function AdminClientComponent({
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // URL同步逻辑 - 只在客户端执行
+  // URL同步逻辑 - 只处理搜索词，页面由 setCurrentPage 处理
   useEffect(() => {
     if (!isClient || typeof window === "undefined") return;
 
     const params = new URLSearchParams(window.location.search);
-    if (searchTerm) params.set("q", searchTerm);
-    else params.delete("q");
-    if (currentPageState && currentPageState !== 1)
-      params.set("page", currentPageState.toString());
-    else params.delete("page");
-    const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
-    if (newUrl !== window.location.pathname + window.location.search) {
+    const currentQ = params.get("q") || "";
+    
+    // 只有当搜索词发生变化时才更新URL
+    if (searchTerm !== currentQ) {
+      if (searchTerm) {
+        params.set("q", searchTerm);
+      } else {
+        params.delete("q");
+      }
+      // 搜索时重置到第一页
+      params.delete("page");
+      
+      const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
       window.history.replaceState(null, "", newUrl);
-      // 更新本地的 searchParams 状态
       setSearchParams(new URLSearchParams(params.toString()));
+      
+      // 重置分页到第一页
+      setPaginationPage(1);
     }
-  }, [searchTerm, currentPageState, isClient]);
+  }, [searchTerm, isClient, setSearchParams, setPaginationPage]);
 
   // 自动弹出通知逻辑
   useEffect(() => {
@@ -399,7 +413,6 @@ export default function AdminClientComponent({
               onClick={() => {
                 // 重置搜索条件和页面
                 setSearchTerm("");
-                setCurrentPageState(1);
                 setPaginationPage(1);
               }}
               title="点击重置搜索条件"

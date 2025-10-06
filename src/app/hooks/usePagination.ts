@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 
 interface UsePaginationProps<T> {
   data: T[];
   itemsPerPage?: number;
   initialPage?: number;
+  resetOnDataChange?: boolean;
 }
 
 interface UsePaginationReturn<T> {
@@ -26,12 +27,18 @@ export function usePagination<T>({
   data,
   itemsPerPage = 25,
   initialPage = 1,
+  resetOnDataChange = false,
 }: UsePaginationProps<T>): UsePaginationReturn<T> {
   const [currentPage, setCurrentPage] = useState(initialPage);
+  const prevInitialPageRef = useRef(initialPage);
+  const prevDataLengthRef = useRef(data.length);
 
-  // 当 initialPage 变化时，更新 currentPage（但避免无限循环）
+  // 当 initialPage 变化时，更新 currentPage（避免无限循环）
   useEffect(() => {
-    setCurrentPage(initialPage);
+    if (initialPage !== prevInitialPageRef.current) {
+      prevInitialPageRef.current = initialPage;
+      setCurrentPage(initialPage);
+    }
   }, [initialPage]);
 
   // 计算总页数
@@ -39,14 +46,22 @@ export function usePagination<T>({
     return Math.ceil(data.length / itemsPerPage);
   }, [data.length, itemsPerPage]);
 
-  // 当数据变化时，确保当前页面有效
+  // 当数据变化时，处理页面重置或调整
   useEffect(() => {
+    // 如果启用了数据变化时重置，且数据长度发生变化，重置到第一页
+    if (resetOnDataChange && data.length !== prevDataLengthRef.current) {
+      prevDataLengthRef.current = data.length;
+      setCurrentPage(1);
+      return;
+    }
+
+    // 否则只确保当前页面有效
     if (currentPage > totalPages && totalPages > 0) {
       setCurrentPage(totalPages);
     } else if (currentPage < 1) {
       setCurrentPage(1);
     }
-  }, [currentPage, totalPages]);
+  }, [currentPage, totalPages, data.length, resetOnDataChange]);
 
   // 计算当前页的数据
   const currentData = useMemo(() => {

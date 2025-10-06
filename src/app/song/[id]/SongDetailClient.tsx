@@ -114,10 +114,6 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={(e) => {
-              // 返回主页时带上原有的查询参数
-              const search =
-                typeof window !== "undefined" ? window.location.search : "";
-
               if (
                 typeof window !== "undefined" &&
                 window.matchMedia("(hover: none) and (pointer: coarse)").matches
@@ -132,11 +128,12 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                   target.classList.remove("touch-active-pressed");
                   target.classList.add("touch-navigating");
 
-                  // 立即开始导航，不等待动画完成
-                  router.push("/" + search);
+                  // 使用 router.back() 来保持浏览器的滚动位置
+                  router.back();
                 }, 120);
               } else {
-                router.push("/" + search);
+                // 使用 router.back() 来保持浏览器的滚动位置
+                router.back();
               }
             }}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 shadow-sm touch-active"
