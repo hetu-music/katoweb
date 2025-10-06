@@ -26,41 +26,25 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   initialSongsData,
 }) => {
   const router = useRouter();
-  const searchParams =
-    typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search)
-      : null;
+  
+  // 使用 useState 来管理 URL 参数，避免 hydration 错误
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   // Helper function to safely get first array element
   const getFirstElement = (arr: string[] | null | undefined): string => {
     return arr && arr.length > 0 && arr[0] ? arr[0] : "";
   };
 
-  // 1. 状态初始化
-  const [searchTerm, setSearchTerm] = useState(
-    () => searchParams?.get("q") || "",
-  );
-  const [selectedType, setSelectedType] = useState(
-    () => searchParams?.get("type") || "全部",
-  );
-  const [selectedYear, setSelectedYear] = useState(
-    () => searchParams?.get("year") || "全部",
-  );
-  const [selectedLyricist, setSelectedLyricist] = useState(
-    () => searchParams?.get("lyricist") || "全部",
-  );
-  const [selectedComposer, setSelectedComposer] = useState(
-    () => searchParams?.get("composer") || "全部",
-  );
-  const [selectedArranger, setSelectedArranger] = useState(
-    () => searchParams?.get("arranger") || "全部",
-  );
-  const [viewMode, setViewMode] = useState(
-    () => searchParams?.get("view") || "grid",
-  );
-  const [currentPageState, setCurrentPageState] = useState(
-    () => parseInt(searchParams?.get("page") || "1", 10),
-  );
+  // 1. 状态初始化 - 使用默认值避免 hydration 错误
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedType, setSelectedType] = useState("全部");
+  const [selectedYear, setSelectedYear] = useState("全部");
+  const [selectedLyricist, setSelectedLyricist] = useState("全部");
+  const [selectedComposer, setSelectedComposer] = useState("全部");
+  const [selectedArranger, setSelectedArranger] = useState("全部");
+  const [viewMode, setViewMode] = useState("grid");
+  const [currentPageState, setCurrentPageState] = useState(1);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const hasRestoredScroll = useRef(false);
@@ -78,9 +62,28 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
   const songsData = initialSongsData;
 
-  // 2. 状态变化时同步到URL参数
+  // 在客户端挂载后初始化 URL 参数
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    setIsClient(true);
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      setSearchParams(params);
+      
+      // 从 URL 参数恢复状态
+      setSearchTerm(params.get("q") || "");
+      setSelectedType(params.get("type") || "全部");
+      setSelectedYear(params.get("year") || "全部");
+      setSelectedLyricist(params.get("lyricist") || "全部");
+      setSelectedComposer(params.get("composer") || "全部");
+      setSelectedArranger(params.get("arranger") || "全部");
+      setViewMode(params.get("view") || "grid");
+      setCurrentPageState(parseInt(params.get("page") || "1", 10));
+    }
+  }, []);
+
+  // 2. 状态变化时同步到URL参数 - 只在客户端执行
+  useEffect(() => {
+    if (!isClient || typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     if (searchTerm) params.set("q", searchTerm);
     else params.delete("q");
@@ -106,6 +109,8 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
     if (newUrl !== window.location.pathname + window.location.search) {
       window.history.replaceState(null, "", newUrl);
+      // 更新本地的 searchParams 状态
+      setSearchParams(new URLSearchParams(params.toString()));
     }
   }, [
     searchTerm,
@@ -116,6 +121,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     selectedArranger,
     viewMode,
     currentPageState,
+    isClient,
   ]);
 
   // 3. 滚动位置保存与恢复
@@ -235,6 +241,13 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     itemsPerPage: 25,
     initialPage: currentPageState,
   });
+
+  // 当 currentPageState 变化时，同步到分页组件
+  useEffect(() => {
+    if (currentPageState !== currentPage) {
+      setPaginationPage(currentPageState);
+    }
+  }, [currentPageState, currentPage, setPaginationPage]);
 
   // 包装分页函数以同步URL
   const setCurrentPage = (page: number) => {

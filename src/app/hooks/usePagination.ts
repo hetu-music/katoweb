@@ -29,6 +29,13 @@ export function usePagination<T>({
 }: UsePaginationProps<T>): UsePaginationReturn<T> {
   const [currentPage, setCurrentPage] = useState(initialPage);
 
+  // 当 initialPage 变化时，更新 currentPage
+  useEffect(() => {
+    if (initialPage !== currentPage) {
+      setCurrentPage(initialPage);
+    }
+  }, [initialPage]);
+
   // 计算总页数
   const totalPages = useMemo(() => {
     return Math.ceil(data.length / itemsPerPage);

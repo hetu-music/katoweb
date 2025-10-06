@@ -129,11 +129,17 @@ export default function AdminClientComponent({
   initialSongs: SongDetail[];
   initialError: string | null;
 }) {
-  // URL参数处理
-  const searchParams =
-    typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search)
-      : null;
+  // 使用 useState 来管理 URL 参数，避免 hydration 错误
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  // 在客户端挂载后初始化 URL 参数
+  useEffect(() => {
+    setIsClient(true);
+    if (typeof window !== "undefined") {
+      setSearchParams(new URLSearchParams(window.location.search));
+    }
+  }, []);
 
   const {
     songs,
@@ -146,12 +152,20 @@ export default function AdminClientComponent({
     setSearchTerm,
     filteredSongs,
     sortedSongs,
-  } = useSongs(initialSongs, initialError, searchParams?.get("q") || "");
+  } = useSongs(initialSongs, initialError, isClient ? (searchParams?.get("q") || "") : "");
 
-  // 分页状态
-  const [currentPageState, setCurrentPageState] = useState(
-    () => parseInt(searchParams?.get("page") || "1", 10),
-  );
+  // 分页状态 - 使用默认值避免 hydration 错误
+  const [currentPageState, setCurrentPageState] = useState(1);
+
+  // 在客户端挂载后更新分页状态
+  useEffect(() => {
+    if (isClient && searchParams) {
+      const pageFromUrl = parseInt(searchParams.get("page") || "1", 10);
+      if (pageFromUrl !== currentPageState) {
+        setCurrentPageState(pageFromUrl);
+      }
+    }
+  }, [isClient, searchParams, currentPageState]);
 
   // 分页功能
   const {
@@ -166,6 +180,13 @@ export default function AdminClientComponent({
     itemsPerPage: 25,
     initialPage: currentPageState,
   });
+
+  // 当 currentPageState 变化时，同步到分页组件
+  useEffect(() => {
+    if (currentPageState !== currentPage) {
+      setPaginationPage(currentPageState);
+    }
+  }, [currentPageState, currentPage, setPaginationPage]);
 
   // 包装分页函数以同步URL
   const setCurrentPage = (page: number) => {
@@ -203,9 +224,10 @@ export default function AdminClientComponent({
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // URL同步逻辑
+  // URL同步逻辑 - 只在客户端执行
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (!isClient || typeof window === "undefined") return;
+    
     const params = new URLSearchParams(window.location.search);
     if (searchTerm) params.set("q", searchTerm);
     else params.delete("q");
@@ -214,8 +236,10 @@ export default function AdminClientComponent({
     const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
     if (newUrl !== window.location.pathname + window.location.search) {
       window.history.replaceState(null, "", newUrl);
+      // 更新本地的 searchParams 状态
+      setSearchParams(new URLSearchParams(params.toString()));
     }
-  }, [searchTerm, currentPageState]);
+  }, [searchTerm, currentPageState, isClient]);
 
   // 当搜索条件变化时，重置到第一页
   useEffect(() => {
