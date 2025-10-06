@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+  useCallback,
+} from "react";
 import { Search, Grid, List, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -77,13 +83,11 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       setSelectedArranger(params.get("arranger") || "全部");
       setViewMode(params.get("view") || "grid");
       // 页面状态将通过 usePagination 的 initialPage 处理
-      
+
       // 标记初始化完成
       setTimeout(() => setIsInitialized(true), 0);
     }
   }, []);
-
-
 
   // 跟踪初始的搜索条件，用于判断是否是用户主动改变
   const initialFiltersRef = useRef<{
@@ -214,28 +218,31 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   });
 
   // 包装分页函数以同步URL
-  const setCurrentPage = useCallback((page: number) => {
-    setPaginationPage(page);
-    
-    // 同步更新 URL
-    if (isClient && typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      if (page !== 1) {
-        params.set("page", page.toString());
-      } else {
-        params.delete("page");
+  const setCurrentPage = useCallback(
+    (page: number) => {
+      setPaginationPage(page);
+
+      // 同步更新 URL
+      if (isClient && typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        if (page !== 1) {
+          params.set("page", page.toString());
+        } else {
+          params.delete("page");
+        }
+        const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
+        window.history.replaceState(null, "", newUrl);
       }
-      const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
-      window.history.replaceState(null, "", newUrl);
-    }
-  }, [setPaginationPage, isClient]);
+    },
+    [setPaginationPage, isClient],
+  );
 
   // 2. 状态变化时同步到URL参数 - 只在客户端执行
   useEffect(() => {
     if (!isClient || typeof window === "undefined") return;
-    
+
     const params = new URLSearchParams(window.location.search);
-    
+
     // 更新搜索和筛选参数
     if (searchTerm) params.set("q", searchTerm);
     else params.delete("q");
@@ -256,22 +263,22 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     else params.delete("arranger");
     if (viewMode && viewMode !== "grid") params.set("view", viewMode);
     else params.delete("view");
-    
+
     // 检查是否是用户主动改变了搜索或筛选条件
     if (isInitialized && initialFiltersRef.current) {
-      const filtersChanged = 
+      const filtersChanged =
         searchTerm !== initialFiltersRef.current.searchTerm ||
         selectedType !== initialFiltersRef.current.selectedType ||
         selectedYear !== initialFiltersRef.current.selectedYear ||
         selectedLyricist !== initialFiltersRef.current.selectedLyricist ||
         selectedComposer !== initialFiltersRef.current.selectedComposer ||
         selectedArranger !== initialFiltersRef.current.selectedArranger;
-      
+
       if (filtersChanged) {
         // 用户主动改变了筛选条件，重置到第一页
         params.delete("page");
         setPaginationPage(1);
-        
+
         // 更新初始筛选条件
         initialFiltersRef.current = {
           searchTerm,
@@ -293,7 +300,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
         selectedArranger,
       };
     }
-    
+
     const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
     if (newUrl !== window.location.pathname + window.location.search) {
       window.history.replaceState(null, "", newUrl);

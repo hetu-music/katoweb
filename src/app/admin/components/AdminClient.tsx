@@ -182,22 +182,25 @@ export default function AdminClientComponent({
   });
 
   // 包装分页函数以同步URL
-  const setCurrentPage = useCallback((page: number) => {
-    setPaginationPage(page);
-    
-    // 同步更新 URL
-    if (isClient && typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      if (page !== 1) {
-        params.set("page", page.toString());
-      } else {
-        params.delete("page");
+  const setCurrentPage = useCallback(
+    (page: number) => {
+      setPaginationPage(page);
+
+      // 同步更新 URL
+      if (isClient && typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        if (page !== 1) {
+          params.set("page", page.toString());
+        } else {
+          params.delete("page");
+        }
+        const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
+        window.history.replaceState(null, "", newUrl);
+        setSearchParams(new URLSearchParams(params.toString()));
       }
-      const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
-      window.history.replaceState(null, "", newUrl);
-      setSearchParams(new URLSearchParams(params.toString()));
-    }
-  }, [setPaginationPage, isClient, setSearchParams]);
+    },
+    [setPaginationPage, isClient, setSearchParams],
+  );
   const { csrfToken, handleLogout, logoutLoading } = useAuth();
   const [showAdd, setShowAdd] = useState(false);
   const [newSong, setNewSong] = useState<Partial<Song>>({
@@ -235,7 +238,7 @@ export default function AdminClientComponent({
 
     const params = new URLSearchParams(window.location.search);
     const currentQ = params.get("q") || "";
-    
+
     // 只有当搜索词发生变化时才更新URL
     if (searchTerm !== currentQ) {
       if (searchTerm) {
@@ -245,11 +248,11 @@ export default function AdminClientComponent({
       }
       // 搜索时重置到第一页
       params.delete("page");
-      
+
       const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
       window.history.replaceState(null, "", newUrl);
       setSearchParams(new URLSearchParams(params.toString()));
-      
+
       // 重置分页到第一页
       setPaginationPage(1);
     }
