@@ -58,6 +58,9 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   const [viewMode, setViewMode] = useState(
     () => searchParams?.get("view") || "grid",
   );
+  const [currentPageState, setCurrentPageState] = useState(
+    () => parseInt(searchParams?.get("page") || "1", 10),
+  );
   const [aboutOpen, setAboutOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const hasRestoredScroll = useRef(false);
@@ -98,6 +101,8 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     else params.delete("arranger");
     if (viewMode && viewMode !== "grid") params.set("view", viewMode);
     else params.delete("view");
+    if (currentPageState && currentPageState !== 1) params.set("page", currentPageState.toString());
+    else params.delete("page");
     const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
     if (newUrl !== window.location.pathname + window.location.search) {
       window.history.replaceState(null, "", newUrl);
@@ -110,6 +115,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     selectedComposer,
     selectedArranger,
     viewMode,
+    currentPageState,
   ]);
 
   // 3. 滚动位置保存与恢复
@@ -201,19 +207,40 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     selectedArranger,
   ]);
 
+  // 当筛选条件变化时，重置到第一页
+  useEffect(() => {
+    if (currentPageState !== 1) {
+      setCurrentPageState(1);
+      setPaginationPage(1);
+    }
+  }, [
+    debouncedSearchTerm,
+    selectedType,
+    selectedYear,
+    selectedLyricist,
+    selectedComposer,
+    selectedArranger,
+  ]);
+
   // 分页功能
   const {
     currentPage,
     totalPages,
     currentData: paginatedSongs,
-    setCurrentPage,
+    setCurrentPage: setPaginationPage,
     startIndex,
     endIndex,
   } = usePagination({
     data: filteredSongs,
     itemsPerPage: 25,
-    initialPage: 1,
+    initialPage: currentPageState,
   });
+
+  // 包装分页函数以同步URL
+  const setCurrentPage = (page: number) => {
+    setCurrentPageState(page);
+    setPaginationPage(page);
+  };
 
   return (
     <div className="relative min-h-screen">
@@ -401,6 +428,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                         setSelectedLyricist("全部");
                         setSelectedComposer("全部");
                         setSelectedArranger("全部");
+                        setCurrentPage(1);
                       }}
                       className="flex items-center gap-1.5 bg-gradient-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-red-300/30 rounded-full px-3 py-1.5 text-red-200 hover:text-red-100 hover:bg-gradient-to-r hover:from-red-500/30 hover:to-pink-500/30 transition-all duration-200 text-xs font-medium shadow-sm active:scale-95 touch-manipulation min-h-[32px]"
                       title="清除所有筛选"

@@ -5,11 +5,12 @@ import { mapAndSortSongs, filterSongs } from "../lib/utils";
 export function useSongs(
   initialSongs: SongDetail[],
   initialError: string | null,
+  initialSearchTerm: string = "",
 ) {
   const [songs, setSongs] = useState<SongDetail[]>(initialSongs);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(initialError);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
 
   // 使用统一的 filterSongs 函数，只传入搜索词，其他筛选条件设为默认值
   const filteredSongs = useMemo(() => {

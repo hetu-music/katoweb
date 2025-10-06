@@ -129,6 +129,12 @@ export default function AdminClientComponent({
   initialSongs: SongDetail[];
   initialError: string | null;
 }) {
+  // URL参数处理
+  const searchParams =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search)
+      : null;
+
   const {
     songs,
     setSongs,
@@ -140,21 +146,32 @@ export default function AdminClientComponent({
     setSearchTerm,
     filteredSongs,
     sortedSongs,
-  } = useSongs(initialSongs, initialError);
+  } = useSongs(initialSongs, initialError, searchParams?.get("q") || "");
+
+  // 分页状态
+  const [currentPageState, setCurrentPageState] = useState(
+    () => parseInt(searchParams?.get("page") || "1", 10),
+  );
 
   // 分页功能
   const {
     currentPage,
     totalPages,
     currentData: paginatedSongs,
-    setCurrentPage,
+    setCurrentPage: setPaginationPage,
     startIndex,
     endIndex,
   } = usePagination({
     data: sortedSongs,
     itemsPerPage: 25,
-    initialPage: 1,
+    initialPage: currentPageState,
   });
+
+  // 包装分页函数以同步URL
+  const setCurrentPage = (page: number) => {
+    setCurrentPageState(page);
+    setPaginationPage(page);
+  };
   const { csrfToken, handleLogout, logoutLoading } = useAuth();
   const [showAdd, setShowAdd] = useState(false);
   const [newSong, setNewSong] = useState<Partial<Song>>({
@@ -185,6 +202,28 @@ export default function AdminClientComponent({
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // URL同步逻辑
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (searchTerm) params.set("q", searchTerm);
+    else params.delete("q");
+    if (currentPageState && currentPageState !== 1) params.set("page", currentPageState.toString());
+    else params.delete("page");
+    const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
+    if (newUrl !== window.location.pathname + window.location.search) {
+      window.history.replaceState(null, "", newUrl);
+    }
+  }, [searchTerm, currentPageState]);
+
+  // 当搜索条件变化时，重置到第一页
+  useEffect(() => {
+    if (currentPageState !== 1) {
+      setCurrentPageState(1);
+      setPaginationPage(1);
+    }
+  }, [searchTerm]);
 
   // 自动弹出通知逻辑
   useEffect(() => {
