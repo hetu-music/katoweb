@@ -240,7 +240,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       onClick={() =>
                         setViewMode(viewMode === "grid" ? "list" : "grid")
                       }
-                      className="h-10 w-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all duration-200"
+                      className="p-2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all duration-200"
                     >
                       {viewMode === "grid" ? (
                         <List size={20} />
