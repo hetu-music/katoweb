@@ -30,6 +30,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   // 使用 useState 来管理 URL 参数，避免 hydration 错误
   const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Helper function to safely get first array element
   const getFirstElement = (arr: string[] | null | undefined): string => {
@@ -78,6 +79,9 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       setSelectedArranger(params.get("arranger") || "全部");
       setViewMode(params.get("view") || "grid");
       setCurrentPageState(parseInt(params.get("page") || "1", 10));
+
+      // 标记初始化完成
+      setTimeout(() => setIsInitialized(true), 0);
     }
   }, []);
 
@@ -213,21 +217,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     selectedArranger,
   ]);
 
-  // 当筛选条件变化时，重置到第一页
-  useEffect(() => {
-    if (currentPageState !== 1) {
-      setCurrentPageState(1);
-      setPaginationPage(1);
-    }
-  }, [
-    debouncedSearchTerm,
-    selectedType,
-    selectedYear,
-    selectedLyricist,
-    selectedComposer,
-    selectedArranger,
-  ]);
-
   // 分页功能
   const {
     currentPage,
@@ -241,6 +230,25 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     itemsPerPage: 30,
     initialPage: currentPageState,
   });
+
+  // 当筛选条件变化时，重置到第一页（但不在初始化时执行）
+  useEffect(() => {
+    // 只有在初始化完成后，用户主动更改筛选条件时才重置页面
+    if (isInitialized && currentPageState !== 1) {
+      setCurrentPageState(1);
+      setPaginationPage(1);
+    }
+  }, [
+    debouncedSearchTerm,
+    selectedType,
+    selectedYear,
+    selectedLyricist,
+    selectedComposer,
+    selectedArranger,
+    isInitialized,
+    currentPageState,
+    setPaginationPage,
+  ]);
 
   // 包装分页函数以同步URL
   const setCurrentPage = (page: number) => {
