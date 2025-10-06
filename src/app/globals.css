@@ -274,7 +274,7 @@ body {
 
 /* 右下角浮动按钮组样式 */
 .floating-buttons-bottom {
-  @apply fixed bottom-8 right-8 z-40 flex flex-col gap-3 items-center;
+  @apply fixed bottom-20 right-8 z-40 flex flex-col gap-3 items-center;
 }
 
 /* 浮动操作按钮统一样式 */
@@ -299,7 +299,7 @@ body {
 
   /* 移动端右下角按钮组对齐 */
   .floating-buttons-bottom {
-    @apply right-4 bottom-6 gap-2;
+    @apply right-4 bottom-16 gap-2;
   }
 
   /* 移动端浮动按钮大小调整 */

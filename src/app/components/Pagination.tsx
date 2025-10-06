@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 
 interface PaginationProps {
@@ -16,10 +16,23 @@ const Pagination: React.FC<PaginationProps> = ({
   onPageChange,
   className = "",
 }) => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   if (totalPages <= 1) return null;
 
   const getVisiblePages = () => {
-    const delta = 2;
+    // 移动端显示更少的页码
+    const delta = isMobile ? 1 : 2;
     const range = [];
     const rangeWithDots = [];
 
