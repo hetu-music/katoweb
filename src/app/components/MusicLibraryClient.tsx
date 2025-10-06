@@ -104,9 +104,11 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     if (isClient) {
       // 清理所有可能残留的触摸动画状态
       const cleanupTouchStates = () => {
-        const elements = document.querySelectorAll('.touch-active-pressed, .touch-navigating');
-        elements.forEach(element => {
-          element.classList.remove('touch-active-pressed', 'touch-navigating');
+        const elements = document.querySelectorAll(
+          ".touch-active-pressed, .touch-navigating",
+        );
+        elements.forEach((element) => {
+          element.classList.remove("touch-active-pressed", "touch-navigating");
         });
       };
 
@@ -129,26 +131,29 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
         cleanupTouchStates();
       };
 
-      window.addEventListener('focus', handleFocus);
-      document.addEventListener('visibilitychange', handleVisibilityChange);
-      window.addEventListener('popstate', handlePopState);
+      window.addEventListener("focus", handleFocus);
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+      window.addEventListener("popstate", handlePopState);
 
       // 页面加载完成后也清理一次
       const handleLoad = () => {
         cleanupTouchStates();
       };
-      
-      if (document.readyState === 'complete') {
+
+      if (document.readyState === "complete") {
         handleLoad();
       } else {
-        window.addEventListener('load', handleLoad);
+        window.addEventListener("load", handleLoad);
       }
 
       return () => {
-        window.removeEventListener('focus', handleFocus);
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-        window.removeEventListener('popstate', handlePopState);
-        window.removeEventListener('load', handleLoad);
+        window.removeEventListener("focus", handleFocus);
+        document.removeEventListener(
+          "visibilitychange",
+          handleVisibilityChange,
+        );
+        window.removeEventListener("popstate", handlePopState);
+        window.removeEventListener("load", handleLoad);
       };
     }
   }, [isClient]);

@@ -45,8 +45,6 @@ const GlobalWallpaperBackground: React.FC = () => {
     }
   }, [isImageLoaded, wallpaperEnabled, wallpaper?.url]);
 
-
-
   // 使用伪元素设置壁纸背景
   useEffect(() => {
     if (wallpaperEnabled && wallpaper?.url && showWallpaper) {

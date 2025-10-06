@@ -198,8 +198,6 @@ html.wallpaper-active::after {
   }
 }
 
-
-
 /* 额外的安全措施：确保壁纸在所有情况下都能覆盖整个屏幕 */
 html.wallpaper-active {
   /* 防止出现滚动条影响布局 */

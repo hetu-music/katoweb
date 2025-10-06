@@ -63,9 +63,11 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   useEffect(() => {
     // 清理所有可能残留的触摸动画状态
     const cleanupTouchStates = () => {
-      const elements = document.querySelectorAll('.touch-active-pressed, .touch-navigating');
-      elements.forEach(element => {
-        element.classList.remove('touch-active-pressed', 'touch-navigating');
+      const elements = document.querySelectorAll(
+        ".touch-active-pressed, .touch-navigating",
+      );
+      elements.forEach((element) => {
+        element.classList.remove("touch-active-pressed", "touch-navigating");
       });
     };
 
