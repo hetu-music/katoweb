@@ -454,10 +454,10 @@ export default function AdminClientComponent({
         </div>
 
         {/* Stats */}
-        <div className="flex items-center gap-4 mb-6 flex-wrap">
-          <div className="flex items-center gap-2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 shadow-sm">
-            <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-pulse"></div>
-            <span className="text-white font-medium text-sm">
+        <div className="flex items-center gap-2 sm:gap-4 mb-6 flex-wrap">
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/20 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
+            <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-pulse flex-shrink-0"></div>
+            <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
               总计{" "}
               <span className="text-blue-200 font-semibold">
                 {songs.length}
@@ -465,9 +465,9 @@ export default function AdminClientComponent({
               首
             </span>
           </div>
-          <div className="flex items-center gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-4 py-2 shadow-sm">
-            <div className="w-2 h-2 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full"></div>
-            <span className="text-white font-medium text-sm">
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
+            <div className="w-2 h-2 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full flex-shrink-0"></div>
+            <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
               筛选结果{" "}
               <span className="text-amber-200 font-semibold">
                 {filteredSongs.length}
@@ -476,9 +476,9 @@ export default function AdminClientComponent({
             </span>
           </div>
           {filteredSongs.length > 25 && (
-            <div className="flex items-center gap-2 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 backdrop-blur-sm border border-emerald-300/30 rounded-full px-4 py-2 shadow-sm">
-              <div className="w-2 h-2 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full"></div>
-              <span className="text-white font-medium text-sm">
+            <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 backdrop-blur-sm border border-emerald-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
+              <div className="w-2 h-2 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full flex-shrink-0"></div>
+              <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
                 当前页{" "}
                 <span className="text-emerald-200 font-semibold">
                   {startIndex}-{endIndex}

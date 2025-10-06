@@ -51,15 +51,15 @@ const Pagination: React.FC<PaginationProps> = ({
   const visiblePages = getVisiblePages();
 
   return (
-    <div className={`flex items-center justify-center gap-2 ${className}`}>
+    <div className={`flex items-center justify-center gap-1 sm:gap-2 ${className} overflow-x-auto px-4 sm:px-0`}>
       {/* 上一页按钮 */}
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="flex items-center justify-center w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+        className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex-shrink-0"
         title="上一页"
       >
-        <ChevronLeft size={16} />
+        <ChevronLeft size={14} className="sm:w-4 sm:h-4" />
       </button>
 
       {/* 页码按钮 */}
@@ -68,9 +68,9 @@ const Pagination: React.FC<PaginationProps> = ({
           return (
             <div
               key={`dots-${index}`}
-              className="flex items-center justify-center w-10 h-10 text-white/60"
+              className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 text-white/60 flex-shrink-0"
             >
-              <MoreHorizontal size={16} />
+              <MoreHorizontal size={14} className="sm:w-4 sm:h-4" />
             </div>
           );
         }
@@ -82,7 +82,7 @@ const Pagination: React.FC<PaginationProps> = ({
           <button
             key={pageNum}
             onClick={() => onPageChange(pageNum)}
-            className={`flex items-center justify-center w-10 h-10 rounded-xl border transition-all duration-200 font-medium ${
+            className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl border transition-all duration-200 font-medium text-xs sm:text-sm flex-shrink-0 ${
               isActive
                 ? "bg-gradient-to-r from-blue-500/80 to-purple-500/80 border-blue-400/60 text-white shadow-lg"
                 : "bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20"
@@ -97,16 +97,11 @@ const Pagination: React.FC<PaginationProps> = ({
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="flex items-center justify-center w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+        className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex-shrink-0"
         title="下一页"
       >
-        <ChevronRight size={16} />
+        <ChevronRight size={14} className="sm:w-4 sm:h-4" />
       </button>
-
-      {/* 页码信息 */}
-      <div className="ml-4 text-sm text-white/80 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-3 py-2">
-        第 {currentPage} 页，共 {totalPages} 页
-      </div>
     </div>
   );
 };
