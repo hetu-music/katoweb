@@ -45,45 +45,7 @@ const GlobalWallpaperBackground: React.FC = () => {
     }
   }, [isImageLoaded, wallpaperEnabled, wallpaper?.url]);
 
-  // 动态设置视口高度，解决移动端地址栏变化问题
-  useEffect(() => {
-    const updateViewportHeight = () => {
-      // 获取实际的视口高度
-      const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty("--vh", `${vh}px`);
 
-      // 为不支持100dvh的浏览器设置动态高度
-      if (!CSS.supports("height", "100dvh")) {
-        document.documentElement.style.setProperty(
-          "--dynamic-vh",
-          `${window.innerHeight}px`,
-        );
-      }
-    };
-
-    // 初始设置
-    updateViewportHeight();
-
-    // 监听窗口大小变化和方向变化
-    window.addEventListener("resize", updateViewportHeight);
-    window.addEventListener("orientationchange", updateViewportHeight);
-
-    // 监听视觉视口变化（处理虚拟键盘和地址栏）
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", updateViewportHeight);
-    }
-
-    return () => {
-      window.removeEventListener("resize", updateViewportHeight);
-      window.removeEventListener("orientationchange", updateViewportHeight);
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener(
-          "resize",
-          updateViewportHeight,
-        );
-      }
-    };
-  }, []);
 
   // 使用伪元素设置壁纸背景
   useEffect(() => {
