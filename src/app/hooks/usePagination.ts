@@ -31,8 +31,10 @@ export function usePagination<T>({
 
   // 当 initialPage 变化时，更新 currentPage（但避免无限循环）
   useEffect(() => {
-    setCurrentPage(initialPage);
-  }, [initialPage]);
+    if (currentPage !== initialPage) {
+      setCurrentPage(initialPage);
+    }
+  }, [initialPage]); // 移除 currentPage 依赖，避免循环
 
   // 计算总页数
   const totalPages = useMemo(() => {

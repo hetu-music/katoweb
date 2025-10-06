@@ -171,7 +171,7 @@ export default function AdminClientComponent({
         setCurrentPageState(pageFromUrl);
       }
     }
-  }, [isClient, searchParams, currentPageState]);
+  }, [isClient, searchParams]); // 移除 currentPageState 依赖，避免循环
 
   // 分页功能
   const {
@@ -228,13 +228,27 @@ export default function AdminClientComponent({
     if (!isClient || typeof window === "undefined") return;
 
     const params = new URLSearchParams(window.location.search);
-    if (searchTerm) params.set("q", searchTerm);
-    else params.delete("q");
-    if (currentPageState && currentPageState !== 1)
-      params.set("page", currentPageState.toString());
-    else params.delete("page");
-    const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
-    if (newUrl !== window.location.pathname + window.location.search) {
+    const currentQ = params.get("q") || "";
+    const currentPageFromUrl = parseInt(params.get("page") || "1", 10);
+    
+    // 只有当实际值发生变化时才更新URL
+    let needsUpdate = false;
+    
+    if (searchTerm !== currentQ) {
+      if (searchTerm) params.set("q", searchTerm);
+      else params.delete("q");
+      needsUpdate = true;
+    }
+    
+    if (currentPageState !== currentPageFromUrl) {
+      if (currentPageState && currentPageState !== 1)
+        params.set("page", currentPageState.toString());
+      else params.delete("page");
+      needsUpdate = true;
+    }
+    
+    if (needsUpdate) {
+      const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
       window.history.replaceState(null, "", newUrl);
       // 更新本地的 searchParams 状态
       setSearchParams(new URLSearchParams(params.toString()));
