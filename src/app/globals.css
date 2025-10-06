@@ -201,14 +201,14 @@ html.wallpaper-active::after {
     /* 额外的安全边距，防止出现空隙 */
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
-  
+
   html.wallpaper-active::after {
     /* 遮罩层也需要相同的处理 */
     height: var(--dynamic-vh);
     min-height: calc(var(--vh, 1vh) * 100);
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
-  
+
   /* 针对iOS Safari的特殊处理 */
   @supports (-webkit-touch-callout: none) {
     html.wallpaper-active::before,

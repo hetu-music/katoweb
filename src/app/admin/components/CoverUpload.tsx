@@ -28,23 +28,26 @@ export default function CoverUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 检查文件是否存在
-  const checkFileExists = useCallback(async (id: number) => {
-    if (!id) return false;
+  const checkFileExists = useCallback(
+    async (id: number) => {
+      if (!id) return false;
 
-    setCheckingFile(true);
-    try {
-      const result = await apiCheckFileExists(id, "cover", csrfToken);
-      const exists = result.exists;
-      setFileExists(exists);
-      return exists;
-    } catch (error) {
-      console.error("检查封面文件存在性失败:", error);
-      setFileExists(false);
-      return false;
-    } finally {
-      setCheckingFile(false);
-    }
-  }, [csrfToken]);
+      setCheckingFile(true);
+      try {
+        const result = await apiCheckFileExists(id, "cover", csrfToken);
+        const exists = result.exists;
+        setFileExists(exists);
+        return exists;
+      } catch (error) {
+        console.error("检查封面文件存在性失败:", error);
+        setFileExists(false);
+        return false;
+      } finally {
+        setCheckingFile(false);
+      }
+    },
+    [csrfToken],
+  );
 
   // 当songId变化时检查文件
   useEffect(() => {

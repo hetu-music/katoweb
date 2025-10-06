@@ -50,11 +50,14 @@ const GlobalWallpaperBackground: React.FC = () => {
     const updateViewportHeight = () => {
       // 获取实际的视口高度
       const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty('--vh', `${vh}px`);
+      document.documentElement.style.setProperty("--vh", `${vh}px`);
 
       // 为不支持100dvh的浏览器设置动态高度
-      if (!CSS.supports('height', '100dvh')) {
-        document.documentElement.style.setProperty('--dynamic-vh', `${window.innerHeight}px`);
+      if (!CSS.supports("height", "100dvh")) {
+        document.documentElement.style.setProperty(
+          "--dynamic-vh",
+          `${window.innerHeight}px`,
+        );
       }
     };
 
@@ -62,19 +65,22 @@ const GlobalWallpaperBackground: React.FC = () => {
     updateViewportHeight();
 
     // 监听窗口大小变化和方向变化
-    window.addEventListener('resize', updateViewportHeight);
-    window.addEventListener('orientationchange', updateViewportHeight);
+    window.addEventListener("resize", updateViewportHeight);
+    window.addEventListener("orientationchange", updateViewportHeight);
 
     // 监听视觉视口变化（处理虚拟键盘和地址栏）
     if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', updateViewportHeight);
+      window.visualViewport.addEventListener("resize", updateViewportHeight);
     }
 
     return () => {
-      window.removeEventListener('resize', updateViewportHeight);
-      window.removeEventListener('orientationchange', updateViewportHeight);
+      window.removeEventListener("resize", updateViewportHeight);
+      window.removeEventListener("orientationchange", updateViewportHeight);
       if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', updateViewportHeight);
+        window.visualViewport.removeEventListener(
+          "resize",
+          updateViewportHeight,
+        );
       }
     };
   }, []);

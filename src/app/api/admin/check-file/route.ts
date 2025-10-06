@@ -6,12 +6,15 @@ export async function GET(request: NextRequest) {
   try {
     // 验证 CSRF token
     if (!(await verifyCSRFToken(request))) {
-      return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Invalid CSRF token" },
+        { status: 403 },
+      );
     }
 
     // 验证用户身份
     const supabase = await createSupabaseServerClient();
-    
+
     // 优先用 Authorization header
     const authHeader = request.headers.get("authorization");
     let token: string | undefined;
@@ -33,7 +36,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser(token);
     if (userError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -46,20 +52,21 @@ export async function GET(request: NextRequest) {
     if (!songId || !fileType) {
       return NextResponse.json(
         { error: "Missing songId or type parameter" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!["cover", "score"].includes(fileType)) {
       return NextResponse.json(
         { error: "Invalid file type. Must be 'cover' or 'score'" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // 构建文件URL
     const baseUrl = "https://cover.hetu-music.com";
-    const filePath = fileType === "cover" ? `cover/${songId}.jpg` : `nmn/${songId}.jpg`;
+    const filePath =
+      fileType === "cover" ? `cover/${songId}.jpg` : `nmn/${songId}.jpg`;
     const fileUrl = `${baseUrl}/${filePath}`;
 
     // 发送HEAD请求检查文件是否存在
@@ -75,12 +82,11 @@ export async function GET(request: NextRequest) {
       fileType,
       url: fileUrl,
     });
-
   } catch (error) {
     console.error("Check file error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
