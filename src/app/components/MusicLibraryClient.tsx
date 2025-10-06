@@ -391,11 +391,11 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 shadow-sm">
-                    <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-indigo-400 rounded-full"></div>
+                  <div className="flex items-center gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-4 py-2 shadow-sm">
+                    <div className="w-2 h-2 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full"></div>
                     <span className="text-white font-medium text-sm">
                       筛选结果{" "}
-                      <span className="text-purple-200 font-semibold">
+                      <span className="text-amber-200 font-semibold">
                         {filteredSongs.length}
                       </span>{" "}
                       首
@@ -403,11 +403,11 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   </div>
 
                   {filteredSongs.length > 30 && (
-                    <div className="flex items-center gap-2 bg-gradient-to-r from-indigo-500/20 to-cyan-500/20 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 shadow-sm">
-                      <div className="w-2 h-2 bg-gradient-to-r from-indigo-400 to-cyan-400 rounded-full"></div>
+                    <div className="flex items-center gap-2 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 backdrop-blur-sm border border-emerald-300/30 rounded-full px-4 py-2 shadow-sm">
+                      <div className="w-2 h-2 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full"></div>
                       <span className="text-white font-medium text-sm">
                         当前页{" "}
-                        <span className="text-indigo-200 font-semibold">
+                        <span className="text-emerald-200 font-semibold">
                           {startIndex}-{endIndex}
                         </span>{" "}
                         首
