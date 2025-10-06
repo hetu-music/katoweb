@@ -29,11 +29,9 @@ export function usePagination<T>({
 }: UsePaginationProps<T>): UsePaginationReturn<T> {
   const [currentPage, setCurrentPage] = useState(initialPage);
 
-  // 当 initialPage 变化时，更新 currentPage
+  // 当 initialPage 变化时，更新 currentPage（但避免无限循环）
   useEffect(() => {
-    if (initialPage !== currentPage) {
-      setCurrentPage(initialPage);
-    }
+    setCurrentPage(initialPage);
   }, [initialPage]);
 
   // 计算总页数

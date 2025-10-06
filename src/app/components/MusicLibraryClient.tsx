@@ -242,17 +242,10 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     initialPage: currentPageState,
   });
 
-  // 当 currentPageState 变化时，同步到分页组件
-  useEffect(() => {
-    if (currentPageState !== currentPage) {
-      setPaginationPage(currentPageState);
-    }
-  }, [currentPageState, currentPage, setPaginationPage]);
-
   // 包装分页函数以同步URL
   const setCurrentPage = (page: number) => {
     setCurrentPageState(page);
-    setPaginationPage(page);
+    // 不需要调用 setPaginationPage，因为 usePagination 会通过 initialPage 自动更新
   };
 
   return (
