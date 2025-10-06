@@ -108,3 +108,22 @@ export async function apiUpdateAccountInfo(
   });
   return res.json();
 }
+
+// 检查文件是否存在
+export async function apiCheckFileExists(
+  songId: number,
+  fileType: "cover" | "score",
+  csrfToken: string,
+) {
+  const res = await fetch(
+    `/api/admin/check-file?songId=${songId}&type=${fileType}`,
+    {
+      method: "GET",
+      headers: {
+        "x-csrf-token": csrfToken,
+      },
+    },
+  );
+  if (!res.ok) throw new Error("Failed to check file existence");
+  return res.json();
+}
