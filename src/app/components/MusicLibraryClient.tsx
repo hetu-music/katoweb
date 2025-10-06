@@ -231,24 +231,22 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     initialPage: currentPageState,
   });
 
-  // 当筛选条件变化时，重置到第一页（但不在初始化时执行）
-  useEffect(() => {
-    // 只有在初始化完成后，用户主动更改筛选条件时才重置页面
-    if (isInitialized && currentPageState !== 1) {
-      setCurrentPageState(1);
-      setPaginationPage(1);
-    }
-  }, [
-    debouncedSearchTerm,
-    selectedType,
-    selectedYear,
-    selectedLyricist,
-    selectedComposer,
-    selectedArranger,
-    isInitialized,
-    currentPageState,
-    setPaginationPage,
-  ]);
+  // 当筛选条件变化时，重置到第一页（暂时禁用以测试分页功能）
+  // useEffect(() => {
+  //   if (isInitialized) {
+  //     setCurrentPageState(1);
+  //     setPaginationPage(1);
+  //   }
+  // }, [
+  //   debouncedSearchTerm,
+  //   selectedType,
+  //   selectedYear,
+  //   selectedLyricist,
+  //   selectedComposer,
+  //   selectedArranger,
+  //   isInitialized,
+  //   setPaginationPage,
+  // ]);
 
   // 包装分页函数以同步URL
   const setCurrentPage = (page: number) => {
