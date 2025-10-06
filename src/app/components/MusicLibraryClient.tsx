@@ -15,6 +15,8 @@ import { typeColorMap, genreColorMap } from "../lib/constants";
 import About from "./About";
 import TypeExplanation from "./TypeExplanation";
 import SongFilters from "./SongFilters";
+import Pagination from "./Pagination";
+import { usePagination } from "../hooks/usePagination";
 
 import WallpaperControls from "./WallpaperControls";
 import FloatingActionButtons from "./FloatingActionButtons";
@@ -24,38 +26,25 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   initialSongsData,
 }) => {
   const router = useRouter();
-  const searchParams =
-    typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search)
-      : null;
+
+  // 使用 useState 来管理 URL 参数，避免 hydration 错误
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   // Helper function to safely get first array element
   const getFirstElement = (arr: string[] | null | undefined): string => {
     return arr && arr.length > 0 && arr[0] ? arr[0] : "";
   };
 
-  // 1. 状态初始化
-  const [searchTerm, setSearchTerm] = useState(
-    () => searchParams?.get("q") || "",
-  );
-  const [selectedType, setSelectedType] = useState(
-    () => searchParams?.get("type") || "全部",
-  );
-  const [selectedYear, setSelectedYear] = useState(
-    () => searchParams?.get("year") || "全部",
-  );
-  const [selectedLyricist, setSelectedLyricist] = useState(
-    () => searchParams?.get("lyricist") || "全部",
-  );
-  const [selectedComposer, setSelectedComposer] = useState(
-    () => searchParams?.get("composer") || "全部",
-  );
-  const [selectedArranger, setSelectedArranger] = useState(
-    () => searchParams?.get("arranger") || "全部",
-  );
-  const [viewMode, setViewMode] = useState(
-    () => searchParams?.get("view") || "grid",
-  );
+  // 1. 状态初始化 - 使用默认值避免 hydration 错误
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedType, setSelectedType] = useState("全部");
+  const [selectedYear, setSelectedYear] = useState("全部");
+  const [selectedLyricist, setSelectedLyricist] = useState("全部");
+  const [selectedComposer, setSelectedComposer] = useState("全部");
+  const [selectedArranger, setSelectedArranger] = useState("全部");
+  const [viewMode, setViewMode] = useState("grid");
+  const [currentPageState, setCurrentPageState] = useState(1);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const hasRestoredScroll = useRef(false);
@@ -73,9 +62,30 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
   const songsData = initialSongsData;
 
-  // 2. 状态变化时同步到URL参数
+  // 在客户端挂载后初始化 URL 参数
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    setIsClient(true);
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      setSearchParams(params);
+
+      // 从 URL 参数恢复状态
+      setSearchTerm(params.get("q") || "");
+      setSelectedType(params.get("type") || "全部");
+      setSelectedYear(params.get("year") || "全部");
+      setSelectedLyricist(params.get("lyricist") || "全部");
+      setSelectedComposer(params.get("composer") || "全部");
+      setSelectedArranger(params.get("arranger") || "全部");
+      setViewMode(params.get("view") || "grid");
+      setCurrentPageState(parseInt(params.get("page") || "1", 10));
+
+
+    }
+  }, []);
+
+  // 2. 状态变化时同步到URL参数 - 只在客户端执行
+  useEffect(() => {
+    if (!isClient || typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     if (searchTerm) params.set("q", searchTerm);
     else params.delete("q");
@@ -96,9 +106,13 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     else params.delete("arranger");
     if (viewMode && viewMode !== "grid") params.set("view", viewMode);
     else params.delete("view");
+    if (currentPageState && currentPageState !== 1) params.set("page", currentPageState.toString());
+    else params.delete("page");
     const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
     if (newUrl !== window.location.pathname + window.location.search) {
       window.history.replaceState(null, "", newUrl);
+      // 更新本地的 searchParams 状态
+      setSearchParams(new URLSearchParams(params.toString()));
     }
   }, [
     searchTerm,
@@ -108,6 +122,8 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     selectedComposer,
     selectedArranger,
     viewMode,
+    currentPageState,
+    isClient,
   ]);
 
   // 3. 滚动位置保存与恢复
@@ -199,6 +215,28 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     selectedArranger,
   ]);
 
+  // 分页功能
+  const {
+    currentPage,
+    totalPages,
+    currentData: paginatedSongs,
+    setCurrentPage: setPaginationPage,
+    startIndex,
+    endIndex,
+  } = usePagination({
+    data: filteredSongs,
+    itemsPerPage: 30,
+    initialPage: currentPageState,
+  });
+
+
+
+  // 包装分页函数以同步URL
+  const setCurrentPage = (page: number) => {
+    setCurrentPageState(page);
+    // 不需要调用 setPaginationPage，因为 usePagination 会通过 initialPage 自动更新
+  };
+
   return (
     <div className="relative min-h-screen">
       <div
@@ -217,7 +255,22 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
           <div className="mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-2">
               <div className="flex flex-col sm:flex-row sm:items-center w-full">
-                <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-blue-300 to-indigo-400 drop-shadow-lg tracking-wider mb-2 sm:mb-0">
+                <h1
+                  className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-blue-300 to-indigo-400 drop-shadow-lg tracking-wider mb-2 sm:mb-0 cursor-pointer hover:from-purple-200 hover:via-blue-200 hover:to-indigo-300 transition-all duration-300 select-none"
+                  onClick={() => {
+                    // 重置所有筛选条件和页面
+                    setSearchTerm("");
+                    setSelectedType("全部");
+                    setSelectedYear("全部");
+                    setSelectedLyricist("全部");
+                    setSelectedComposer("全部");
+                    setSelectedArranger("全部");
+                    setViewMode("grid");
+                    setCurrentPageState(1);
+                    setPaginationPage(1);
+                  }}
+                  title="点击重置所有筛选条件"
+                >
                   河图作品勘鉴
                 </h1>
                 {/* 小屏下按钮行 */}
@@ -240,7 +293,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       onClick={() =>
                         setViewMode(viewMode === "grid" ? "list" : "grid")
                       }
-                      className="h-10 w-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all duration-200"
+                      className="p-2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all duration-200"
                     >
                       {viewMode === "grid" ? (
                         <List size={20} />
@@ -326,10 +379,10 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
               {/* 歌曲总数和筛选数统计 */}
               <div className="mt-4 mb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 {/* 统计信息 */}
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 shadow-sm">
-                    <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-pulse"></div>
-                    <span className="text-white font-medium text-sm">
+                <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+                  <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/20 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
+                    <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-pulse flex-shrink-0"></div>
+                    <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
                       总计{" "}
                       <span className="text-blue-200 font-semibold">
                         {songsData.length}
@@ -338,69 +391,40 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 shadow-sm">
-                    <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-indigo-400 rounded-full"></div>
-                    <span className="text-white font-medium text-sm">
-                      已显示{" "}
-                      <span className="text-purple-200 font-semibold">
+                  <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
+                    <div className="w-2 h-2 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full flex-shrink-0"></div>
+                    <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
+                      筛选结果{" "}
+                      <span className="text-amber-200 font-semibold">
                         {filteredSongs.length}
                       </span>{" "}
                       首
                     </span>
                   </div>
-                </div>
 
-                {/* 筛选状态指示器 */}
-                {(searchTerm ||
-                  selectedType !== "全部" ||
-                  selectedYear !== "全部" ||
-                  selectedLyricist !== "全部" ||
-                  selectedComposer !== "全部" ||
-                  selectedArranger !== "全部") && (
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-3 py-1.5 shadow-sm min-h-[32px]">
-                      <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></div>
-                      <span className="text-amber-200 font-medium text-xs">
-                        已应用筛选
+                  {filteredSongs.length > 30 && (
+                    <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 backdrop-blur-sm border border-emerald-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
+                      <div className="w-2 h-2 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full flex-shrink-0"></div>
+                      <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
+                        当前页{" "}
+                        <span className="text-emerald-200 font-semibold">
+                          {startIndex}-{endIndex}
+                        </span>{" "}
+                        首
                       </span>
                     </div>
-                    <button
-                      onClick={() => {
-                        setSearchTerm("");
-                        setSelectedType("全部");
-                        setSelectedYear("全部");
-                        setSelectedLyricist("全部");
-                        setSelectedComposer("全部");
-                        setSelectedArranger("全部");
-                      }}
-                      className="flex items-center gap-1.5 bg-gradient-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-red-300/30 rounded-full px-3 py-1.5 text-red-200 hover:text-red-100 hover:bg-gradient-to-r hover:from-red-500/30 hover:to-pink-500/30 transition-all duration-200 text-xs font-medium shadow-sm active:scale-95 touch-manipulation min-h-[32px]"
-                      title="清除所有筛选"
-                    >
-                      <svg
-                        className="w-3 h-3"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                      <span>清除</span>
-                    </button>
-                  </div>
-                )}
+                  )}
+                </div>
+
+
               </div>
             </div>
           </div>
 
           {/* 歌曲列表 */}
           {viewMode === "grid" ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-6">
-              {filteredSongs.map((song) => (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-5 gap-6">
+              {paginatedSongs.map((song) => (
                 <div
                   key={song.id}
                   className="group cursor-pointer touch-active"
@@ -487,7 +511,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
             </div>
           ) : (
             <div className="space-y-2">
-              {filteredSongs.map((song, index) => (
+              {paginatedSongs.map((song, index) => (
                 <div
                   key={song.id}
                   className="group flex items-center p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-200 cursor-pointer touch-active"
@@ -524,7 +548,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                 >
                   {/* 序号 */}
                   <div className="w-8 text-center text-gray-400 text-sm">
-                    {index + 1}
+                    {startIndex + index}
                   </div>
 
                   {/* 专辑封面 */}
@@ -630,6 +654,17 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* 分页组件 */}
+          {filteredSongs.length > 30 && (
+            <div className="mt-8">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
             </div>
           )}
 

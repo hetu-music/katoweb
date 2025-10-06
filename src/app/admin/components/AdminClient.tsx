@@ -19,6 +19,8 @@ import {
 } from "../../lib/utils";
 import { songFields, genreColorMap, typeColorMap } from "../../lib/constants";
 import FloatingActionButtons from "../../components/FloatingActionButtons";
+import Pagination from "../../components/Pagination";
+import { usePagination } from "../../hooks/usePagination";
 import { apiCreateSong, apiUpdateSong } from "../../lib/api";
 import { useSongs } from "../../hooks/useSongs";
 import { useAuth } from "../../hooks/useAuth";
@@ -127,6 +129,19 @@ export default function AdminClientComponent({
   initialSongs: SongDetail[];
   initialError: string | null;
 }) {
+  // 使用 useState 来管理 URL 参数，避免 hydration 错误
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  // 在客户端挂载后初始化 URL 参数
+  useEffect(() => {
+    setIsClient(true);
+    if (typeof window !== "undefined") {
+      setSearchParams(new URLSearchParams(window.location.search));
+
+    }
+  }, []);
+
   const {
     songs,
     setSongs,
@@ -138,7 +153,40 @@ export default function AdminClientComponent({
     setSearchTerm,
     filteredSongs,
     sortedSongs,
-  } = useSongs(initialSongs, initialError);
+  } = useSongs(initialSongs, initialError, isClient ? (searchParams?.get("q") || "") : "");
+
+  // 分页状态 - 使用默认值避免 hydration 错误
+  const [currentPageState, setCurrentPageState] = useState(1);
+
+  // 在客户端挂载后更新分页状态
+  useEffect(() => {
+    if (isClient && searchParams) {
+      const pageFromUrl = parseInt(searchParams.get("page") || "1", 10);
+      if (pageFromUrl !== currentPageState) {
+        setCurrentPageState(pageFromUrl);
+      }
+    }
+  }, [isClient, searchParams]);
+
+  // 分页功能
+  const {
+    currentPage,
+    totalPages,
+    currentData: paginatedSongs,
+    setCurrentPage: setPaginationPage,
+    startIndex,
+    endIndex,
+  } = usePagination({
+    data: sortedSongs,
+    itemsPerPage: 25,
+    initialPage: currentPageState,
+  });
+
+  // 包装分页函数以同步URL
+  const setCurrentPage = (page: number) => {
+    setCurrentPageState(page);
+    // 不需要调用 setPaginationPage，因为 usePagination 会通过 initialPage 自动更新
+  };
   const { csrfToken, handleLogout, logoutLoading } = useAuth();
   const [showAdd, setShowAdd] = useState(false);
   const [newSong, setNewSong] = useState<Partial<Song>>({
@@ -169,6 +217,25 @@ export default function AdminClientComponent({
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // URL同步逻辑 - 只在客户端执行
+  useEffect(() => {
+    if (!isClient || typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+    if (searchTerm) params.set("q", searchTerm);
+    else params.delete("q");
+    if (currentPageState && currentPageState !== 1) params.set("page", currentPageState.toString());
+    else params.delete("page");
+    const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
+    if (newUrl !== window.location.pathname + window.location.search) {
+      window.history.replaceState(null, "", newUrl);
+      // 更新本地的 searchParams 状态
+      setSearchParams(new URLSearchParams(params.toString()));
+    }
+  }, [searchTerm, currentPageState, isClient]);
+
+
 
   // 自动弹出通知逻辑
   useEffect(() => {
@@ -323,7 +390,18 @@ export default function AdminClientComponent({
         {/* Header Section */}
         <div className="mb-8 flex flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <h1 className="text-4xl font-bold text-white mb-0">管理页面</h1>
+            <h1
+              className="text-4xl font-bold text-white mb-0 cursor-pointer hover:text-blue-200 transition-colors duration-300 select-none"
+              onClick={() => {
+                // 重置搜索条件和页面
+                setSearchTerm("");
+                setCurrentPageState(1);
+                setPaginationPage(1);
+              }}
+              title="点击重置搜索条件"
+            >
+              管理页面
+            </h1>
             {/* 通知按钮 */}
             <button
               onClick={() => setShowNotification(true)}
@@ -376,10 +454,10 @@ export default function AdminClientComponent({
         </div>
 
         {/* Stats */}
-        <div className="flex items-center gap-4 mb-6">
-          <div className="flex items-center gap-2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 shadow-sm">
-            <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-pulse"></div>
-            <span className="text-white font-medium text-sm">
+        <div className="flex items-center gap-2 sm:gap-4 mb-6 flex-wrap">
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/20 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
+            <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-pulse flex-shrink-0"></div>
+            <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
               总计{" "}
               <span className="text-blue-200 font-semibold">
                 {songs.length}
@@ -387,16 +465,28 @@ export default function AdminClientComponent({
               首
             </span>
           </div>
-          <div className="flex items-center gap-2 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 shadow-sm">
-            <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-indigo-400 rounded-full"></div>
-            <span className="text-white font-medium text-sm">
-              已显示{" "}
-              <span className="text-purple-200 font-semibold">
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
+            <div className="w-2 h-2 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full flex-shrink-0"></div>
+            <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
+              筛选结果{" "}
+              <span className="text-amber-200 font-semibold">
                 {filteredSongs.length}
               </span>{" "}
               首
             </span>
           </div>
+          {filteredSongs.length > 25 && (
+            <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 backdrop-blur-sm border border-emerald-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
+              <div className="w-2 h-2 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full flex-shrink-0"></div>
+              <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
+                当前页{" "}
+                <span className="text-emerald-200 font-semibold">
+                  {startIndex}-{endIndex}
+                </span>{" "}
+                首
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Loading and Error States */}
@@ -450,11 +540,11 @@ export default function AdminClientComponent({
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedSongs.map((song, idx) => (
+                  {paginatedSongs.map((song, idx) => (
                     <SongRow
                       key={song.id}
                       song={song}
-                      idx={idx}
+                      idx={startIndex + idx - 1}
                       expandedRows={expandedRows}
                       toggleRowExpansion={toggleRowExpansion}
                       handleEdit={handleEdit}
@@ -463,6 +553,17 @@ export default function AdminClientComponent({
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* 分页组件 */}
+        {!loading && filteredSongs.length > 25 && (
+          <div className="mt-8">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </div>
         )}
 
@@ -569,11 +670,10 @@ export default function AdminClientComponent({
         <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div
             className={`relative max-w-sm w-full p-6 rounded-2xl shadow-2xl border-2 backdrop-blur-md transform transition-all duration-300 animate-in zoom-in-95 slide-in-from-bottom-2
-            ${
-              addResultMessage === "成功" || editResultMessage === "成功"
+            ${addResultMessage === "成功" || editResultMessage === "成功"
                 ? "bg-gradient-to-br from-green-500/90 to-emerald-600/90 border-green-400/60 text-white"
                 : "bg-gradient-to-br from-red-500/90 to-red-600/90 border-red-400/60 text-white"
-            }
+              }
           `}
           >
             {/* 装饰性背景元素 */}
@@ -582,11 +682,10 @@ export default function AdminClientComponent({
             {/* 图标和消息 */}
             <div className="relative flex flex-col items-center text-center space-y-4">
               <div
-                className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                  addResultMessage === "成功" || editResultMessage === "成功"
-                    ? "bg-green-400/30 border-2 border-green-300/50"
-                    : "bg-red-400/30 border-2 border-red-300/50"
-                }`}
+                className={`w-16 h-16 rounded-full flex items-center justify-center ${addResultMessage === "成功" || editResultMessage === "成功"
+                  ? "bg-green-400/30 border-2 border-green-300/50"
+                  : "bg-red-400/30 border-2 border-red-300/50"
+                  }`}
               >
                 {addResultMessage === "成功" || editResultMessage === "成功" ? (
                   <svg
@@ -623,22 +722,20 @@ export default function AdminClientComponent({
 
               <div>
                 <h3
-                  className={`text-xl font-bold mb-2 ${
-                    addResultMessage === "成功" || editResultMessage === "成功"
-                      ? "text-green-100"
-                      : "text-red-100"
-                  }`}
+                  className={`text-xl font-bold mb-2 ${addResultMessage === "成功" || editResultMessage === "成功"
+                    ? "text-green-100"
+                    : "text-red-100"
+                    }`}
                 >
                   {addResultMessage === "成功" || editResultMessage === "成功"
                     ? "操作成功"
                     : "操作失败"}
                 </h3>
                 <p
-                  className={`text-sm opacity-90 ${
-                    addResultMessage === "成功" || editResultMessage === "成功"
-                      ? "text-green-200"
-                      : "text-red-200"
-                  }`}
+                  className={`text-sm opacity-90 ${addResultMessage === "成功" || editResultMessage === "成功"
+                    ? "text-green-200"
+                    : "text-red-200"
+                    }`}
                 >
                   {addResultMessage || editResultMessage}
                 </p>
@@ -651,11 +748,10 @@ export default function AdminClientComponent({
                 setAddResultMessage(null);
                 setEditResultMessage(null);
               }}
-              className={`absolute top-3 right-3 p-1 rounded-full hover:bg-white/20 transition-colors duration-200 ${
-                addResultMessage === "成功" || editResultMessage === "成功"
-                  ? "text-green-200"
-                  : "text-red-200"
-              }`}
+              className={`absolute top-3 right-3 p-1 rounded-full hover:bg-white/20 transition-colors duration-200 ${addResultMessage === "成功" || editResultMessage === "成功"
+                ? "text-green-200"
+                : "text-red-200"
+                }`}
             >
               <X size={16} />
             </button>
@@ -663,11 +759,10 @@ export default function AdminClientComponent({
             {/* 自动关闭倒计时 */}
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 rounded-b-2xl overflow-hidden">
               <div
-                className={`h-full transition-all duration-3000 ease-linear ${
-                  addResultMessage === "成功" || editResultMessage === "成功"
-                    ? "bg-green-300"
-                    : "bg-red-300"
-                }`}
+                className={`h-full transition-all duration-3000 ease-linear ${addResultMessage === "成功" || editResultMessage === "成功"
+                  ? "bg-green-300"
+                  : "bg-red-300"
+                  }`}
               ></div>
             </div>
           </div>

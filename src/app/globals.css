@@ -53,7 +53,8 @@ body {
 }
 
 .filter-select {
-  @apply h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none appearance-none cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-l-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px] text-center font-medium transition-all duration-200;
+  @apply h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none appearance-none cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px] text-center font-medium transition-all duration-200;
+  text-align: center !important;
 }
 
 /* 下拉框获得焦点时轻微变亮 */
@@ -273,7 +274,7 @@ body {
 
 /* 右下角浮动按钮组样式 */
 .floating-buttons-bottom {
-  @apply fixed bottom-8 right-8 z-40 flex flex-col gap-3 items-center;
+  @apply fixed bottom-20 right-8 z-40 flex flex-col gap-3 items-center;
 }
 
 /* 浮动操作按钮统一样式 */
@@ -298,7 +299,7 @@ body {
 
   /* 移动端右下角按钮组对齐 */
   .floating-buttons-bottom {
-    @apply right-4 bottom-6 gap-2;
+    @apply right-4 bottom-16 gap-2;
   }
 
   /* 移动端浮动按钮大小调整 */
