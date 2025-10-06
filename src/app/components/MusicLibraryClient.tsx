@@ -28,7 +28,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   const router = useRouter();
 
   // 使用 useState 来管理 URL 参数，避免 hydration 错误
-  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
   const [isClient, setIsClient] = useState(false);
 
   // Helper function to safely get first array element
@@ -67,7 +66,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     setIsClient(true);
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
-      setSearchParams(params);
 
       // 从 URL 参数恢复状态
       setSearchTerm(params.get("q") || "");
@@ -78,8 +76,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       setSelectedArranger(params.get("arranger") || "全部");
       setViewMode(params.get("view") || "grid");
       setCurrentPageState(parseInt(params.get("page") || "1", 10));
-
-
     }
   }, []);
 
@@ -106,13 +102,12 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     else params.delete("arranger");
     if (viewMode && viewMode !== "grid") params.set("view", viewMode);
     else params.delete("view");
-    if (currentPageState && currentPageState !== 1) params.set("page", currentPageState.toString());
+    if (currentPageState && currentPageState !== 1)
+      params.set("page", currentPageState.toString());
     else params.delete("page");
     const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
     if (newUrl !== window.location.pathname + window.location.search) {
       window.history.replaceState(null, "", newUrl);
-      // 更新本地的 searchParams 状态
-      setSearchParams(new URLSearchParams(params.toString()));
     }
   }, [
     searchTerm,
@@ -228,8 +223,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     itemsPerPage: 30,
     initialPage: currentPageState,
   });
-
-
 
   // 包装分页函数以同步URL
   const setCurrentPage = (page: number) => {
@@ -415,8 +408,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                     </div>
                   )}
                 </div>
-
-
               </div>
             </div>
           </div>

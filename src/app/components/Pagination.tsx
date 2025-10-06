@@ -22,10 +22,10 @@ const Pagination: React.FC<PaginationProps> = ({
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 640);
     };
-    
+
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   if (totalPages <= 1) return null;
@@ -64,7 +64,9 @@ const Pagination: React.FC<PaginationProps> = ({
   const visiblePages = getVisiblePages();
 
   return (
-    <div className={`flex items-center justify-center gap-1 sm:gap-2 ${className} overflow-x-auto px-4 sm:px-0`}>
+    <div
+      className={`flex items-center justify-center gap-1 sm:gap-2 ${className} overflow-x-auto px-4 sm:px-0`}
+    >
       {/* 上一页按钮 */}
       <button
         onClick={() => onPageChange(currentPage - 1)}
