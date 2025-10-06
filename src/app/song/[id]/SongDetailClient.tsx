@@ -59,6 +59,20 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
     }
   }, [song.title, song.artist]);
 
+  // 清理触摸动画状态
+  useEffect(() => {
+    // 清理所有可能残留的触摸动画状态
+    const cleanupTouchStates = () => {
+      const elements = document.querySelectorAll('.touch-active-pressed, .touch-navigating');
+      elements.forEach(element => {
+        element.classList.remove('touch-active-pressed', 'touch-navigating');
+      });
+    };
+
+    // 页面加载时立即清理
+    cleanupTouchStates();
+  }, []);
+
   // 滚动监听
   useEffect(() => {
     const onScroll = () => {

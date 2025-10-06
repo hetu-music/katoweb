@@ -99,6 +99,60 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     selectedArranger: string;
   } | null>(null);
 
+  // 清理触摸动画状态
+  useEffect(() => {
+    if (isClient) {
+      // 清理所有可能残留的触摸动画状态
+      const cleanupTouchStates = () => {
+        const elements = document.querySelectorAll('.touch-active-pressed, .touch-navigating');
+        elements.forEach(element => {
+          element.classList.remove('touch-active-pressed', 'touch-navigating');
+        });
+      };
+
+      // 立即清理
+      cleanupTouchStates();
+
+      // 监听页面获得焦点时清理（从其他页面返回时）
+      const handleFocus = () => {
+        cleanupTouchStates();
+      };
+
+      const handleVisibilityChange = () => {
+        if (!document.hidden) {
+          cleanupTouchStates();
+        }
+      };
+
+      // 监听浏览器前进后退按钮
+      const handlePopState = () => {
+        cleanupTouchStates();
+      };
+
+      window.addEventListener('focus', handleFocus);
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      window.addEventListener('popstate', handlePopState);
+
+      // 页面加载完成后也清理一次
+      const handleLoad = () => {
+        cleanupTouchStates();
+      };
+      
+      if (document.readyState === 'complete') {
+        handleLoad();
+      } else {
+        window.addEventListener('load', handleLoad);
+      }
+
+      return () => {
+        window.removeEventListener('focus', handleFocus);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        window.removeEventListener('popstate', handlePopState);
+        window.removeEventListener('load', handleLoad);
+      };
+    }
+  }, [isClient]);
+
   // 3. 滚动位置保存与恢复
   useEffect(() => {
     if (!hasRestoredScroll.current && isClient) {
