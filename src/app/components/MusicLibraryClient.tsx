@@ -66,6 +66,8 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   const hasRestoredScroll = useRef(false);
   const [restoringScroll, setRestoringScroll] = useState(true);
   const [typeExplanationOpen, setTypeExplanationOpen] = useState(false);
+  // 跟踪是否是初始化状态
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // 壁纸功能
   const {
@@ -118,20 +120,23 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     currentPageState,
   ]);
 
-  // 3. 滚动位置保存与恢复
+  // 3. 滚动位置保存与恢复 - 延迟执行，确保分页状态已恢复
   useEffect(() => {
-    if (!hasRestoredScroll.current) {
+    if (!hasRestoredScroll.current && isInitialized) {
       const scrollY = sessionStorage.getItem("music_scrollY");
       if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY, 10));
-        sessionStorage.removeItem("music_scrollY");
-        hasRestoredScroll.current = true;
+        // 延迟滚动恢复，确保页面内容已渲染
+        setTimeout(() => {
+          window.scrollTo(0, parseInt(scrollY, 10));
+          sessionStorage.removeItem("music_scrollY");
+          hasRestoredScroll.current = true;
+        }, 100);
       }
       requestAnimationFrame(() => setRestoringScroll(false));
-    } else {
+    } else if (isInitialized) {
       setRestoringScroll(false);
     }
-  }, []);
+  }, [isInitialized]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -207,9 +212,14 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     selectedArranger,
   ]);
 
-  // 当筛选条件变化时，重置到第一页
+  // 初始化完成后设置标志
   useEffect(() => {
-    if (currentPageState !== 1) {
+    setIsInitialized(true);
+  }, []);
+
+  // 当筛选条件变化时，重置到第一页（但不在初始化时执行）
+  useEffect(() => {
+    if (isInitialized && currentPageState !== 1) {
       setCurrentPageState(1);
       setPaginationPage(1);
     }
@@ -220,6 +230,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     selectedLyricist,
     selectedComposer,
     selectedArranger,
+    isInitialized,
   ]);
 
   // 分页功能
