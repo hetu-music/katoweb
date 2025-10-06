@@ -29,6 +29,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
   // 使用 useState 来管理 URL 参数，避免 hydration 错误
   const [isClient, setIsClient] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Helper function to safely get first array element
   const getFirstElement = (arr: string[] | null | undefined): string => {
@@ -76,55 +77,23 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       setSelectedArranger(params.get("arranger") || "全部");
       setViewMode(params.get("view") || "grid");
       // 页面状态将通过 usePagination 的 initialPage 处理
+      
+      // 标记初始化完成
+      setTimeout(() => setIsInitialized(true), 0);
     }
   }, []);
 
 
 
-  // 2. 状态变化时同步到URL参数 - 只在客户端执行
-  useEffect(() => {
-    if (!isClient || typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    
-    // 更新搜索和筛选参数
-    if (searchTerm) params.set("q", searchTerm);
-    else params.delete("q");
-    if (selectedType && selectedType !== "全部")
-      params.set("type", selectedType);
-    else params.delete("type");
-    if (selectedYear && selectedYear !== "全部")
-      params.set("year", selectedYear);
-    else params.delete("year");
-    if (selectedLyricist && selectedLyricist !== "全部")
-      params.set("lyricist", selectedLyricist);
-    else params.delete("lyricist");
-    if (selectedComposer && selectedComposer !== "全部")
-      params.set("composer", selectedComposer);
-    else params.delete("composer");
-    if (selectedArranger && selectedArranger !== "全部")
-      params.set("arranger", selectedArranger);
-    else params.delete("arranger");
-    if (viewMode && viewMode !== "grid") params.set("view", viewMode);
-    else params.delete("view");
-    
-    // 当搜索或筛选条件变化时，重置到第一页
-    params.delete("page");
-    
-    const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
-    if (newUrl !== window.location.pathname + window.location.search) {
-      window.history.replaceState(null, "", newUrl);
-      // 分页重置将通过 usePagination 的 initialPage 自动处理
-    }
-  }, [
-    searchTerm,
-    selectedType,
-    selectedYear,
-    selectedLyricist,
-    selectedComposer,
-    selectedArranger,
-    viewMode,
-    isClient,
-  ]);
+  // 跟踪初始的搜索条件，用于判断是否是用户主动改变
+  const initialFiltersRef = useRef<{
+    searchTerm: string;
+    selectedType: string;
+    selectedYear: string;
+    selectedLyricist: string;
+    selectedComposer: string;
+    selectedArranger: string;
+  } | null>(null);
 
   // 3. 滚动位置保存与恢复
   useEffect(() => {
@@ -241,6 +210,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     data: filteredSongs,
     itemsPerPage: 30,
     initialPage: getInitialPage(),
+    resetOnDataChange: false, // 不自动重置，由 URL 同步逻辑处理
   });
 
   // 包装分页函数以同步URL
@@ -259,6 +229,87 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       window.history.replaceState(null, "", newUrl);
     }
   }, [setPaginationPage, isClient]);
+
+  // 2. 状态变化时同步到URL参数 - 只在客户端执行
+  useEffect(() => {
+    if (!isClient || typeof window === "undefined") return;
+    
+    const params = new URLSearchParams(window.location.search);
+    
+    // 更新搜索和筛选参数
+    if (searchTerm) params.set("q", searchTerm);
+    else params.delete("q");
+    if (selectedType && selectedType !== "全部")
+      params.set("type", selectedType);
+    else params.delete("type");
+    if (selectedYear && selectedYear !== "全部")
+      params.set("year", selectedYear);
+    else params.delete("year");
+    if (selectedLyricist && selectedLyricist !== "全部")
+      params.set("lyricist", selectedLyricist);
+    else params.delete("lyricist");
+    if (selectedComposer && selectedComposer !== "全部")
+      params.set("composer", selectedComposer);
+    else params.delete("composer");
+    if (selectedArranger && selectedArranger !== "全部")
+      params.set("arranger", selectedArranger);
+    else params.delete("arranger");
+    if (viewMode && viewMode !== "grid") params.set("view", viewMode);
+    else params.delete("view");
+    
+    // 检查是否是用户主动改变了搜索或筛选条件
+    if (isInitialized && initialFiltersRef.current) {
+      const filtersChanged = 
+        searchTerm !== initialFiltersRef.current.searchTerm ||
+        selectedType !== initialFiltersRef.current.selectedType ||
+        selectedYear !== initialFiltersRef.current.selectedYear ||
+        selectedLyricist !== initialFiltersRef.current.selectedLyricist ||
+        selectedComposer !== initialFiltersRef.current.selectedComposer ||
+        selectedArranger !== initialFiltersRef.current.selectedArranger;
+      
+      if (filtersChanged) {
+        // 用户主动改变了筛选条件，重置到第一页
+        params.delete("page");
+        setPaginationPage(1);
+        
+        // 更新初始筛选条件
+        initialFiltersRef.current = {
+          searchTerm,
+          selectedType,
+          selectedYear,
+          selectedLyricist,
+          selectedComposer,
+          selectedArranger,
+        };
+      }
+    } else if (isInitialized && !initialFiltersRef.current) {
+      // 记录初始的筛选条件
+      initialFiltersRef.current = {
+        searchTerm,
+        selectedType,
+        selectedYear,
+        selectedLyricist,
+        selectedComposer,
+        selectedArranger,
+      };
+    }
+    
+    const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
+    if (newUrl !== window.location.pathname + window.location.search) {
+      window.history.replaceState(null, "", newUrl);
+    }
+  }, [
+    searchTerm,
+    selectedType,
+    selectedYear,
+    selectedLyricist,
+    selectedComposer,
+    selectedArranger,
+    viewMode,
+    isClient,
+    isInitialized,
+    setPaginationPage,
+  ]);
 
   // 额外的滚动恢复逻辑 - 在分页数据更新后执行
   useEffect(() => {

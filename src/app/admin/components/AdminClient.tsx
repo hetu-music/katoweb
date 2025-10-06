@@ -178,6 +178,7 @@ export default function AdminClientComponent({
     data: sortedSongs,
     itemsPerPage: 25,
     initialPage: getInitialPage(),
+    resetOnDataChange: false, // 由 URL 同步逻辑处理重置
   });
 
   // 包装分页函数以同步URL
