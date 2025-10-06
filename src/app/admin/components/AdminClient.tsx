@@ -217,21 +217,13 @@ export default function AdminClientComponent({
     }
   }, [searchTerm, currentPageState]);
 
-  // 跟踪是否是初始化状态
-  const [isInitialized, setIsInitialized] = useState(false);
-
-  // 初始化完成后设置标志
+  // 当搜索条件变化时，重置到第一页
   useEffect(() => {
-    setIsInitialized(true);
-  }, []);
-
-  // 当搜索条件变化时，重置到第一页（但不在初始化时执行）
-  useEffect(() => {
-    if (isInitialized && currentPageState !== 1) {
+    if (currentPageState !== 1) {
       setCurrentPageState(1);
       setPaginationPage(1);
     }
-  }, [searchTerm, isInitialized]);
+  }, [searchTerm]);
 
   // 自动弹出通知逻辑
   useEffect(() => {
@@ -655,10 +647,11 @@ export default function AdminClientComponent({
         <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div
             className={`relative max-w-sm w-full p-6 rounded-2xl shadow-2xl border-2 backdrop-blur-md transform transition-all duration-300 animate-in zoom-in-95 slide-in-from-bottom-2
-            ${addResultMessage === "成功" || editResultMessage === "成功"
+            ${
+              addResultMessage === "成功" || editResultMessage === "成功"
                 ? "bg-gradient-to-br from-green-500/90 to-emerald-600/90 border-green-400/60 text-white"
                 : "bg-gradient-to-br from-red-500/90 to-red-600/90 border-red-400/60 text-white"
-              }
+            }
           `}
           >
             {/* 装饰性背景元素 */}
@@ -667,10 +660,11 @@ export default function AdminClientComponent({
             {/* 图标和消息 */}
             <div className="relative flex flex-col items-center text-center space-y-4">
               <div
-                className={`w-16 h-16 rounded-full flex items-center justify-center ${addResultMessage === "成功" || editResultMessage === "成功"
-                  ? "bg-green-400/30 border-2 border-green-300/50"
-                  : "bg-red-400/30 border-2 border-red-300/50"
-                  }`}
+                className={`w-16 h-16 rounded-full flex items-center justify-center ${
+                  addResultMessage === "成功" || editResultMessage === "成功"
+                    ? "bg-green-400/30 border-2 border-green-300/50"
+                    : "bg-red-400/30 border-2 border-red-300/50"
+                }`}
               >
                 {addResultMessage === "成功" || editResultMessage === "成功" ? (
                   <svg
@@ -707,20 +701,22 @@ export default function AdminClientComponent({
 
               <div>
                 <h3
-                  className={`text-xl font-bold mb-2 ${addResultMessage === "成功" || editResultMessage === "成功"
-                    ? "text-green-100"
-                    : "text-red-100"
-                    }`}
+                  className={`text-xl font-bold mb-2 ${
+                    addResultMessage === "成功" || editResultMessage === "成功"
+                      ? "text-green-100"
+                      : "text-red-100"
+                  }`}
                 >
                   {addResultMessage === "成功" || editResultMessage === "成功"
                     ? "操作成功"
                     : "操作失败"}
                 </h3>
                 <p
-                  className={`text-sm opacity-90 ${addResultMessage === "成功" || editResultMessage === "成功"
-                    ? "text-green-200"
-                    : "text-red-200"
-                    }`}
+                  className={`text-sm opacity-90 ${
+                    addResultMessage === "成功" || editResultMessage === "成功"
+                      ? "text-green-200"
+                      : "text-red-200"
+                  }`}
                 >
                   {addResultMessage || editResultMessage}
                 </p>
@@ -733,10 +729,11 @@ export default function AdminClientComponent({
                 setAddResultMessage(null);
                 setEditResultMessage(null);
               }}
-              className={`absolute top-3 right-3 p-1 rounded-full hover:bg-white/20 transition-colors duration-200 ${addResultMessage === "成功" || editResultMessage === "成功"
-                ? "text-green-200"
-                : "text-red-200"
-                }`}
+              className={`absolute top-3 right-3 p-1 rounded-full hover:bg-white/20 transition-colors duration-200 ${
+                addResultMessage === "成功" || editResultMessage === "成功"
+                  ? "text-green-200"
+                  : "text-red-200"
+              }`}
             >
               <X size={16} />
             </button>
@@ -744,10 +741,11 @@ export default function AdminClientComponent({
             {/* 自动关闭倒计时 */}
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 rounded-b-2xl overflow-hidden">
               <div
-                className={`h-full transition-all duration-3000 ease-linear ${addResultMessage === "成功" || editResultMessage === "成功"
-                  ? "bg-green-300"
-                  : "bg-red-300"
-                  }`}
+                className={`h-full transition-all duration-3000 ease-linear ${
+                  addResultMessage === "成功" || editResultMessage === "成功"
+                    ? "bg-green-300"
+                    : "bg-red-300"
+                }`}
               ></div>
             </div>
           </div>
