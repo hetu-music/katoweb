@@ -1,6 +1,7 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Upload, X, Check, AlertCircle, FileCheck, FileX } from "lucide-react";
+import { apiCheckFileExists } from "../../lib/api";
 
 interface CoverUploadProps {
   songId?: number;
@@ -27,20 +28,13 @@ export default function CoverUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 检查文件是否存在
-  const checkFileExists = async (id: number) => {
+  const checkFileExists = useCallback(async (id: number) => {
     if (!id) return false;
 
     setCheckingFile(true);
     try {
-      const response = await fetch(
-        `https://cover.hetu-music.com/cover/${id}.jpg`,
-        {
-          method: "HEAD", // 只检查头部，不下载文件内容
-        },
-      );
-
-      // 根据R2存储的设置：存在返回200，不存在返回404
-      const exists = response.status === 200;
+      const result = await apiCheckFileExists(id, "cover", csrfToken);
+      const exists = result.exists;
       setFileExists(exists);
       return exists;
     } catch (error) {
@@ -50,7 +44,7 @@ export default function CoverUpload({
     } finally {
       setCheckingFile(false);
     }
-  };
+  }, [csrfToken]);
 
   // 当songId变化时检查文件
   useEffect(() => {
@@ -59,7 +53,7 @@ export default function CoverUpload({
     } else {
       setFileExists(false);
     }
-  }, [songId]);
+  }, [songId, checkFileExists]);
 
   const handleFileSelect = async (
     event: React.ChangeEvent<HTMLInputElement>,
