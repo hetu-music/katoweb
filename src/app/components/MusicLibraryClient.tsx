@@ -30,7 +30,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   // 使用 useState 来管理 URL 参数，避免 hydration 错误
   const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
   const [isClient, setIsClient] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
 
   // Helper function to safely get first array element
   const getFirstElement = (arr: string[] | null | undefined): string => {
@@ -80,8 +79,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       setViewMode(params.get("view") || "grid");
       setCurrentPageState(parseInt(params.get("page") || "1", 10));
 
-      // 标记初始化完成
-      setTimeout(() => setIsInitialized(true), 0);
+
     }
   }, []);
 
@@ -257,7 +255,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
           <div className="mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-2">
               <div className="flex flex-col sm:flex-row sm:items-center w-full">
-                <h1 
+                <h1
                   className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-blue-300 to-indigo-400 drop-shadow-lg tracking-wider mb-2 sm:mb-0 cursor-pointer hover:from-purple-200 hover:via-blue-200 hover:to-indigo-300 transition-all duration-300 select-none"
                   onClick={() => {
                     // 重置所有筛选条件和页面
@@ -418,50 +416,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   )}
                 </div>
 
-                {/* 筛选状态指示器 */}
-                {(searchTerm ||
-                  selectedType !== "全部" ||
-                  selectedYear !== "全部" ||
-                  selectedLyricist !== "全部" ||
-                  selectedComposer !== "全部" ||
-                  selectedArranger !== "全部") && (
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-3 py-1.5 shadow-sm min-h-[32px]">
-                        <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></div>
-                        <span className="text-amber-200 font-medium text-xs">
-                          已应用筛选
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => {
-                          setSearchTerm("");
-                          setSelectedType("全部");
-                          setSelectedYear("全部");
-                          setSelectedLyricist("全部");
-                          setSelectedComposer("全部");
-                          setSelectedArranger("全部");
-                          setCurrentPage(1);
-                        }}
-                        className="flex items-center gap-1.5 bg-gradient-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-red-300/30 rounded-full px-3 py-1.5 text-red-200 hover:text-red-100 hover:bg-gradient-to-r hover:from-red-500/30 hover:to-pink-500/30 transition-all duration-200 text-xs font-medium shadow-sm active:scale-95 touch-manipulation min-h-[32px]"
-                        title="清除所有筛选"
-                      >
-                        <svg
-                          className="w-3 h-3"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                        <span>清除</span>
-                      </button>
-                    </div>
-                  )}
+
               </div>
             </div>
           </div>

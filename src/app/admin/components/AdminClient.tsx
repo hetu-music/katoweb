@@ -132,15 +132,13 @@ export default function AdminClientComponent({
   // 使用 useState 来管理 URL 参数，避免 hydration 错误
   const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
   const [isClient, setIsClient] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
 
   // 在客户端挂载后初始化 URL 参数
   useEffect(() => {
     setIsClient(true);
     if (typeof window !== "undefined") {
       setSearchParams(new URLSearchParams(window.location.search));
-      // 标记初始化完成
-      setTimeout(() => setIsInitialized(true), 0);
+
     }
   }, []);
 
