@@ -153,7 +153,7 @@ html.wallpaper-active::before {
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: var(--dynamic-vh);
   background-image: var(--wallpaper-url);
   background-size: cover;
   background-position: center;
@@ -179,7 +179,7 @@ html.wallpaper-active::after {
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: var(--dynamic-vh);
   background-color: rgba(0, 0, 0, 0.15);
   z-index: 1;
   opacity: 1;
@@ -195,25 +195,58 @@ html.wallpaper-active::after {
     -webkit-overflow-scrolling: touch;
     /* 确保背景不会在滚动时延迟 */
     background-attachment: scroll;
+    /* 移动端使用更大的高度确保完全覆盖，包括地址栏变化 */
+    height: var(--dynamic-vh);
+    min-height: calc(var(--vh, 1vh) * 100);
+    /* 额外的安全边距，防止出现空隙 */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  
+  html.wallpaper-active::after {
+    /* 遮罩层也需要相同的处理 */
+    height: var(--dynamic-vh);
+    min-height: calc(var(--vh, 1vh) * 100);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  
+  /* 针对iOS Safari的特殊处理 */
+  @supports (-webkit-touch-callout: none) {
+    html.wallpaper-active::before,
+    html.wallpaper-active::after {
+      /* iOS Safari使用更保守的高度设置 */
+      height: calc(var(--vh, 1vh) * 100);
+      min-height: calc(var(--vh, 1vh) * 100);
+    }
   }
 }
 
-/* 移动端特殊优化 */
-@media (hover: none) and (pointer: coarse) {
-  html.wallpaper-active::before {
-    /* 在移动设备上使用transform3d来启用硬件加速 */
-    transform: translate3d(0, 0, 0);
-    -webkit-transform: translate3d(0, 0, 0);
-    /* 防止iOS Safari的背景图片滚动问题 */
-    background-attachment: scroll;
-    /* 确保在移动设备上的性能 */
-    -webkit-overflow-scrolling: touch;
-  }
+/* 添加CSS自定义属性用于动态视口高度 */
+:root {
+  --vh: 1vh;
+  --dynamic-vh: 100vh;
+}
 
-  html.wallpaper-active::after {
-    transform: translate3d(0, 0, 0);
-    -webkit-transform: translate3d(0, 0, 0);
+/* 支持CSS自定义属性的浏览器使用动态高度 */
+@supports (height: 100dvh) {
+  :root {
+    --dynamic-vh: 100dvh;
   }
+}
+
+/* 额外的安全措施：确保壁纸在所有情况下都能覆盖整个屏幕 */
+html.wallpaper-active {
+  /* 防止出现滚动条影响布局 */
+  overflow-x: hidden;
+}
+
+html.wallpaper-active::before {
+  /* 在某些极端情况下使用更大的尺寸确保完全覆盖 */
+  width: 100vw;
+  width: 100%;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
 }
 
 /* 页面切换过渡优化 */
