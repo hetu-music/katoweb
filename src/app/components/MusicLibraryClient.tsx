@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { Search, Grid, List, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -43,7 +43,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   const [selectedComposer, setSelectedComposer] = useState("全部");
   const [selectedArranger, setSelectedArranger] = useState("全部");
   const [viewMode, setViewMode] = useState("grid");
-  const [currentPageState, setCurrentPageState] = useState(1);
+  // 移除单独的页面状态，直接使用 usePagination
   const [aboutOpen, setAboutOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const hasRestoredScroll = useRef(false);
@@ -75,14 +75,18 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       setSelectedComposer(params.get("composer") || "全部");
       setSelectedArranger(params.get("arranger") || "全部");
       setViewMode(params.get("view") || "grid");
-      setCurrentPageState(parseInt(params.get("page") || "1", 10));
+      // 页面状态将通过 usePagination 的 initialPage 处理
     }
   }, []);
+
+
 
   // 2. 状态变化时同步到URL参数 - 只在客户端执行
   useEffect(() => {
     if (!isClient || typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
+    
+    // 更新搜索和筛选参数
     if (searchTerm) params.set("q", searchTerm);
     else params.delete("q");
     if (selectedType && selectedType !== "全部")
@@ -102,12 +106,14 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     else params.delete("arranger");
     if (viewMode && viewMode !== "grid") params.set("view", viewMode);
     else params.delete("view");
-    if (currentPageState && currentPageState !== 1)
-      params.set("page", currentPageState.toString());
-    else params.delete("page");
+    
+    // 当搜索或筛选条件变化时，重置到第一页
+    params.delete("page");
+    
     const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
     if (newUrl !== window.location.pathname + window.location.search) {
       window.history.replaceState(null, "", newUrl);
+      // 分页重置将通过 usePagination 的 initialPage 自动处理
     }
   }, [
     searchTerm,
@@ -117,7 +123,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     selectedComposer,
     selectedArranger,
     viewMode,
-    currentPageState,
     isClient,
   ]);
 
@@ -141,7 +146,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     } else if (isClient) {
       setRestoringScroll(false);
     }
-  }, [isClient, currentPageState]); // 依赖客户端状态和页面状态
+  }, [isClient]); // 依赖客户端状态
 
   useEffect(() => {
     const onScroll = () => {
@@ -217,6 +222,13 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     selectedArranger,
   ]);
 
+  // 获取初始页面
+  const getInitialPage = () => {
+    if (!isClient || typeof window === "undefined") return 1;
+    const params = new URLSearchParams(window.location.search);
+    return parseInt(params.get("page") || "1", 10);
+  };
+
   // 分页功能
   const {
     currentPage,
@@ -228,14 +240,25 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   } = usePagination({
     data: filteredSongs,
     itemsPerPage: 30,
-    initialPage: currentPageState,
+    initialPage: getInitialPage(),
   });
 
   // 包装分页函数以同步URL
-  const setCurrentPage = (page: number) => {
-    setCurrentPageState(page);
-    // 不需要调用 setPaginationPage，因为 usePagination 会通过 initialPage 自动更新
-  };
+  const setCurrentPage = useCallback((page: number) => {
+    setPaginationPage(page);
+    
+    // 同步更新 URL
+    if (isClient && typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (page !== 1) {
+        params.set("page", page.toString());
+      } else {
+        params.delete("page");
+      }
+      const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
+      window.history.replaceState(null, "", newUrl);
+    }
+  }, [setPaginationPage, isClient]);
 
   // 额外的滚动恢复逻辑 - 在分页数据更新后执行
   useEffect(() => {
@@ -284,7 +307,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                     setSelectedComposer("全部");
                     setSelectedArranger("全部");
                     setViewMode("grid");
-                    setCurrentPageState(1);
                     setPaginationPage(1);
                   }}
                   title="点击重置所有筛选条件"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 
 interface UsePaginationProps<T> {
   data: T[];
@@ -28,13 +28,15 @@ export function usePagination<T>({
   initialPage = 1,
 }: UsePaginationProps<T>): UsePaginationReturn<T> {
   const [currentPage, setCurrentPage] = useState(initialPage);
+  const prevInitialPageRef = useRef(initialPage);
 
-  // 当 initialPage 变化时，更新 currentPage（但避免无限循环）
+  // 当 initialPage 变化时，更新 currentPage（避免无限循环）
   useEffect(() => {
-    if (currentPage !== initialPage) {
+    if (initialPage !== prevInitialPageRef.current) {
+      prevInitialPageRef.current = initialPage;
       setCurrentPage(initialPage);
     }
-  }, [initialPage]); // 移除 currentPage 依赖，避免循环
+  }, [initialPage]);
 
   // 计算总页数
   const totalPages = useMemo(() => {
