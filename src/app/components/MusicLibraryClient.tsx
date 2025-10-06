@@ -15,6 +15,8 @@ import { typeColorMap, genreColorMap } from "../lib/constants";
 import About from "./About";
 import TypeExplanation from "./TypeExplanation";
 import SongFilters from "./SongFilters";
+import Pagination from "./Pagination";
+import { usePagination } from "../hooks/usePagination";
 
 import WallpaperControls from "./WallpaperControls";
 import FloatingActionButtons from "./FloatingActionButtons";
@@ -199,6 +201,20 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     selectedArranger,
   ]);
 
+  // 分页功能
+  const {
+    currentPage,
+    totalPages,
+    currentData: paginatedSongs,
+    setCurrentPage,
+    startIndex,
+    endIndex,
+  } = usePagination({
+    data: filteredSongs,
+    itemsPerPage: 25,
+    initialPage: 1,
+  });
+
   return (
     <div className="relative min-h-screen">
       <div
@@ -341,13 +357,26 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   <div className="flex items-center gap-2 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 shadow-sm">
                     <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-indigo-400 rounded-full"></div>
                     <span className="text-white font-medium text-sm">
-                      已显示{" "}
+                      筛选结果{" "}
                       <span className="text-purple-200 font-semibold">
                         {filteredSongs.length}
                       </span>{" "}
                       首
                     </span>
                   </div>
+
+                  {filteredSongs.length > 25 && (
+                    <div className="flex items-center gap-2 bg-gradient-to-r from-indigo-500/20 to-cyan-500/20 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 shadow-sm">
+                      <div className="w-2 h-2 bg-gradient-to-r from-indigo-400 to-cyan-400 rounded-full"></div>
+                      <span className="text-white font-medium text-sm">
+                        当前页{" "}
+                        <span className="text-indigo-200 font-semibold">
+                          {startIndex}-{endIndex}
+                        </span>{" "}
+                        首
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* 筛选状态指示器 */}
@@ -400,7 +429,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
           {/* 歌曲列表 */}
           {viewMode === "grid" ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-6">
-              {filteredSongs.map((song) => (
+              {paginatedSongs.map((song) => (
                 <div
                   key={song.id}
                   className="group cursor-pointer touch-active"
@@ -487,7 +516,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
             </div>
           ) : (
             <div className="space-y-2">
-              {filteredSongs.map((song, index) => (
+              {paginatedSongs.map((song, index) => (
                 <div
                   key={song.id}
                   className="group flex items-center p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-200 cursor-pointer touch-active"
@@ -524,7 +553,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                 >
                   {/* 序号 */}
                   <div className="w-8 text-center text-gray-400 text-sm">
-                    {index + 1}
+                    {startIndex + index}
                   </div>
 
                   {/* 专辑封面 */}
@@ -630,6 +659,17 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* 分页组件 */}
+          {filteredSongs.length > 25 && (
+            <div className="mt-8">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
             </div>
           )}
 

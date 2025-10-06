@@ -19,6 +19,8 @@ import {
 } from "../../lib/utils";
 import { songFields, genreColorMap, typeColorMap } from "../../lib/constants";
 import FloatingActionButtons from "../../components/FloatingActionButtons";
+import Pagination from "../../components/Pagination";
+import { usePagination } from "../../hooks/usePagination";
 import { apiCreateSong, apiUpdateSong } from "../../lib/api";
 import { useSongs } from "../../hooks/useSongs";
 import { useAuth } from "../../hooks/useAuth";
@@ -139,6 +141,20 @@ export default function AdminClientComponent({
     filteredSongs,
     sortedSongs,
   } = useSongs(initialSongs, initialError);
+
+  // 分页功能
+  const {
+    currentPage,
+    totalPages,
+    currentData: paginatedSongs,
+    setCurrentPage,
+    startIndex,
+    endIndex,
+  } = usePagination({
+    data: sortedSongs,
+    itemsPerPage: 25,
+    initialPage: 1,
+  });
   const { csrfToken, handleLogout, logoutLoading } = useAuth();
   const [showAdd, setShowAdd] = useState(false);
   const [newSong, setNewSong] = useState<Partial<Song>>({
@@ -376,7 +392,7 @@ export default function AdminClientComponent({
         </div>
 
         {/* Stats */}
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex items-center gap-4 mb-6 flex-wrap">
           <div className="flex items-center gap-2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 shadow-sm">
             <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-pulse"></div>
             <span className="text-white font-medium text-sm">
@@ -390,13 +406,25 @@ export default function AdminClientComponent({
           <div className="flex items-center gap-2 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 shadow-sm">
             <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-indigo-400 rounded-full"></div>
             <span className="text-white font-medium text-sm">
-              已显示{" "}
+              筛选结果{" "}
               <span className="text-purple-200 font-semibold">
                 {filteredSongs.length}
               </span>{" "}
               首
             </span>
           </div>
+          {filteredSongs.length > 25 && (
+            <div className="flex items-center gap-2 bg-gradient-to-r from-indigo-500/20 to-cyan-500/20 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 shadow-sm">
+              <div className="w-2 h-2 bg-gradient-to-r from-indigo-400 to-cyan-400 rounded-full"></div>
+              <span className="text-white font-medium text-sm">
+                当前页{" "}
+                <span className="text-indigo-200 font-semibold">
+                  {startIndex}-{endIndex}
+                </span>{" "}
+                首
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Loading and Error States */}
@@ -450,11 +478,11 @@ export default function AdminClientComponent({
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedSongs.map((song, idx) => (
+                  {paginatedSongs.map((song, idx) => (
                     <SongRow
                       key={song.id}
                       song={song}
-                      idx={idx}
+                      idx={startIndex + idx - 1}
                       expandedRows={expandedRows}
                       toggleRowExpansion={toggleRowExpansion}
                       handleEdit={handleEdit}
@@ -463,6 +491,17 @@ export default function AdminClientComponent({
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* 分页组件 */}
+        {!loading && filteredSongs.length > 25 && (
+          <div className="mt-8">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </div>
         )}
 
