@@ -123,18 +123,25 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
   // 3. 滚动位置保存与恢复
   useEffect(() => {
-    if (!hasRestoredScroll.current) {
+    if (!hasRestoredScroll.current && isClient) {
       const scrollY = sessionStorage.getItem("music_scrollY");
       if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY, 10));
-        sessionStorage.removeItem("music_scrollY");
-        hasRestoredScroll.current = true;
+        // 延迟执行滚动恢复，确保页面内容已完全渲染
+        const timeoutId = setTimeout(() => {
+          window.scrollTo(0, parseInt(scrollY, 10));
+          sessionStorage.removeItem("music_scrollY");
+          hasRestoredScroll.current = true;
+          setRestoringScroll(false);
+        }, 200); // 增加延迟时间
+
+        return () => clearTimeout(timeoutId);
+      } else {
+        requestAnimationFrame(() => setRestoringScroll(false));
       }
-      requestAnimationFrame(() => setRestoringScroll(false));
-    } else {
+    } else if (isClient) {
       setRestoringScroll(false);
     }
-  }, []);
+  }, [isClient, currentPageState]); // 依赖客户端状态和页面状态
 
   useEffect(() => {
     const onScroll = () => {
@@ -229,6 +236,24 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     setCurrentPageState(page);
     // 不需要调用 setPaginationPage，因为 usePagination 会通过 initialPage 自动更新
   };
+
+  // 额外的滚动恢复逻辑 - 在分页数据更新后执行
+  useEffect(() => {
+    if (!hasRestoredScroll.current && isClient && paginatedSongs.length > 0) {
+      const scrollY = sessionStorage.getItem("music_scrollY");
+      if (scrollY) {
+        // 确保在分页数据渲染后恢复滚动位置
+        const timeoutId = setTimeout(() => {
+          window.scrollTo(0, parseInt(scrollY, 10));
+          sessionStorage.removeItem("music_scrollY");
+          hasRestoredScroll.current = true;
+          setRestoringScroll(false);
+        }, 50);
+
+        return () => clearTimeout(timeoutId);
+      }
+    }
+  }, [isClient, paginatedSongs.length, currentPage]);
 
   return (
     <div className="relative min-h-screen">
