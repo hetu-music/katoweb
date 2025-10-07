@@ -425,16 +425,16 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                     setSelectedArranger("全部");
                     setViewMode("grid");
                     setPaginationPage(1);
-                    
+
                     // 直接清除URL中的所有参数，确保返回干净的主页面
                     if (typeof window !== "undefined") {
                       const newUrl = window.location.pathname;
                       window.history.replaceState(null, "", newUrl);
                     }
-                    
+
                     // 清理可能存储的滚动位置，避免从详情页返回时回到错误的状态
                     sessionStorage.removeItem("music_scrollY");
-                    
+
                     // 标记已重置，用于详情页返回时的判断
                     sessionStorage.setItem("music_filters_reset", "true");
                   }}
