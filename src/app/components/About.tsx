@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ExternalLink, Mail, LogIn } from "lucide-react";
+import { Mail, LogIn } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface Contributor {
@@ -89,22 +89,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               本项目为河图作品勘鉴，收录了河图的主要音乐作品资料，支持筛选与搜索。
             </p>
             <p>
-              数据由本人整理，来源为创作者微博及各大音乐平台，如有误漏请至
-              <span className="ml-1 mr-1">
-                <a
-                  href="https://github.com/hetu-music/katodata"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-baseline gap-1 text-blue-400 underline hover:text-blue-300 font-semibold transition-colors"
-                >
-                  <ExternalLink
-                    className="w-4 h-4"
-                    style={{ transform: "translateY(2px)" }}
-                  />
-                  <span>GitHub</span>
-                </a>
-              </span>
-              或
+              数据由本人整理，来源为创作者微博及各大音乐平台，不保证百分百准确。如有误漏请
               <span className="ml-1 mr-1">
                 <a
                   href="mailto:feedback@hetu-music.com"
