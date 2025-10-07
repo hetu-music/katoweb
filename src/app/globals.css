@@ -153,9 +153,9 @@ body {
 }
 
 .custom-select-options {
-  @apply absolute top-full left-0 right-0 mt-1 bg-white/25 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg z-50 max-h-100 overflow-y-auto;
-  /* 增加背景不透明度，确保在白色背景上可见 */
-  /* 增加最大高度从 max-h-80 (320px) 到 max-h-96 (384px) */
+  @apply absolute top-full left-0 right-0 mt-1 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg z-50 max-h-100 overflow-y-auto;
+  /* 使用浅绿色渐变背景 */
+  background-color: rgba(151, 123, 228, 0.502);
   backdrop-filter: blur(12px);
 }
 
