@@ -26,8 +26,21 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
+  const [isMobile, setIsMobile] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
   const optionsRef = useRef<HTMLDivElement>(null);
+
+  // 检测是否为移动端
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // 获取当前选中项的显示文本
   const selectedOption = options.find((option) => option.value === value);
@@ -119,7 +132,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   return (
     <div
       ref={selectRef}
-      className={`custom-select ${className} ${disabled ? "disabled" : ""}`}
+      className={`custom-select ${className} ${disabled ? "disabled" : ""} ${isMobile && isOpen ? "mobile-overlay" : ""}`}
       tabIndex={disabled ? -1 : 0}
       onKeyDown={handleKeyDown}
       role="combobox"
@@ -141,9 +154,8 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           {options.map((option, index) => (
             <div
               key={option.value}
-              className={`custom-select-option ${
-                option.value === value ? "selected" : ""
-              } ${index === focusedIndex ? "focused" : ""}`}
+              className={`custom-select-option ${option.value === value ? "selected" : ""
+                } ${index === focusedIndex ? "focused" : ""}`}
               onClick={() => handleOptionClick(option.value)}
               role="option"
               aria-selected={option.value === value}

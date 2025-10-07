@@ -202,6 +202,57 @@ body {
   scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }
 
+/* 移动端下拉框居中弹出效果 */
+@media (max-width: 768px) {
+  .custom-select-options {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    right: auto;
+    transform: translate(-50%, -50%);
+    width: 80vw;
+    max-width: 300px;
+    margin-top: 0;
+    animation: mobileDropdownFadeIn 0.2s ease-out;
+  }
+}
+
+/* 移动端下拉框弹出动画 */
+@keyframes mobileDropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* 移动端下拉框背景遮罩 */
+@media (max-width: 768px) {
+  .custom-select.mobile-overlay::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 49;
+    animation: fadeIn 0.2s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* 信息界面区块样式 */
 .block-panel {
   @apply bg-white/5 backdrop-blur-sm rounded-2xl p-6 text-white/90 border border-white/10 shadow-lg;
