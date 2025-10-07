@@ -55,11 +55,29 @@ body {
 .filter-select {
   @apply h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none appearance-none cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px] text-center font-medium transition-all duration-200;
   text-align: center !important;
+  text-align-last: center !important; /* Safari 兼容性 */
+  -webkit-text-align-last: center !important; /* WebKit 前缀 */
 }
 
 /* 下拉框获得焦点时轻微变亮 */
 .filter-select:focus {
   @apply bg-white/15;
+}
+
+/* Safari 特定的 select 元素修复 */
+@supports (-webkit-appearance: none) {
+  .filter-select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    /* 确保 Safari 中的文本居中 */
+    text-indent: 0;
+    padding-left: 0;
+    padding-right: 0;
+    text-align: center !important;
+    text-align-last: center !important;
+    -webkit-text-align-last: center !important;
+  }
 }
 
 /* 下拉选项样式优化 */
@@ -77,6 +95,9 @@ body {
 .filter-select option {
   @apply bg-gray-900/95 text-white text-center py-2;
   backdrop-filter: blur(8px);
+  text-align: center !important;
+  text-align-last: center !important; /* Safari 兼容性 */
+  -webkit-text-align-last: center !important; /* WebKit 前缀 */
 }
 
 /* 搜索框样式 */
