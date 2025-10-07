@@ -61,14 +61,14 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       // 移动端和桌面端使用不同的最大可见选项数，与CSS保持一致
       const maxVisibleOptions = isMobile ? 11 : 12; // 移动端：桌面端
       const dropdownHeight = Math.min(
-        options.length * optionHeight + borderAndPadding, 
+        options.length * optionHeight + borderAndPadding,
         maxVisibleOptions * optionHeight + borderAndPadding
       );
-      
+
       // 计算垂直位置 - 以筛选框为中心
       const viewportHeight = window.innerHeight;
       const idealTop = rect.top + rect.height / 2 - dropdownHeight / 2;
-      
+
       // 确保不超出屏幕边界
       let finalTop = idealTop;
       if (idealTop < 10) {
@@ -111,13 +111,15 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       ) {
         setIsOpen(false);
         setFocusedIndex(-1);
+        // 让组件失去焦点，移除选中动画
+        selectRef.current.blur();
       }
     };
 
     // 同时监听鼠标和触摸事件，确保移动端也能正常工作
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("touchstart", handleClickOutside);
-    
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("touchstart", handleClickOutside);
@@ -143,6 +145,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       case "Escape":
         setIsOpen(false);
         setFocusedIndex(-1);
+        // 让组件失去焦点，移除选中动画
+        if (selectRef.current) {
+          selectRef.current.blur();
+        }
         break;
       case "ArrowDown":
         event.preventDefault();
@@ -219,11 +225,15 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 
       {/* 移动端背景遮罩 */}
       {isOpen && isMobile && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/30 z-40"
           onClick={() => {
             setIsOpen(false);
             setFocusedIndex(-1);
+            // 让组件失去焦点，移除选中动画
+            if (selectRef.current) {
+              selectRef.current.blur();
+            }
           }}
           onTouchStart={(e) => {
             // 防止触摸事件冒泡
@@ -234,9 +244,9 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 
       {/* 下拉选项 */}
       {isOpen && (
-        <div 
-          ref={optionsRef} 
-          className="custom-select-options" 
+        <div
+          ref={optionsRef}
+          className="custom-select-options"
           role="listbox"
           onClick={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
