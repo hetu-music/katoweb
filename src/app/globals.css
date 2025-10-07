@@ -153,19 +153,26 @@ body {
 }
 
 .custom-select-options {
-  @apply absolute top-full left-0 right-0 mt-1 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg z-50 max-h-80 overflow-y-auto;
+  @apply absolute top-full left-0 right-0 mt-1 bg-white/25 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg z-50 max-h-96 overflow-y-auto;
+  /* 增加背景不透明度，确保在白色背景上可见 */
+  /* 增加最大高度从 max-h-80 (320px) 到 max-h-96 (384px) */
+  background-color: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(12px);
 }
 
 .custom-select-option {
-  @apply px-4 py-2 text-white text-center cursor-pointer transition-colors duration-150 hover:bg-white/20 border-b border-white/10 last:border-b-0;
+  @apply px-0 py-2 text-white text-center cursor-pointer transition-colors duration-150 hover:bg-white/30 border-b border-white/10 last:border-b-0 w-full flex items-center justify-center;
+  /* 移除左右padding，让选项填满整行，保持原来的py-2行距 */
 }
 
 .custom-select-option.selected {
-  @apply bg-white/25;
+  @apply bg-white/35;
+  /* 增加选中状态的背景不透明度 */
 }
 
 .custom-select-option.focused {
-  @apply bg-white/15;
+  @apply bg-white/25;
+  /* 增加焦点状态的背景不透明度 */
 }
 
 .custom-select-option:first-child {
@@ -178,20 +185,28 @@ body {
 
 /* 自定义下拉框滚动条样式 */
 .custom-select-options::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 .custom-select-options::-webkit-scrollbar-track {
   background: transparent;
+  margin: 8px 0;
 }
 
 .custom-select-options::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  /* 让滚动条更细更不突出 */
 }
 
 .custom-select-options::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Firefox 滚动条样式 */
+.custom-select-options {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }
 
 /* 信息界面区块样式 */
