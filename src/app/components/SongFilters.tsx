@@ -36,7 +36,6 @@ const SongFilters: React.FC<SongFiltersProps> = ({
   filterOptions,
   onTypeExplanationOpen,
 }) => {
-
   return (
     <div className="w-full flex flex-col sm:flex-row gap-3">
       {/* 类型筛选 */}

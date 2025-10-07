@@ -144,12 +144,10 @@ body {
   @apply flex-1 text-center truncate;
 }
 
-
-
 .custom-select-options {
   @apply absolute top-full left-0 right-0 mt-1 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg z-50 max-h-100 overflow-y-auto;
   /* 使用浅绿色渐变背景 */
-  background-color: rgba(5, 64, 78, 0.70);
+  background-color: rgba(5, 64, 78, 0.7);
   backdrop-filter: blur(12px);
   /* 桌面端恢复原来的逻辑：在筛选框下方弹出 */
   max-height: 490px;
@@ -354,7 +352,6 @@ html.wallpaper-active::after {
 
 /* 移动端特殊优化 */
 @media (hover: none) and (pointer: coarse) {
-
   html.wallpaper-active::before,
   html.wallpaper-active::after {
     /* 在移动设备上确保平滑滚动 */

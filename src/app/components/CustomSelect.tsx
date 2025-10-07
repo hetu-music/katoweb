@@ -43,9 +43,9 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     };
 
     checkMobile();
-    window.addEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
 
-    return () => window.removeEventListener('resize', checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   // 计算下拉选项位置
@@ -60,7 +60,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       const maxVisibleOptions = isMobile ? 11 : 12; // 移动端：桌面端
       const dropdownHeight = Math.min(
         options.length * optionHeight + borderAndPadding,
-        maxVisibleOptions * optionHeight + borderAndPadding
+        maxVisibleOptions * optionHeight + borderAndPadding,
       );
 
       // 计算垂直位置 - 以筛选框为中心
@@ -91,7 +91,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         top: finalTop,
         left: finalLeft,
         width: rect.width,
-        maxHeight: dropdownHeight
+        maxHeight: dropdownHeight,
       });
     }
   }, [isOpen, options.length, isMobile]);
@@ -154,7 +154,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           setIsOpen(true);
         } else {
           setFocusedIndex((prev) =>
-            prev < options.length - 1 ? prev + 1 : prev
+            prev < options.length - 1 ? prev + 1 : prev,
           );
         }
         break;
@@ -250,21 +250,26 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           role="listbox"
           onClick={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
-          style={isMobile && dropdownPosition ? {
-            position: 'fixed',
-            top: `${dropdownPosition.top}px`,
-            left: `${dropdownPosition.left}px`,
-            width: `${dropdownPosition.width}px`,
-            maxHeight: `${dropdownPosition.maxHeight}px`,
-            transform: 'none',
-            zIndex: 50
-          } : {}}
+          style={
+            isMobile && dropdownPosition
+              ? {
+                  position: "fixed",
+                  top: `${dropdownPosition.top}px`,
+                  left: `${dropdownPosition.left}px`,
+                  width: `${dropdownPosition.width}px`,
+                  maxHeight: `${dropdownPosition.maxHeight}px`,
+                  transform: "none",
+                  zIndex: 50,
+                }
+              : {}
+          }
         >
           {options.map((option, index) => (
             <div
               key={option.value}
-              className={`custom-select-option ${option.value === value ? "selected" : ""
-                } ${index === focusedIndex ? "focused" : ""}`}
+              className={`custom-select-option ${
+                option.value === value ? "selected" : ""
+              } ${index === focusedIndex ? "focused" : ""}`}
               onClick={(e) => {
                 e.stopPropagation();
                 handleOptionClick(option.value);
