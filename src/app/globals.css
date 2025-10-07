@@ -155,7 +155,7 @@ body {
 .custom-select-options {
   @apply absolute top-full left-0 right-0 mt-1 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg z-50 max-h-100 overflow-y-auto;
   /* 使用浅绿色渐变背景 */
-  background-color: rgba(151, 123, 228, 0.502);
+  background-color: rgba(5, 64, 78, 0.70);
   backdrop-filter: blur(12px);
 }
 
