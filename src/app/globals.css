@@ -152,8 +152,7 @@ body {
   background-color: rgba(5, 64, 78, 0.70);
   backdrop-filter: blur(12px);
   /* 桌面端恢复原来的逻辑：在筛选框下方弹出 */
-  max-height: 320px;
-  /* 8个选项的高度 (40px * 8 = 320px) */
+  max-height: 480px;
 }
 
 .custom-select-option {
