@@ -202,18 +202,11 @@ body {
   scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }
 
-/* 移动端下拉框居中弹出效果 */
+/* 移动端下拉框对齐弹出效果 */
 @media (max-width: 768px) {
   .custom-select-options {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    right: auto;
-    transform: translate(-50%, -50%);
-    width: 80vw;
-    max-width: 300px;
-    margin-top: 0;
     animation: mobileDropdownFadeIn 0.2s ease-out;
+    z-index: 51;
   }
 }
 
@@ -221,11 +214,12 @@ body {
 @keyframes mobileDropdownFadeIn {
   from {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.95);
+    transform: translateY(-10px) scale(0.95);
   }
+
   to {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -248,6 +242,7 @@ body {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }

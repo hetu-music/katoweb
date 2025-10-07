@@ -27,6 +27,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [isMobile, setIsMobile] = useState(false);
+  const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
   const selectRef = useRef<HTMLDivElement>(null);
   const optionsRef = useRef<HTMLDivElement>(null);
 
@@ -41,6 +42,14 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // 获取触发器位置信息
+  useEffect(() => {
+    if (isOpen && isMobile && selectRef.current) {
+      const rect = selectRef.current.getBoundingClientRect();
+      setTriggerRect(rect);
+    }
+  }, [isOpen, isMobile]);
 
   // 获取当前选中项的显示文本
   const selectedOption = options.find((option) => option.value === value);
@@ -150,7 +159,18 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 
       {/* 下拉选项 */}
       {isOpen && (
-        <div ref={optionsRef} className="custom-select-options" role="listbox">
+        <div 
+          ref={optionsRef} 
+          className="custom-select-options" 
+          role="listbox"
+          style={isMobile && triggerRect ? {
+            position: 'fixed',
+            top: `${triggerRect.top + triggerRect.height + 8}px`,
+            left: `${triggerRect.left}px`,
+            width: `${triggerRect.width}px`,
+            transform: 'none'
+          } : {}}
+        >
           {options.map((option, index) => (
             <div
               key={option.value}
