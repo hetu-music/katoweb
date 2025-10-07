@@ -223,20 +223,7 @@ body {
   }
 }
 
-/* 移动端下拉框背景遮罩 */
-@media (max-width: 768px) {
-  .custom-select.mobile-overlay::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.3);
-    z-index: 49;
-    animation: fadeIn 0.2s ease-out;
-  }
-}
+/* 移动端下拉框背景遮罩样式已移至React组件中处理 */
 
 @keyframes fadeIn {
   from {

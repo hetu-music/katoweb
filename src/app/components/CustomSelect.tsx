@@ -57,7 +57,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 
   // 点击外部关闭下拉框
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (
         selectRef.current &&
         !selectRef.current.contains(event.target as Node)
@@ -67,8 +67,14 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       }
     };
 
+    // 同时监听鼠标和触摸事件，确保移动端也能正常工作
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
   }, []);
 
   // 键盘导航
@@ -141,7 +147,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   return (
     <div
       ref={selectRef}
-      className={`custom-select ${className} ${disabled ? "disabled" : ""} ${isMobile && isOpen ? "mobile-overlay" : ""}`}
+      className={`custom-select ${className} ${disabled ? "disabled" : ""}`}
       tabIndex={disabled ? -1 : 0}
       onKeyDown={handleKeyDown}
       role="combobox"
@@ -152,10 +158,32 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       {/* 选择框主体 */}
       <div
         className="custom-select-trigger"
-        onClick={() => !disabled && setIsOpen(!isOpen)}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (!disabled) setIsOpen(!isOpen);
+        }}
+        onTouchStart={(e) => {
+          // 防止触摸事件冒泡到外部
+          e.stopPropagation();
+        }}
       >
         <span className="custom-select-value">{displayText}</span>
       </div>
+
+      {/* 移动端背景遮罩 */}
+      {isOpen && isMobile && (
+        <div 
+          className="fixed inset-0 bg-black/30 z-40"
+          onClick={() => {
+            setIsOpen(false);
+            setFocusedIndex(-1);
+          }}
+          onTouchStart={(e) => {
+            // 防止触摸事件冒泡
+            e.stopPropagation();
+          }}
+        />
+      )}
 
       {/* 下拉选项 */}
       {isOpen && (
@@ -163,12 +191,15 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           ref={optionsRef} 
           className="custom-select-options" 
           role="listbox"
+          onClick={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
           style={isMobile && triggerRect ? {
             position: 'fixed',
             top: `${triggerRect.top + triggerRect.height + 8}px`,
             left: `${triggerRect.left}px`,
             width: `${triggerRect.width}px`,
-            transform: 'none'
+            transform: 'none',
+            zIndex: 50
           } : {}}
         >
           {options.map((option, index) => (
@@ -176,7 +207,11 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
               key={option.value}
               className={`custom-select-option ${option.value === value ? "selected" : ""
                 } ${index === focusedIndex ? "focused" : ""}`}
-              onClick={() => handleOptionClick(option.value)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOptionClick(option.value);
+              }}
+              onTouchStart={(e) => e.stopPropagation()}
               role="option"
               aria-selected={option.value === value}
             >
