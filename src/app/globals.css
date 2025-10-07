@@ -55,11 +55,31 @@ body {
 .filter-select {
   @apply h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none appearance-none cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px] text-center font-medium transition-all duration-200;
   text-align: center !important;
+  text-align-last: center !important;
+  /* Safari 兼容性 */
+  -webkit-text-align-last: center !important;
+  /* WebKit 前缀 */
 }
 
 /* 下拉框获得焦点时轻微变亮 */
 .filter-select:focus {
   @apply bg-white/15;
+}
+
+/* Safari 特定的 select 元素修复 */
+@supports (-webkit-appearance: none) {
+  .filter-select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    /* 确保 Safari 中的文本居中 */
+    text-indent: 0;
+    padding-left: 0;
+    padding-right: 0;
+    text-align: center !important;
+    text-align-last: center !important;
+    -webkit-text-align-last: center !important;
+  }
 }
 
 /* 下拉选项样式优化 */
@@ -77,6 +97,11 @@ body {
 .filter-select option {
   @apply bg-gray-900/95 text-white text-center py-2;
   backdrop-filter: blur(8px);
+  text-align: center !important;
+  text-align-last: center !important;
+  /* Safari 兼容性 */
+  -webkit-text-align-last: center !important;
+  /* WebKit 前缀 */
 }
 
 /* 搜索框样式 */
@@ -96,6 +121,144 @@ body {
 /* 搜索框获得焦点时轻微变亮 */
 .search-input:focus {
   @apply bg-white/0;
+}
+
+/* 自定义下拉组件样式 */
+.custom-select {
+  @apply relative w-full h-[48px] focus:outline-none;
+}
+
+.custom-select.disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+.custom-select-trigger {
+  @apply h-full w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px] font-medium transition-all duration-200 flex items-center justify-center;
+}
+
+.custom-select:focus .custom-select-trigger {
+  @apply bg-white/15;
+}
+
+.custom-select-value {
+  @apply flex-1 text-center truncate;
+}
+
+
+
+.custom-select-options {
+  @apply absolute top-full left-0 right-0 mt-1 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg z-50 max-h-100 overflow-y-auto;
+  /* 使用浅绿色渐变背景 */
+  background-color: rgba(5, 64, 78, 0.70);
+  backdrop-filter: blur(12px);
+  /* 桌面端恢复原来的逻辑：在筛选框下方弹出 */
+  max-height: 490px;
+  /* 12个选项 (40px * 12) + 边框和间距 (10px) = 490px */
+}
+
+.custom-select-option {
+  @apply px-0 py-2 text-white text-center cursor-pointer transition-colors duration-150 hover:bg-white/30 border-b border-white/10 last:border-b-0 w-full flex items-center justify-center;
+  /* 恢复原来的选项高度 */
+}
+
+.custom-select-option.selected {
+  @apply bg-white/35;
+  /* 增加选中状态的背景不透明度 */
+}
+
+.custom-select-option.focused {
+  @apply bg-white/25;
+  /* 增加焦点状态的背景不透明度 */
+}
+
+.custom-select-option:first-child {
+  @apply rounded-t-2xl;
+}
+
+.custom-select-option:last-child {
+  @apply rounded-b-2xl;
+}
+
+/* 自定义下拉框滚动条样式 */
+.custom-select-options::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-select-options::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 8px 0;
+}
+
+.custom-select-options::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  /* 让滚动条更细更不突出 */
+}
+
+.custom-select-options::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Firefox 滚动条样式 */
+.custom-select-options {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+/* 桌面端下拉框从上方弹出效果 */
+@media (min-width: 769px) {
+  .custom-select-options {
+    animation: desktopDropdownFadeIn 0.2s ease-out;
+  }
+}
+
+/* 移动端下拉框弹出效果 */
+@media (max-width: 768px) {
+  .custom-select-options {
+    animation: mobileDropdownFadeIn 0.2s ease-out;
+    z-index: 51;
+    /* 移动端使用更大的最大高度 */
+    max-height: 450px;
+    /* 12个选项 (40px * 12) + 边框和间距 (10px) = 490px */
+  }
+}
+
+/* 桌面端下拉框弹出动画 - 从上方滑入 */
+@keyframes desktopDropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 移动端下拉框弹出动画 */
+@keyframes mobileDropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 移动端下拉框背景遮罩样式已移至React组件中处理 */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* 信息界面区块样式 */
@@ -153,7 +316,8 @@ html.wallpaper-active::before {
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100lvh; /* 使用大视口高度，确保始终覆盖整个屏幕，避免动态变化 */
+  height: 100lvh;
+  /* 使用大视口高度，确保始终覆盖整个屏幕，避免动态变化 */
   background-image: var(--wallpaper-url);
   background-size: cover;
   background-position: center;
@@ -178,7 +342,8 @@ html.wallpaper-active::after {
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100lvh; /* 使用大视口高度，确保始终覆盖整个屏幕，避免动态变化 */
+  height: 100lvh;
+  /* 使用大视口高度，确保始终覆盖整个屏幕，避免动态变化 */
   background-color: rgba(0, 0, 0, 0.15);
   z-index: 1;
   opacity: 1;
@@ -189,6 +354,7 @@ html.wallpaper-active::after {
 
 /* 移动端特殊优化 */
 @media (hover: none) and (pointer: coarse) {
+
   html.wallpaper-active::before,
   html.wallpaper-active::after {
     /* 在移动设备上确保平滑滚动 */
