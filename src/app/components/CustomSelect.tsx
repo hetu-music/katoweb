@@ -56,8 +56,8 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       setTriggerRect(rect);
 
       // 计算下拉选项的理想位置
-      const optionHeight = 40; // 每个选项的高度
-      const maxVisibleOptions = 5; // 最多显示5个选项
+      const optionHeight = 40; // 每个选项的高度（恢复原来的高度）
+      const maxVisibleOptions = 7.5; // 增加到原来的1.5倍（5 * 1.5 = 7.5）
       const dropdownHeight = Math.min(options.length * optionHeight, maxVisibleOptions * optionHeight);
       
       // 计算垂直位置 - 以筛选框为中心
@@ -235,7 +235,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           role="listbox"
           onClick={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
-          style={dropdownPosition ? (isMobile ? {
+          style={isMobile && dropdownPosition ? {
             position: 'fixed',
             top: `${dropdownPosition.top}px`,
             left: `${dropdownPosition.left}px`,
@@ -243,16 +243,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             maxHeight: `${dropdownPosition.maxHeight}px`,
             transform: 'none',
             zIndex: 50
-          } : {
-            // 桌面端使用相对定位，但调整transform
-            position: 'absolute',
-            top: '50%',
-            left: '0',
-            right: '0',
-            maxHeight: `${dropdownPosition.maxHeight}px`,
-            transform: 'translateY(-50%)',
-            zIndex: 50
-          }) : {}}
+          } : {}}
         >
           {options.map((option, index) => (
             <div

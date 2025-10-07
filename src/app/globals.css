@@ -147,19 +147,17 @@ body {
 
 
 .custom-select-options {
-  @apply absolute left-0 right-0 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg z-50 max-h-100 overflow-y-auto;
+  @apply absolute top-full left-0 right-0 mt-1 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg z-50 max-h-100 overflow-y-auto;
   /* 使用浅绿色渐变背景 */
   background-color: rgba(5, 64, 78, 0.70);
   backdrop-filter: blur(12px);
-  /* 桌面端以筛选框为中心弹出 */
-  top: 50%;
-  transform: translateY(-50%);
-  max-height: 200px;
+  /* 桌面端恢复原来的逻辑：在筛选框下方弹出 */
+  max-height: 600px;
 }
 
 .custom-select-option {
   @apply px-0 py-2 text-white text-center cursor-pointer transition-colors duration-150 hover:bg-white/30 border-b border-white/10 last:border-b-0 w-full flex items-center justify-center;
-  /* 移除左右padding，让选项填满整行，保持原来的py-2行距 */
+  /* 恢复原来的选项高度 */
 }
 
 .custom-select-option.selected {
@@ -206,10 +204,10 @@ body {
   scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }
 
-/* 桌面端下拉框居中弹出效果 */
+/* 桌面端下拉框从上方弹出效果 */
 @media (min-width: 769px) {
   .custom-select-options {
-    animation: dropdownFadeIn 0.2s ease-out;
+    animation: desktopDropdownFadeIn 0.2s ease-out;
   }
 }
 
@@ -221,16 +219,16 @@ body {
   }
 }
 
-/* 下拉框弹出动画 - 从中心缩放 */
-@keyframes dropdownFadeIn {
+/* 桌面端下拉框弹出动画 - 从上方滑入 */
+@keyframes desktopDropdownFadeIn {
   from {
     opacity: 0;
-    transform: translateY(-50%) scale(0.95);
+    transform: translateY(-10px) scale(0.95);
   }
 
   to {
     opacity: 1;
-    transform: translateY(-50%) scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
