@@ -1,4 +1,5 @@
 import React from "react";
+import CustomSelect from "./CustomSelect";
 
 interface SongFiltersProps {
   selectedType: string;
@@ -35,17 +36,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
   filterOptions,
   onTypeExplanationOpen,
 }) => {
-  // 处理选择后失去焦点
-  const handleSelectChange = (
-    setValue: (value: string) => void,
-    event: React.ChangeEvent<HTMLSelectElement>,
-  ) => {
-    setValue(event.target.value);
-    // 选择完成后让下拉框失去焦点
-    setTimeout(() => {
-      event.target.blur();
-    }, 100);
-  };
+
   return (
     <div className="w-full flex flex-col sm:flex-row gap-3">
       {/* 类型筛选 */}
@@ -63,81 +54,67 @@ const SongFilters: React.FC<SongFiltersProps> = ({
             ?
           </button>
         </div>
-        <select
+        <CustomSelect
           value={selectedType}
-          onChange={(e) => handleSelectChange(setSelectedType, e)}
-          className="filter-select"
-        >
-          {filterOptions.allTypes.map((type) => (
-            <option key={type} value={type} className="filter-option">
-              {type}
-            </option>
-          ))}
-        </select>
+          onChange={setSelectedType}
+          options={filterOptions.allTypes.map((type) => ({
+            value: type,
+            label: type,
+          }))}
+          className="flex-1"
+        />
       </div>
       {/* 发行日期筛选 */}
       <div className="filter-container">
         <span className="filter-label">发行日期</span>
-        <select
+        <CustomSelect
           value={selectedYear}
-          onChange={(e) => handleSelectChange(setSelectedYear, e)}
-          className="filter-select"
-        >
-          {filterOptions.allYears.map((year) => (
-            <option
-              key={year ?? ""}
-              value={year === null ? "" : year}
-              className="filter-option"
-            >
-              {year}
-            </option>
-          ))}
-        </select>
+          onChange={setSelectedYear}
+          options={filterOptions.allYears.map((year) => ({
+            value: year === null ? "" : String(year),
+            label: String(year),
+          }))}
+          className="flex-1"
+        />
       </div>
       {/* 作词筛选 */}
       <div className="filter-container">
         <span className="filter-label">作词</span>
-        <select
+        <CustomSelect
           value={selectedLyricist}
-          onChange={(e) => handleSelectChange(setSelectedLyricist, e)}
-          className="filter-select"
-        >
-          {filterOptions.allLyricists.map((lyricist) => (
-            <option key={lyricist} value={lyricist} className="filter-option">
-              {lyricist}
-            </option>
-          ))}
-        </select>
+          onChange={setSelectedLyricist}
+          options={filterOptions.allLyricists.map((lyricist) => ({
+            value: lyricist,
+            label: lyricist,
+          }))}
+          className="flex-1"
+        />
       </div>
       {/* 作曲筛选 */}
       <div className="filter-container">
         <span className="filter-label">作曲</span>
-        <select
+        <CustomSelect
           value={selectedComposer}
-          onChange={(e) => handleSelectChange(setSelectedComposer, e)}
-          className="filter-select"
-        >
-          {filterOptions.allComposers.map((composer) => (
-            <option key={composer} value={composer} className="filter-option">
-              {composer}
-            </option>
-          ))}
-        </select>
+          onChange={setSelectedComposer}
+          options={filterOptions.allComposers.map((composer) => ({
+            value: composer,
+            label: composer,
+          }))}
+          className="flex-1"
+        />
       </div>
       {/* 编曲筛选 */}
       <div className="filter-container">
         <span className="filter-label">编曲</span>
-        <select
+        <CustomSelect
           value={selectedArranger}
-          onChange={(e) => handleSelectChange(setSelectedArranger, e)}
-          className="filter-select"
-        >
-          {filterOptions.allArrangers.map((arranger) => (
-            <option key={arranger} value={arranger} className="filter-option">
-              {arranger}
-            </option>
-          ))}
-        </select>
+          onChange={setSelectedArranger}
+          options={filterOptions.allArrangers.map((arranger) => ({
+            value: arranger,
+            label: arranger,
+          }))}
+          className="flex-1"
+        />
       </div>
     </div>
   );

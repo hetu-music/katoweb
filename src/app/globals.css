@@ -55,8 +55,10 @@ body {
 .filter-select {
   @apply h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none appearance-none cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px] text-center font-medium transition-all duration-200;
   text-align: center !important;
-  text-align-last: center !important; /* Safari 兼容性 */
-  -webkit-text-align-last: center !important; /* WebKit 前缀 */
+  text-align-last: center !important;
+  /* Safari 兼容性 */
+  -webkit-text-align-last: center !important;
+  /* WebKit 前缀 */
 }
 
 /* 下拉框获得焦点时轻微变亮 */
@@ -96,8 +98,10 @@ body {
   @apply bg-gray-900/95 text-white text-center py-2;
   backdrop-filter: blur(8px);
   text-align: center !important;
-  text-align-last: center !important; /* Safari 兼容性 */
-  -webkit-text-align-last: center !important; /* WebKit 前缀 */
+  text-align-last: center !important;
+  /* Safari 兼容性 */
+  -webkit-text-align-last: center !important;
+  /* WebKit 前缀 */
 }
 
 /* 搜索框样式 */
@@ -117,6 +121,59 @@ body {
 /* 搜索框获得焦点时轻微变亮 */
 .search-input:focus {
   @apply bg-white/0;
+}
+
+/* 自定义下拉组件样式 */
+.custom-select {
+  @apply relative w-full h-[48px] focus:outline-none;
+}
+
+.custom-select.disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+.custom-select-trigger {
+  @apply h-full w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px] font-medium transition-all duration-200 flex items-center justify-center relative;
+}
+
+.custom-select:focus .custom-select-trigger {
+  @apply bg-white/15;
+}
+
+.custom-select-value {
+  @apply flex-1 text-center truncate;
+}
+
+.custom-select-arrow {
+  @apply absolute right-3 transition-transform duration-200 flex-shrink-0;
+}
+
+.custom-select-arrow.open {
+  @apply rotate-180;
+}
+
+.custom-select-options {
+  @apply absolute top-full left-0 right-0 mt-1 bg-gray-900/95 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg z-50 max-h-60 overflow-y-auto;
+}
+
+.custom-select-option {
+  @apply px-4 py-3 text-white text-center cursor-pointer transition-colors duration-150 hover:bg-blue-600/80 border-b border-white/10 last:border-b-0;
+}
+
+.custom-select-option.selected {
+  @apply bg-blue-600/60;
+}
+
+.custom-select-option.focused {
+  @apply bg-blue-600/40;
+}
+
+.custom-select-option:first-child {
+  @apply rounded-t-2xl;
+}
+
+.custom-select-option:last-child {
+  @apply rounded-b-2xl;
 }
 
 /* 信息界面区块样式 */
@@ -174,7 +231,8 @@ html.wallpaper-active::before {
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100lvh; /* 使用大视口高度，确保始终覆盖整个屏幕，避免动态变化 */
+  height: 100lvh;
+  /* 使用大视口高度，确保始终覆盖整个屏幕，避免动态变化 */
   background-image: var(--wallpaper-url);
   background-size: cover;
   background-position: center;
@@ -199,7 +257,8 @@ html.wallpaper-active::after {
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100lvh; /* 使用大视口高度，确保始终覆盖整个屏幕，避免动态变化 */
+  height: 100lvh;
+  /* 使用大视口高度，确保始终覆盖整个屏幕，避免动态变化 */
   background-color: rgba(0, 0, 0, 0.15);
   z-index: 1;
   opacity: 1;
@@ -210,6 +269,7 @@ html.wallpaper-active::after {
 
 /* 移动端特殊优化 */
 @media (hover: none) and (pointer: coarse) {
+
   html.wallpaper-active::before,
   html.wallpaper-active::after {
     /* 在移动设备上确保平滑滚动 */
