@@ -57,8 +57,8 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 
       // 计算下拉选项的理想位置
       const optionHeight = 40; // 每个选项的高度
-      // 移动端和桌面端使用不同的最大可见选项数
-      const maxVisibleOptions = isMobile ? 10 : 7.5; // 移动端显示10个选项，桌面端7.5个
+      // 移动端和桌面端使用不同的最大可见选项数，与CSS保持一致
+      const maxVisibleOptions = isMobile ? 12 : 8; // 移动端480px/40px=12个，桌面端320px/40px=8个
       const dropdownHeight = Math.min(options.length * optionHeight, maxVisibleOptions * optionHeight);
       
       // 计算垂直位置 - 以筛选框为中心
