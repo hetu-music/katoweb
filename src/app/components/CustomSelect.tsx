@@ -27,7 +27,6 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [isMobile, setIsMobile] = useState(false);
-  const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
   const [dropdownPosition, setDropdownPosition] = useState<{
     top: number;
     left: number;
@@ -53,7 +52,6 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   useEffect(() => {
     if (isOpen && selectRef.current) {
       const rect = selectRef.current.getBoundingClientRect();
-      setTriggerRect(rect);
 
       // 计算下拉选项位置
       const optionHeight = 40; // 每个选项的高度
@@ -96,7 +94,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         maxHeight: dropdownHeight
       });
     }
-  }, [isOpen, options.length]);
+  }, [isOpen, options.length, isMobile]);
 
   // 获取当前选中项的显示文本
   const selectedOption = options.find((option) => option.value === value);
@@ -206,6 +204,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       role="combobox"
       aria-expanded={isOpen}
       aria-haspopup="listbox"
+      aria-controls="custom-select-options"
       aria-label="自定义选择框"
     >
       {/* 选择框主体 */}
@@ -246,6 +245,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       {isOpen && (
         <div
           ref={optionsRef}
+          id="custom-select-options"
           className="custom-select-options"
           role="listbox"
           onClick={(e) => e.stopPropagation()}
