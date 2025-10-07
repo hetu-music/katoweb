@@ -152,7 +152,7 @@ body {
   background-color: rgba(5, 64, 78, 0.70);
   backdrop-filter: blur(12px);
   /* 桌面端恢复原来的逻辑：在筛选框下方弹出 */
-  max-height: 500px;
+  max-height: 600px;
 }
 
 .custom-select-option {
@@ -216,6 +216,9 @@ body {
   .custom-select-options {
     animation: mobileDropdownFadeIn 0.2s ease-out;
     z-index: 51;
+    /* 移动端使用更大的最大高度 */
+    max-height: 1000px;
+    /* 移动端可以显示10个选项 (40px * 10 = 400px) */
   }
 }
 
