@@ -147,10 +147,14 @@ body {
 
 
 .custom-select-options {
-  @apply absolute top-full left-0 right-0 mt-1 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg z-50 max-h-100 overflow-y-auto;
+  @apply absolute left-0 right-0 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg z-50 max-h-100 overflow-y-auto;
   /* 使用浅绿色渐变背景 */
   background-color: rgba(5, 64, 78, 0.70);
   backdrop-filter: blur(12px);
+  /* 桌面端以筛选框为中心弹出 */
+  top: 50%;
+  transform: translateY(-50%);
+  max-height: 200px;
 }
 
 .custom-select-option {
@@ -202,7 +206,14 @@ body {
   scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }
 
-/* 移动端下拉框对齐弹出效果 */
+/* 桌面端下拉框居中弹出效果 */
+@media (min-width: 769px) {
+  .custom-select-options {
+    animation: dropdownFadeIn 0.2s ease-out;
+  }
+}
+
+/* 移动端下拉框弹出效果 */
 @media (max-width: 768px) {
   .custom-select-options {
     animation: mobileDropdownFadeIn 0.2s ease-out;
@@ -210,16 +221,29 @@ body {
   }
 }
 
-/* 移动端下拉框弹出动画 */
-@keyframes mobileDropdownFadeIn {
+/* 下拉框弹出动画 - 从中心缩放 */
+@keyframes dropdownFadeIn {
   from {
     opacity: 0;
-    transform: translateY(-10px) scale(0.95);
+    transform: translateY(-50%) scale(0.95);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(-50%) scale(1);
+  }
+}
+
+/* 移动端下拉框弹出动画 */
+@keyframes mobileDropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 

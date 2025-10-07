@@ -28,6 +28,12 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [isMobile, setIsMobile] = useState(false);
   const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
+  const [dropdownPosition, setDropdownPosition] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    maxHeight: number;
+  } | null>(null);
   const selectRef = useRef<HTMLDivElement>(null);
   const optionsRef = useRef<HTMLDivElement>(null);
 
@@ -43,13 +49,49 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // 获取触发器位置信息
+  // 计算下拉选项位置
   useEffect(() => {
-    if (isOpen && isMobile && selectRef.current) {
+    if (isOpen && selectRef.current) {
       const rect = selectRef.current.getBoundingClientRect();
       setTriggerRect(rect);
+
+      // 计算下拉选项的理想位置
+      const optionHeight = 40; // 每个选项的高度
+      const maxVisibleOptions = 5; // 最多显示5个选项
+      const dropdownHeight = Math.min(options.length * optionHeight, maxVisibleOptions * optionHeight);
+      
+      // 计算垂直位置 - 以筛选框为中心
+      const viewportHeight = window.innerHeight;
+      const idealTop = rect.top + rect.height / 2 - dropdownHeight / 2;
+      
+      // 确保不超出屏幕边界
+      let finalTop = idealTop;
+      if (idealTop < 10) {
+        // 如果超出顶部，调整到顶部留10px边距
+        finalTop = 10;
+      } else if (idealTop + dropdownHeight > viewportHeight - 10) {
+        // 如果超出底部，调整到底部留10px边距
+        finalTop = viewportHeight - dropdownHeight - 10;
+      }
+
+      // 计算水平位置
+      const viewportWidth = window.innerWidth;
+      let finalLeft = rect.left;
+      if (rect.left + rect.width > viewportWidth - 10) {
+        finalLeft = viewportWidth - rect.width - 10;
+      }
+      if (finalLeft < 10) {
+        finalLeft = 10;
+      }
+
+      setDropdownPosition({
+        top: finalTop,
+        left: finalLeft,
+        width: rect.width,
+        maxHeight: dropdownHeight
+      });
     }
-  }, [isOpen, isMobile]);
+  }, [isOpen, options.length]);
 
   // 获取当前选中项的显示文本
   const selectedOption = options.find((option) => option.value === value);
@@ -193,14 +235,24 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           role="listbox"
           onClick={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
-          style={isMobile && triggerRect ? {
+          style={dropdownPosition ? (isMobile ? {
             position: 'fixed',
-            top: `${triggerRect.top + triggerRect.height + 8}px`,
-            left: `${triggerRect.left}px`,
-            width: `${triggerRect.width}px`,
+            top: `${dropdownPosition.top}px`,
+            left: `${dropdownPosition.left}px`,
+            width: `${dropdownPosition.width}px`,
+            maxHeight: `${dropdownPosition.maxHeight}px`,
             transform: 'none',
             zIndex: 50
-          } : {}}
+          } : {
+            // 桌面端使用相对定位，但调整transform
+            position: 'absolute',
+            top: '50%',
+            left: '0',
+            right: '0',
+            maxHeight: `${dropdownPosition.maxHeight}px`,
+            transform: 'translateY(-50%)',
+            zIndex: 50
+          }) : {}}
         >
           {options.map((option, index) => (
             <div
