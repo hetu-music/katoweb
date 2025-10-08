@@ -198,37 +198,38 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     if (disabled) return;
     setIsAnimating(true);
     setIsOpen(true);
-    setTimeout(() => setIsAnimating(false), 300);
+    setTimeout(() => setIsAnimating(false), isMobile ? 150 : 300);
   };
 
   // 关闭下拉框
   const handleClose = () => {
     setIsAnimating(true);
+    setIsOpen(false);
+    setFocusedIndex(-1);
+    // 立即开始关闭，只在动画完成后重置状态
     setTimeout(() => {
-      setIsOpen(false);
-      setFocusedIndex(-1);
       setIsAnimating(false);
       if (selectRef.current) {
         selectRef.current.blur();
       }
-    }, 200);
+    }, isMobile ? 50 : 100);
   };
 
   // 选择选项
   const handleOptionClick = (optionValue: string) => {
     setIsAnimating(true);
     onChange(optionValue);
+    setIsOpen(false);
+    setFocusedIndex(-1);
     
-    // iOS风格的关闭动画
+    // 立即开始关闭，只在动画完成后重置状态
     setTimeout(() => {
-      setIsOpen(false);
-      setFocusedIndex(-1);
       setIsAnimating(false);
       // 选择后让组件失去焦点
       if (selectRef.current) {
         selectRef.current.blur();
       }
-    }, 150);
+    }, isMobile ? 50 : 100);
   };
 
   // 滚动到焦点项
@@ -307,7 +308,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         <div
           ref={optionsRef}
           id="custom-select-options"
-          className={`custom-select-options ${isMobile ? 'mobile' : 'desktop'}`}
+          className={`custom-select-options ${isMobile ? 'mobile' : 'desktop'} ${isAnimating && !isOpen ? 'closing' : ''}`}
           role="listbox"
           onClick={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}

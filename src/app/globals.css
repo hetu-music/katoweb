@@ -167,7 +167,7 @@ body {
   max-height: 490px;
   /* 12个选项 (40px * 12) + 边框和间距 (10px) = 490px */
   /* iOS风格的过渡 */
-  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: all 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
 }
@@ -247,7 +247,7 @@ body {
 /* 移动端下拉框弹出效果 */
 @media (max-width: 768px) {
   .custom-select-options.mobile {
-    animation: mobileDropdownFadeIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: mobileDropdownFadeIn 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     z-index: 51;
     /* 移动端使用更大的最大高度 */
     max-height: 450px;
@@ -255,6 +255,11 @@ body {
     transform-origin: center center;
     /* 初始状态为透明，通过动画淡入 */
     opacity: 0;
+    animation-fill-mode: forwards;
+  }
+  
+  .custom-select-options.mobile.closing {
+    animation: mobileDropdownFadeOut 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     animation-fill-mode: forwards;
   }
 }
@@ -292,6 +297,21 @@ body {
     opacity: 1;
     transform: scale(1) translateZ(0);
     filter: blur(0);
+  }
+}
+
+/* iOS风格的下拉框关闭动画 - 移动端 */
+@keyframes mobileDropdownFadeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateZ(0);
+    filter: blur(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(0.9) translateZ(0);
+    filter: blur(1px);
   }
 }
 
