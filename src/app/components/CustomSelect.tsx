@@ -39,7 +39,6 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 
   // 触摸事件状态
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
 
   // 检测是否为移动端
   useEffect(() => {
@@ -116,37 +115,30 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   const selectedOption = options.find((option) => option.value === value);
   const displayText = selectedOption ? selectedOption.label : placeholder;
 
-  // 触摸事件处理函数
-  const handleTouchStart = (event: React.TouchEvent) => {
-    const touch = event.touches[0];
-    setTouchStart({ x: touch.clientX, y: touch.clientY });
-    setIsDragging(false);
-  };
+  // 下拉选项内部的触摸事件处理函数
+  const handleOptionsTouch = {
+    start: (event: React.TouchEvent) => {
+      const touch = event.touches[0];
+      setTouchStart({ x: touch.clientX, y: touch.clientY });
+    },
 
-  const handleTouchMove = (event: React.TouchEvent) => {
-    if (!touchStart) return;
+    move: (event: React.TouchEvent) => {
+      if (!touchStart) return;
 
-    const touch = event.touches[0];
-    const deltaX = Math.abs(touch.clientX - touchStart.x);
-    const deltaY = Math.abs(touch.clientY - touchStart.y);
+      const touch = event.touches[0];
+      const deltaX = Math.abs(touch.clientX - touchStart.x);
+      const deltaY = Math.abs(touch.clientY - touchStart.y);
 
-    // 如果水平移动距离大于垂直移动距离，且超过阈值，则认为是水平拖动
-    if (deltaX > deltaY && deltaX > 10) {
-      setIsDragging(true);
-      // 阻止水平拖动
-      event.preventDefault();
-      return;
+      // 如果水平移动距离大于垂直移动距离，且超过阈值，则阻止水平拖动
+      if (deltaX > deltaY && deltaX > 10) {
+        event.preventDefault();
+        return;
+      }
+    },
+
+    end: () => {
+      setTouchStart(null);
     }
-
-    // 只允许垂直滚动
-    if (deltaY > 10) {
-      setIsDragging(true);
-    }
-  };
-
-  const handleTouchEnd = () => {
-    setTouchStart(null);
-    setIsDragging(false);
   };
 
   // 点击外部关闭下拉框
@@ -309,18 +301,30 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             left: 0,
             width: '100vw',
             height: '100lvh',
-            touchAction: 'none', // 完全禁用触摸操作
           }}
           onClick={handleClose}
           onTouchStart={(e) => {
-            // 防止触摸事件冒泡
-            e.stopPropagation();
+            // 记录触摸开始位置
+            const touch = e.touches[0];
+            setTouchStart({ x: touch.clientX, y: touch.clientY });
           }}
           onTouchMove={(e) => {
-            // 阻止所有触摸移动
-            e.preventDefault();
+            // 检测是否有明显的滑动动作
+            if (touchStart) {
+              const touch = e.touches[0];
+              const deltaX = Math.abs(touch.clientX - touchStart.x);
+              const deltaY = Math.abs(touch.clientY - touchStart.y);
+
+              // 如果有明显的滑动动作（垂直或水平），关闭下拉框
+              if (deltaY > 15 || deltaX > 15) {
+                handleClose();
+                // 不调用 preventDefault()，让屏幕可以正常滚动
+              }
+            }
           }}
-          onTouchEnd={handleClose}
+          onTouchEnd={() => {
+            setTouchStart(null);
+          }}
         />
       )}
 
@@ -335,17 +339,17 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           onTouchStart={(e) => {
             e.stopPropagation();
             if (isMobile) {
-              handleTouchStart(e);
+              handleOptionsTouch.start(e);
             }
           }}
           onTouchMove={(e) => {
             if (isMobile) {
-              handleTouchMove(e);
+              handleOptionsTouch.move(e);
             }
           }}
-          onTouchEnd={(e) => {
+          onTouchEnd={() => {
             if (isMobile) {
-              handleTouchEnd();
+              handleOptionsTouch.end();
             }
           }}
           style={
