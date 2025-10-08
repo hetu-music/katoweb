@@ -16,6 +16,22 @@ interface CustomSelectProps {
   disabled?: boolean;
 }
 
+// 下拉框配置 - 在这里修改显示的选项数量和框的长度
+const DROPDOWN_CONFIG = {
+  // 每个选项的高度（px）
+  optionHeight: 40,
+  // 边框和间距的额外高度（px）
+  borderAndPadding: 10,
+  // 桌面端设置
+  desktop: {
+    maxVisibleOptions: 12, // 桌面端最多显示12个选项
+  },
+  // 移动端设置
+  mobile: {
+    maxVisibleOptions: 11, // 移动端最多显示11个选项
+  }
+};
+
 const CustomSelect: React.FC<CustomSelectProps> = ({
   value,
   onChange,
@@ -58,13 +74,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       const calculatePosition = () => {
         const rect = selectRef.current!.getBoundingClientRect();
 
-        // 桌面端计算（保持原有逻辑）
-        const optionHeight = 40;
-        const borderAndPadding = 10;
-        const maxVisibleOptions = 12;
+        // 桌面端计算
         const dropdownHeight = Math.min(
-          options.length * optionHeight + borderAndPadding,
-          maxVisibleOptions * optionHeight + borderAndPadding,
+          options.length * DROPDOWN_CONFIG.optionHeight + DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.desktop.maxVisibleOptions * DROPDOWN_CONFIG.optionHeight + DROPDOWN_CONFIG.borderAndPadding,
         );
 
         const viewportHeight = window.innerHeight;
@@ -204,12 +217,9 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         const rect = selectRef.current!.getBoundingClientRect();
 
         // 计算下拉选项位置
-        const optionHeight = 40; // 每个选项的高度
-        const borderAndPadding = 10; // 边框和间距的额外高度
-        const maxVisibleOptions = 11; // 移动端最大可见选项数
         const dropdownHeight = Math.min(
-          options.length * optionHeight + borderAndPadding,
-          maxVisibleOptions * optionHeight + borderAndPadding,
+          options.length * DROPDOWN_CONFIG.optionHeight + DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.mobile.maxVisibleOptions * DROPDOWN_CONFIG.optionHeight + DROPDOWN_CONFIG.borderAndPadding,
         );
 
         // 计算垂直位置 - 以筛选框为中心
