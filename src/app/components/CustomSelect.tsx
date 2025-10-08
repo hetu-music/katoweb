@@ -29,7 +29,7 @@ const DROPDOWN_CONFIG = {
   // 移动端设置
   mobile: {
     maxVisibleOptions: 15, // 移动端最多显示11个选项
-  }
+  },
 };
 
 const CustomSelect: React.FC<CustomSelectProps> = ({
@@ -54,7 +54,9 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   const optionsRef = useRef<HTMLDivElement>(null);
 
   // 触摸事件状态
-  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(
+    null,
+  );
 
   // 检测是否为移动端
   useEffect(() => {
@@ -76,8 +78,11 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 
         // 桌面端计算
         const dropdownHeight = Math.min(
-          options.length * DROPDOWN_CONFIG.optionHeight + DROPDOWN_CONFIG.borderAndPadding,
-          DROPDOWN_CONFIG.desktop.maxVisibleOptions * DROPDOWN_CONFIG.optionHeight + DROPDOWN_CONFIG.borderAndPadding,
+          options.length * DROPDOWN_CONFIG.optionHeight +
+            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.desktop.maxVisibleOptions *
+            DROPDOWN_CONFIG.optionHeight +
+            DROPDOWN_CONFIG.borderAndPadding,
         );
 
         const viewportHeight = window.innerHeight;
@@ -121,13 +126,16 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     setIsOpen(false);
     setFocusedIndex(-1);
     // 立即开始关闭，只在动画完成后重置状态
-    setTimeout(() => {
-      setIsAnimating(false);
-      setDropdownPosition(null); // 清理位置状态
-      if (selectRef.current) {
-        selectRef.current.blur();
-      }
-    }, isMobile ? 50 : 100);
+    setTimeout(
+      () => {
+        setIsAnimating(false);
+        setDropdownPosition(null); // 清理位置状态
+        if (selectRef.current) {
+          selectRef.current.blur();
+        }
+      },
+      isMobile ? 50 : 100,
+    );
   }, [isMobile]);
 
   // 下拉选项内部的触摸事件处理函数
@@ -153,7 +161,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 
     end: () => {
       setTouchStart(null);
-    }
+    },
   };
 
   // 点击外部关闭下拉框
@@ -233,8 +241,11 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 
         // 计算下拉选项位置
         const dropdownHeight = Math.min(
-          options.length * DROPDOWN_CONFIG.optionHeight + DROPDOWN_CONFIG.borderAndPadding,
-          DROPDOWN_CONFIG.mobile.maxVisibleOptions * DROPDOWN_CONFIG.optionHeight + DROPDOWN_CONFIG.borderAndPadding,
+          options.length * DROPDOWN_CONFIG.optionHeight +
+            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.mobile.maxVisibleOptions *
+            DROPDOWN_CONFIG.optionHeight +
+            DROPDOWN_CONFIG.borderAndPadding,
         );
 
         // 计算垂直位置 - 以筛选框为中心
@@ -291,13 +302,16 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     setFocusedIndex(-1);
 
     // 立即开始关闭，只在动画完成后重置状态
-    setTimeout(() => {
-      setIsAnimating(false);
-      // 选择后让组件失去焦点
-      if (selectRef.current) {
-        selectRef.current.blur();
-      }
-    }, isMobile ? 50 : 100);
+    setTimeout(
+      () => {
+        setIsAnimating(false);
+        // 选择后让组件失去焦点
+        if (selectRef.current) {
+          selectRef.current.blur();
+        }
+      },
+      isMobile ? 50 : 100,
+    );
   };
 
   // 滚动到焦点项
@@ -355,8 +369,8 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           style={{
             top: 0,
             left: 0,
-            width: '100vw',
-            height: '100lvh',
+            width: "100vw",
+            height: "100lvh",
           }}
           onClick={handleClose}
           onTouchStart={(e) => {
@@ -385,11 +399,11 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       )}
 
       {/* 下拉选项 */}
-      {isOpen && ((!isMobile) || (isMobile && dropdownPosition)) && (
+      {isOpen && (!isMobile || (isMobile && dropdownPosition)) && (
         <div
           ref={optionsRef}
           id="custom-select-options"
-          className={`custom-select-options ${isMobile ? 'mobile' : 'desktop'} ${isAnimating && !isOpen ? 'closing' : ''}`}
+          className={`custom-select-options ${isMobile ? "mobile" : "desktop"} ${isAnimating && !isOpen ? "closing" : ""}`}
           role="listbox"
           onClick={(e) => e.stopPropagation()}
           onTouchStart={(e) => {
@@ -411,22 +425,23 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           style={
             isMobile && dropdownPosition
               ? {
-                position: "fixed",
-                top: `${dropdownPosition.top}px`,
-                left: `${dropdownPosition.left}px`,
-                width: `${dropdownPosition.width}px`,
-                maxHeight: `${dropdownPosition.maxHeight}px`,
-                transform: "none",
-                zIndex: 50,
-              }
+                  position: "fixed",
+                  top: `${dropdownPosition.top}px`,
+                  left: `${dropdownPosition.left}px`,
+                  width: `${dropdownPosition.width}px`,
+                  maxHeight: `${dropdownPosition.maxHeight}px`,
+                  transform: "none",
+                  zIndex: 50,
+                }
               : {}
           }
         >
           {options.map((option, index) => (
             <div
               key={option.value}
-              className={`custom-select-option ${option.value === value ? "selected" : ""
-                } ${index === focusedIndex ? "focused" : ""}`}
+              className={`custom-select-option ${
+                option.value === value ? "selected" : ""
+              } ${index === focusedIndex ? "focused" : ""}`}
               onClick={(e) => {
                 e.stopPropagation();
                 handleOptionClick(option.value);
