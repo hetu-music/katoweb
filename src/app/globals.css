@@ -133,7 +133,16 @@ body {
 }
 
 .custom-select-trigger {
-  @apply h-full w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px] font-medium transition-all duration-200 flex items-center justify-center;
+  @apply h-full w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px] font-medium flex items-center justify-center;
+  /* iOS风格的缓动和过渡 */
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+.custom-select-trigger:active {
+  transform: scale(0.98) translateZ(0);
+  transition: transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .custom-select:focus .custom-select-trigger {
@@ -147,16 +156,34 @@ body {
 .custom-select-options {
   @apply absolute top-full left-0 right-0 mt-1 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg z-50 max-h-100 overflow-y-auto;
   /* 使用白色背景 */
-  background-color: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  /* iOS风格的阴影 */
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   /* 桌面端恢复原来的逻辑：在筛选框下方弹出 */
   max-height: 490px;
   /* 12个选项 (40px * 12) + 边框和间距 (10px) = 490px */
+  /* iOS风格的过渡 */
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .custom-select-option {
-  @apply px-0 py-2 text-black text-center cursor-pointer transition-colors duration-150 hover:bg-gray-100 border-b border-gray-300 last:border-b-0 w-full flex items-center justify-center;
-  /* 更明显的分割线 */
+  @apply px-0 py-2 text-black text-center cursor-pointer border-b border-gray-300 last:border-b-0 w-full flex items-center justify-center;
+  /* iOS风格的过渡效果 */
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+.custom-select-option:active {
+  transform: scale(0.98) translateZ(0);
+  background-color: rgba(229, 231, 235, 0.8);
+  transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .custom-select-option.selected {
@@ -165,11 +192,14 @@ body {
   color: #1e40af;
   font-weight: 600;
   border-color: #93c5fd;
+  /* iOS风格的选中动画 */
+  animation: iosSelectPulse 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .custom-select-option.focused {
   @apply bg-gray-200;
   /* 焦点状态使用更明显的灰色背景 */
+  transform: scale(1.02) translateZ(0);
 }
 
 .custom-select-option:first-child {
@@ -209,44 +239,77 @@ body {
 /* 桌面端下拉框从上方弹出效果 */
 @media (min-width: 769px) {
   .custom-select-options {
-    animation: desktopDropdownFadeIn 0.2s ease-out;
+    animation: desktopDropdownFadeIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform-origin: top center;
   }
 }
 
 /* 移动端下拉框弹出效果 */
 @media (max-width: 768px) {
   .custom-select-options {
-    animation: mobileDropdownFadeIn 0.2s ease-out;
+    animation: mobileDropdownFadeIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     z-index: 51;
     /* 移动端使用更大的最大高度 */
     max-height: 450px;
     /* 12个选项 (40px * 12) + 边框和间距 (10px) = 490px */
+    transform-origin: center center;
   }
 }
 
-/* 桌面端下拉框弹出动画 - 从上方滑入 */
+/* iOS风格的下拉框弹出动画 - 桌面端 */
 @keyframes desktopDropdownFadeIn {
-  from {
+  0% {
     opacity: 0;
-    transform: translateY(-10px) scale(0.95);
+    transform: translateY(-20px) scale(0.9) translateZ(0);
+    filter: blur(10px);
   }
 
-  to {
+  50% {
+    opacity: 0.8;
+    transform: translateY(-5px) scale(0.95) translateZ(0);
+    filter: blur(2px);
+  }
+
+  100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0) scale(1) translateZ(0);
+    filter: blur(0);
   }
 }
 
-/* 移动端下拉框弹出动画 */
+/* iOS风格的下拉框弹出动画 - 移动端 */
 @keyframes mobileDropdownFadeIn {
-  from {
+  0% {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.8) translateZ(0);
+    filter: blur(10px);
   }
 
-  to {
+  50% {
+    opacity: 0.8;
+    transform: scale(0.9) translateZ(0);
+    filter: blur(2px);
+  }
+
+  100% {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translateZ(0);
+    filter: blur(0);
+  }
+}
+
+/* iOS风格的选中脉冲动画 */
+@keyframes iosSelectPulse {
+  0% {
+    transform: scale(1) translateZ(0);
+  }
+
+  50% {
+    transform: scale(1.05) translateZ(0);
+  }
+
+  100% {
+    transform: scale(1) translateZ(0);
   }
 }
 
