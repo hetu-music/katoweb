@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 
 interface Option {
   value: string;
@@ -115,6 +115,21 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   const selectedOption = options.find((option) => option.value === value);
   const displayText = selectedOption ? selectedOption.label : placeholder;
 
+  // 关闭下拉框
+  const handleClose = useCallback(() => {
+    setIsAnimating(true);
+    setIsOpen(false);
+    setFocusedIndex(-1);
+    // 立即开始关闭，只在动画完成后重置状态
+    setTimeout(() => {
+      setIsAnimating(false);
+      setDropdownPosition(null); // 清理位置状态
+      if (selectRef.current) {
+        selectRef.current.blur();
+      }
+    }, isMobile ? 50 : 100);
+  }, [isMobile]);
+
   // 下拉选项内部的触摸事件处理函数
   const handleOptionsTouch = {
     start: (event: React.TouchEvent) => {
@@ -160,7 +175,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("touchstart", handleClickOutside);
     };
-  }, [isOpen, isMobile]);
+  }, [handleClose]);
 
   // 键盘导航
   const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -266,21 +281,6 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       setIsOpen(true);
       setTimeout(() => setIsAnimating(false), 300);
     }
-  };
-
-  // 关闭下拉框
-  const handleClose = () => {
-    setIsAnimating(true);
-    setIsOpen(false);
-    setFocusedIndex(-1);
-    // 立即开始关闭，只在动画完成后重置状态
-    setTimeout(() => {
-      setIsAnimating(false);
-      setDropdownPosition(null); // 清理位置状态
-      if (selectRef.current) {
-        selectRef.current.blur();
-      }
-    }, isMobile ? 50 : 100);
   };
 
   // 选择选项
