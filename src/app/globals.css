@@ -142,9 +142,10 @@ body {
   -webkit-transform: translateZ(0);
 }
 
+/* 移除筛选框点击时的缩小动画 */
 .custom-select-trigger:active {
-  transform: scale(0.98) translateZ(0);
-  transition: transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* 保持原有的 transform 基础值，但不缩放 */
+  transform: translateZ(0);
 }
 
 .custom-select:focus .custom-select-trigger {
@@ -189,10 +190,11 @@ body {
   -ms-user-select: none;
 }
 
+/* 移除下拉选项点击时的缩小动画，但保留背景色变化 */
 .custom-select-option:active {
-  transform: scale(0.98) translateZ(0);
+  transform: translateZ(0);
   background-color: rgba(229, 231, 235, 0.8);
-  transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: background-color 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .custom-select-option.selected {
