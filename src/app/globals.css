@@ -145,8 +145,8 @@ body {
 }
 
 .custom-select-options {
-  @apply absolute top-full left-0 right-0 mt-1 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg z-50 max-h-100 overflow-y-auto;
-  /* 使用浅绿色渐变背景 */
+  @apply absolute top-full left-0 right-0 mt-1 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg z-50 max-h-100 overflow-y-auto;
+  /* 使用白色背景 */
   background-color: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(12px);
   /* 桌面端恢复原来的逻辑：在筛选框下方弹出 */
@@ -155,18 +155,18 @@ body {
 }
 
 .custom-select-option {
-  @apply px-0 py-2 text-black text-center cursor-pointer transition-colors duration-150 hover:bg-white/30 border-b border-white/10 last:border-b-0 w-full flex items-center justify-center;
+  @apply px-0 py-2 text-black text-center cursor-pointer transition-colors duration-150 hover:bg-gray-100 border-b border-gray-200 last:border-b-0 w-full flex items-center justify-center;
   /* 恢复原来的选项高度 */
 }
 
 .custom-select-option.selected {
-  @apply bg-white/35;
-  /* 增加选中状态的背景不透明度 */
+  @apply bg-blue-50;
+  /* 选中状态使用淡蓝色背景 */
 }
 
 .custom-select-option.focused {
-  @apply bg-white/25;
-  /* 增加焦点状态的背景不透明度 */
+  @apply bg-gray-50;
+  /* 焦点状态使用淡灰色背景 */
 }
 
 .custom-select-option:first-child {
