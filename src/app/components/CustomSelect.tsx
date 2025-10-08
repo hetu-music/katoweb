@@ -27,6 +27,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [isMobile, setIsMobile] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<{
     top: number;
     left: number;
@@ -118,22 +119,36 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         selectRef.current &&
         !selectRef.current.contains(event.target as Node)
       ) {
-        setIsOpen(false);
-        setFocusedIndex(-1);
-        // 让组件失去焦点，移除选中动画
-        selectRef.current.blur();
+        handleClose();
+      }
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      // 如果下拉框打开且是移动端，检测滑动行为
+      if (isOpen && isMobile) {
+        // 检查触摸目标是否在下拉框内
+        const target = event.target as Node;
+        if (optionsRef.current && !optionsRef.current.contains(target)) {
+          handleClose();
+        }
       }
     };
 
     // 同时监听鼠标和触摸事件，确保移动端也能正常工作
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("touchstart", handleClickOutside);
+    
+    // 监听触摸移动事件
+    if (isOpen && isMobile) {
+      document.addEventListener("touchmove", handleTouchMove, { passive: true });
+    }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("touchstart", handleClickOutside);
+      document.removeEventListener("touchmove", handleTouchMove);
     };
-  }, []);
+  }, [isOpen, isMobile]);
 
   // 键盘导航
   const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -178,17 +193,42 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     }
   };
 
-  // 选择选项
-  const handleOptionClick = (optionValue: string) => {
-    onChange(optionValue);
-    setIsOpen(false);
-    setFocusedIndex(-1);
-    // 选择后让组件失去焦点
+  // 打开下拉框
+  const handleOpen = () => {
+    if (disabled) return;
+    setIsAnimating(true);
+    setIsOpen(true);
+    setTimeout(() => setIsAnimating(false), 300);
+  };
+
+  // 关闭下拉框
+  const handleClose = () => {
+    setIsAnimating(true);
     setTimeout(() => {
+      setIsOpen(false);
+      setFocusedIndex(-1);
+      setIsAnimating(false);
       if (selectRef.current) {
         selectRef.current.blur();
       }
-    }, 100);
+    }, 200);
+  };
+
+  // 选择选项
+  const handleOptionClick = (optionValue: string) => {
+    setIsAnimating(true);
+    onChange(optionValue);
+    
+    // iOS风格的关闭动画
+    setTimeout(() => {
+      setIsOpen(false);
+      setFocusedIndex(-1);
+      setIsAnimating(false);
+      // 选择后让组件失去焦点
+      if (selectRef.current) {
+        selectRef.current.blur();
+      }
+    }, 150);
   };
 
   // 滚动到焦点项
@@ -223,7 +263,13 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         className="custom-select-trigger"
         onClick={(e) => {
           e.stopPropagation();
-          if (!disabled) setIsOpen(!isOpen);
+          if (!disabled) {
+            if (isOpen) {
+              handleClose();
+            } else {
+              handleOpen();
+            }
+          }
         }}
         onTouchStart={(e) => {
           // 防止触摸事件冒泡到外部
@@ -236,18 +282,22 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       {/* 移动端背景遮罩 */}
       {isOpen && isMobile && (
         <div
-          className="fixed inset-0 bg-black/30 z-40"
-          onClick={() => {
-            setIsOpen(false);
-            setFocusedIndex(-1);
-            // 让组件失去焦点，移除选中动画
-            if (selectRef.current) {
-              selectRef.current.blur();
-            }
+          className="fixed bg-black/30 z-40"
+          style={{
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100lvh',
           }}
+          onClick={handleClose}
           onTouchStart={(e) => {
             // 防止触摸事件冒泡
             e.stopPropagation();
+          }}
+          onTouchMove={(e) => {
+            // 检测滑动行为并关闭下拉框
+            e.preventDefault();
+            handleClose();
           }}
         />
       )}
