@@ -28,7 +28,7 @@ const DROPDOWN_CONFIG = {
   },
   // 移动端设置
   mobile: {
-    maxVisibleOptions: 11, // 移动端最多显示11个选项
+    maxVisibleOptions: 15, // 移动端最多显示11个选项
   }
 };
 
