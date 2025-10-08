@@ -156,7 +156,7 @@ body {
 .custom-select-options {
   @apply absolute top-full left-0 right-0 mt-1 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg z-50 max-h-100 overflow-y-auto;
   /* 使用白色背景 */
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(20px);
   /* iOS风格的阴影 */
   box-shadow:
