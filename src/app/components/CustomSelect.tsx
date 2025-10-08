@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 
 interface Option {
   value: string;
@@ -16,6 +16,22 @@ interface CustomSelectProps {
   disabled?: boolean;
 }
 
+// 下拉框配置 - 在这里修改显示的选项数量和框的长度
+const DROPDOWN_CONFIG = {
+  // 每个选项的高度（px）
+  optionHeight: 40,
+  // 边框和间距的额外高度（px）
+  borderAndPadding: 10,
+  // 桌面端设置
+  desktop: {
+    maxVisibleOptions: 12, // 桌面端最多显示12个选项
+  },
+  // 移动端设置
+  mobile: {
+    maxVisibleOptions: 15, // 移动端最多显示11个选项
+  }
+};
+
 const CustomSelect: React.FC<CustomSelectProps> = ({
   value,
   onChange,
@@ -27,6 +43,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [isMobile, setIsMobile] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<{
     top: number;
     left: number;
@@ -35,6 +52,9 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   } | null>(null);
   const selectRef = useRef<HTMLDivElement>(null);
   const optionsRef = useRef<HTMLDivElement>(null);
+
+  // 触摸事件状态
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
 
   // 检测是否为移动端
   useEffect(() => {
@@ -48,57 +68,93 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // 计算下拉选项位置
+  // 桌面端位置计算（移动端位置在 handleOpen 中预先计算）
   useEffect(() => {
-    if (isOpen && selectRef.current) {
-      const rect = selectRef.current.getBoundingClientRect();
+    if (isOpen && !isMobile && selectRef.current) {
+      const calculatePosition = () => {
+        const rect = selectRef.current!.getBoundingClientRect();
 
-      // 计算下拉选项位置
-      const optionHeight = 40; // 每个选项的高度
-      const borderAndPadding = 10; // 边框和间距的额外高度
-      // 移动端和桌面端使用不同的最大可见选项数，与CSS保持一致
-      const maxVisibleOptions = isMobile ? 11 : 12; // 移动端：桌面端
-      const dropdownHeight = Math.min(
-        options.length * optionHeight + borderAndPadding,
-        maxVisibleOptions * optionHeight + borderAndPadding,
-      );
+        // 桌面端计算
+        const dropdownHeight = Math.min(
+          options.length * DROPDOWN_CONFIG.optionHeight + DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.desktop.maxVisibleOptions * DROPDOWN_CONFIG.optionHeight + DROPDOWN_CONFIG.borderAndPadding,
+        );
 
-      // 计算垂直位置 - 以筛选框为中心
-      const viewportHeight = window.innerHeight;
-      const idealTop = rect.top + rect.height / 2 - dropdownHeight / 2;
+        const viewportHeight = window.innerHeight;
+        const idealTop = rect.top + rect.height / 2 - dropdownHeight / 2;
 
-      // 确保不超出屏幕边界
-      let finalTop = idealTop;
-      if (idealTop < 10) {
-        // 如果超出顶部，调整到顶部留10px边距
-        finalTop = 10;
-      } else if (idealTop + dropdownHeight > viewportHeight - 10) {
-        // 如果超出底部，调整到底部留10px边距
-        finalTop = viewportHeight - dropdownHeight - 10;
-      }
+        let finalTop = idealTop;
+        if (idealTop < 10) {
+          finalTop = 10;
+        } else if (idealTop + dropdownHeight > viewportHeight - 10) {
+          finalTop = viewportHeight - dropdownHeight - 10;
+        }
 
-      // 计算水平位置
-      const viewportWidth = window.innerWidth;
-      let finalLeft = rect.left;
-      if (rect.left + rect.width > viewportWidth - 10) {
-        finalLeft = viewportWidth - rect.width - 10;
-      }
-      if (finalLeft < 10) {
-        finalLeft = 10;
-      }
+        const viewportWidth = window.innerWidth;
+        let finalLeft = rect.left;
+        if (rect.left + rect.width > viewportWidth - 10) {
+          finalLeft = viewportWidth - rect.width - 10;
+        }
+        if (finalLeft < 10) {
+          finalLeft = 10;
+        }
 
-      setDropdownPosition({
-        top: finalTop,
-        left: finalLeft,
-        width: rect.width,
-        maxHeight: dropdownHeight,
-      });
+        setDropdownPosition({
+          top: finalTop,
+          left: finalLeft,
+          width: rect.width,
+          maxHeight: dropdownHeight,
+        });
+      };
+
+      calculatePosition();
     }
   }, [isOpen, options.length, isMobile]);
 
   // 获取当前选中项的显示文本
   const selectedOption = options.find((option) => option.value === value);
   const displayText = selectedOption ? selectedOption.label : placeholder;
+
+  // 关闭下拉框
+  const handleClose = useCallback(() => {
+    setIsAnimating(true);
+    setIsOpen(false);
+    setFocusedIndex(-1);
+    // 立即开始关闭，只在动画完成后重置状态
+    setTimeout(() => {
+      setIsAnimating(false);
+      setDropdownPosition(null); // 清理位置状态
+      if (selectRef.current) {
+        selectRef.current.blur();
+      }
+    }, isMobile ? 50 : 100);
+  }, [isMobile]);
+
+  // 下拉选项内部的触摸事件处理函数
+  const handleOptionsTouch = {
+    start: (event: React.TouchEvent) => {
+      const touch = event.touches[0];
+      setTouchStart({ x: touch.clientX, y: touch.clientY });
+    },
+
+    move: (event: React.TouchEvent) => {
+      if (!touchStart) return;
+
+      const touch = event.touches[0];
+      const deltaX = Math.abs(touch.clientX - touchStart.x);
+      const deltaY = Math.abs(touch.clientY - touchStart.y);
+
+      // 如果水平移动距离大于垂直移动距离，且超过阈值，则阻止水平拖动
+      if (deltaX > deltaY && deltaX > 10) {
+        event.preventDefault();
+        return;
+      }
+    },
+
+    end: () => {
+      setTouchStart(null);
+    }
+  };
 
   // 点击外部关闭下拉框
   useEffect(() => {
@@ -107,10 +163,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         selectRef.current &&
         !selectRef.current.contains(event.target as Node)
       ) {
-        setIsOpen(false);
-        setFocusedIndex(-1);
-        // 让组件失去焦点，移除选中动画
-        selectRef.current.blur();
+        handleClose();
       }
     };
 
@@ -122,7 +175,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("touchstart", handleClickOutside);
     };
-  }, []);
+  }, [handleClose]);
 
   // 键盘导航
   const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -167,17 +220,84 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     }
   };
 
+  // 打开下拉框
+  const handleOpen = async () => {
+    if (disabled) return;
+
+    setIsAnimating(true);
+
+    // 如果是移动端，先计算位置再显示
+    if (isMobile && selectRef.current) {
+      const calculatePosition = () => {
+        const rect = selectRef.current!.getBoundingClientRect();
+
+        // 计算下拉选项位置
+        const dropdownHeight = Math.min(
+          options.length * DROPDOWN_CONFIG.optionHeight + DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.mobile.maxVisibleOptions * DROPDOWN_CONFIG.optionHeight + DROPDOWN_CONFIG.borderAndPadding,
+        );
+
+        // 计算垂直位置 - 以筛选框为中心
+        const viewportHeight = window.innerHeight;
+        const idealTop = rect.top + rect.height / 2 - dropdownHeight / 2;
+
+        // 确保不超出屏幕边界
+        let finalTop = idealTop;
+        if (idealTop < 10) {
+          finalTop = 10;
+        } else if (idealTop + dropdownHeight > viewportHeight - 10) {
+          finalTop = viewportHeight - dropdownHeight - 10;
+        }
+
+        // 计算水平位置
+        const viewportWidth = window.innerWidth;
+        let finalLeft = rect.left;
+        if (rect.left + rect.width > viewportWidth - 10) {
+          finalLeft = viewportWidth - rect.width - 10;
+        }
+        if (finalLeft < 10) {
+          finalLeft = 10;
+        }
+
+        return {
+          top: finalTop,
+          left: finalLeft,
+          width: rect.width,
+          maxHeight: dropdownHeight,
+        };
+      };
+
+      // 先设置位置，再显示下拉框
+      const position = calculatePosition();
+      setDropdownPosition(position);
+
+      // 使用 requestAnimationFrame 确保位置设置完成后再显示
+      requestAnimationFrame(() => {
+        setIsOpen(true);
+        setTimeout(() => setIsAnimating(false), 150);
+      });
+    } else {
+      // 桌面端直接显示
+      setIsOpen(true);
+      setTimeout(() => setIsAnimating(false), 300);
+    }
+  };
+
   // 选择选项
   const handleOptionClick = (optionValue: string) => {
+    setIsAnimating(true);
     onChange(optionValue);
     setIsOpen(false);
     setFocusedIndex(-1);
-    // 选择后让组件失去焦点
+
+    // 立即开始关闭，只在动画完成后重置状态
     setTimeout(() => {
+      setIsAnimating(false);
+      // 选择后让组件失去焦点
       if (selectRef.current) {
         selectRef.current.blur();
       }
-    }, 100);
+    }, isMobile ? 50 : 100);
   };
 
   // 滚动到焦点项
@@ -212,7 +332,13 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         className="custom-select-trigger"
         onClick={(e) => {
           e.stopPropagation();
-          if (!disabled) setIsOpen(!isOpen);
+          if (!disabled) {
+            if (isOpen) {
+              handleClose();
+            } else {
+              handleOpen();
+            }
+          }
         }}
         onTouchStart={(e) => {
           // 防止触摸事件冒泡到外部
@@ -225,51 +351,82 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       {/* 移动端背景遮罩 */}
       {isOpen && isMobile && (
         <div
-          className="fixed inset-0 bg-black/30 z-40"
-          onClick={() => {
-            setIsOpen(false);
-            setFocusedIndex(-1);
-            // 让组件失去焦点，移除选中动画
-            if (selectRef.current) {
-              selectRef.current.blur();
+          className="fixed bg-black/30 z-40"
+          style={{
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100lvh',
+          }}
+          onClick={handleClose}
+          onTouchStart={(e) => {
+            // 记录触摸开始位置
+            const touch = e.touches[0];
+            setTouchStart({ x: touch.clientX, y: touch.clientY });
+          }}
+          onTouchMove={(e) => {
+            // 检测是否有明显的滑动动作
+            if (touchStart) {
+              const touch = e.touches[0];
+              const deltaX = Math.abs(touch.clientX - touchStart.x);
+              const deltaY = Math.abs(touch.clientY - touchStart.y);
+
+              // 如果有明显的滑动动作（垂直或水平），关闭下拉框
+              if (deltaY > 15 || deltaX > 15) {
+                handleClose();
+                // 不调用 preventDefault()，让屏幕可以正常滚动
+              }
             }
           }}
-          onTouchStart={(e) => {
-            // 防止触摸事件冒泡
-            e.stopPropagation();
+          onTouchEnd={() => {
+            setTouchStart(null);
           }}
         />
       )}
 
       {/* 下拉选项 */}
-      {isOpen && (
+      {isOpen && ((!isMobile) || (isMobile && dropdownPosition)) && (
         <div
           ref={optionsRef}
           id="custom-select-options"
-          className="custom-select-options"
+          className={`custom-select-options ${isMobile ? 'mobile' : 'desktop'} ${isAnimating && !isOpen ? 'closing' : ''}`}
           role="listbox"
           onClick={(e) => e.stopPropagation()}
-          onTouchStart={(e) => e.stopPropagation()}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+            if (isMobile) {
+              handleOptionsTouch.start(e);
+            }
+          }}
+          onTouchMove={(e) => {
+            if (isMobile) {
+              handleOptionsTouch.move(e);
+            }
+          }}
+          onTouchEnd={() => {
+            if (isMobile) {
+              handleOptionsTouch.end();
+            }
+          }}
           style={
             isMobile && dropdownPosition
               ? {
-                  position: "fixed",
-                  top: `${dropdownPosition.top}px`,
-                  left: `${dropdownPosition.left}px`,
-                  width: `${dropdownPosition.width}px`,
-                  maxHeight: `${dropdownPosition.maxHeight}px`,
-                  transform: "none",
-                  zIndex: 50,
-                }
+                position: "fixed",
+                top: `${dropdownPosition.top}px`,
+                left: `${dropdownPosition.left}px`,
+                width: `${dropdownPosition.width}px`,
+                maxHeight: `${dropdownPosition.maxHeight}px`,
+                transform: "none",
+                zIndex: 50,
+              }
               : {}
           }
         >
           {options.map((option, index) => (
             <div
               key={option.value}
-              className={`custom-select-option ${
-                option.value === value ? "selected" : ""
-              } ${index === focusedIndex ? "focused" : ""}`}
+              className={`custom-select-option ${option.value === value ? "selected" : ""
+                } ${index === focusedIndex ? "focused" : ""}`}
               onClick={(e) => {
                 e.stopPropagation();
                 handleOptionClick(option.value);

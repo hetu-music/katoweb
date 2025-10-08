@@ -89,7 +89,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               本项目为河图作品勘鉴，收录了河图的主要音乐作品资料，支持筛选与搜索。
             </p>
             <p>
-              数据由本人整理，来源为创作者微博及各大音乐平台，不保证百分百准确。如有误漏请
+              数据由本人整理，来源为创作者微博及各大音乐平台，不能保证完全准确。如有误漏请
               <span className="ml-1 mr-1">
                 <a
                   href="mailto:feedback@hetu-music.com"
