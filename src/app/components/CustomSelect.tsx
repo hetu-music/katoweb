@@ -37,6 +37,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   const selectRef = useRef<HTMLDivElement>(null);
   const optionsRef = useRef<HTMLDivElement>(null);
 
+  // 触摸事件状态
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
   // 检测是否为移动端
   useEffect(() => {
     const checkMobile = () => {
@@ -112,6 +116,39 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   const selectedOption = options.find((option) => option.value === value);
   const displayText = selectedOption ? selectedOption.label : placeholder;
 
+  // 触摸事件处理函数
+  const handleTouchStart = (event: React.TouchEvent) => {
+    const touch = event.touches[0];
+    setTouchStart({ x: touch.clientX, y: touch.clientY });
+    setIsDragging(false);
+  };
+
+  const handleTouchMove = (event: React.TouchEvent) => {
+    if (!touchStart) return;
+
+    const touch = event.touches[0];
+    const deltaX = Math.abs(touch.clientX - touchStart.x);
+    const deltaY = Math.abs(touch.clientY - touchStart.y);
+
+    // 如果水平移动距离大于垂直移动距离，且超过阈值，则认为是水平拖动
+    if (deltaX > deltaY && deltaX > 10) {
+      setIsDragging(true);
+      // 阻止水平拖动
+      event.preventDefault();
+      return;
+    }
+
+    // 只允许垂直滚动
+    if (deltaY > 10) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setTouchStart(null);
+    setIsDragging(false);
+  };
+
   // 点击外部关闭下拉框
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
@@ -123,30 +160,13 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       }
     };
 
-    const handleTouchMove = (event: TouchEvent) => {
-      // 如果下拉框打开且是移动端，检测滑动行为
-      if (isOpen && isMobile) {
-        // 检查触摸目标是否在下拉框内
-        const target = event.target as Node;
-        if (optionsRef.current && !optionsRef.current.contains(target)) {
-          handleClose();
-        }
-      }
-    };
-
     // 同时监听鼠标和触摸事件，确保移动端也能正常工作
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("touchstart", handleClickOutside);
-    
-    // 监听触摸移动事件
-    if (isOpen && isMobile) {
-      document.addEventListener("touchmove", handleTouchMove, { passive: true });
-    }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("touchstart", handleClickOutside);
-      document.removeEventListener("touchmove", handleTouchMove);
     };
   }, [isOpen, isMobile]);
 
@@ -221,7 +241,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     onChange(optionValue);
     setIsOpen(false);
     setFocusedIndex(-1);
-    
+
     // 立即开始关闭，只在动画完成后重置状态
     setTimeout(() => {
       setIsAnimating(false);
@@ -289,6 +309,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             left: 0,
             width: '100vw',
             height: '100lvh',
+            touchAction: 'none', // 完全禁用触摸操作
           }}
           onClick={handleClose}
           onTouchStart={(e) => {
@@ -296,10 +317,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             e.stopPropagation();
           }}
           onTouchMove={(e) => {
-            // 检测滑动行为并关闭下拉框
+            // 阻止所有触摸移动
             e.preventDefault();
-            handleClose();
           }}
+          onTouchEnd={handleClose}
         />
       )}
 
@@ -311,7 +332,22 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           className={`custom-select-options ${isMobile ? 'mobile' : 'desktop'} ${isAnimating && !isOpen ? 'closing' : ''}`}
           role="listbox"
           onClick={(e) => e.stopPropagation()}
-          onTouchStart={(e) => e.stopPropagation()}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+            if (isMobile) {
+              handleTouchStart(e);
+            }
+          }}
+          onTouchMove={(e) => {
+            if (isMobile) {
+              handleTouchMove(e);
+            }
+          }}
+          onTouchEnd={(e) => {
+            if (isMobile) {
+              handleTouchEnd();
+            }
+          }}
           style={
             isMobile && dropdownPosition
               ? {

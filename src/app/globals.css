@@ -126,6 +126,8 @@ body {
 /* 自定义下拉组件样式 */
 .custom-select {
   @apply relative w-full h-[48px] focus:outline-none;
+  /* 防止整个组件被拖动 */
+  touch-action: manipulation;
 }
 
 .custom-select.disabled {
@@ -178,6 +180,13 @@ body {
   transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
+  /* 防止选项被拖动 */
+  touch-action: manipulation;
+  /* 防止用户选择文本 */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .custom-select-option:active {
@@ -271,6 +280,13 @@ body {
     /* 初始状态为透明，通过动画淡入 */
     opacity: 0;
     animation-fill-mode: forwards;
+    /* 防止水平拖动 */
+    touch-action: pan-y;
+    /* 只允许垂直滚动 */
+    overflow-x: hidden;
+    /* 防止水平滚动 */
+    overscroll-behavior-x: none;
+    /* 防止水平过度滚动 */
   }
   
   .custom-select-options.mobile.closing {
