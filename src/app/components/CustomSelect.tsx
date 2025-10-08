@@ -242,11 +242,11 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       )}
 
       {/* 下拉选项 */}
-      {isOpen && (
+      {isOpen && (!isMobile || dropdownPosition) && (
         <div
           ref={optionsRef}
           id="custom-select-options"
-          className="custom-select-options"
+          className={`custom-select-options ${isMobile ? 'mobile' : 'desktop'}`}
           role="listbox"
           onClick={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
