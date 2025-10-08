@@ -173,6 +173,9 @@ body {
   transition: all 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
+  /* 禁止横向滚动 */
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
 }
 
 .custom-select-option {
@@ -267,6 +270,11 @@ body {
   .custom-select-options.desktop {
     animation: desktopDropdownFadeIn 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     transform-origin: top center;
+    /* 确保桌面端也禁止横向滚动 */
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
+    /* 限制触摸操作为垂直滚动 */
+    touch-action: pan-y;
   }
 }
 
