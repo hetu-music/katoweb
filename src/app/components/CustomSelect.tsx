@@ -53,7 +53,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   const selectRef = useRef<HTMLDivElement>(null);
   const optionsRef = useRef<HTMLDivElement>(null);
 
-  // 触摸事件状态
+  // 触摸事件状态（仅用于下拉选项内部）
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(
     null,
   );
@@ -79,10 +79,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         // 桌面端计算
         const dropdownHeight = Math.min(
           options.length * DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.borderAndPadding,
           DROPDOWN_CONFIG.desktop.maxVisibleOptions *
-            DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.optionHeight +
+          DROPDOWN_CONFIG.borderAndPadding,
         );
 
         const viewportHeight = window.innerHeight;
@@ -185,6 +185,42 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     };
   }, [handleClose]);
 
+  // 监听页面滚动，滚动时关闭下拉框
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handlePageScroll = () => {
+      handleClose();
+    };
+
+    // 监听页面滚动事件
+    window.addEventListener("scroll", handlePageScroll, { passive: true });
+    document.addEventListener("scroll", handlePageScroll, { passive: true });
+
+    // 监听触摸滚动事件（移动端）
+    const handleTouchMove = (event: TouchEvent) => {
+      // 检查触摸事件是否来自下拉选项内部
+      if (
+        optionsRef.current &&
+        event.target &&
+        optionsRef.current.contains(event.target as Node)
+      ) {
+        return; // 如果是下拉选项内部的滚动，不关闭
+      }
+
+      // 如果是页面其他地方的触摸滚动，关闭下拉框
+      handleClose();
+    };
+
+    document.addEventListener("touchmove", handleTouchMove, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handlePageScroll);
+      document.removeEventListener("scroll", handlePageScroll);
+      document.removeEventListener("touchmove", handleTouchMove);
+    };
+  }, [isOpen, handleClose]);
+
   // 键盘导航
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (disabled) return;
@@ -242,10 +278,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         // 计算下拉选项位置
         const dropdownHeight = Math.min(
           options.length * DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.borderAndPadding,
           DROPDOWN_CONFIG.mobile.maxVisibleOptions *
-            DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.optionHeight +
+          DROPDOWN_CONFIG.borderAndPadding,
         );
 
         // 计算垂直位置 - 以筛选框为中心
@@ -373,28 +409,6 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             height: "100lvh",
           }}
           onClick={handleClose}
-          onTouchStart={(e) => {
-            // 记录触摸开始位置
-            const touch = e.touches[0];
-            setTouchStart({ x: touch.clientX, y: touch.clientY });
-          }}
-          onTouchMove={(e) => {
-            // 检测是否有明显的滑动动作
-            if (touchStart) {
-              const touch = e.touches[0];
-              const deltaX = Math.abs(touch.clientX - touchStart.x);
-              const deltaY = Math.abs(touch.clientY - touchStart.y);
-
-              // 如果有明显的滑动动作（垂直或水平），关闭下拉框
-              if (deltaY > 15 || deltaX > 15) {
-                handleClose();
-                // 不调用 preventDefault()，让屏幕可以正常滚动
-              }
-            }
-          }}
-          onTouchEnd={() => {
-            setTouchStart(null);
-          }}
         />
       )}
 
@@ -425,23 +439,22 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           style={
             isMobile && dropdownPosition
               ? {
-                  position: "fixed",
-                  top: `${dropdownPosition.top}px`,
-                  left: `${dropdownPosition.left}px`,
-                  width: `${dropdownPosition.width}px`,
-                  maxHeight: `${dropdownPosition.maxHeight}px`,
-                  transform: "none",
-                  zIndex: 50,
-                }
+                position: "fixed",
+                top: `${dropdownPosition.top}px`,
+                left: `${dropdownPosition.left}px`,
+                width: `${dropdownPosition.width}px`,
+                maxHeight: `${dropdownPosition.maxHeight}px`,
+                transform: "none",
+                zIndex: 50,
+              }
               : {}
           }
         >
           {options.map((option, index) => (
             <div
               key={option.value}
-              className={`custom-select-option ${
-                option.value === value ? "selected" : ""
-              } ${index === focusedIndex ? "focused" : ""}`}
+              className={`custom-select-option ${option.value === value ? "selected" : ""
+                } ${index === focusedIndex ? "focused" : ""}`}
               onClick={(e) => {
                 e.stopPropagation();
                 handleOptionClick(option.value);
