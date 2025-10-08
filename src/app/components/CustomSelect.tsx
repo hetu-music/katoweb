@@ -52,37 +52,31 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // 计算下拉选项位置
+  // 桌面端位置计算（移动端位置在 handleOpen 中预先计算）
   useEffect(() => {
-    if (isOpen && selectRef.current) {
+    if (isOpen && !isMobile && selectRef.current) {
       const calculatePosition = () => {
         const rect = selectRef.current!.getBoundingClientRect();
 
-        // 计算下拉选项位置
-        const optionHeight = 40; // 每个选项的高度
-        const borderAndPadding = 10; // 边框和间距的额外高度
-        // 移动端和桌面端使用不同的最大可见选项数，与CSS保持一致
-        const maxVisibleOptions = isMobile ? 11 : 12; // 移动端：桌面端
+        // 桌面端计算（保持原有逻辑）
+        const optionHeight = 40;
+        const borderAndPadding = 10;
+        const maxVisibleOptions = 12;
         const dropdownHeight = Math.min(
           options.length * optionHeight + borderAndPadding,
           maxVisibleOptions * optionHeight + borderAndPadding,
         );
 
-        // 计算垂直位置 - 以筛选框为中心
         const viewportHeight = window.innerHeight;
         const idealTop = rect.top + rect.height / 2 - dropdownHeight / 2;
 
-        // 确保不超出屏幕边界
         let finalTop = idealTop;
         if (idealTop < 10) {
-          // 如果超出顶部，调整到顶部留10px边距
           finalTop = 10;
         } else if (idealTop + dropdownHeight > viewportHeight - 10) {
-          // 如果超出底部，调整到底部留10px边距
           finalTop = viewportHeight - dropdownHeight - 10;
         }
 
-        // 计算水平位置
         const viewportWidth = window.innerWidth;
         let finalLeft = rect.left;
         if (rect.left + rect.width > viewportWidth - 10) {
@@ -100,14 +94,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         });
       };
 
-      if (isMobile) {
-        // 移动端添加微小延迟确保DOM完全更新
-        requestAnimationFrame(() => {
-          requestAnimationFrame(calculatePosition);
-        });
-      } else {
-        calculatePosition();
-      }
+      calculatePosition();
     }
   }, [isOpen, options.length, isMobile]);
 
@@ -206,11 +193,69 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   };
 
   // 打开下拉框
-  const handleOpen = () => {
+  const handleOpen = async () => {
     if (disabled) return;
+
     setIsAnimating(true);
-    setIsOpen(true);
-    setTimeout(() => setIsAnimating(false), isMobile ? 150 : 300);
+
+    // 如果是移动端，先计算位置再显示
+    if (isMobile && selectRef.current) {
+      const calculatePosition = () => {
+        const rect = selectRef.current!.getBoundingClientRect();
+
+        // 计算下拉选项位置
+        const optionHeight = 40; // 每个选项的高度
+        const borderAndPadding = 10; // 边框和间距的额外高度
+        const maxVisibleOptions = 11; // 移动端最大可见选项数
+        const dropdownHeight = Math.min(
+          options.length * optionHeight + borderAndPadding,
+          maxVisibleOptions * optionHeight + borderAndPadding,
+        );
+
+        // 计算垂直位置 - 以筛选框为中心
+        const viewportHeight = window.innerHeight;
+        const idealTop = rect.top + rect.height / 2 - dropdownHeight / 2;
+
+        // 确保不超出屏幕边界
+        let finalTop = idealTop;
+        if (idealTop < 10) {
+          finalTop = 10;
+        } else if (idealTop + dropdownHeight > viewportHeight - 10) {
+          finalTop = viewportHeight - dropdownHeight - 10;
+        }
+
+        // 计算水平位置
+        const viewportWidth = window.innerWidth;
+        let finalLeft = rect.left;
+        if (rect.left + rect.width > viewportWidth - 10) {
+          finalLeft = viewportWidth - rect.width - 10;
+        }
+        if (finalLeft < 10) {
+          finalLeft = 10;
+        }
+
+        return {
+          top: finalTop,
+          left: finalLeft,
+          width: rect.width,
+          maxHeight: dropdownHeight,
+        };
+      };
+
+      // 先设置位置，再显示下拉框
+      const position = calculatePosition();
+      setDropdownPosition(position);
+
+      // 使用 requestAnimationFrame 确保位置设置完成后再显示
+      requestAnimationFrame(() => {
+        setIsOpen(true);
+        setTimeout(() => setIsAnimating(false), 150);
+      });
+    } else {
+      // 桌面端直接显示
+      setIsOpen(true);
+      setTimeout(() => setIsAnimating(false), 300);
+    }
   };
 
   // 关闭下拉框
@@ -221,6 +266,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     // 立即开始关闭，只在动画完成后重置状态
     setTimeout(() => {
       setIsAnimating(false);
+      setDropdownPosition(null); // 清理位置状态
       if (selectRef.current) {
         selectRef.current.blur();
       }
@@ -329,7 +375,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       )}
 
       {/* 下拉选项 */}
-      {isOpen && (!isMobile || dropdownPosition) && (
+      {isOpen && ((!isMobile) || (isMobile && dropdownPosition)) && (
         <div
           ref={optionsRef}
           id="custom-select-options"
