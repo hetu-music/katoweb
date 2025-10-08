@@ -167,7 +167,7 @@ body {
   max-height: 490px;
   /* 12个选项 (40px * 12) + 边框和间距 (10px) = 490px */
   /* iOS风格的过渡 */
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
 }
@@ -239,7 +239,7 @@ body {
 /* 桌面端下拉框从上方弹出效果 */
 @media (min-width: 769px) {
   .custom-select-options {
-    animation: desktopDropdownFadeIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: desktopDropdownFadeIn 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     transform-origin: top center;
   }
 }
@@ -247,7 +247,7 @@ body {
 /* 移动端下拉框弹出效果 */
 @media (max-width: 768px) {
   .custom-select-options {
-    animation: mobileDropdownFadeIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: mobileDropdownFadeIn 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     z-index: 51;
     /* 移动端使用更大的最大高度 */
     max-height: 450px;
