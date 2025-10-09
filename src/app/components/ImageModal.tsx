@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import Image from "next/image";
-import { X, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import { X, ZoomIn, ZoomOut, RotateCcw, RotateCw, RefreshCw } from "lucide-react";
 
 interface ImageModalProps {
   isOpen: boolean;
@@ -21,6 +21,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
 }) => {
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [rotation, setRotation] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const imageRef = useRef<HTMLDivElement>(null);
@@ -29,6 +30,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
   const resetTransform = useCallback(() => {
     setScale(1);
     setPosition({ x: 0, y: 0 });
+    setRotation(0);
   }, []);
 
   // 缩放控制
@@ -38,6 +40,15 @@ const ImageModal: React.FC<ImageModalProps> = ({
 
   const zoomOut = useCallback(() => {
     setScale((prev) => Math.max(prev / 1.5, 0.5));
+  }, []);
+
+  // 旋转控制
+  const rotateClockwise = useCallback(() => {
+    setRotation((prev) => (prev + 90) % 360);
+  }, []);
+
+  const rotateCounterClockwise = useCallback(() => {
+    setRotation((prev) => (prev - 90 + 360) % 360);
   }, []);
 
   // 处理键盘事件
@@ -54,6 +65,12 @@ const ImageModal: React.FC<ImageModalProps> = ({
       } else if (event.key === "0") {
         event.preventDefault();
         resetTransform();
+      } else if (event.key === "r" || event.key === "R") {
+        event.preventDefault();
+        rotateClockwise();
+      } else if (event.key === "l" || event.key === "L") {
+        event.preventDefault();
+        rotateCounterClockwise();
       }
     };
 
@@ -66,7 +83,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "unset";
     };
-  }, [isOpen, onClose, zoomIn, zoomOut, resetTransform]);
+  }, [isOpen, onClose, zoomIn, zoomOut, resetTransform, rotateClockwise, rotateCounterClockwise]);
 
   // 重置状态当模态框打开时
   useEffect(() => {
@@ -144,102 +161,110 @@ const ImageModal: React.FC<ImageModalProps> = ({
         onClick={onClose}
       />
 
-      {/* 模态框内容 */}
-      <div className="relative max-w-[95vw] max-h-[95vh] flex flex-col items-center">
-        {/* 标题和控制按钮 */}
-        <div className="mb-4 flex items-center justify-between w-full max-w-2xl">
-          {/* 标题 */}
-          {title && (
-            <div className="text-center flex-1">
-              <h3 className="text-white text-lg font-semibold">{title}</h3>
-            </div>
-          )}
-
-          {/* 控制按钮组 */}
-          <div className="flex items-center gap-2 ml-4">
-            <button
-              onClick={zoomOut}
-              className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
-              aria-label="缩小"
-              title="缩小 (-)"
-            >
-              <ZoomOut size={16} />
-            </button>
-
-            <span className="text-white text-sm min-w-[3rem] text-center">
-              {Math.round(scale * 100)}%
-            </span>
-
-            <button
-              onClick={zoomIn}
-              className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
-              aria-label="放大"
-              title="放大 (+)"
-            >
-              <ZoomIn size={16} />
-            </button>
-
-            <button
-              onClick={resetTransform}
-              className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
-              aria-label="重置"
-              title="重置 (0)"
-            >
-              <RotateCcw size={16} />
-            </button>
-
-            <button
-              onClick={onClose}
-              className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
-              aria-label="关闭"
-              title="关闭 (ESC)"
-            >
-              <X size={16} />
-            </button>
-          </div>
+      {/* 图片标题 - 左上角 */}
+      {title && (
+        <div className="absolute top-4 left-4 z-10">
+          <h3 className="text-white text-lg font-semibold bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full">
+            {title}
+          </h3>
         </div>
+      )}
 
-        {/* 图片容器 */}
+      {/* 控制按钮组 - 右上角 */}
+      <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+        <button
+          onClick={zoomOut}
+          className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+          aria-label="缩小"
+          title="缩小 (-)"
+        >
+          <ZoomOut size={16} />
+        </button>
+
+        <span className="text-white text-sm min-w-[3rem] text-center">
+          {Math.round(scale * 100)}%
+        </span>
+
+        <button
+          onClick={zoomIn}
+          className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+          aria-label="放大"
+          title="放大 (+)"
+        >
+          <ZoomIn size={16} />
+        </button>
+
+        <button
+          onClick={rotateCounterClockwise}
+          className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+          aria-label="逆时针旋转"
+          title="逆时针旋转 (L)"
+        >
+          <RotateCcw size={16} />
+        </button>
+
+        <button
+          onClick={rotateClockwise}
+          className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+          aria-label="顺时针旋转"
+          title="顺时针旋转 (R)"
+        >
+          <RotateCw size={16} />
+        </button>
+
+        <button
+          onClick={resetTransform}
+          className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+          aria-label="重置"
+          title="重置 (0)"
+        >
+          <RefreshCw size={16} />
+        </button>
+
+        <button
+          onClick={onClose}
+          className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+          aria-label="关闭"
+          title="关闭 (ESC)"
+        >
+          <X size={16} />
+        </button>
+      </div>
+
+      {/* 图片容器 - 占满整个屏幕 */}
+      <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
         <div
-          className="relative overflow-hidden rounded-lg bg-white/5 shadow-2xl"
+          ref={imageRef}
+          className="relative select-none flex items-center justify-center w-full h-full"
           style={{
-            maxWidth: "90vw",
-            maxHeight: "75vh",
+            transform: `scale(${scale}) translate(${position.x / scale}px, ${position.y / scale}px) rotate(${rotation}deg)`,
+            transition: isDragging ? "none" : "transform 0.2s ease-out",
             cursor: scale > 1 ? (isDragging ? "grabbing" : "grab") : "default",
           }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onDoubleClick={handleDoubleClick}
         >
-          <div
-            ref={imageRef}
-            className="relative select-none"
-            style={{
-              transform: `scale(${scale}) translate(${position.x / scale}px, ${position.y / scale}px)`,
-              transition: isDragging ? "none" : "transform 0.2s ease-out",
-            }}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onDoubleClick={handleDoubleClick}
-          >
-            <Image
-              src={src}
-              alt={alt}
-              width={1200}
-              height={800}
-              className="max-w-full max-h-[75vh] object-contain"
-              style={{ objectFit: "contain" }}
-              priority
-              draggable={false}
-            />
-          </div>
+          <Image
+            src={src}
+            alt={alt}
+            width={1200}
+            height={800}
+            className="max-w-full max-h-full object-contain"
+            style={{ objectFit: "contain" }}
+            priority
+            draggable={false}
+          />
         </div>
+      </div>
 
-        {/* 操作提示 */}
-        <div className="mt-3 text-center">
-          <p className="text-white/70 text-sm">
-            滚轮缩放 • 双击重置 • 拖拽移动 • 键盘: +/- 缩放, 0 重置, ESC 关闭
-          </p>
-        </div>
+      {/* 操作提示 - 左下角 */}
+      <div className="absolute bottom-4 left-4 z-10">
+        <p className="text-white/70 text-sm bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full">
+          滚轮缩放 • 双击重置 • 拖拽移动
+        </p>
       </div>
     </div>
   );
