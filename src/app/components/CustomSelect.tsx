@@ -79,10 +79,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         // 桌面端计算
         const dropdownHeight = Math.min(
           options.length * DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.borderAndPadding,
           DROPDOWN_CONFIG.desktop.maxVisibleOptions *
-            DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.optionHeight +
+          DROPDOWN_CONFIG.borderAndPadding,
         );
 
         const viewportHeight = window.innerHeight;
@@ -265,7 +265,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   };
 
   // 打开下拉框
-  const handleOpen = async () => {
+  const handleOpen = () => {
     if (disabled) return;
 
     setIsAnimating(true);
@@ -278,10 +278,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         // 计算下拉选项位置
         const dropdownHeight = Math.min(
           options.length * DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.borderAndPadding,
           DROPDOWN_CONFIG.mobile.maxVisibleOptions *
-            DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.optionHeight +
+          DROPDOWN_CONFIG.borderAndPadding,
         );
 
         // 计算垂直位置 - 以筛选框为中心
@@ -318,15 +318,13 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       const position = calculatePosition();
       setDropdownPosition(position);
 
-      // 使用 requestAnimationFrame 确保位置设置完成后再显示
-      requestAnimationFrame(() => {
-        setIsOpen(true);
-        setTimeout(() => setIsAnimating(false), 150);
-      });
+      // 立即显示，不需要 requestAnimationFrame 延迟
+      setIsOpen(true);
+      setTimeout(() => setIsAnimating(false), 50);
     } else {
       // 桌面端直接显示
       setIsOpen(true);
-      setTimeout(() => setIsAnimating(false), 300);
+      setTimeout(() => setIsAnimating(false), 100); // 桌面端保持稍慢的动画
     }
   };
 
@@ -401,7 +399,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       {/* 移动端背景遮罩 */}
       {isOpen && isMobile && (
         <div
-          className="fixed bg-black/30 z-40"
+          className="fixed bg-transparent z-40"
           style={{
             top: 0,
             left: 0,
@@ -439,23 +437,21 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           style={
             isMobile && dropdownPosition
               ? {
-                  position: "fixed",
-                  top: `${dropdownPosition.top}px`,
-                  left: `${dropdownPosition.left}px`,
-                  width: `${dropdownPosition.width}px`,
-                  maxHeight: `${dropdownPosition.maxHeight}px`,
-                  transform: "none",
-                  zIndex: 50,
-                }
+                position: "fixed",
+                top: `${dropdownPosition.top}px`,
+                left: `${dropdownPosition.left}px`,
+                width: `${dropdownPosition.width}px`,
+                maxHeight: `${dropdownPosition.maxHeight}px`,
+                zIndex: 50,
+              }
               : {}
           }
         >
           {options.map((option, index) => (
             <div
               key={option.value}
-              className={`custom-select-option ${
-                option.value === value ? "selected" : ""
-              } ${index === focusedIndex ? "focused" : ""}`}
+              className={`custom-select-option ${option.value === value ? "selected" : ""
+                } ${index === focusedIndex ? "focused" : ""}`}
               onClick={(e) => {
                 e.stopPropagation();
                 handleOptionClick(option.value);
