@@ -194,7 +194,7 @@ body {
 }
 
 .custom-select-option.selected {
-  background: linear-gradient(180deg, #3B82F6 0%, #2563EB 100%);
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
   color: #fff !important;
   border-radius: 0.5rem;
   box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
@@ -482,7 +482,6 @@ html.wallpaper-active::after {
 
 /* 移动端特殊优化 */
 @media (hover: none) and (pointer: coarse) {
-
   html.wallpaper-active::before,
   html.wallpaper-active::after {
     /* 在移动设备上确保平滑滚动 */
