@@ -203,7 +203,7 @@ body {
 .custom-select-option.selected {
   @apply bg-blue-200;
   /* 选中状态使用更明显的蓝色背景 */
-  color: #1e40af;
+  color: #1e40af !important;
   font-weight: 600;
   border-color: #93c5fd;
   /* iOS风格的选中动画 */
@@ -214,6 +214,25 @@ body {
   @apply bg-gray-200;
   /* 焦点状态使用更明显的灰色背景 */
   transform: scale(1.02) translateZ(0);
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 移动端选项hover效果 */
+@media (hover: none) and (pointer: coarse) {
+  .custom-select-option:active {
+    transform: scale(0.98) translateZ(0);
+    background-color: rgba(229, 231, 235, 0.9) !important;
+    transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+}
+
+/* 桌面端选项hover效果 */
+@media (hover: hover) and (pointer: fine) {
+  .custom-select-option:hover {
+    background-color: rgba(229, 231, 235, 0.6);
+    transform: scale(1.01) translateZ(0);
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
 }
 
 .custom-select-option:first-child {
