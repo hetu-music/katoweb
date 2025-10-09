@@ -203,7 +203,6 @@ body {
 /* 统一的按压效果 */
 .custom-select-option:active {
   transform: scale(0.98) translateZ(0);
-  background-color: rgba(203, 202, 202, 0.8);
   transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
