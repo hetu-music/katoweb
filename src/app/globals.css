@@ -193,44 +193,30 @@ body {
   -ms-user-select: none;
 }
 
-/* 移除下拉选项点击时的缩小动画，但保留背景色变化 */
+/* 统一的按压效果 */
 .custom-select-option:active {
-  transform: translateZ(0);
-  background-color: rgba(229, 231, 235, 0.8);
-  transition: background-color 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: scale(0.98) translateZ(0);
+  background-color: rgba(203, 202, 202, 0.8);
+  transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .custom-select-option.selected {
-  @apply bg-blue-200;
-  /* 选中状态使用更明显的蓝色背景 */
-  color: #1e40af !important;
-  font-weight: 600;
-  border-color: #93c5fd;
-  /* iOS风格的选中动画 */
-  animation: iosSelectPulse 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  background: linear-gradient(180deg, #3B82F6 0%, #2563EB 100%);
+  color: #fff !important;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
 }
 
 .custom-select-option.focused {
-  @apply bg-gray-200;
+  background-color: rgba(203, 202, 202, 0.8);
   /* 焦点状态使用更明显的灰色背景 */
-  transform: scale(1.02) translateZ(0);
   transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-/* 移动端选项hover效果 */
-@media (hover: none) and (pointer: coarse) {
-  .custom-select-option:active {
-    transform: scale(0.98) translateZ(0);
-    background-color: rgba(229, 231, 235, 0.9) !important;
-    transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  }
 }
 
 /* 桌面端选项hover效果 */
 @media (hover: hover) and (pointer: fine) {
   .custom-select-option:hover {
-    background-color: rgba(229, 231, 235, 0.6);
-    transform: scale(1.01) translateZ(0);
+    background-color: rgba(203, 202, 202, 0.8);
     transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
 }
@@ -497,6 +483,7 @@ html.wallpaper-active::after {
 
 /* 移动端特殊优化 */
 @media (hover: none) and (pointer: coarse) {
+
   html.wallpaper-active::before,
   html.wallpaper-active::after {
     /* 在移动设备上确保平滑滚动 */
