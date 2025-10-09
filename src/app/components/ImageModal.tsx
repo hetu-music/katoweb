@@ -2,7 +2,14 @@
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import Image from "next/image";
-import { X, ZoomIn, ZoomOut, RotateCcw, RotateCw, RefreshCw } from "lucide-react";
+import {
+  X,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  RotateCw,
+  RefreshCw,
+} from "lucide-react";
 
 interface ImageModalProps {
   isOpen: boolean;
@@ -83,7 +90,15 @@ const ImageModal: React.FC<ImageModalProps> = ({
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "unset";
     };
-  }, [isOpen, onClose, zoomIn, zoomOut, resetTransform, rotateClockwise, rotateCounterClockwise]);
+  }, [
+    isOpen,
+    onClose,
+    zoomIn,
+    zoomOut,
+    resetTransform,
+    rotateClockwise,
+    rotateCounterClockwise,
+  ]);
 
   // 重置状态当模态框打开时
   useEffect(() => {
