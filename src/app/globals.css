@@ -159,7 +159,7 @@ body {
 .custom-select-options {
   @apply absolute top-full left-0 right-0 mt-1 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg z-50 max-h-100 overflow-y-auto;
   /* 使用白色背景 */
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(20px);
   /* iOS风格的阴影 */
   box-shadow:
@@ -281,7 +281,7 @@ body {
 /* 移动端下拉框弹出效果 */
 @media (max-width: 768px) {
   .custom-select-options.mobile {
-    animation: mobileDropdownFadeIn 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: mobileDropdownFadeIn 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     z-index: 51;
     /* 移动端使用更大的最大高度 */
     max-height: 600px;
@@ -297,10 +297,12 @@ body {
     /* 防止水平滚动 */
     overscroll-behavior-x: none;
     /* 防止水平过度滚动 */
+    overscroll-behavior-y: contain;
+    /* 防止垂直滚动穿透 */
   }
 
   .custom-select-options.mobile.closing {
-    animation: mobileDropdownFadeOut 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: mobileDropdownFadeOut 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     animation-fill-mode: forwards;
   }
 }
