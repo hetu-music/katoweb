@@ -68,27 +68,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
   const songsData = initialSongsData;
 
-  // 在客户端挂载后初始化 URL 参数
-  useEffect(() => {
-    setIsClient(true);
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-
-      // 从 URL 参数恢复状态
-      setSearchTerm(params.get("q") || "");
-      setSelectedType(params.get("type") || "全部");
-      setSelectedYear(params.get("year") || "全部");
-      setSelectedLyricist(params.get("lyricist") || "全部");
-      setSelectedComposer(params.get("composer") || "全部");
-      setSelectedArranger(params.get("arranger") || "全部");
-      setViewMode(params.get("view") || "grid");
-      // 页面状态将通过 usePagination 的 initialPage 处理
-
-      // 标记初始化完成
-      setTimeout(() => setIsInitialized(true), 0);
-    }
-  }, []);
-
   // 跟踪初始的搜索条件，用于判断是否是用户主动改变
   const initialFiltersRef = useRef<{
     searchTerm: string;
@@ -98,6 +77,50 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     selectedComposer: string;
     selectedArranger: string;
   } | null>(null);
+
+  // 检测是否是从详情页返回
+  const isReturningFromDetail = useRef(false);
+
+  // 在客户端挂载后初始化 URL 参数
+  useEffect(() => {
+    setIsClient(true);
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+
+      // 检测是否是从详情页返回（通过检查是否有保存的滚动位置）
+      const hasScrollPosition = sessionStorage.getItem("music_scrollY");
+      if (hasScrollPosition) {
+        isReturningFromDetail.current = true;
+      }
+
+      // 从 URL 参数恢复状态
+      const urlSearchTerm = params.get("q") || "";
+      const urlType = params.get("type") || "全部";
+      const urlYear = params.get("year") || "全部";
+      const urlLyricist = params.get("lyricist") || "全部";
+      const urlComposer = params.get("composer") || "全部";
+      const urlArranger = params.get("arranger") || "全部";
+      const urlViewMode = params.get("view") || "grid";
+
+      setSearchTerm(urlSearchTerm);
+      setSelectedType(urlType);
+      setSelectedYear(urlYear);
+      setSelectedLyricist(urlLyricist);
+      setSelectedComposer(urlComposer);
+      setSelectedArranger(urlArranger);
+      setViewMode(urlViewMode);
+      
+      // 如果是从详情页返回且有任何筛选条件，立即同步设置防抖搜索词，避免跳跃效果
+      if (isReturningFromDetail.current && (urlSearchTerm || urlType !== "全部" || urlYear !== "全部" || urlLyricist !== "全部" || urlComposer !== "全部" || urlArranger !== "全部")) {
+        setDebouncedSearchTerm(urlSearchTerm);
+      }
+      
+      // 页面状态将通过 usePagination 的 initialPage 处理
+
+      // 标记初始化完成
+      setTimeout(() => setIsInitialized(true), 0);
+    }
+  }, []);
 
   // 清理触摸动画状态
   useEffect(() => {
@@ -224,12 +247,22 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   // 防抖搜索
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   useEffect(() => {
+    // 如果是初始化阶段或从详情页返回，立即设置防抖搜索词，避免跳跃
+    if (!isInitialized || isReturningFromDetail.current) {
+      setDebouncedSearchTerm(searchTerm);
+      // 重置返回标记
+      if (isReturningFromDetail.current) {
+        isReturningFromDetail.current = false;
+      }
+      return;
+    }
+
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchTerm]);
+  }, [searchTerm, isInitialized]);
 
   // 过滤歌曲 - 使用防抖后的搜索词
   const filteredSongs = useMemo(() => {
