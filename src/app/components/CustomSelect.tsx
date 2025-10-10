@@ -79,10 +79,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         // 桌面端计算
         const dropdownHeight = Math.min(
           options.length * DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.borderAndPadding,
           DROPDOWN_CONFIG.desktop.maxVisibleOptions *
-            DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.optionHeight +
+          DROPDOWN_CONFIG.borderAndPadding,
         );
 
         const viewportHeight = window.innerHeight;
@@ -278,10 +278,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         // 计算下拉选项位置
         const dropdownHeight = Math.min(
           options.length * DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.borderAndPadding,
           DROPDOWN_CONFIG.mobile.maxVisibleOptions *
-            DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.optionHeight +
+          DROPDOWN_CONFIG.borderAndPadding,
         );
 
         // 计算垂直位置 - 以筛选框为中心
@@ -363,6 +363,74 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     }
   }, [focusedIndex, isOpen]);
 
+  // 计算选中项的滚动位置
+  const calculateScrollPosition = useCallback((selectedIndex: number, container: HTMLDivElement) => {
+    const itemHeight = DROPDOWN_CONFIG.optionHeight;
+    const containerHeight = container.clientHeight;
+
+    // 使用实际的 scrollHeight 而不是理论计算值
+    const totalHeight = container.scrollHeight;
+
+    // 如果总内容高度小于等于容器高度，不需要滚动
+    if (totalHeight <= containerHeight) {
+      return 0;
+    }
+
+    // 计算实际的最大滚动距离
+    const maxScrollTop = totalHeight - containerHeight;
+
+    // 计算可见选项数量
+    const visibleItemsCount = Math.floor(containerHeight / itemHeight);
+
+    // 计算选中项的顶部位置
+    const itemTop = selectedIndex * itemHeight;
+
+    // 简单而有效的逻辑：
+    // 1. 如果是前面五分之四的选项，scrollTop = 0（从顶部显示）
+    // 2. 如果是最后五分之四的选项，scrollTop = maxScrollTop（滚动到底部）
+    // 3. 其他情况，让选中项居中显示
+
+    const fourFifthsVisible = Math.floor(visibleItemsCount * 4 / 5);
+
+    if (selectedIndex < fourFifthsVisible) {
+      // 前面五分之四的选项：从顶部显示
+      return 0;
+    } else if (selectedIndex >= options.length - fourFifthsVisible) {
+      // 最后五分之四的选项：滚动到底部，使用实际的 maxScrollTop
+      return maxScrollTop;
+    } else {
+      // 中间选项：让选项的底部居中显示
+      // 使用实际的 DOM 元素位置而不是理论计算
+      const selectedElement = container.children[selectedIndex] as HTMLElement;
+      if (selectedElement) {
+        // 获取选中项相对于容器的实际位置
+        const elementTop = selectedElement.offsetTop;
+        const elementHeight = selectedElement.offsetHeight;
+        const elementBottom = elementTop + elementHeight;
+
+        // 让选中项的底部位于容器的中心
+        const idealScrollTop = elementBottom - (containerHeight / 2);
+        return Math.max(0, Math.min(idealScrollTop, maxScrollTop));
+      } else {
+        // 如果无法获取实际元素，回退到理论计算
+        const itemBottom = itemTop + itemHeight;
+        const idealScrollTop = itemBottom - (containerHeight / 2);
+        return Math.max(0, Math.min(idealScrollTop, maxScrollTop));
+      }
+    }
+  }, [options.length]);
+
+  // 设置下拉框的初始滚动位置
+  const setInitialScrollPosition = useCallback((container: HTMLDivElement) => {
+    if (value) {
+      const selectedIndex = options.findIndex(option => option.value === value);
+      if (selectedIndex >= 0) {
+        const scrollTop = calculateScrollPosition(selectedIndex, container);
+        container.scrollTop = scrollTop;
+      }
+    }
+  }, [value, options, calculateScrollPosition]);
+
   return (
     <div
       ref={selectRef}
@@ -413,7 +481,13 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       {/* 下拉选项 */}
       {isOpen && (!isMobile || (isMobile && dropdownPosition)) && (
         <div
-          ref={optionsRef}
+          ref={(el) => {
+            optionsRef.current = el;
+            // 在元素创建时立即设置滚动位置，避免用户看到跳跃
+            if (el) {
+              setInitialScrollPosition(el);
+            }
+          }}
           id="custom-select-options"
           className={`custom-select-options ${isMobile ? "mobile" : "desktop"} ${isAnimating && !isOpen ? "closing" : ""}`}
           role="listbox"
@@ -437,22 +511,21 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           style={
             isMobile && dropdownPosition
               ? {
-                  position: "fixed",
-                  top: `${dropdownPosition.top}px`,
-                  left: `${dropdownPosition.left}px`,
-                  width: `${dropdownPosition.width}px`,
-                  maxHeight: `${dropdownPosition.maxHeight}px`,
-                  zIndex: 50,
-                }
+                position: "fixed",
+                top: `${dropdownPosition.top}px`,
+                left: `${dropdownPosition.left}px`,
+                width: `${dropdownPosition.width}px`,
+                maxHeight: `${dropdownPosition.maxHeight}px`,
+                zIndex: 50,
+              }
               : {}
           }
         >
           {options.map((option, index) => (
             <div
               key={option.value}
-              className={`custom-select-option ${
-                option.value === value ? "selected" : ""
-              } ${index === focusedIndex ? "focused" : ""}`}
+              className={`custom-select-option ${option.value === value ? "selected" : ""
+                } ${index === focusedIndex ? "focused" : ""}`}
               onClick={(e) => {
                 e.stopPropagation();
                 handleOptionClick(option.value);
