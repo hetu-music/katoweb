@@ -366,17 +366,40 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   // 计算选中项的滚动位置
   const calculateScrollPosition = useCallback((selectedIndex: number, containerHeight: number) => {
     const itemHeight = DROPDOWN_CONFIG.optionHeight;
-    const itemTop = selectedIndex * itemHeight;
+    const totalHeight = options.length * itemHeight;
 
-    // 计算理想的滚动位置（让选中项在可视区域中心）
-    const idealScrollTop = itemTop - (containerHeight / 2) + (itemHeight / 2);
+    // 如果总内容高度小于等于容器高度，不需要滚动
+    if (totalHeight <= containerHeight) {
+      return 0;
+    }
 
     // 计算最大滚动距离
-    const totalHeight = options.length * itemHeight;
-    const maxScrollTop = Math.max(0, totalHeight - containerHeight);
+    const maxScrollTop = totalHeight - containerHeight;
 
-    // 限制滚动位置在有效范围内
-    return Math.max(0, Math.min(idealScrollTop, maxScrollTop));
+    // 计算可见选项数量
+    const visibleItemsCount = Math.floor(containerHeight / itemHeight);
+
+    // 计算选中项的顶部位置
+    const itemTop = selectedIndex * itemHeight;
+
+    // 简单而有效的逻辑：
+    // 1. 如果是前面几个选项，scrollTop = 0（从顶部显示）
+    // 2. 如果是最后几个选项，scrollTop = maxScrollTop（滚动到底部）
+    // 3. 其他情况，让选中项居中显示
+
+    const halfVisible = Math.floor(visibleItemsCount / 2);
+
+    if (selectedIndex < halfVisible) {
+      // 前面几个选项：从顶部显示
+      return 0;
+    } else if (selectedIndex >= options.length - halfVisible) {
+      // 最后几个选项：滚动到底部
+      return maxScrollTop;
+    } else {
+      // 中间选项：居中显示
+      const idealScrollTop = itemTop - (containerHeight / 2) + (itemHeight / 2);
+      return Math.max(0, Math.min(idealScrollTop, maxScrollTop));
+    }
   }, [options.length]);
 
   // 设置下拉框的初始滚动位置
