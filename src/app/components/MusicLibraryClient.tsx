@@ -109,12 +109,20 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       setSelectedComposer(urlComposer);
       setSelectedArranger(urlArranger);
       setViewMode(urlViewMode);
-      
+
       // 如果是从详情页返回且有任何筛选条件，立即同步设置防抖搜索词，避免跳跃效果
-      if (isReturningFromDetail.current && (urlSearchTerm || urlType !== "全部" || urlYear !== "全部" || urlLyricist !== "全部" || urlComposer !== "全部" || urlArranger !== "全部")) {
+      if (
+        isReturningFromDetail.current &&
+        (urlSearchTerm ||
+          urlType !== "全部" ||
+          urlYear !== "全部" ||
+          urlLyricist !== "全部" ||
+          urlComposer !== "全部" ||
+          urlArranger !== "全部")
+      ) {
         setDebouncedSearchTerm(urlSearchTerm);
       }
-      
+
       // 页面状态将通过 usePagination 的 initialPage 处理
 
       // 标记初始化完成
