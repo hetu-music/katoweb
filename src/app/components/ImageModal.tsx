@@ -370,65 +370,11 @@ const ImageModal: React.FC<ImageModalProps> = ({
         </div>
       )}
 
-      {/* 控制按钮组 - 右上角 */}
-      <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
-        <button
-          onClick={zoomOut}
-          className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
-          aria-label="缩小"
-          title="缩小 (-)"
-        >
-          <ZoomOut size={16} />
-        </button>
-
-        <span className="text-white text-sm min-w-[3rem] text-center">
-          {Math.round(scale * 100)}%
-        </span>
-
-        <button
-          onClick={zoomIn}
-          className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
-          aria-label="放大"
-          title="放大 (+)"
-        >
-          <ZoomIn size={16} />
-        </button>
-
-        <button
-          onClick={rotateCounterClockwise}
-          className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
-          aria-label="逆时针旋转"
-          title="逆时针旋转 (L)"
-        >
-          <RotateCcw size={16} />
-        </button>
-
-        <button
-          onClick={rotateClockwise}
-          className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
-          aria-label="顺时针旋转"
-          title="顺时针旋转 (R)"
-        >
-          <RotateCw size={16} />
-        </button>
-
-        <button
-          onClick={resetTransform}
-          className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
-          aria-label="重置"
-          title="重置 (0)"
-        >
-          <RefreshCw size={16} />
-        </button>
-
-        <button
-          onClick={onClose}
-          className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
-          aria-label="关闭"
-          title="关闭 (ESC)"
-        >
-          <X size={16} />
-        </button>
+      {/* 操作提示 - 右上角 */}
+      <div className="absolute top-4 right-4 z-10">
+        <p className="text-white/70 text-sm bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full">
+          滚轮/双指缩放 • 双击放大/重置 • 拖拽移动 • R/L 旋转 • 0 重置 • ESC 关闭
+        </p>
       </div>
 
       {/* 图片容器 - 占满整个屏幕 */}
@@ -470,11 +416,71 @@ const ImageModal: React.FC<ImageModalProps> = ({
         </div>
       </div>
 
-      {/* 操作提示 - 左下角 */}
-      <div className="absolute bottom-4 left-4 z-10">
-        <p className="text-white/70 text-sm bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full">
-          滚轮/双指缩放 • 双击放大/重置 • 拖拽移动 • R/L 旋转 • 0 重置 • ESC 关闭
-        </p>
+      {/* 控制按钮组 - 底部居中 */}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10">
+        <div className="flex items-center gap-2 bg-black/30 backdrop-blur-sm px-4 py-3 rounded-full border border-white/10">
+          <button
+            onClick={zoomOut}
+            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+            aria-label="缩小"
+            title="缩小 (-)"
+          >
+            <ZoomOut size={16} />
+          </button>
+
+          <span className="text-white text-sm min-w-[3rem] text-center">
+            {Math.round(scale * 100)}%
+          </span>
+
+          <button
+            onClick={zoomIn}
+            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+            aria-label="放大"
+            title="放大 (+)"
+          >
+            <ZoomIn size={16} />
+          </button>
+
+          <div className="w-px h-6 bg-white/20 mx-1"></div>
+
+          <button
+            onClick={rotateCounterClockwise}
+            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+            aria-label="逆时针旋转"
+            title="逆时针旋转 (L)"
+          >
+            <RotateCcw size={16} />
+          </button>
+
+          <button
+            onClick={rotateClockwise}
+            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+            aria-label="顺时针旋转"
+            title="顺时针旋转 (R)"
+          >
+            <RotateCw size={16} />
+          </button>
+
+          <div className="w-px h-6 bg-white/20 mx-1"></div>
+
+          <button
+            onClick={resetTransform}
+            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+            aria-label="重置"
+            title="重置 (0)"
+          >
+            <RefreshCw size={16} />
+          </button>
+
+          <button
+            onClick={onClose}
+            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+            aria-label="关闭"
+            title="关闭 (ESC)"
+          >
+            <X size={16} />
+          </button>
+        </div>
       </div>
     </div>
   );
