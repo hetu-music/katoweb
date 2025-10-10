@@ -31,6 +31,8 @@ const ImageModal: React.FC<ImageModalProps> = ({
   const [rotation, setRotation] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [lastTouchDistance, setLastTouchDistance] = useState(0);
+  const [isTouching, setIsTouching] = useState(false);
   const imageRef = useRef<HTMLDivElement>(null);
 
   // 重置状态
@@ -135,6 +137,87 @@ const ImageModal: React.FC<ImageModalProps> = ({
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
+  }, []);
+
+  // 计算两个触摸点之间的距离
+  const getTouchDistance = useCallback((touches: React.TouchList) => {
+    if (touches.length < 2) return 0;
+    const touch1 = touches[0];
+    const touch2 = touches[1];
+    return Math.sqrt(
+      Math.pow(touch2.clientX - touch1.clientX, 2) +
+      Math.pow(touch2.clientY - touch1.clientY, 2)
+    );
+  }, []);
+
+  // 获取触摸中心点
+  const getTouchCenter = useCallback((touches: React.TouchList) => {
+    if (touches.length === 1) {
+      return { x: touches[0].clientX, y: touches[0].clientY };
+    } else if (touches.length >= 2) {
+      return {
+        x: (touches[0].clientX + touches[1].clientX) / 2,
+        y: (touches[0].clientY + touches[1].clientY) / 2,
+      };
+    }
+    return { x: 0, y: 0 };
+  }, []);
+
+  // 触摸开始
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      e.preventDefault();
+      setIsTouching(true);
+
+      if (e.touches.length === 1) {
+        // 单指拖拽
+        if (scale > 1) {
+          setIsDragging(true);
+          setDragStart({
+            x: e.touches[0].clientX - position.x,
+            y: e.touches[0].clientY - position.y,
+          });
+        }
+      } else if (e.touches.length === 2) {
+        // 双指缩放
+        setIsDragging(false);
+        const distance = getTouchDistance(e.touches);
+        setLastTouchDistance(distance);
+      }
+    },
+    [scale, position, getTouchDistance],
+  );
+
+  // 触摸移动
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      e.preventDefault();
+
+      if (e.touches.length === 1 && isDragging && scale > 1) {
+        // 单指拖拽
+        setPosition({
+          x: e.touches[0].clientX - dragStart.x,
+          y: e.touches[0].clientY - dragStart.y,
+        });
+      } else if (e.touches.length === 2) {
+        // 双指缩放
+        const distance = getTouchDistance(e.touches);
+        if (lastTouchDistance > 0) {
+          const scaleChange = distance / lastTouchDistance;
+          setScale((prev) => Math.min(Math.max(prev * scaleChange, 0.5), 5));
+        }
+        setLastTouchDistance(distance);
+      }
+    },
+    [isDragging, scale, dragStart, lastTouchDistance, getTouchDistance],
+  );
+
+  // 触摸结束
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    setIsTouching(false);
+    setLastTouchDistance(0);
   }, []);
 
   // 滚轮缩放处理
@@ -261,6 +344,9 @@ const ImageModal: React.FC<ImageModalProps> = ({
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
           onDoubleClick={handleDoubleClick}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           <Image
             src={src}
@@ -278,7 +364,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
       {/* 操作提示 - 左下角 */}
       <div className="absolute bottom-4 left-4 z-10">
         <p className="text-white/70 text-sm bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full">
-          滚轮缩放 • 双击重置 • 拖拽移动
+          滚轮/双指缩放 • 双击重置 • 拖拽移动 • R/L 旋转 • 0 重置 • ESC 关闭
         </p>
       </div>
     </div>
