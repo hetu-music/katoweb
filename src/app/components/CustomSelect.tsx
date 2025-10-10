@@ -264,37 +264,6 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     }
   };
 
-  // 滚动到选中项的函数
-  const scrollToSelectedOption = useCallback(() => {
-    if (!optionsRef.current || !value) return;
-
-    const selectedIndex = options.findIndex(option => option.value === value);
-    if (selectedIndex === -1) return;
-
-    const selectedElement = optionsRef.current.children[selectedIndex] as HTMLElement;
-    if (selectedElement) {
-      // 使用 requestAnimationFrame 确保 DOM 已经渲染完成
-      requestAnimationFrame(() => {
-        try {
-          selectedElement.scrollIntoView({
-            block: "center",
-            behavior: "auto", // 使用 auto 而不是 smooth，确保立即滚动
-          });
-        } catch (error) {
-          // 如果 scrollIntoView 失败，使用备用方案
-          const container = optionsRef.current;
-          if (container) {
-            const elementTop = selectedElement.offsetTop;
-            const elementHeight = selectedElement.offsetHeight;
-            const containerHeight = container.clientHeight;
-            const scrollTop = elementTop - (containerHeight - elementHeight) / 2;
-            container.scrollTop = Math.max(0, scrollTop);
-          }
-        }
-      });
-    }
-  }, [options, value]);
-
   // 打开下拉框
   const handleOpen = () => {
     if (disabled) return;
@@ -351,19 +320,11 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 
       // 立即显示，不需要 requestAnimationFrame 延迟
       setIsOpen(true);
-      setTimeout(() => {
-        setIsAnimating(false);
-        // 滚动到选中项
-        scrollToSelectedOption();
-      }, 50);
+      setTimeout(() => setIsAnimating(false), 50);
     } else {
       // 桌面端直接显示
       setIsOpen(true);
-      setTimeout(() => {
-        setIsAnimating(false);
-        // 滚动到选中项
-        scrollToSelectedOption();
-      }, 100); // 桌面端保持稍慢的动画
+      setTimeout(() => setIsAnimating(false), 100); // 桌面端保持稍慢的动画
     }
   };
 
@@ -401,13 +362,6 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       }
     }
   }, [focusedIndex, isOpen]);
-
-  // 当下拉框打开时，滚动到选中项
-  useEffect(() => {
-    if (isOpen && !isAnimating) {
-      scrollToSelectedOption();
-    }
-  }, [isOpen, isAnimating, scrollToSelectedOption]);
 
   return (
     <div
