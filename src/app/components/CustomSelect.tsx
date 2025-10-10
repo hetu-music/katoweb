@@ -363,42 +363,33 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     }
   }, [focusedIndex, isOpen]);
 
-  // 滚动到选中项 - 下拉框打开时自动滚动到已选中的选项
-  useEffect(() => {
-    if (isOpen && optionsRef.current && value) {
-      // 找到选中项的索引
+  // 计算选中项的滚动位置
+  const calculateScrollPosition = useCallback((selectedIndex: number, containerHeight: number) => {
+    const itemHeight = DROPDOWN_CONFIG.optionHeight;
+    const itemTop = selectedIndex * itemHeight;
+
+    // 计算理想的滚动位置（让选中项在可视区域中心）
+    const idealScrollTop = itemTop - (containerHeight / 2) + (itemHeight / 2);
+
+    // 计算最大滚动距离
+    const totalHeight = options.length * itemHeight;
+    const maxScrollTop = Math.max(0, totalHeight - containerHeight);
+
+    // 限制滚动位置在有效范围内
+    return Math.max(0, Math.min(idealScrollTop, maxScrollTop));
+  }, [options.length]);
+
+  // 设置下拉框的初始滚动位置
+  const setInitialScrollPosition = useCallback((container: HTMLDivElement) => {
+    if (value) {
       const selectedIndex = options.findIndex(option => option.value === value);
-
       if (selectedIndex >= 0) {
-        // 使用 setTimeout 确保 DOM 已经渲染完成
-        setTimeout(() => {
-          if (optionsRef.current) {
-            const container = optionsRef.current;
-            const selectedElement = container.children[selectedIndex] as HTMLElement;
-
-            if (selectedElement) {
-              // 计算选中项相对于容器的位置
-              const containerHeight = container.clientHeight;
-              const itemHeight = DROPDOWN_CONFIG.optionHeight;
-              const itemTop = selectedIndex * itemHeight;
-
-              // 计算理想的滚动位置（让选中项在可视区域中心）
-              const idealScrollTop = itemTop - (containerHeight / 2) + (itemHeight / 2);
-
-              // 获取容器的最大滚动距离
-              const maxScrollTop = container.scrollHeight - containerHeight;
-
-              // 限制滚动位置在有效范围内
-              const finalScrollTop = Math.max(0, Math.min(idealScrollTop, maxScrollTop));
-
-              // 直接设置滚动位置，避免使用 scrollIntoView 导致页面滚动
-              container.scrollTop = finalScrollTop;
-            }
-          }
-        }, isMobile ? 60 : 110); // 稍微延迟，等待下拉框动画完成
+        const containerHeight = container.clientHeight;
+        const scrollTop = calculateScrollPosition(selectedIndex, containerHeight);
+        container.scrollTop = scrollTop;
       }
     }
-  }, [isOpen, value, options, isMobile]);
+  }, [value, options, calculateScrollPosition]);
 
   return (
     <div
@@ -450,7 +441,13 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       {/* 下拉选项 */}
       {isOpen && (!isMobile || (isMobile && dropdownPosition)) && (
         <div
-          ref={optionsRef}
+          ref={(el) => {
+            optionsRef.current = el;
+            // 在元素创建时立即设置滚动位置，避免用户看到跳跃
+            if (el) {
+              setInitialScrollPosition(el);
+            }
+          }}
           id="custom-select-options"
           className={`custom-select-options ${isMobile ? "mobile" : "desktop"} ${isAnimating && !isOpen ? "closing" : ""}`}
           role="listbox"
