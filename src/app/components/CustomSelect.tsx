@@ -400,8 +400,23 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       return maxScrollTop;
     } else {
       // 中间选项：居中显示
-      const idealScrollTop = itemTop - (containerHeight / 2) + (itemHeight / 2);
-      return Math.max(0, Math.min(idealScrollTop, maxScrollTop));
+      // 使用实际的 DOM 元素位置而不是理论计算
+      const selectedElement = container.children[selectedIndex] as HTMLElement;
+      if (selectedElement) {
+        // 获取选中项相对于容器的实际位置
+        const elementTop = selectedElement.offsetTop;
+        const elementHeight = selectedElement.offsetHeight;
+        const elementCenter = elementTop + (elementHeight / 2);
+
+        // 让选中项的中心位于容器的中心
+        const idealScrollTop = elementCenter - (containerHeight / 2);
+        return Math.max(0, Math.min(idealScrollTop, maxScrollTop));
+      } else {
+        // 如果无法获取实际元素，回退到理论计算
+        const itemCenter = itemTop + (itemHeight / 2);
+        const idealScrollTop = itemCenter - (containerHeight / 2);
+        return Math.max(0, Math.min(idealScrollTop, maxScrollTop));
+      }
     }
   }, [options.length]);
 
