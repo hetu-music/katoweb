@@ -72,16 +72,20 @@ const ImageModal: React.FC<ImageModalProps> = ({
       document.body.style.userSelect = "none";
 
       // 添加viewport meta标签来禁用缩放（如果不存在）
-      let viewportMeta = document.querySelector('meta[name="viewport"]') as HTMLMetaElement;
+      let viewportMeta = document.querySelector(
+        'meta[name="viewport"]',
+      ) as HTMLMetaElement;
       let originalViewportContent = "";
 
       if (viewportMeta) {
         originalViewportContent = viewportMeta.content;
-        viewportMeta.content = "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no";
+        viewportMeta.content =
+          "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no";
       } else {
         viewportMeta = document.createElement("meta");
         viewportMeta.name = "viewport";
-        viewportMeta.content = "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no";
+        viewportMeta.content =
+          "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no";
         document.head.appendChild(viewportMeta);
       }
 
@@ -150,7 +154,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
 
   // 切换提示显示
   const toggleHint = useCallback(() => {
-    setShowHint(prev => !prev);
+    setShowHint((prev) => !prev);
   }, []);
 
   // 鼠标拖拽
@@ -190,11 +194,9 @@ const ImageModal: React.FC<ImageModalProps> = ({
     const touch2 = touches[1];
     return Math.sqrt(
       Math.pow(touch2.clientX - touch1.clientX, 2) +
-      Math.pow(touch2.clientY - touch1.clientY, 2)
+        Math.pow(touch2.clientY - touch1.clientY, 2),
     );
   }, []);
-
-
 
   // 触摸开始
   const handleTouchStart = useCallback(
@@ -243,7 +245,14 @@ const ImageModal: React.FC<ImageModalProps> = ({
         setLastTouchDistance(distance);
       }
     },
-    [scale, position, getTouchDistance, lastTouchTime, touchCount, resetTransform],
+    [
+      scale,
+      position,
+      getTouchDistance,
+      lastTouchTime,
+      touchCount,
+      resetTransform,
+    ],
   );
 
   // 触摸移动
@@ -317,11 +326,21 @@ const ImageModal: React.FC<ImageModalProps> = ({
       };
 
       // 添加事件监听器
-      document.addEventListener("touchstart", preventDefaultTouch, { passive: false });
-      document.addEventListener("touchmove", preventDefaultTouch, { passive: false });
-      document.addEventListener("gesturestart", preventDefaultGesture, { passive: false });
-      document.addEventListener("gesturechange", preventDefaultGesture, { passive: false });
-      document.addEventListener("gestureend", preventDefaultGesture, { passive: false });
+      document.addEventListener("touchstart", preventDefaultTouch, {
+        passive: false,
+      });
+      document.addEventListener("touchmove", preventDefaultTouch, {
+        passive: false,
+      });
+      document.addEventListener("gesturestart", preventDefaultGesture, {
+        passive: false,
+      });
+      document.addEventListener("gesturechange", preventDefaultGesture, {
+        passive: false,
+      });
+      document.addEventListener("gestureend", preventDefaultGesture, {
+        passive: false,
+      });
 
       return () => {
         document.removeEventListener("touchstart", preventDefaultTouch);
