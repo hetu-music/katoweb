@@ -399,22 +399,22 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       // 最后五分之四的选项：滚动到底部，使用实际的 maxScrollTop
       return maxScrollTop;
     } else {
-      // 中间选项：居中显示
+      // 中间选项：让选项的底部居中显示
       // 使用实际的 DOM 元素位置而不是理论计算
       const selectedElement = container.children[selectedIndex] as HTMLElement;
       if (selectedElement) {
         // 获取选中项相对于容器的实际位置
         const elementTop = selectedElement.offsetTop;
         const elementHeight = selectedElement.offsetHeight;
-        const elementCenter = elementTop + (elementHeight / 2);
+        const elementBottom = elementTop + elementHeight;
 
-        // 让选中项的中心位于容器的中心
-        const idealScrollTop = elementCenter - (containerHeight / 2);
+        // 让选中项的底部位于容器的中心
+        const idealScrollTop = elementBottom - (containerHeight / 2);
         return Math.max(0, Math.min(idealScrollTop, maxScrollTop));
       } else {
         // 如果无法获取实际元素，回退到理论计算
-        const itemCenter = itemTop + (itemHeight / 2);
-        const idealScrollTop = itemCenter - (containerHeight / 2);
+        const itemBottom = itemTop + itemHeight;
+        const idealScrollTop = itemBottom - (containerHeight / 2);
         return Math.max(0, Math.min(idealScrollTop, maxScrollTop));
       }
     }
