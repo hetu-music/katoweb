@@ -60,6 +60,43 @@ const ImageModal: React.FC<ImageModalProps> = ({
     setRotation((prev) => (prev - 90 + 360) % 360);
   }, []);
 
+  // 禁用浏览器默认触摸行为
+  useEffect(() => {
+    if (isOpen) {
+      // 禁用页面滚动和缩放
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+      document.body.style.userSelect = "none";
+
+      // 添加viewport meta标签来禁用缩放（如果不存在）
+      let viewportMeta = document.querySelector('meta[name="viewport"]') as HTMLMetaElement;
+      let originalViewportContent = "";
+
+      if (viewportMeta) {
+        originalViewportContent = viewportMeta.content;
+        viewportMeta.content = "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no";
+      } else {
+        viewportMeta = document.createElement("meta");
+        viewportMeta.name = "viewport";
+        viewportMeta.content = "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no";
+        document.head.appendChild(viewportMeta);
+      }
+
+      return () => {
+        document.body.style.overflow = "unset";
+        document.body.style.touchAction = "auto";
+        document.body.style.userSelect = "auto";
+
+        // 恢复原始viewport设置
+        if (originalViewportContent) {
+          viewportMeta.content = originalViewportContent;
+        } else {
+          viewportMeta.remove();
+        }
+      };
+    }
+  }, [isOpen]);
+
   // 处理键盘事件
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -85,12 +122,10 @@ const ImageModal: React.FC<ImageModalProps> = ({
 
     if (isOpen) {
       document.addEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "hidden";
     }
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "unset";
     };
   }, [
     isOpen,
@@ -240,6 +275,38 @@ const ImageModal: React.FC<ImageModalProps> = ({
     };
   }, [isOpen]);
 
+  // 全局触摸事件处理 - 防止浏览器默认行为
+  useEffect(() => {
+    if (isOpen) {
+      const preventDefaultTouch = (e: TouchEvent) => {
+        // 只在模态框打开时阻止默认行为
+        if (e.touches.length > 1) {
+          // 多指触摸时总是阻止默认行为
+          e.preventDefault();
+        }
+      };
+
+      const preventDefaultGesture = (e: Event) => {
+        e.preventDefault();
+      };
+
+      // 添加事件监听器
+      document.addEventListener("touchstart", preventDefaultTouch, { passive: false });
+      document.addEventListener("touchmove", preventDefaultTouch, { passive: false });
+      document.addEventListener("gesturestart", preventDefaultGesture, { passive: false });
+      document.addEventListener("gesturechange", preventDefaultGesture, { passive: false });
+      document.addEventListener("gestureend", preventDefaultGesture, { passive: false });
+
+      return () => {
+        document.removeEventListener("touchstart", preventDefaultTouch);
+        document.removeEventListener("touchmove", preventDefaultTouch);
+        document.removeEventListener("gesturestart", preventDefaultGesture);
+        document.removeEventListener("gesturechange", preventDefaultGesture);
+        document.removeEventListener("gestureend", preventDefaultGesture);
+      };
+    }
+  }, [isOpen]);
+
   // 双击重置
   const handleDoubleClick = useCallback(() => {
     if (scale === 1) {
@@ -252,7 +319,10 @@ const ImageModal: React.FC<ImageModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ touchAction: "none" }}
+    >
       {/* 背景遮罩 */}
       <div
         className="absolute inset-0 bg-black/80 backdrop-blur-sm"
@@ -330,7 +400,10 @@ const ImageModal: React.FC<ImageModalProps> = ({
       </div>
 
       {/* 图片容器 - 占满整个屏幕 */}
-      <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+      <div
+        className="absolute inset-0 flex items-center justify-center overflow-hidden"
+        style={{ touchAction: "none" }}
+      >
         <div
           ref={imageRef}
           className="relative select-none flex items-center justify-center w-full h-full"
@@ -338,6 +411,10 @@ const ImageModal: React.FC<ImageModalProps> = ({
             transform: `scale(${scale}) translate(${position.x / scale}px, ${position.y / scale}px) rotate(${rotation}deg)`,
             transition: isDragging ? "none" : "transform 0.2s ease-out",
             cursor: scale > 1 ? (isDragging ? "grabbing" : "grab") : "default",
+            touchAction: "none",
+            userSelect: "none",
+            WebkitUserSelect: "none",
+            WebkitTouchCallout: "none",
           }}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
