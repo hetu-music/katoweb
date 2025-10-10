@@ -79,10 +79,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         // 桌面端计算
         const dropdownHeight = Math.min(
           options.length * DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.borderAndPadding,
           DROPDOWN_CONFIG.desktop.maxVisibleOptions *
-            DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.optionHeight +
+          DROPDOWN_CONFIG.borderAndPadding,
         );
 
         const viewportHeight = window.innerHeight;
@@ -278,10 +278,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         // 计算下拉选项位置
         const dropdownHeight = Math.min(
           options.length * DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.borderAndPadding,
           DROPDOWN_CONFIG.mobile.maxVisibleOptions *
-            DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.optionHeight +
+          DROPDOWN_CONFIG.borderAndPadding,
         );
 
         // 计算垂直位置 - 以筛选框为中心
@@ -363,6 +363,29 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     }
   }, [focusedIndex, isOpen]);
 
+  // 滚动到选中项 - 下拉框打开时自动滚动到已选中的选项
+  useEffect(() => {
+    if (isOpen && optionsRef.current && value) {
+      // 找到选中项的索引
+      const selectedIndex = options.findIndex(option => option.value === value);
+
+      if (selectedIndex >= 0) {
+        // 使用 setTimeout 确保 DOM 已经渲染完成
+        setTimeout(() => {
+          if (optionsRef.current) {
+            const selectedElement = optionsRef.current.children[selectedIndex] as HTMLElement;
+            if (selectedElement) {
+              selectedElement.scrollIntoView({
+                block: "center", // 将选中项滚动到可视区域中心
+                behavior: "auto", // 使用 auto 而不是 smooth，确保立即显示
+              });
+            }
+          }
+        }, isMobile ? 60 : 110); // 稍微延迟，等待下拉框动画完成
+      }
+    }
+  }, [isOpen, value, options, isMobile]);
+
   return (
     <div
       ref={selectRef}
@@ -437,22 +460,21 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           style={
             isMobile && dropdownPosition
               ? {
-                  position: "fixed",
-                  top: `${dropdownPosition.top}px`,
-                  left: `${dropdownPosition.left}px`,
-                  width: `${dropdownPosition.width}px`,
-                  maxHeight: `${dropdownPosition.maxHeight}px`,
-                  zIndex: 50,
-                }
+                position: "fixed",
+                top: `${dropdownPosition.top}px`,
+                left: `${dropdownPosition.left}px`,
+                width: `${dropdownPosition.width}px`,
+                maxHeight: `${dropdownPosition.maxHeight}px`,
+                zIndex: 50,
+              }
               : {}
           }
         >
           {options.map((option, index) => (
             <div
               key={option.value}
-              className={`custom-select-option ${
-                option.value === value ? "selected" : ""
-              } ${index === focusedIndex ? "focused" : ""}`}
+              className={`custom-select-option ${option.value === value ? "selected" : ""
+                } ${index === focusedIndex ? "focused" : ""}`}
               onClick={(e) => {
                 e.stopPropagation();
                 handleOptionClick(option.value);
