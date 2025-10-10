@@ -373,12 +373,26 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         // 使用 setTimeout 确保 DOM 已经渲染完成
         setTimeout(() => {
           if (optionsRef.current) {
-            const selectedElement = optionsRef.current.children[selectedIndex] as HTMLElement;
+            const container = optionsRef.current;
+            const selectedElement = container.children[selectedIndex] as HTMLElement;
+
             if (selectedElement) {
-              selectedElement.scrollIntoView({
-                block: "center", // 将选中项滚动到可视区域中心
-                behavior: "auto", // 使用 auto 而不是 smooth，确保立即显示
-              });
+              // 计算选中项相对于容器的位置
+              const containerHeight = container.clientHeight;
+              const itemHeight = DROPDOWN_CONFIG.optionHeight;
+              const itemTop = selectedIndex * itemHeight;
+
+              // 计算理想的滚动位置（让选中项在可视区域中心）
+              const idealScrollTop = itemTop - (containerHeight / 2) + (itemHeight / 2);
+
+              // 获取容器的最大滚动距离
+              const maxScrollTop = container.scrollHeight - containerHeight;
+
+              // 限制滚动位置在有效范围内
+              const finalScrollTop = Math.max(0, Math.min(idealScrollTop, maxScrollTop));
+
+              // 直接设置滚动位置，避免使用 scrollIntoView 导致页面滚动
+              container.scrollTop = finalScrollTop;
             }
           }
         }, isMobile ? 60 : 110); // 稍微延迟，等待下拉框动画完成
