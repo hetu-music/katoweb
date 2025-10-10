@@ -33,6 +33,8 @@ const ImageModal: React.FC<ImageModalProps> = ({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [lastTouchDistance, setLastTouchDistance] = useState(0);
   const [isTouching, setIsTouching] = useState(false);
+  const [lastTouchTime, setLastTouchTime] = useState(0);
+  const [touchCount, setTouchCount] = useState(0);
   const imageRef = useRef<HTMLDivElement>(null);
 
   // 重置状态
@@ -205,6 +207,31 @@ const ImageModal: React.FC<ImageModalProps> = ({
       setIsTouching(true);
 
       if (e.touches.length === 1) {
+        const currentTime = Date.now();
+        const timeDiff = currentTime - lastTouchTime;
+
+        // 检测双击（300ms内的第二次点击）
+        if (timeDiff < 300 && touchCount === 1) {
+          // 双击事件
+          if (scale === 1) {
+            setScale(2);
+          } else {
+            resetTransform();
+          }
+          setTouchCount(0);
+          setLastTouchTime(0);
+          return;
+        }
+
+        // 记录单击
+        setTouchCount(1);
+        setLastTouchTime(currentTime);
+
+        // 延迟检查是否为单击（如果300ms内没有第二次点击）
+        setTimeout(() => {
+          setTouchCount(0);
+        }, 300);
+
         // 单指拖拽
         if (scale > 1) {
           setIsDragging(true);
@@ -216,11 +243,12 @@ const ImageModal: React.FC<ImageModalProps> = ({
       } else if (e.touches.length === 2) {
         // 双指缩放
         setIsDragging(false);
+        setTouchCount(0); // 重置双击计数
         const distance = getTouchDistance(e.touches);
         setLastTouchDistance(distance);
       }
     },
-    [scale, position, getTouchDistance],
+    [scale, position, getTouchDistance, lastTouchTime, touchCount, resetTransform],
   );
 
   // 触摸移动
@@ -250,9 +278,13 @@ const ImageModal: React.FC<ImageModalProps> = ({
   // 触摸结束
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     e.preventDefault();
-    setIsDragging(false);
-    setIsTouching(false);
-    setLastTouchDistance(0);
+
+    // 只有在没有剩余触摸点时才重置状态
+    if (e.touches.length === 0) {
+      setIsDragging(false);
+      setIsTouching(false);
+      setLastTouchDistance(0);
+    }
   }, []);
 
   // 滚轮缩放处理
@@ -441,7 +473,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
       {/* 操作提示 - 左下角 */}
       <div className="absolute bottom-4 left-4 z-10">
         <p className="text-white/70 text-sm bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full">
-          滚轮/双指缩放 • 双击重置 • 拖拽移动 • R/L 旋转 • 0 重置 • ESC 关闭
+          滚轮/双指缩放 • 双击放大/重置 • 拖拽移动 • R/L 旋转 • 0 重置 • ESC 关闭
         </p>
       </div>
     </div>
