@@ -33,7 +33,6 @@ const ImageModal: React.FC<ImageModalProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [lastTouchDistance, setLastTouchDistance] = useState(0);
-  const [isTouching, setIsTouching] = useState(false);
   const [lastTouchTime, setLastTouchTime] = useState(0);
   const [touchCount, setTouchCount] = useState(0);
   const [showHint, setShowHint] = useState(false);
@@ -195,24 +194,12 @@ const ImageModal: React.FC<ImageModalProps> = ({
     );
   }, []);
 
-  // 获取触摸中心点
-  const getTouchCenter = useCallback((touches: React.TouchList) => {
-    if (touches.length === 1) {
-      return { x: touches[0].clientX, y: touches[0].clientY };
-    } else if (touches.length >= 2) {
-      return {
-        x: (touches[0].clientX + touches[1].clientX) / 2,
-        y: (touches[0].clientY + touches[1].clientY) / 2,
-      };
-    }
-    return { x: 0, y: 0 };
-  }, []);
+
 
   // 触摸开始
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
       e.preventDefault();
-      setIsTouching(true);
 
       if (e.touches.length === 1) {
         const currentTime = Date.now();
@@ -290,7 +277,6 @@ const ImageModal: React.FC<ImageModalProps> = ({
     // 只有在没有剩余触摸点时才重置状态
     if (e.touches.length === 0) {
       setIsDragging(false);
-      setIsTouching(false);
       setLastTouchDistance(0);
     }
   }, []);
