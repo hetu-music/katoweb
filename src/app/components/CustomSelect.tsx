@@ -386,17 +386,17 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     const itemTop = selectedIndex * itemHeight;
 
     // 简单而有效的逻辑：
-    // 1. 如果是前面几个选项，scrollTop = 0（从顶部显示）
-    // 2. 如果是最后几个选项，scrollTop = maxScrollTop（滚动到底部）
+    // 1. 如果是前面五分之四的选项，scrollTop = 0（从顶部显示）
+    // 2. 如果是最后五分之四的选项，scrollTop = maxScrollTop（滚动到底部）
     // 3. 其他情况，让选中项居中显示
 
-    const halfVisible = Math.floor(visibleItemsCount / 2);
+    const fourFifthsVisible = Math.floor(visibleItemsCount * 4 / 5);
 
-    if (selectedIndex < halfVisible) {
-      // 前面几个选项：从顶部显示
+    if (selectedIndex < fourFifthsVisible) {
+      // 前面五分之四的选项：从顶部显示
       return 0;
-    } else if (selectedIndex >= options.length - halfVisible) {
-      // 最后几个选项：滚动到底部，使用实际的 maxScrollTop
+    } else if (selectedIndex >= options.length - fourFifthsVisible) {
+      // 最后五分之四的选项：滚动到底部，使用实际的 maxScrollTop
       return maxScrollTop;
     } else {
       // 中间选项：居中显示
