@@ -364,16 +364,19 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   }, [focusedIndex, isOpen]);
 
   // 计算选中项的滚动位置
-  const calculateScrollPosition = useCallback((selectedIndex: number, containerHeight: number) => {
+  const calculateScrollPosition = useCallback((selectedIndex: number, container: HTMLDivElement) => {
     const itemHeight = DROPDOWN_CONFIG.optionHeight;
-    const totalHeight = options.length * itemHeight;
+    const containerHeight = container.clientHeight;
+
+    // 使用实际的 scrollHeight 而不是理论计算值
+    const totalHeight = container.scrollHeight;
 
     // 如果总内容高度小于等于容器高度，不需要滚动
     if (totalHeight <= containerHeight) {
       return 0;
     }
 
-    // 计算最大滚动距离
+    // 计算实际的最大滚动距离
     const maxScrollTop = totalHeight - containerHeight;
 
     // 计算可见选项数量
@@ -393,7 +396,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       // 前面几个选项：从顶部显示
       return 0;
     } else if (selectedIndex >= options.length - halfVisible) {
-      // 最后几个选项：滚动到底部
+      // 最后几个选项：滚动到底部，使用实际的 maxScrollTop
       return maxScrollTop;
     } else {
       // 中间选项：居中显示
@@ -407,8 +410,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     if (value) {
       const selectedIndex = options.findIndex(option => option.value === value);
       if (selectedIndex >= 0) {
-        const containerHeight = container.clientHeight;
-        const scrollTop = calculateScrollPosition(selectedIndex, containerHeight);
+        const scrollTop = calculateScrollPosition(selectedIndex, container);
         container.scrollTop = scrollTop;
       }
     }
