@@ -469,7 +469,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
       </div>
 
       {/* 控制按钮组 - 底部居中 */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 max-w-[calc(100vw-2rem)] px-4">
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 max-w-[calc(100vw-1rem)] px-2">
         <div className="flex items-center gap-1.5 sm:gap-2 bg-black/30 backdrop-blur-sm px-3 sm:px-4 py-3 rounded-full border border-white/10 overflow-x-auto scrollbar-hide">
           <button
             onClick={zoomOut}
