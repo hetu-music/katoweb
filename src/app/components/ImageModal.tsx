@@ -383,8 +383,8 @@ const ImageModal: React.FC<ImageModalProps> = ({
         </div>
       )}
 
-      {/* Hint 图标 - 右上角 */}
-      <div className="absolute top-4 right-4 z-10">
+      {/* Hint 和关闭按钮 - 右上角 */}
+      <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
         <button
           onClick={toggleHint}
           className="p-2 rounded-full bg-black/30 backdrop-blur-sm border border-white/20 text-white/70 hover:text-white hover:bg-black/40 transition-all duration-200"
@@ -392,6 +392,15 @@ const ImageModal: React.FC<ImageModalProps> = ({
           title="显示操作提示"
         >
           <HelpCircle size={18} />
+        </button>
+
+        <button
+          onClick={onClose}
+          className="p-2 rounded-full bg-black/30 backdrop-blur-sm border border-white/20 text-white/70 hover:text-white hover:bg-black/40 transition-all duration-200"
+          aria-label="关闭"
+          title="关闭 (ESC)"
+        >
+          <X size={18} />
         </button>
       </div>
 
@@ -405,15 +414,8 @@ const ImageModal: React.FC<ImageModalProps> = ({
             className="bg-black/80 backdrop-blur-sm text-white p-6 rounded-2xl border border-white/20 max-w-md mx-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="text-center mb-4">
               <h3 className="text-lg font-semibold">操作提示</h3>
-              <button
-                onClick={toggleHint}
-                className="p-1 rounded-full hover:bg-white/10 transition-colors"
-                aria-label="关闭提示"
-              >
-                <X size={16} />
-              </button>
             </div>
             <div className="space-y-2 text-sm text-white/90">
               <div>• 滚轮/双指缩放图片</div>
@@ -522,14 +524,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
             <RefreshCw size={16} className="sm:w-5 sm:h-5" />
           </button>
 
-          <button
-            onClick={onClose}
-            className="p-2 sm:p-2.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 flex-shrink-0"
-            aria-label="关闭"
-            title="关闭 (ESC)"
-          >
-            <X size={16} className="sm:w-5 sm:h-5" />
-          </button>
+
         </div>
       </div>
     </div>
