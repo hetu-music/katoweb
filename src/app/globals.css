@@ -135,7 +135,7 @@ body {
 }
 
 .custom-select-trigger {
-  @apply h-full w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px] font-medium flex items-center justify-center;
+  @apply h-full w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] font-medium flex items-center justify-center;
   /* iOS风格的缓动和过渡 */
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform: translateZ(0);
@@ -482,6 +482,7 @@ html.wallpaper-active::after {
 
 /* 移动端特殊优化 */
 @media (hover: none) and (pointer: coarse) {
+
   html.wallpaper-active::before,
   html.wallpaper-active::after {
     /* 在移动设备上确保平滑滚动 */
