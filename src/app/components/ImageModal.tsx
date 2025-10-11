@@ -194,7 +194,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
     const touch2 = touches[1];
     return Math.sqrt(
       Math.pow(touch2.clientX - touch1.clientX, 2) +
-        Math.pow(touch2.clientY - touch1.clientY, 2),
+      Math.pow(touch2.clientY - touch1.clientY, 2),
     );
   }, []);
 
@@ -467,68 +467,68 @@ const ImageModal: React.FC<ImageModalProps> = ({
       </div>
 
       {/* 控制按钮组 - 底部居中 */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10">
-        <div className="flex items-center gap-2 bg-black/30 backdrop-blur-sm px-4 py-3 rounded-full border border-white/10">
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 max-w-[calc(100vw-2rem)] px-4">
+        <div className="flex items-center gap-1 sm:gap-2 bg-black/30 backdrop-blur-sm px-2 sm:px-4 py-3 rounded-full border border-white/10 overflow-x-auto scrollbar-hide">
           <button
             onClick={zoomOut}
-            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+            className="p-1.5 sm:p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 flex-shrink-0"
             aria-label="缩小"
             title="缩小 (-)"
           >
-            <ZoomOut size={16} />
+            <ZoomOut size={14} className="sm:w-4 sm:h-4" />
           </button>
 
-          <span className="text-white text-sm min-w-[3rem] text-center">
+          <span className="text-white text-xs sm:text-sm min-w-[2.5rem] sm:min-w-[3rem] text-center flex-shrink-0">
             {Math.round(scale * 100)}%
           </span>
 
           <button
             onClick={zoomIn}
-            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+            className="p-1.5 sm:p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 flex-shrink-0"
             aria-label="放大"
             title="放大 (+)"
           >
-            <ZoomIn size={16} />
+            <ZoomIn size={14} className="sm:w-4 sm:h-4" />
           </button>
 
-          <div className="w-px h-6 bg-white/20 mx-1"></div>
+          <div className="w-px h-4 sm:h-6 bg-white/20 mx-0.5 sm:mx-1 flex-shrink-0"></div>
 
           <button
             onClick={rotateCounterClockwise}
-            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+            className="p-1.5 sm:p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 flex-shrink-0"
             aria-label="逆时针旋转"
             title="逆时针旋转 (L)"
           >
-            <RotateCcw size={16} />
+            <RotateCcw size={14} className="sm:w-4 sm:h-4" />
           </button>
 
           <button
             onClick={rotateClockwise}
-            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+            className="p-1.5 sm:p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 flex-shrink-0"
             aria-label="顺时针旋转"
             title="顺时针旋转 (R)"
           >
-            <RotateCw size={16} />
+            <RotateCw size={14} className="sm:w-4 sm:h-4" />
           </button>
 
-          <div className="w-px h-6 bg-white/20 mx-1"></div>
+          <div className="w-px h-4 sm:h-6 bg-white/20 mx-0.5 sm:mx-1 flex-shrink-0"></div>
 
           <button
             onClick={resetTransform}
-            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+            className="p-1.5 sm:p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 flex-shrink-0"
             aria-label="重置"
             title="重置 (0)"
           >
-            <RefreshCw size={16} />
+            <RefreshCw size={14} className="sm:w-4 sm:h-4" />
           </button>
 
           <button
             onClick={onClose}
-            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+            className="p-1.5 sm:p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 flex-shrink-0"
             aria-label="关闭"
             title="关闭 (ESC)"
           >
-            <X size={16} />
+            <X size={14} className="sm:w-4 sm:h-4" />
           </button>
         </div>
       </div>
