@@ -194,7 +194,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
     const touch2 = touches[1];
     return Math.sqrt(
       Math.pow(touch2.clientX - touch1.clientX, 2) +
-        Math.pow(touch2.clientY - touch1.clientY, 2),
+      Math.pow(touch2.clientY - touch1.clientY, 2),
     );
   }, []);
 
@@ -383,8 +383,8 @@ const ImageModal: React.FC<ImageModalProps> = ({
         </div>
       )}
 
-      {/* Hint 图标 - 右上角 */}
-      <div className="absolute top-4 right-4 z-10">
+      {/* Hint 和关闭按钮 - 右上角 */}
+      <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
         <button
           onClick={toggleHint}
           className="p-2 rounded-full bg-black/30 backdrop-blur-sm border border-white/20 text-white/70 hover:text-white hover:bg-black/40 transition-all duration-200"
@@ -392,6 +392,15 @@ const ImageModal: React.FC<ImageModalProps> = ({
           title="显示操作提示"
         >
           <HelpCircle size={18} />
+        </button>
+
+        <button
+          onClick={onClose}
+          className="p-2 rounded-full bg-black/30 backdrop-blur-sm border border-white/20 text-white/70 hover:text-white hover:bg-black/40 transition-all duration-200"
+          aria-label="关闭"
+          title="关闭 (ESC)"
+        >
+          <X size={18} />
         </button>
       </div>
 
@@ -405,15 +414,8 @@ const ImageModal: React.FC<ImageModalProps> = ({
             className="bg-black/80 backdrop-blur-sm text-white p-6 rounded-2xl border border-white/20 max-w-md mx-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="text-center mb-4">
               <h3 className="text-lg font-semibold">操作提示</h3>
-              <button
-                onClick={toggleHint}
-                className="p-1 rounded-full hover:bg-white/10 transition-colors"
-                aria-label="关闭提示"
-              >
-                <X size={16} />
-              </button>
             </div>
             <div className="space-y-2 text-sm text-white/90">
               <div>• 滚轮/双指缩放图片</div>
@@ -467,69 +469,62 @@ const ImageModal: React.FC<ImageModalProps> = ({
       </div>
 
       {/* 控制按钮组 - 底部居中 */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10">
-        <div className="flex items-center gap-2 bg-black/30 backdrop-blur-sm px-4 py-3 rounded-full border border-white/10">
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 max-w-[calc(100vw-1rem)] px-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 bg-black/30 backdrop-blur-sm px-3 sm:px-4 py-3 rounded-full border border-white/10 overflow-x-auto scrollbar-hide">
           <button
             onClick={zoomOut}
-            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+            className="p-2 sm:p-2.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 flex-shrink-0"
             aria-label="缩小"
             title="缩小 (-)"
           >
-            <ZoomOut size={16} />
+            <ZoomOut size={16} className="sm:w-5 sm:h-5" />
           </button>
 
-          <span className="text-white text-sm min-w-[3rem] text-center">
+          <span className="text-white text-sm min-w-[2.8rem] sm:min-w-[3rem] text-center flex-shrink-0">
             {Math.round(scale * 100)}%
           </span>
 
           <button
             onClick={zoomIn}
-            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+            className="p-2 sm:p-2.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 flex-shrink-0"
             aria-label="放大"
             title="放大 (+)"
           >
-            <ZoomIn size={16} />
+            <ZoomIn size={16} className="sm:w-5 sm:h-5" />
           </button>
 
-          <div className="w-px h-6 bg-white/20 mx-1"></div>
+          <div className="w-px h-5 sm:h-6 bg-white/20 mx-1 flex-shrink-0"></div>
 
           <button
             onClick={rotateCounterClockwise}
-            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+            className="p-2 sm:p-2.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 flex-shrink-0"
             aria-label="逆时针旋转"
             title="逆时针旋转 (L)"
           >
-            <RotateCcw size={16} />
+            <RotateCcw size={16} className="sm:w-5 sm:h-5" />
           </button>
 
           <button
             onClick={rotateClockwise}
-            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+            className="p-2 sm:p-2.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 flex-shrink-0"
             aria-label="顺时针旋转"
             title="顺时针旋转 (R)"
           >
-            <RotateCw size={16} />
+            <RotateCw size={16} className="sm:w-5 sm:h-5" />
           </button>
 
-          <div className="w-px h-6 bg-white/20 mx-1"></div>
+          <div className="w-px h-5 sm:h-6 bg-white/20 mx-1 flex-shrink-0"></div>
 
           <button
             onClick={resetTransform}
-            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
+            className="p-2 sm:p-2.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 flex-shrink-0"
             aria-label="重置"
             title="重置 (0)"
           >
-            <RefreshCw size={16} />
+            <RefreshCw size={16} className="sm:w-5 sm:h-5" />
           </button>
 
-          <button
-            onClick={onClose}
-            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200"
-            aria-label="关闭"
-            title="关闭 (ESC)"
-          >
-            <X size={16} />
-          </button>
+
         </div>
       </div>
     </div>

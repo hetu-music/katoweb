@@ -37,10 +37,10 @@ const SongFilters: React.FC<SongFiltersProps> = ({
   onTypeExplanationOpen,
 }) => {
   return (
-    <div className="w-full flex flex-col sm:flex-row gap-3">
+    <div className="w-full flex flex-col xl:flex-row gap-3">
       {/* 类型筛选 */}
       <div className="filter-container">
-        <div className="filter-label flex items-center h-full px-4 py-0 rounded-l-2xl border-r-0 bg-white/10 border border-white/20 select-none min-w-[120px] max-w-[140px] w-[120px]">
+        <div className="filter-label">
           <span>类型</span>
           <button
             type="button"
@@ -65,7 +65,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
       </div>
       {/* 发行日期筛选 */}
       <div className="filter-container">
-        <span className="filter-label">发行日期</span>
+        <div className="filter-label">发行日期</div>
         <CustomSelect
           value={selectedYear}
           onChange={setSelectedYear}
@@ -78,7 +78,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
       </div>
       {/* 作词筛选 */}
       <div className="filter-container">
-        <span className="filter-label">作词</span>
+        <div className="filter-label">作词</div>
         <CustomSelect
           value={selectedLyricist}
           onChange={setSelectedLyricist}
@@ -91,7 +91,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
       </div>
       {/* 作曲筛选 */}
       <div className="filter-container">
-        <span className="filter-label">作曲</span>
+        <div className="filter-label">作曲</div>
         <CustomSelect
           value={selectedComposer}
           onChange={setSelectedComposer}
@@ -104,7 +104,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
       </div>
       {/* 编曲筛选 */}
       <div className="filter-container">
-        <span className="filter-label">编曲</span>
+        <div className="filter-label">编曲</div>
         <CustomSelect
           value={selectedArranger}
           onChange={setSelectedArranger}

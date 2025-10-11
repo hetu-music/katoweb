@@ -49,11 +49,11 @@ body {
 }
 
 .filter-label {
-  @apply h-[48px] flex sm:hidden lg:flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-blue-200 text-base font-semibold rounded-l-2xl select-none tracking-wide w-[120px] min-w-[120px] max-w-[140px] transition-all duration-200;
+  @apply h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-blue-200 text-base font-semibold rounded-l-2xl select-none tracking-wide w-[120px] min-w-[120px] max-w-[140px] transition-all duration-200;
 }
 
 .filter-select {
-  @apply h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none appearance-none cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px] text-center font-medium transition-all duration-200;
+  @apply h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none appearance-none cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] text-center font-medium transition-all duration-200;
   text-align: center !important;
   text-align-last: center !important;
   /* Safari 兼容性 */
@@ -135,7 +135,7 @@ body {
 }
 
 .custom-select-trigger {
-  @apply h-full w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] sm:rounded-2xl sm:border-l sm:ml-0 lg:rounded-l-none lg:border-l-0 lg:ml-[-1px] font-medium flex items-center justify-center;
+  @apply h-full w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] font-medium flex items-center justify-center;
   /* iOS风格的缓动和过渡 */
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform: translateZ(0);
@@ -228,45 +228,69 @@ body {
   @apply rounded-b-2xl;
 }
 
-/* 自定义下拉框滚动条样式 */
-.custom-select-options::-webkit-scrollbar {
-  width: 4px;
+/* 自定义下拉框滚动条样式 - 仅桌面端 */
+@media (min-width: 769px) {
+  .custom-select-options::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .custom-select-options::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-select-options::-webkit-scrollbar-thumb {
+    background-color: rgba(107, 114, 128, 0.4);
+    border-radius: 2px;
+  }
+
+  .custom-select-options::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(107, 114, 128, 0.6);
+  }
 }
 
-.custom-select-options::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-select-options::-webkit-scrollbar-thumb {
-  background-color: rgba(107, 114, 128, 0.4);
-  border-radius: 2px;
-  /* 使用深灰色滚动条，保持原来的透明度 */
-}
-
-.custom-select-options::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(107, 114, 128, 0.6);
-}
-
-/* 移动端滚动条特殊处理 */
+/* 移动端滚动条特殊处理 - iOS原生行为 */
 @media (max-width: 768px) {
-  .custom-select-options.mobile::-webkit-scrollbar-track {
-    /* 移动端滚动条轨道添加上下边距，确保不突出圆角边界 */
+
+  /* 默认状态：隐藏滚动条 */
+  .custom-select-options.mobile {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .custom-select-options.mobile::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 滚动时显示滚动条 */
+  .custom-select-options.mobile.scrolling {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(107, 114, 128, 0.6) transparent;
+  }
+
+  .custom-select-options.mobile.scrolling::-webkit-scrollbar {
+    display: block;
+    width: 3px;
+  }
+
+  .custom-select-options.mobile.scrolling::-webkit-scrollbar-track {
+    background: transparent;
     margin: 16px 0;
     border-radius: 16px;
   }
 
-  .custom-select-options.mobile::-webkit-scrollbar-thumb {
-    /* 移动端滚动条拇指也添加圆角 */
+  .custom-select-options.mobile.scrolling::-webkit-scrollbar-thumb {
+    background-color: rgba(107, 114, 128, 0.6);
     border-radius: 2px;
-    /* 确保滚动条拇指不会延伸到圆角区域 */
     margin: 2px 0;
   }
 }
 
-/* Firefox 滚动条样式 */
-.custom-select-options {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(107, 114, 128, 0.4) transparent;
+/* Firefox 滚动条样式 - 仅桌面端 */
+@media (min-width: 769px) {
+  .custom-select-options {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(107, 114, 128, 0.4) transparent;
+  }
 }
 
 /* 桌面端下拉框从上方弹出效果 */
@@ -285,7 +309,7 @@ body {
 /* 移动端下拉框弹出效果 */
 @media (max-width: 768px) {
   .custom-select-options.mobile {
-    animation: mobileDropdownFadeIn 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: mobileDropdownFadeIn 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     z-index: 51;
     /* 移动端使用更大的最大高度 */
     max-height: 600px;
@@ -306,7 +330,7 @@ body {
   }
 
   .custom-select-options.mobile.closing {
-    animation: mobileDropdownFadeOut 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: mobileDropdownFadeOut 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     animation-fill-mode: forwards;
   }
 }
@@ -336,14 +360,17 @@ body {
 @keyframes mobileDropdownFadeIn {
   0% {
     opacity: 0;
-    transform: scale(0.85) translateZ(0);
-    filter: blur(2px);
+    transform: scale(0.8) translateY(-10px) translateZ(0);
+  }
+
+  60% {
+    opacity: 0.9;
+    transform: scale(1.02) translateY(2px) translateZ(0);
   }
 
   100% {
     opacity: 1;
-    transform: scale(1) translateZ(0);
-    filter: blur(0);
+    transform: scale(1) translateY(0) translateZ(0);
   }
 }
 
@@ -482,6 +509,7 @@ html.wallpaper-active::after {
 
 /* 移动端特殊优化 */
 @media (hover: none) and (pointer: coarse) {
+
   html.wallpaper-active::before,
   html.wallpaper-active::after {
     /* 在移动设备上确保平滑滚动 */
