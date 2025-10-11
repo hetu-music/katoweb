@@ -194,7 +194,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
     const touch2 = touches[1];
     return Math.sqrt(
       Math.pow(touch2.clientX - touch1.clientX, 2) +
-        Math.pow(touch2.clientY - touch1.clientY, 2),
+      Math.pow(touch2.clientY - touch1.clientY, 2),
     );
   }, []);
 
@@ -473,11 +473,11 @@ const ImageModal: React.FC<ImageModalProps> = ({
         <div className="flex items-center gap-1.5 sm:gap-2 bg-black/30 backdrop-blur-sm px-3 sm:px-4 py-3 rounded-full border border-white/10 overflow-x-auto scrollbar-hide">
           <button
             onClick={zoomOut}
-            className="p-2 sm:p-2.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 flex-shrink-0"
+            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 flex-shrink-0"
             aria-label="缩小"
             title="缩小 (-)"
           >
-            <ZoomOut size={16} className="sm:w-5 sm:h-5" />
+            <ZoomOut size={16} />
           </button>
 
           <span className="text-white text-sm min-w-[2.8rem] sm:min-w-[3rem] text-center flex-shrink-0">
@@ -486,42 +486,42 @@ const ImageModal: React.FC<ImageModalProps> = ({
 
           <button
             onClick={zoomIn}
-            className="p-2 sm:p-2.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 flex-shrink-0"
+            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 flex-shrink-0"
             aria-label="放大"
             title="放大 (+)"
           >
-            <ZoomIn size={16} className="sm:w-5 sm:h-5" />
+            <ZoomIn size={16} />
           </button>
 
           <div className="w-px h-5 sm:h-6 bg-white/20 mx-1 flex-shrink-0"></div>
 
           <button
             onClick={rotateCounterClockwise}
-            className="p-2 sm:p-2.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 flex-shrink-0"
+            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 flex-shrink-0"
             aria-label="逆时针旋转"
             title="逆时针旋转 (L)"
           >
-            <RotateCcw size={16} className="sm:w-5 sm:h-5" />
+            <RotateCcw size={16} />
           </button>
 
           <button
             onClick={rotateClockwise}
-            className="p-2 sm:p-2.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 flex-shrink-0"
+            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 flex-shrink-0"
             aria-label="顺时针旋转"
             title="顺时针旋转 (R)"
           >
-            <RotateCw size={16} className="sm:w-5 sm:h-5" />
+            <RotateCw size={16} />
           </button>
 
           <div className="w-px h-5 sm:h-6 bg-white/20 mx-1 flex-shrink-0"></div>
 
           <button
             onClick={resetTransform}
-            className="p-2 sm:p-2.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 flex-shrink-0"
+            className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 flex-shrink-0"
             aria-label="重置"
             title="重置 (0)"
           >
-            <RefreshCw size={16} className="sm:w-5 sm:h-5" />
+            <RefreshCw size={16} />
           </button>
         </div>
       </div>
