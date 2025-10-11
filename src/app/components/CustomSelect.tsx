@@ -425,7 +425,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     [options.length],
   );
 
-  // 设置下拉框的初始滚动位置
+  // 设置下拉框的初始滚动位置（延迟执行以避免阻塞动画）
   const setInitialScrollPosition = useCallback(
     (container: HTMLDivElement) => {
       if (value) {
@@ -433,8 +433,14 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           (option) => option.value === value,
         );
         if (selectedIndex >= 0) {
-          const scrollTop = calculateScrollPosition(selectedIndex, container);
-          container.scrollTop = scrollTop;
+          // 使用 requestAnimationFrame 确保在下一帧执行，不阻塞当前动画
+          requestAnimationFrame(() => {
+            // 再次检查容器是否还存在（防止快速开关导致的错误）
+            if (container && container.parentNode) {
+              const scrollTop = calculateScrollPosition(selectedIndex, container);
+              container.scrollTop = scrollTop;
+            }
+          });
         }
       }
     },

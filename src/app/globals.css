@@ -285,7 +285,7 @@ body {
 /* 移动端下拉框弹出效果 */
 @media (max-width: 768px) {
   .custom-select-options.mobile {
-    animation: mobileDropdownFadeIn 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: mobileDropdownFadeIn 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     z-index: 51;
     /* 移动端使用更大的最大高度 */
     max-height: 600px;
@@ -306,7 +306,7 @@ body {
   }
 
   .custom-select-options.mobile.closing {
-    animation: mobileDropdownFadeOut 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: mobileDropdownFadeOut 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     animation-fill-mode: forwards;
   }
 }
@@ -336,13 +336,19 @@ body {
 @keyframes mobileDropdownFadeIn {
   0% {
     opacity: 0;
-    transform: scale(0.85) translateZ(0);
-    filter: blur(2px);
+    transform: scale(0.8) translateY(-10px) translateZ(0);
+    filter: blur(3px);
+  }
+
+  60% {
+    opacity: 0.9;
+    transform: scale(1.02) translateY(2px) translateZ(0);
+    filter: blur(1px);
   }
 
   100% {
     opacity: 1;
-    transform: scale(1) translateZ(0);
+    transform: scale(1) translateY(0) translateZ(0);
     filter: blur(0);
   }
 }
