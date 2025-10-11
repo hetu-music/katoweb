@@ -250,7 +250,6 @@ body {
 
 /* 移动端滚动条特殊处理 - iOS原生行为 */
 @media (max-width: 768px) {
-
   /* 默认状态：隐藏滚动条 */
   .custom-select-options.mobile {
     scrollbar-width: none;
@@ -509,7 +508,6 @@ html.wallpaper-active::after {
 
 /* 移动端特殊优化 */
 @media (hover: none) and (pointer: coarse) {
-
   html.wallpaper-active::before,
   html.wallpaper-active::after {
     /* 在移动设备上确保平滑滚动 */

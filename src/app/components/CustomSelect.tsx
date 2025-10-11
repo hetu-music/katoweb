@@ -437,7 +437,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           requestAnimationFrame(() => {
             // 再次检查容器是否还存在（防止快速开关导致的错误）
             if (container && container.parentNode) {
-              const scrollTop = calculateScrollPosition(selectedIndex, container);
+              const scrollTop = calculateScrollPosition(
+                selectedIndex,
+                container,
+              );
               container.scrollTop = scrollTop;
             }
           });
@@ -502,29 +505,29 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             // 在元素创建时立即设置滚动位置，避免用户看到跳跃
             if (el) {
               setInitialScrollPosition(el);
-              
+
               // 移动端：添加iOS风格的滚动条行为
               if (isMobile) {
                 let scrollTimeout: NodeJS.Timeout;
-                
+
                 const handleScroll = () => {
                   // 滚动时显示滚动条
-                  el.classList.add('scrolling');
-                  
+                  el.classList.add("scrolling");
+
                   // 清除之前的定时器
                   clearTimeout(scrollTimeout);
-                  
+
                   // 滚动停止1秒后隐藏滚动条
                   scrollTimeout = setTimeout(() => {
-                    el.classList.remove('scrolling');
+                    el.classList.remove("scrolling");
                   }, 1000);
                 };
-                
-                el.addEventListener('scroll', handleScroll, { passive: true });
-                
+
+                el.addEventListener("scroll", handleScroll, { passive: true });
+
                 // 清理函数
                 return () => {
-                  el.removeEventListener('scroll', handleScroll);
+                  el.removeEventListener("scroll", handleScroll);
                   clearTimeout(scrollTimeout);
                 };
               }
