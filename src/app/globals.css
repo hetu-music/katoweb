@@ -228,45 +228,69 @@ body {
   @apply rounded-b-2xl;
 }
 
-/* 自定义下拉框滚动条样式 */
-.custom-select-options::-webkit-scrollbar {
-  width: 4px;
+/* 自定义下拉框滚动条样式 - 仅桌面端 */
+@media (min-width: 769px) {
+  .custom-select-options::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .custom-select-options::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-select-options::-webkit-scrollbar-thumb {
+    background-color: rgba(107, 114, 128, 0.4);
+    border-radius: 2px;
+  }
+
+  .custom-select-options::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(107, 114, 128, 0.6);
+  }
 }
 
-.custom-select-options::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-select-options::-webkit-scrollbar-thumb {
-  background-color: rgba(107, 114, 128, 0.4);
-  border-radius: 2px;
-  /* 使用深灰色滚动条，保持原来的透明度 */
-}
-
-.custom-select-options::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(107, 114, 128, 0.6);
-}
-
-/* 移动端滚动条特殊处理 */
+/* 移动端滚动条特殊处理 - iOS原生行为 */
 @media (max-width: 768px) {
-  .custom-select-options.mobile::-webkit-scrollbar-track {
-    /* 移动端滚动条轨道添加上下边距，确保不突出圆角边界 */
+
+  /* 默认状态：隐藏滚动条 */
+  .custom-select-options.mobile {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .custom-select-options.mobile::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 滚动时显示滚动条 */
+  .custom-select-options.mobile.scrolling {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(107, 114, 128, 0.6) transparent;
+  }
+
+  .custom-select-options.mobile.scrolling::-webkit-scrollbar {
+    display: block;
+    width: 3px;
+  }
+
+  .custom-select-options.mobile.scrolling::-webkit-scrollbar-track {
+    background: transparent;
     margin: 16px 0;
     border-radius: 16px;
   }
 
-  .custom-select-options.mobile::-webkit-scrollbar-thumb {
-    /* 移动端滚动条拇指也添加圆角 */
+  .custom-select-options.mobile.scrolling::-webkit-scrollbar-thumb {
+    background-color: rgba(107, 114, 128, 0.6);
     border-radius: 2px;
-    /* 确保滚动条拇指不会延伸到圆角区域 */
     margin: 2px 0;
   }
 }
 
-/* Firefox 滚动条样式 */
-.custom-select-options {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(107, 114, 128, 0.4) transparent;
+/* Firefox 滚动条样式 - 仅桌面端 */
+@media (min-width: 769px) {
+  .custom-select-options {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(107, 114, 128, 0.4) transparent;
+  }
 }
 
 /* 桌面端下拉框从上方弹出效果 */
