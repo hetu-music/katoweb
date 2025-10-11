@@ -194,7 +194,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
     const touch2 = touches[1];
     return Math.sqrt(
       Math.pow(touch2.clientX - touch1.clientX, 2) +
-      Math.pow(touch2.clientY - touch1.clientY, 2),
+        Math.pow(touch2.clientY - touch1.clientY, 2),
     );
   }, []);
 
