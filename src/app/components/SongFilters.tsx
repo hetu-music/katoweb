@@ -65,7 +65,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
       </div>
       {/* 发行日期筛选 */}
       <div className="filter-container">
-        <div className="filter-label">发行日期</div>
+        <div className="filter-label">年份</div>
         <CustomSelect
           value={selectedYear}
           onChange={setSelectedYear}

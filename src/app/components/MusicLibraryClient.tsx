@@ -604,7 +604,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
                     <div className="w-2 h-2 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full flex-shrink-0"></div>
                     <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
-                      筛选结果{" "}
+                      筛选{" "}
                       <span className="text-amber-200 font-semibold">
                         {filteredSongs.length}
                       </span>{" "}
@@ -616,7 +616,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                     <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 backdrop-blur-sm border border-emerald-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
                       <div className="w-2 h-2 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full flex-shrink-0"></div>
                       <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
-                        当前页{" "}
+                        本页{" "}
                         <span className="text-emerald-200 font-semibold">
                           {startIndex}-{endIndex}
                         </span>{" "}
