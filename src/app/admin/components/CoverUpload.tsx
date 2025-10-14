@@ -35,7 +35,7 @@ export default function CoverUpload({
       setCheckingFile(true);
       try {
         const result = await apiCheckFileExists(id, "cover", csrfToken);
-      if (!result) return false;
+        if (!result) return false;
         const exists = result.exists;
         setFileExists(exists);
         return exists;
