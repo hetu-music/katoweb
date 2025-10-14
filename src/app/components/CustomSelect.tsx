@@ -74,7 +74,8 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   useEffect(() => {
     if (isOpen && !isMobile && selectRef.current) {
       const calculatePosition = () => {
-        const rect = selectRef.current!.getBoundingClientRect();
+        const rect = selectRef.current?.getBoundingClientRect();
+        if (!rect) return;
 
         // 桌面端计算
         const dropdownHeight = Math.min(
@@ -273,7 +274,8 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     // 如果是移动端，先计算位置再显示
     if (isMobile && selectRef.current) {
       const calculatePosition = () => {
-        const rect = selectRef.current!.getBoundingClientRect();
+        const rect = selectRef.current?.getBoundingClientRect();
+        if (!rect) return null;
 
         // 计算下拉选项位置
         const dropdownHeight = Math.min(

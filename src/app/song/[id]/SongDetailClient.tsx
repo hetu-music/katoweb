@@ -46,7 +46,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
       try {
         await navigator.share(shareData);
       } catch {
-        console.log("分享取消或失败");
+        console.warn("分享取消或失败");
       }
     } else {
       // 备用方案：复制链接到剪贴板
@@ -54,7 +54,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         await navigator.clipboard.writeText(window.location.href);
         alert("链接已复制到剪贴板");
       } catch {
-        console.log("复制失败");
+        console.warn("复制失败");
       }
     }
   }, [song.title, song.artist]);

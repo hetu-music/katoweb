@@ -69,7 +69,9 @@ export default function LoginPage() {
         {/* 浮动操作按钮组 - 仅返回顶部（登录页面不需要，所以不显示） */}
         <FloatingActionButtons
           showScrollTop={false}
-          onScrollToTop={() => {}} // 空函数，不会显示按钮
+          onScrollToTop={() => {
+            // No scroll to top needed on login page
+          }}
         />
 
         {/* 统一的竖向长容器 */}

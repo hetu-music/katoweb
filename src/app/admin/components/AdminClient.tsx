@@ -994,7 +994,7 @@ function renderInput(
                 csrfToken={csrfToken}
                 hasExistingFile={state.hascover === true}
                 onUploadSuccess={() => {
-                  console.log("Cover uploaded successfully");
+                  // Cover upload success handled by component
                 }}
                 onUploadError={(error) => {
                   console.error("Cover upload error:", error);
@@ -1043,7 +1043,7 @@ function renderInput(
                 csrfToken={csrfToken}
                 hasExistingFile={state.nmn_status === true}
                 onUploadSuccess={() => {
-                  console.log("Score uploaded successfully");
+                  // Score upload success handled by component
                 }}
                 onUploadError={(error) => {
                   console.error("Score upload error:", error);

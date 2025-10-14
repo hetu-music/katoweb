@@ -13,7 +13,7 @@ export default async function SongDetailPage({
   try {
     const songId = parseInt(id);
     if (isNaN(songId)) {
-      console.log("Invalid song ID:", id);
+      console.warn("Invalid song ID:", id);
       notFound();
     }
     const song = await getSongById(songId);

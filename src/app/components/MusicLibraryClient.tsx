@@ -234,7 +234,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       try {
         await navigator.share(shareData);
       } catch {
-        console.log("分享取消或失败");
+        console.warn("分享取消或失败");
       }
     } else {
       // 备用方案：复制链接到剪贴板
@@ -242,7 +242,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
         await navigator.clipboard.writeText(window.location.href);
         alert("链接已复制到剪贴板");
       } catch {
-        console.log("复制失败");
+        console.warn("复制失败");
       }
     }
   };

@@ -42,7 +42,7 @@ export function createSupabaseClient(table?: string, accessToken?: string) {
     supabaseUrl === "placeholder" ||
     supabaseKey === "placeholder"
   ) {
-    console.log("Using placeholder environment variables");
+    console.warn("Using placeholder environment variables");
     return null;
   }
 
@@ -76,7 +76,7 @@ export async function getSongs(
 ): Promise<Song[]> {
   const supabase = createSupabaseClient(table, accessToken);
   if (!supabase) {
-    console.log("Supabase client not available, returning empty data");
+    console.warn("Supabase client not available, returning empty data");
     return [];
   }
   const { data, error } = await supabase
@@ -100,7 +100,7 @@ export async function getSongById(
 ): Promise<SongDetail | null> {
   const supabase = createSupabaseClient(table, accessToken);
   if (!supabase) {
-    console.log("Supabase client not available");
+    console.warn("Supabase client not available");
     return null;
   }
   const { data, error } = await supabase
@@ -109,11 +109,11 @@ export async function getSongById(
     .eq("id", id)
     .single();
   if (error) {
-    console.log("Supabase query failed for id:", id, "Error:", error);
+    console.error("Supabase query failed for id:", id, "Error:", error);
     return null;
   }
   if (!data) {
-    console.log("No song found for id:", id);
+    console.warn("No song found for id:", id);
     return null;
   }
 

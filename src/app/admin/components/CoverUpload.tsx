@@ -35,6 +35,7 @@ export default function CoverUpload({
       setCheckingFile(true);
       try {
         const result = await apiCheckFileExists(id, "cover", csrfToken);
+      if (!result) return false;
         const exists = result.exists;
         setFileExists(exists);
         return exists;
@@ -98,7 +99,8 @@ export default function CoverUpload({
     try {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("songId", songId!.toString());
+      if (!songId) return;
+      formData.append("songId", songId.toString());
 
       const response = await fetch("/api/admin/upload-cover", {
         method: "POST",
