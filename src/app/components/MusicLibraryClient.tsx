@@ -130,7 +130,10 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
           urlComposer !== "全部" ||
           urlArranger !== "全部")
       ) {
-        setDebouncedSearchTerm(urlSearchTerm);
+        const setInitialDebouncedTerm = () => {
+          setDebouncedSearchTerm(urlSearchTerm);
+        };
+        setInitialDebouncedTerm();
       }
 
       // 页面状态将通过 usePagination 的 initialPage 处理
