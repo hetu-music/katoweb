@@ -86,7 +86,11 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
   // 在客户端挂载后初始化 URL 参数
   useEffect(() => {
-    setIsClient(true);
+    const initializeClient = () => {
+      setIsClient(true);
+    };
+    initializeClient();
+    
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
 
@@ -105,13 +109,16 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       const urlArranger = params.get("arranger") || "全部";
       const urlViewMode = params.get("view") || "grid";
 
-      setSearchTerm(urlSearchTerm);
-      setSelectedType(urlType);
-      setSelectedYear(urlYear);
-      setSelectedLyricist(urlLyricist);
-      setSelectedComposer(urlComposer);
-      setSelectedArranger(urlArranger);
-      setViewMode(urlViewMode);
+      const restoreUrlState = () => {
+        setSearchTerm(urlSearchTerm);
+        setSelectedType(urlType);
+        setSelectedYear(urlYear);
+        setSelectedLyricist(urlLyricist);
+        setSelectedComposer(urlComposer);
+        setSelectedArranger(urlArranger);
+        setViewMode(urlViewMode);
+      };
+      restoreUrlState();
 
       // 如果是从详情页返回且有任何筛选条件，立即同步设置防抖搜索词，避免跳跃效果
       if (
@@ -210,7 +217,10 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
         requestAnimationFrame(() => setRestoringScroll(false));
       }
     } else if (isClient) {
-      setRestoringScroll(false);
+      const finishScrollRestore = () => {
+        setRestoringScroll(false);
+      };
+      finishScrollRestore();
     }
   }, [isClient]); // 依赖客户端状态
 
@@ -284,7 +294,11 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   useEffect(() => {
     // 如果是初始化阶段或从详情页返回，立即设置防抖搜索词，避免跳跃
     if (!isInitialized || isReturningFromDetail.current) {
-      setDebouncedSearchTerm(searchTerm);
+      const updateDebouncedTerm = () => {
+        setDebouncedSearchTerm(searchTerm);
+      };
+      updateDebouncedTerm();
+      
       // 重置返回标记
       if (isReturningFromDetail.current) {
         isReturningFromDetail.current = false;
