@@ -223,6 +223,31 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // 清除所有筛选条件的函数
+  const handleClearAllFilters = () => {
+    // 重置所有筛选条件和页面
+    setSearchTerm("");
+    setSelectedType("全部");
+    setSelectedYear("全部");
+    setSelectedLyricist("全部");
+    setSelectedComposer("全部");
+    setSelectedArranger("全部");
+    setViewMode("grid");
+    setPaginationPage(1);
+
+    // 直接清除URL中的所有参数，确保返回干净的主页面
+    if (typeof window !== "undefined") {
+      const newUrl = window.location.pathname;
+      window.history.replaceState(null, "", newUrl);
+    }
+
+    // 清理可能存储的滚动位置，避免从详情页返回时回到错误的状态
+    sessionStorage.removeItem("music_scrollY");
+
+    // 标记已重置，用于详情页返回时的判断
+    sessionStorage.setItem("music_filters_reset", "true");
+  };
+
   const handleShare = async () => {
     const shareData = {
       title: "河图作品勘鉴",
@@ -585,6 +610,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                 setSelectedArranger={setSelectedArranger}
                 filterOptions={filterOptions}
                 onTypeExplanationOpen={() => setTypeExplanationOpen(true)}
+                onClearAllFilters={handleClearAllFilters}
               />
               {/* 歌曲总数和筛选数统计 */}
               <div className="mt-4 mb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

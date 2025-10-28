@@ -1,4 +1,5 @@
 import React from "react";
+import { RotateCcw } from "lucide-react";
 import CustomSelect from "./CustomSelect";
 
 interface SongFiltersProps {
@@ -20,6 +21,7 @@ interface SongFiltersProps {
     allArrangers: string[];
   };
   onTypeExplanationOpen: () => void;
+  onClearAllFilters: () => void;
 }
 
 const SongFilters: React.FC<SongFiltersProps> = ({
@@ -35,7 +37,16 @@ const SongFilters: React.FC<SongFiltersProps> = ({
   setSelectedArranger,
   filterOptions,
   onTypeExplanationOpen,
+  onClearAllFilters,
 }) => {
+  // 检查是否有任何筛选条件被激活
+  const hasActiveFilters = 
+    selectedType !== "全部" ||
+    selectedYear !== "全部" ||
+    selectedLyricist !== "全部" ||
+    selectedComposer !== "全部" ||
+    selectedArranger !== "全部";
+
   return (
     <div className="w-full flex flex-col xl:flex-row gap-3">
       {/* 类型筛选 */}
@@ -115,6 +126,21 @@ const SongFilters: React.FC<SongFiltersProps> = ({
           className="flex-1"
         />
       </div>
+      
+      {/* 清除所有筛选按钮 */}
+      {hasActiveFilters && (
+        <div className="flex items-end">
+          <button
+            type="button"
+            onClick={onClearAllFilters}
+            className="h-[48px] px-4 flex items-center gap-2 rounded-2xl bg-gradient-to-r from-red-500/20 to-pink-500/20 border border-red-400/30 text-red-200 hover:from-red-500/30 hover:to-pink-500/30 hover:text-red-100 hover:border-red-300/50 transition-all duration-200 font-medium text-sm whitespace-nowrap"
+            title="清除所有筛选条件"
+          >
+            <RotateCcw size={16} />
+            <span className="hidden sm:inline">清除筛选</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 };
