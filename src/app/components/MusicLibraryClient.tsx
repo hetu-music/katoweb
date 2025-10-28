@@ -481,29 +481,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-center w-full">
                 <h1
                   className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-blue-300 to-indigo-400 drop-shadow-lg tracking-wider mb-2 sm:mb-0 cursor-pointer hover:from-purple-200 hover:via-blue-200 hover:to-indigo-300 transition-all duration-300 select-none"
-                  onClick={() => {
-                    // 重置所有筛选条件和页面
-                    setSearchTerm("");
-                    setSelectedType("全部");
-                    setSelectedYear("全部");
-                    setSelectedLyricist("全部");
-                    setSelectedComposer("全部");
-                    setSelectedArranger("全部");
-                    setViewMode("grid");
-                    setPaginationPage(1);
-
-                    // 直接清除URL中的所有参数，确保返回干净的主页面
-                    if (typeof window !== "undefined") {
-                      const newUrl = window.location.pathname;
-                      window.history.replaceState(null, "", newUrl);
-                    }
-
-                    // 清理可能存储的滚动位置，避免从详情页返回时回到错误的状态
-                    sessionStorage.removeItem("music_scrollY");
-
-                    // 标记已重置，用于详情页返回时的判断
-                    sessionStorage.setItem("music_filters_reset", "true");
-                  }}
+                  onClick={handleClearAllFilters}
                   title="点击重置所有筛选条件"
                 >
                   河图作品勘鉴
