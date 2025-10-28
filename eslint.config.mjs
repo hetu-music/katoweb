@@ -8,7 +8,7 @@ import reactHooks from "eslint-plugin-react-hooks";
 import prettierConfig from "eslint-config-prettier";
 
 export default defineConfig(
-  // ==================== 全局忽略 ====================
+  //全局忽略
   {
     ignores: [
       ".next/**",
@@ -24,14 +24,14 @@ export default defineConfig(
     ],
   },
 
-  // ==================== 基础推荐 ====================
+  // 基础推荐
   js.configs.recommended,
   ...tseslint.configs.recommended,
 
-  // ==================== Next.js 完整配置（包含 jsx-a11y）===================
+  // Next.js 完整配置（包含 jsx-a11y）
   nextConfig,  // 直接使用，不拆分
 
-  // ==================== React Hooks（手动注册）===================
+  // React Hooks（手动注册）
   {
     plugins: {
       "react-hooks": reactHooks,
@@ -40,9 +40,7 @@ export default defineConfig(
       ...reactHooks.configs.recommended.rules,
     },
   },
-
-  // ==================== 自定义 a11y 规则（无需注册插件）===================
-  // 因为 nextConfig 已注册 jsx-a11y，直接覆盖规则即可
+  
   {
     rules: {
       "jsx-a11y/alt-text": [
@@ -60,7 +58,7 @@ export default defineConfig(
     },
   },
 
-  // ==================== 通用 JS/TS 配置 ====================
+  // 通用 JS/TS 配置
   {
     files: ["**/*.{js,mjs,cjs,ts,tsx}"],
     languageOptions: {
@@ -97,7 +95,7 @@ export default defineConfig(
     },
   },
 
-  // ==================== 仅 TS 文件 ====================
+  // 仅 TS 文件
   {
     files: ["**/*.{ts,tsx}"],
     rules: {
@@ -106,13 +104,13 @@ export default defineConfig(
     },
   },
 
-  // ==================== 配置文件特殊处理 ====================
+  // 配置文件特殊处理
   {
     files: ["*.config.{js,mjs,ts}"],
     languageOptions: { globals: globals.node },
     rules: { "@typescript-eslint/no-var-requires": "off" },
   },
 
-  // ==================== Prettier 收尾 ====================
+  // Prettier 收尾
   prettierConfig,
 );
