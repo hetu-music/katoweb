@@ -1,20 +1,14 @@
+// eslint.config.mjs
+import { defineConfig } from "eslint/config";
 import js from "@eslint/js";
 import globals from "globals";
 import tseslint from "typescript-eslint";
-import { FlatCompat } from "@eslint/eslintrc";
-import { fileURLToPath } from "url";
-import { dirname } from "path";
+import nextConfig from "eslint-config-next"; // 包含 jsx-a11y
+import reactHooks from "eslint-plugin-react-hooks";
+import prettierConfig from "eslint-config-prettier";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-});
-
-export default [
-  // 全局忽略配置
+export default defineConfig(
+  // ==================== 全局忽略 ====================
   {
     ignores: [
       ".next/**",
@@ -30,59 +24,27 @@ export default [
     ],
   },
 
-  // 基础推荐配置
+  // ==================== 基础推荐 ====================
   js.configs.recommended,
   ...tseslint.configs.recommended,
 
-  // Next.js 配置
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  // ==================== Next.js 完整配置（包含 jsx-a11y）===================
+  nextConfig,  // 直接使用，不拆分
 
-  // JavaScript/TypeScript 文件配置
+  // ==================== React Hooks（手动注册）===================
   {
-    files: ["**/*.{js,mjs,cjs,ts,tsx}"],
-    languageOptions: {
-      ecmaVersion: "latest",
-      sourceType: "module",
-      globals: {
-        ...globals.browser,
-        ...globals.node,
-        ...globals.es2021,
-      },
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-      },
+    plugins: {
+      "react-hooks": reactHooks,
     },
     rules: {
-      // JavaScript/TypeScript 规则
-      "no-unused-vars": "off", // 关闭 JS 规则，使用 TS 规则
-      "@typescript-eslint/no-unused-vars": [
-        "warn",
-        {
-          argsIgnorePattern: "^_",
-          varsIgnorePattern: "^_",
-          caughtErrorsIgnorePattern: "^_",
-        },
-      ],
-      "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/no-empty-function": "warn",
-      
-      "no-undef": "off", // TypeScript 已处理
-      "no-console": ["warn", { allow: ["warn", "error"] }],
-      "no-unused-expressions": "warn",
-      "no-useless-constructor": "off",
-      "no-loop-func": "off",
-      "prefer-const": "warn",
-      "no-var": "error",
+      ...reactHooks.configs.recommended.rules,
+    },
+  },
 
-      // React 规则
-      "react/react-in-jsx-scope": "off", // Next.js 不需要
-      "react/prop-types": "off", // 使用 TypeScript
-      "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "warn",
-
-      // 可访问性规则
+  // ==================== 自定义 a11y 规则（无需注册插件）===================
+  // 因为 nextConfig 已注册 jsx-a11y，直接覆盖规则即可
+  {
+    rules: {
       "jsx-a11y/alt-text": [
         "error",
         {
@@ -98,7 +60,44 @@ export default [
     },
   },
 
-  // TypeScript 特定配置
+  // ==================== 通用 JS/TS 配置 ====================
+  {
+    files: ["**/*.{js,mjs,cjs,ts,tsx}"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        ...globals.es2021,
+      },
+      parserOptions: {
+        ecmaFeatures: { jsx: true },
+      },
+    },
+    rules: {
+      "no-unused-vars": "off",
+      "no-undef": "off",
+      "no-console": ["warn", { allow: ["warn", "error"] }],
+      "no-unused-expressions": "warn",
+      "no-useless-constructor": "off",
+      "no-loop-func": "off",
+      "prefer-const": "warn",
+      "no-var": "error",
+
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_" }
+      ],
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-empty-function": "warn",
+
+      "react/react-in-jsx-scope": "off",
+      "react/prop-types": "off",
+    },
+  },
+
+  // ==================== 仅 TS 文件 ====================
   {
     files: ["**/*.{ts,tsx}"],
     rules: {
@@ -107,17 +106,13 @@ export default [
     },
   },
 
-  // 配置文件特殊规则
+  // ==================== 配置文件特殊处理 ====================
   {
     files: ["*.config.{js,mjs,ts}"],
-    languageOptions: {
-      globals: globals.node,
-    },
-    rules: {
-      "@typescript-eslint/no-var-requires": "off",
-    },
+    languageOptions: { globals: globals.node },
+    rules: { "@typescript-eslint/no-var-requires": "off" },
   },
 
-  // Prettier 配置（应该放在最后）
-  ...compat.extends("prettier"),
-];
+  // ==================== Prettier 收尾 ====================
+  prettierConfig,
+);
