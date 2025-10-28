@@ -147,8 +147,11 @@ const ImageModal: React.FC<ImageModalProps> = ({
   // 重置状态当模态框打开时
   useEffect(() => {
     if (isOpen) {
-      resetTransform();
-      setShowHint(false); // 重置提示显示状态
+      const resetModalState = () => {
+        resetTransform();
+        setShowHint(false); // 重置提示显示状态
+      };
+      resetModalState();
     }
   }, [isOpen, resetTransform]);
 

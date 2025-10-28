@@ -81,6 +81,9 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   // 检测是否是从详情页返回
   const isReturningFromDetail = useRef(false);
 
+  // 防抖搜索 - 移到这里避免变量声明顺序问题
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
   // 在客户端挂载后初始化 URL 参数
   useEffect(() => {
     setIsClient(true);
@@ -277,8 +280,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     return calculateFilterOptions(songsData);
   }, [songsData]);
 
-  // 防抖搜索
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  // 防抖搜索效果
   useEffect(() => {
     // 如果是初始化阶段或从详情页返回，立即设置防抖搜索词，避免跳跃
     if (!isInitialized || isReturningFromDetail.current) {

@@ -19,19 +19,27 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const router = useRouter(); // 初始化 router
 
   useEffect(() => {
-    setContributorsLoading(true);
-    setContributorsError(null);
-    fetch("/api/auth/contributors")
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchContributors = async () => {
+      setContributorsLoading(true);
+      setContributorsError(null);
+      
+      try {
+        const res = await fetch("/api/auth/contributors");
+        const data = await res.json();
+        
         if (Array.isArray(data.contributors)) {
           setContributors(data.contributors);
         } else {
           setContributors([]);
         }
-      })
-      .catch(() => setContributorsError("获取贡献者失败"))
-      .finally(() => setContributorsLoading(false));
+      } catch {
+        setContributorsError("获取贡献者失败");
+      } finally {
+        setContributorsLoading(false);
+      }
+    };
+
+    fetchContributors();
   }, []);
 
   // 点击登录按钮的处理函数
