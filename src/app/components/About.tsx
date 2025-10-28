@@ -19,19 +19,27 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const router = useRouter(); // 初始化 router
 
   useEffect(() => {
-    setContributorsLoading(true);
-    setContributorsError(null);
-    fetch("/api/auth/contributors")
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchContributors = async () => {
+      setContributorsLoading(true);
+      setContributorsError(null);
+      
+      try {
+        const res = await fetch("/api/auth/contributors");
+        const data = await res.json();
+        
         if (Array.isArray(data.contributors)) {
           setContributors(data.contributors);
         } else {
           setContributors([]);
         }
-      })
-      .catch(() => setContributorsError("获取贡献者失败"))
-      .finally(() => setContributorsLoading(false));
+      } catch {
+        setContributorsError("获取贡献者失败");
+      } finally {
+        setContributorsLoading(false);
+      }
+    };
+
+    fetchContributors();
   }, []);
 
   // 点击登录按钮的处理函数
@@ -43,7 +51,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-gradient-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-2xl shadow-2xl p-8 max-w-lg w-full relative text-white">
+      <div className="bg-linear-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-2xl shadow-2xl p-8 max-w-lg w-full relative text-white">
         <button
           className="absolute top-4 right-4 text-gray-300 hover:text-white text-xl font-bold"
           onClick={onClose}
@@ -141,7 +149,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                       className="bg-white/10 border border-white/20 rounded-xl shadow flex items-start px-4 py-3 transition-all duration-200 hover:bg-white/15 hover:border-white/30 hover:shadow-lg"
                     >
                       {/* 头像 */}
-                      <div className="w-12 h-12 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-500 text-white text-xl font-bold mr-4 shadow-md flex-shrink-0">
+                      <div className="w-12 h-12 flex items-center justify-center rounded-full bg-linear-to-br from-blue-500 via-purple-500 to-indigo-500 text-white text-xl font-bold mr-4 shadow-md shrink-0">
                         {contributor.name?.charAt(0).toUpperCase() || "?"}
                       </div>
 
@@ -151,7 +159,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                           {contributor.name || "未知贡献者"}
                         </div>
                         {contributor.intro && (
-                          <div className="text-white/80 text-sm leading-relaxed whitespace-pre-line break-words">
+                          <div className="text-white/80 text-sm leading-relaxed whitespace-pre-line wrap-break-word">
                             {contributor.intro}
                           </div>
                         )}

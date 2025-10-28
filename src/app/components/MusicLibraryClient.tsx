@@ -7,7 +7,7 @@ import React, {
   useRef,
   useCallback,
 } from "react";
-import { Search, Grid, List, XCircle } from "lucide-react";
+import { Search, Grid, List, XCircle, RotateCcw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MusicLibraryClientProps, SongDetail } from "../lib/types";
@@ -81,9 +81,16 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   // 检测是否是从详情页返回
   const isReturningFromDetail = useRef(false);
 
+  // 防抖搜索 - 移到这里避免变量声明顺序问题
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
   // 在客户端挂载后初始化 URL 参数
   useEffect(() => {
-    setIsClient(true);
+    const initializeClient = () => {
+      setIsClient(true);
+    };
+    initializeClient();
+    
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
 
@@ -102,13 +109,16 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       const urlArranger = params.get("arranger") || "全部";
       const urlViewMode = params.get("view") || "grid";
 
-      setSearchTerm(urlSearchTerm);
-      setSelectedType(urlType);
-      setSelectedYear(urlYear);
-      setSelectedLyricist(urlLyricist);
-      setSelectedComposer(urlComposer);
-      setSelectedArranger(urlArranger);
-      setViewMode(urlViewMode);
+      const restoreUrlState = () => {
+        setSearchTerm(urlSearchTerm);
+        setSelectedType(urlType);
+        setSelectedYear(urlYear);
+        setSelectedLyricist(urlLyricist);
+        setSelectedComposer(urlComposer);
+        setSelectedArranger(urlArranger);
+        setViewMode(urlViewMode);
+      };
+      restoreUrlState();
 
       // 如果是从详情页返回且有任何筛选条件，立即同步设置防抖搜索词，避免跳跃效果
       if (
@@ -120,7 +130,10 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
           urlComposer !== "全部" ||
           urlArranger !== "全部")
       ) {
-        setDebouncedSearchTerm(urlSearchTerm);
+        const setInitialDebouncedTerm = () => {
+          setDebouncedSearchTerm(urlSearchTerm);
+        };
+        setInitialDebouncedTerm();
       }
 
       // 页面状态将通过 usePagination 的 initialPage 处理
@@ -207,7 +220,10 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
         requestAnimationFrame(() => setRestoringScroll(false));
       }
     } else if (isClient) {
-      setRestoringScroll(false);
+      const finishScrollRestore = () => {
+        setRestoringScroll(false);
+      };
+      finishScrollRestore();
     }
   }, [isClient]); // 依赖客户端状态
 
@@ -221,6 +237,31 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // 清除所有筛选条件的函数
+  const handleClearAllFilters = () => {
+    // 重置所有筛选条件和页面
+    setSearchTerm("");
+    setSelectedType("全部");
+    setSelectedYear("全部");
+    setSelectedLyricist("全部");
+    setSelectedComposer("全部");
+    setSelectedArranger("全部");
+    setViewMode("grid");
+    setPaginationPage(1);
+
+    // 直接清除URL中的所有参数，确保返回干净的主页面
+    if (typeof window !== "undefined") {
+      const newUrl = window.location.pathname;
+      window.history.replaceState(null, "", newUrl);
+    }
+
+    // 清理可能存储的滚动位置，避免从详情页返回时回到错误的状态
+    sessionStorage.removeItem("music_scrollY");
+
+    // 标记已重置，用于详情页返回时的判断
+    sessionStorage.setItem("music_filters_reset", "true");
   };
 
   const handleShare = async () => {
@@ -252,12 +293,15 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     return calculateFilterOptions(songsData);
   }, [songsData]);
 
-  // 防抖搜索
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  // 防抖搜索效果
   useEffect(() => {
     // 如果是初始化阶段或从详情页返回，立即设置防抖搜索词，避免跳跃
     if (!isInitialized || isReturningFromDetail.current) {
-      setDebouncedSearchTerm(searchTerm);
+      const updateDebouncedTerm = () => {
+        setDebouncedSearchTerm(searchTerm);
+      };
+      updateDebouncedTerm();
+      
       // 重置返回标记
       if (isReturningFromDetail.current) {
         isReturningFromDetail.current = false;
@@ -455,30 +499,8 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-2">
               <div className="flex flex-col sm:flex-row sm:items-center w-full">
                 <h1
-                  className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-blue-300 to-indigo-400 drop-shadow-lg tracking-wider mb-2 sm:mb-0 cursor-pointer hover:from-purple-200 hover:via-blue-200 hover:to-indigo-300 transition-all duration-300 select-none"
-                  onClick={() => {
-                    // 重置所有筛选条件和页面
-                    setSearchTerm("");
-                    setSelectedType("全部");
-                    setSelectedYear("全部");
-                    setSelectedLyricist("全部");
-                    setSelectedComposer("全部");
-                    setSelectedArranger("全部");
-                    setViewMode("grid");
-                    setPaginationPage(1);
-
-                    // 直接清除URL中的所有参数，确保返回干净的主页面
-                    if (typeof window !== "undefined") {
-                      const newUrl = window.location.pathname;
-                      window.history.replaceState(null, "", newUrl);
-                    }
-
-                    // 清理可能存储的滚动位置，避免从详情页返回时回到错误的状态
-                    sessionStorage.removeItem("music_scrollY");
-
-                    // 标记已重置，用于详情页返回时的判断
-                    sessionStorage.setItem("music_filters_reset", "true");
-                  }}
+                  className="text-4xl font-extrabold bg-clip-text text-transparent bg-linear-to-r from-purple-300 via-blue-300 to-indigo-400 drop-shadow-lg tracking-wider mb-2 sm:mb-0 cursor-pointer hover:from-purple-200 hover:via-blue-200 hover:to-indigo-300 transition-all duration-300 select-none"
+                  onClick={handleClearAllFilters}
                   title="点击重置所有筛选条件"
                 >
                   河图作品勘鉴
@@ -590,8 +612,8 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
               <div className="mt-4 mb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 {/* 统计信息 */}
                 <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
-                  <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/20 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
-                    <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-pulse flex-shrink-0"></div>
+                  <div className="flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/20 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
+                    <div className="w-2 h-2 bg-linear-to-r from-blue-400 to-purple-400 rounded-full animate-pulse shrink-0"></div>
                     <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
                       总计{" "}
                       <span className="text-blue-200 font-semibold">
@@ -601,8 +623,8 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
-                    <div className="w-2 h-2 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full flex-shrink-0"></div>
+                  <div className="flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
+                    <div className="w-2 h-2 bg-linear-to-r from-amber-400 to-orange-400 rounded-full shrink-0"></div>
                     <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
                       筛选{" "}
                       <span className="text-amber-200 font-semibold">
@@ -613,8 +635,8 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   </div>
 
                   {filteredSongs.length > 30 && (
-                    <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 backdrop-blur-sm border border-emerald-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
-                      <div className="w-2 h-2 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full flex-shrink-0"></div>
+                    <div className="flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-emerald-500/20 to-teal-500/20 backdrop-blur-sm border border-emerald-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
+                      <div className="w-2 h-2 bg-linear-to-r from-emerald-400 to-teal-400 rounded-full shrink-0"></div>
                       <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
                         本页{" "}
                         <span className="text-emerald-200 font-semibold">
@@ -625,6 +647,28 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                     </div>
                   )}
                 </div>
+
+                {/* 清除所有筛选按钮 - 右对齐 */}
+                {(searchTerm ||
+                  selectedType !== "全部" ||
+                  selectedYear !== "全部" ||
+                  selectedLyricist !== "全部" ||
+                  selectedComposer !== "全部" ||
+                  selectedArranger !== "全部") && (
+                    <div className="flex justify-start sm:justify-end">
+                      <button
+                        type="button"
+                        onClick={handleClearAllFilters}
+                        className="flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-red-400/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0 text-red-200 hover:from-red-500/30 hover:to-pink-500/30 hover:text-red-100 hover:border-red-300/50 transition-all duration-200 cursor-pointer"
+                        title="清除所有筛选条件"
+                      >
+                        <RotateCcw size={12} className="shrink-0" />
+                        <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
+                          <span className="text-red-200 font-semibold">清除筛选</span>
+                        </span>
+                      </button>
+                    </div>
+                  )}
               </div>
             </div>
           </div>

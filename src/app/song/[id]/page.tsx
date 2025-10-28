@@ -10,21 +10,26 @@ export default async function SongDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  
+  const songId = parseInt(id);
+  if (isNaN(songId)) {
+    console.warn("Invalid song ID:", id);
+    notFound();
+  }
+
+  let song;
   try {
-    const songId = parseInt(id);
-    if (isNaN(songId)) {
-      console.warn("Invalid song ID:", id);
-      notFound();
-    }
-    const song = await getSongById(songId);
-    if (!song) {
-      notFound();
-    }
-    return <SongDetailClient song={song} />;
+    song = await getSongById(songId);
   } catch (error) {
     console.error("Error in SongDetailPage:", error);
     notFound();
   }
+
+  if (!song) {
+    notFound();
+  }
+
+  return <SongDetailClient song={song} />;
 }
 
 // 生成静态参数

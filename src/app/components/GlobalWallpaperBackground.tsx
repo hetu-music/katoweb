@@ -12,9 +12,12 @@ const GlobalWallpaperBackground: React.FC = () => {
   // 当壁纸URL变化时，重置加载状态
   useEffect(() => {
     if (wallpaper?.url !== currentWallpaper) {
-      setIsImageLoaded(false);
-      setShowWallpaper(false);
-      setCurrentWallpaper(wallpaper?.url || null);
+      const resetWallpaperState = () => {
+        setIsImageLoaded(false);
+        setShowWallpaper(false);
+        setCurrentWallpaper(wallpaper?.url || null);
+      };
+      resetWallpaperState();
     }
   }, [wallpaper?.url, currentWallpaper]);
 
@@ -41,7 +44,10 @@ const GlobalWallpaperBackground: React.FC = () => {
       }, 50);
       return () => clearTimeout(timer);
     } else {
-      setShowWallpaper(false);
+      const updateWallpaperVisibility = () => {
+        setShowWallpaper(false);
+      };
+      updateWallpaperVisibility();
     }
   }, [isImageLoaded, wallpaperEnabled, wallpaper?.url]);
 

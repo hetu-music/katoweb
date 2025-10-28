@@ -37,7 +37,10 @@ export function usePagination<T>({
   useEffect(() => {
     if (initialPage !== prevInitialPageRef.current) {
       prevInitialPageRef.current = initialPage;
-      setCurrentPage(initialPage);
+      const updatePage = () => {
+        setCurrentPage(initialPage);
+      };
+      updatePage();
     }
   }, [initialPage]);
 
@@ -51,16 +54,22 @@ export function usePagination<T>({
     // 如果启用了数据变化时重置，且数据长度发生变化，重置到第一页
     if (resetOnDataChange && data.length !== prevDataLengthRef.current) {
       prevDataLengthRef.current = data.length;
-      setCurrentPage(1);
+      const resetToFirstPage = () => {
+        setCurrentPage(1);
+      };
+      resetToFirstPage();
       return;
     }
 
     // 否则只确保当前页面有效
-    if (currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(totalPages);
-    } else if (currentPage < 1) {
-      setCurrentPage(1);
-    }
+    const adjustCurrentPage = () => {
+      if (currentPage > totalPages && totalPages > 0) {
+        setCurrentPage(totalPages);
+      } else if (currentPage < 1) {
+        setCurrentPage(1);
+      }
+    };
+    adjustCurrentPage();
   }, [currentPage, totalPages, data.length, resetOnDataChange]);
 
   // 计算当前页的数据
