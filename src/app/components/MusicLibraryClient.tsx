@@ -636,18 +636,20 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   selectedLyricist !== "全部" ||
                   selectedComposer !== "全部" ||
                   selectedArranger !== "全部") && (
-                  <button
-                    type="button"
-                    onClick={handleClearAllFilters}
-                    className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-red-400/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0 text-red-200 hover:from-red-500/30 hover:to-pink-500/30 hover:text-red-100 hover:border-red-300/50 transition-all duration-200 cursor-pointer"
-                    title="清除所有筛选条件"
-                  >
-                    <RotateCcw size={12} className="flex-shrink-0" />
-                    <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
-                      <span className="text-red-200 font-semibold">清除筛选</span>
-                    </span>
-                  </button>
-                )}
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={handleClearAllFilters}
+                        className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-red-400/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0 text-red-200 hover:from-red-500/30 hover:to-pink-500/30 hover:text-red-100 hover:border-red-300/50 transition-all duration-200 cursor-pointer"
+                        title="清除所有筛选条件"
+                      >
+                        <RotateCcw size={12} className="flex-shrink-0" />
+                        <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
+                          <span className="text-red-200 font-semibold">清除筛选</span>
+                        </span>
+                      </button>
+                    </div>
+                  )}
               </div>
             </div>
           </div>
