@@ -10,7 +10,7 @@ export default async function SongDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  
+
   const songId = parseInt(id);
   if (isNaN(songId)) {
     console.warn("Invalid song ID:", id);

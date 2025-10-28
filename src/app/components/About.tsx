@@ -22,11 +22,11 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const fetchContributors = async () => {
       setContributorsLoading(true);
       setContributorsError(null);
-      
+
       try {
         const res = await fetch("/api/auth/contributors");
         const data = await res.json();
-        
+
         if (Array.isArray(data.contributors)) {
           setContributors(data.contributors);
         } else {
