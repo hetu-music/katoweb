@@ -499,7 +499,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-2">
               <div className="flex flex-col sm:flex-row sm:items-center w-full">
                 <h1
-                  className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-blue-300 to-indigo-400 drop-shadow-lg tracking-wider mb-2 sm:mb-0 cursor-pointer hover:from-purple-200 hover:via-blue-200 hover:to-indigo-300 transition-all duration-300 select-none"
+                  className="text-4xl font-extrabold bg-clip-text text-transparent bg-linear-to-r from-purple-300 via-blue-300 to-indigo-400 drop-shadow-lg tracking-wider mb-2 sm:mb-0 cursor-pointer hover:from-purple-200 hover:via-blue-200 hover:to-indigo-300 transition-all duration-300 select-none"
                   onClick={handleClearAllFilters}
                   title="点击重置所有筛选条件"
                 >
@@ -612,8 +612,8 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
               <div className="mt-4 mb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 {/* 统计信息 */}
                 <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
-                  <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/20 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
-                    <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-pulse flex-shrink-0"></div>
+                  <div className="flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/20 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
+                    <div className="w-2 h-2 bg-linear-to-r from-blue-400 to-purple-400 rounded-full animate-pulse shrink-0"></div>
                     <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
                       总计{" "}
                       <span className="text-blue-200 font-semibold">
@@ -623,8 +623,8 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
-                    <div className="w-2 h-2 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full flex-shrink-0"></div>
+                  <div className="flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
+                    <div className="w-2 h-2 bg-linear-to-r from-amber-400 to-orange-400 rounded-full shrink-0"></div>
                     <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
                       筛选{" "}
                       <span className="text-amber-200 font-semibold">
@@ -635,8 +635,8 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   </div>
 
                   {filteredSongs.length > 30 && (
-                    <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 backdrop-blur-sm border border-emerald-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
-                      <div className="w-2 h-2 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full flex-shrink-0"></div>
+                    <div className="flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-emerald-500/20 to-teal-500/20 backdrop-blur-sm border border-emerald-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
+                      <div className="w-2 h-2 bg-linear-to-r from-emerald-400 to-teal-400 rounded-full shrink-0"></div>
                       <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
                         本页{" "}
                         <span className="text-emerald-200 font-semibold">
@@ -659,10 +659,10 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       <button
                         type="button"
                         onClick={handleClearAllFilters}
-                        className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-red-400/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0 text-red-200 hover:from-red-500/30 hover:to-pink-500/30 hover:text-red-100 hover:border-red-300/50 transition-all duration-200 cursor-pointer"
+                        className="flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-red-400/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0 text-red-200 hover:from-red-500/30 hover:to-pink-500/30 hover:text-red-100 hover:border-red-300/50 transition-all duration-200 cursor-pointer"
                         title="清除所有筛选条件"
                       >
-                        <RotateCcw size={12} className="flex-shrink-0" />
+                        <RotateCcw size={12} className="shrink-0" />
                         <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
                           <span className="text-red-200 font-semibold">清除筛选</span>
                         </span>
