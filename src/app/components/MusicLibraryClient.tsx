@@ -636,7 +636,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   selectedLyricist !== "全部" ||
                   selectedComposer !== "全部" ||
                   selectedArranger !== "全部") && (
-                    <div className="flex justify-end">
+                    <div className="flex justify-start sm:justify-end">
                       <button
                         type="button"
                         onClick={handleClearAllFilters}
