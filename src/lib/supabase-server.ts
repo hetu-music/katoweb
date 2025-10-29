@@ -23,7 +23,14 @@ export async function createSupabaseServerClient() {
       },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value, options }) => {
-          cookieStore.set(name, value, options);
+          // 确保所有 Supabase cookie 都有安全设置
+          cookieStore.set(name, value, {
+            ...options,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production', // 开发环境可能需要 false
+            sameSite: "strict",
+            path: "/",
+          });
         });
       },
     },
@@ -51,11 +58,13 @@ export function createSupabaseMiddlewareClient(
       },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value, options }) => {
+          // 确保所有 Supabase cookie 都有安全设置
           response.cookies.set(name, value, {
             ...options,
             httpOnly: true,
-            secure: true,
+            secure: process.env.NODE_ENV === 'production', // 开发环境可能需要 false
             sameSite: "strict",
+            path: "/",
           });
         });
       },
