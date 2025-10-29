@@ -72,7 +72,9 @@ export async function clearAuthCookies() {
       path: "/",
       httpOnly: true,
       secure: true,
-      sameSite: "strict"
+      sameSite: "strict",
+      expires: new Date(0), // 设置为过去的时间来删除cookie
+      maxAge: 0 // 立即过期
     });
   });
 }
