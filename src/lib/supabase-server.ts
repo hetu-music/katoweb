@@ -29,7 +29,7 @@ export async function createSupabaseServerClient() {
             httpOnly: true,
             secure: true,
             sameSite: "strict",
-            path: "/admin",
+            path: "/",
           });
         });
       },
@@ -64,7 +64,7 @@ export function createSupabaseMiddlewareClient(
             httpOnly: true,
             secure: true,
             sameSite: "strict",
-            path: "/admin",
+            path: "/",
           });
         });
       },

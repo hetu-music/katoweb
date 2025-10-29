@@ -17,7 +17,7 @@ export async function setCSRFCookie(token: string) {
     httpOnly: true,
     secure: true,
     sameSite: "strict",
-    path: "/admin",
+    path: "/",
   });
 }
 
@@ -69,7 +69,7 @@ export async function clearAuthCookies() {
 
   authCookies.forEach(({ name }) => {
     cookies.set(name, "", {
-      path: "/admin",
+      path: "/",
       httpOnly: true,
       secure: true,
       sameSite: "strict"
