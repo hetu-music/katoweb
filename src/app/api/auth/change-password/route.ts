@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { withAuth, type AuthenticatedUser } from "@/lib/auth-middleware";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
-export const POST = withAuth(async (request: NextRequest, user?: AuthenticatedUser) => {
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
 
   const { oldPassword, newPassword } = await request.json();
   if (!oldPassword || !newPassword) {

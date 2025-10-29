@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { withAuth, type AuthenticatedUser } from "@/lib/auth-middleware";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
-export const GET = withAuth(async (_request: NextRequest, user?: AuthenticatedUser) => {
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const GET = withAuth(async (_request: NextRequest, user: AuthenticatedUser) => {
 
   try {
     const supabase = await createSupabaseServerClient();
@@ -34,10 +31,7 @@ export const GET = withAuth(async (_request: NextRequest, user?: AuthenticatedUs
   }
 });
 
-export const POST = withAuth(async (request: NextRequest, user?: AuthenticatedUser) => {
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
 
   // 解析请求体
   const { displayName, display, intro } = await request.json();
