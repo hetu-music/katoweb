@@ -1,19 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyCSRFToken } from "@/lib/utils.server";
+import { withAuth, type AuthenticatedUser } from "@/lib/auth-middleware";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
-export async function GET() {
+export const GET = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
   try {
     const supabase = await createSupabaseServerClient();
-
-    // 获取当前用户
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-    if (userError || !user) {
-      return NextResponse.json({ error: "未登录或会话失效" }, { status: 401 });
-    }
 
     // 查询 public.users 表的 name、display 和 intro 字段
     const { data, error } = await supabase
@@ -37,14 +28,9 @@ export async function GET() {
       { status: 500 },
     );
   }
-}
+});
 
-export async function POST(request: NextRequest) {
-  // CSRF 验证
-  if (!(await verifyCSRFToken(request))) {
-    return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
-  }
-
+export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
   // 解析请求体
   const { displayName, display, intro } = await request.json();
   if (
@@ -62,14 +48,6 @@ export async function POST(request: NextRequest) {
     // 初始化 Supabase 客户端
     const supabase = await createSupabaseServerClient();
 
-    // 获取当前用户
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-    if (userError || !user) {
-      return NextResponse.json({ error: "未登录或会话失效" }, { status: 401 });
-    }
     if (!user.id) {
       return NextResponse.json(
         { error: "用户不存在，无法更新用户名" },
@@ -103,4 +81,4 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     );
   }
-}
+}, { requireCSRF: true });
