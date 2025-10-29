@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import AdminClientComponent from "./components/AdminClient";
+import AdminClientComponent from "@/components/admin/AdminClient";
 import { getSongs, TABLE_NAMES } from "../../lib/supabase";
 import { createSupabaseServerClient } from "../../lib/supabase-server";
 import type { Song } from "../../lib/types";
