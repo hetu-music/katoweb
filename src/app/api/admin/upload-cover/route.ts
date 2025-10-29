@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadCoverFile, validateFile } from "@/lib/upload";
-import { withAuth } from "@/lib/auth-middleware";
+import { withAuth, type AuthenticatedUser } from "@/lib/auth-middleware";
 
-export const POST = withAuth(async (request: NextRequest) => {
+export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
 
   try {
     const formData = await request.formData();

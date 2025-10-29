@@ -109,7 +109,7 @@ export async function authenticateUserWithCSRF(request: NextRequest): Promise<Au
  * 高阶函数：为 API 路由添加身份验证
  */
 export function withAuth(
-  handler: (request: NextRequest, user?: AuthenticatedUser) => Promise<NextResponse>,
+  handler: (request: NextRequest, user: AuthenticatedUser) => Promise<NextResponse>,
   options: { requireCSRF?: boolean } = {}
 ) {
   return async (request: NextRequest): Promise<NextResponse> => {

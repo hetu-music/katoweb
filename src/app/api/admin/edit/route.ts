@@ -7,7 +7,7 @@ import {
 } from "@/lib/supabase";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { z } from "zod";
-import { withAuth } from "@/lib/auth-middleware";
+import { withAuth, type AuthenticatedUser } from "@/lib/auth-middleware";
 
 //类型校验
 const SongSchema = z.object({
@@ -35,7 +35,7 @@ const SongSchema = z.object({
   nmn_status: z.boolean().nullable().optional(),
 });
 
-export const GET = withAuth(async () => {
+export const GET = withAuth(async (_request: NextRequest, user: AuthenticatedUser) => {
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -61,7 +61,7 @@ export const GET = withAuth(async () => {
   }
 });
 
-export const POST = withAuth(async (request: NextRequest) => {
+export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
   try {
     const body = await request.json();
     // 校验 body
@@ -101,7 +101,7 @@ export const POST = withAuth(async (request: NextRequest) => {
   }
 }, { requireCSRF: true });
 
-export const PUT = withAuth(async (request: NextRequest) => {
+export const PUT = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
   try {
     const body = await request.json();
     const { id, updated_at, ...data } = body;
