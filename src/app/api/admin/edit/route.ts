@@ -4,7 +4,7 @@ import {
   createSong,
   updateSong,
   TABLE_NAMES,
-} from "../../../lib/supabase";
+} from "../../../../lib/supabase";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { z } from "zod";
 import { withAuth, type AuthenticatedUser } from "@/lib/auth-middleware";
