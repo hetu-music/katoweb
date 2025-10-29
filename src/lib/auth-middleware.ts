@@ -24,7 +24,7 @@ export async function getUserFromRequest(request: NextRequest): Promise<Authenti
   // 优先使用 Authorization header
   const authHeader = request.headers.get("authorization");
   let token: string | undefined;
-  
+
   if (authHeader) {
     // 严格校验 Bearer token 格式
     const match = authHeader.match(/^Bearer ([A-Za-z0-9\-._~+/]+=*)$/);
@@ -46,8 +46,8 @@ export async function getUserFromRequest(request: NextRequest): Promise<Authenti
   const {
     data: { user },
   } = await supabase.auth.getUser(token);
-  
-  return user;
+
+  return user as AuthenticatedUser | null;
 }
 
 /**
@@ -56,7 +56,7 @@ export async function getUserFromRequest(request: NextRequest): Promise<Authenti
 export async function authenticateUser(request: NextRequest): Promise<AuthResult> {
   try {
     const user = await getUserFromRequest(request);
-    
+
     if (!user) {
       return {
         success: false,
@@ -113,7 +113,7 @@ export function withAuth(
   options: { requireCSRF?: boolean } = {}
 ) {
   return async (request: NextRequest): Promise<NextResponse> => {
-    const authResult = options.requireCSRF 
+    const authResult = options.requireCSRF
       ? await authenticateUserWithCSRF(request)
       : await authenticateUser(request);
 
