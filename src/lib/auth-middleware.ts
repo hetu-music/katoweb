@@ -117,8 +117,8 @@ export function withAuth(
       ? await authenticateUserWithCSRF(request)
       : await authenticateUser(request);
 
-    if (!authResult.success || !authResult.response) {
-      return NextResponse.json({ error: "Authentication failed" }, { status: 500 });
+    if (!authResult.success) {
+      return authResult.response || NextResponse.json({ error: "Authentication failed" }, { status: 500 });
     }
 
     if (!authResult.user) {
