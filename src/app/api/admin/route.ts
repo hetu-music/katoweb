@@ -5,7 +5,7 @@ import {
   updateSong,
   TABLE_NAMES,
 } from "../../../lib/supabase";
-import { createSupabaseServerClient } from "../../../lib/supabase-server";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { z } from "zod";
 import { verifyCSRFToken } from "@/lib/utils.server";
 
