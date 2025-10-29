@@ -159,7 +159,7 @@ export default function LoginPage() {
             <div className="flex flex-col gap-3 pt-4">
               <button
                 type="submit"
-                className="w-full h-14 flex items-center justify-center gap-3 bg-linear-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 active:from-blue-700 active:to-purple-800 text-white font-semibold rounded-xl shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="w-full h-14 flex items-center justify-center gap-3 bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 active:from-blue-700 active:to-purple-800 text-white font-semibold rounded-xl shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
                 disabled={loading}
               >
                 {loading ? (
