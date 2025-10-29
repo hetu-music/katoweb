@@ -68,13 +68,17 @@ export async function clearAuthCookies() {
   );
 
   authCookies.forEach(({ name }) => {
+    // 使用 delete 方法删除 cookie
+    cookies.delete({
+      name,
+      path: "/",
+    });
+    
+    // 备用方法：同时设置过期的空值
     cookies.set(name, "", {
       path: "/",
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      expires: new Date(0), // 设置为过去的时间来删除cookie
-      maxAge: 0 // 立即过期
+      expires: new Date(0),
+      maxAge: 0
     });
   });
 }
