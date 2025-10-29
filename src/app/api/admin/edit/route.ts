@@ -35,7 +35,7 @@ const SongSchema = z.object({
   nmn_status: z.boolean().nullable().optional(),
 });
 
-export const GET = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
+export const GET = withAuth(async () => {
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -61,7 +61,7 @@ export const GET = withAuth(async (request: NextRequest, user: AuthenticatedUser
   }
 });
 
-export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
+export const POST = withAuth(async (request: NextRequest) => {
   try {
     const body = await request.json();
     // 校验 body
@@ -101,7 +101,7 @@ export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUse
   }
 }, { requireCSRF: true });
 
-export const PUT = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
+export const PUT = withAuth(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const { id, updated_at, ...data } = body;

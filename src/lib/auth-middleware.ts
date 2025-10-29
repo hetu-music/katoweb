@@ -5,7 +5,7 @@ import { verifyCSRFToken } from "./utils.server";
 export interface AuthenticatedUser {
   id: string;
   email?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface AuthResult {
@@ -109,7 +109,7 @@ export async function authenticateUserWithCSRF(request: NextRequest): Promise<Au
  * 高阶函数：为 API 路由添加身份验证
  */
 export function withAuth(
-  handler: (request: NextRequest, user: AuthenticatedUser) => Promise<NextResponse>,
+  handler: (request: NextRequest, user?: AuthenticatedUser) => Promise<NextResponse>,
   options: { requireCSRF?: boolean } = {}
 ) {
   return async (request: NextRequest): Promise<NextResponse> => {
@@ -117,10 +117,14 @@ export function withAuth(
       ? await authenticateUserWithCSRF(request)
       : await authenticateUser(request);
 
-    if (!authResult.success) {
-      return authResult.response!;
+    if (!authResult.success || !authResult.response) {
+      return NextResponse.json({ error: "Authentication failed" }, { status: 500 });
     }
 
-    return handler(request, authResult.user!);
+    if (!authResult.user) {
+      return NextResponse.json({ error: "User not found" }, { status: 401 });
+    }
+
+    return handler(request, authResult.user);
   };
 }
