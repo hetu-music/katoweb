@@ -1,5 +1,5 @@
 import React from "react";
-import { typeColorMap } from "../lib/constants";
+import { typeColorMap } from "@/lib/constants";
 
 const typeDescriptions: Record<string, string> = {
   原创: "河图原创作品。",
@@ -13,7 +13,7 @@ const typeDescriptions: Record<string, string> = {
 const TypeExplanation: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-gradient-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-2xl shadow-2xl p-8 max-w-lg w-full relative text-white">
+      <div className="bg-linear-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-2xl shadow-2xl p-8 max-w-lg w-full relative text-white">
         <button
           className="absolute top-4 right-4 text-gray-300 hover:text-white text-xl font-bold"
           onClick={onClose}

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useWallpaper } from "../context/WallpaperContext";
+import { useWallpaper } from "@/context/WallpaperContext";
 
 const GlobalWallpaperBackground: React.FC = () => {
   const { wallpaper, wallpaperEnabled, isHydrated } = useWallpaper();

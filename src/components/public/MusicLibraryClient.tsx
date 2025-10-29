@@ -10,23 +10,23 @@ import React, {
 import { Search, Grid, List, XCircle, RotateCcw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { MusicLibraryClientProps, SongDetail } from "../lib/types";
+import { MusicLibraryClientProps, SongDetail } from "@/lib/types";
 import {
   getCoverUrl,
   calculateFilterOptions,
   filterSongs,
   mapAndSortSongs,
-} from "../lib/utils";
-import { typeColorMap, genreColorMap } from "../lib/constants";
+} from "@/lib/utils";
+import { typeColorMap, genreColorMap } from "@/lib/constants";
 import About from "./About";
 import TypeExplanation from "./TypeExplanation";
 import SongFilters from "./SongFilters";
 import Pagination from "./Pagination";
-import { usePagination } from "../hooks/usePagination";
+import { usePagination } from "@/hooks/usePagination";
 
 import WallpaperControls from "./WallpaperControls";
 import FloatingActionButtons from "./FloatingActionButtons";
-import { useWallpaper } from "../context/WallpaperContext";
+import { useWallpaper } from "@/context/WallpaperContext";
 
 const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   initialSongsData,

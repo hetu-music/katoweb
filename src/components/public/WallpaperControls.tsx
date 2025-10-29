@@ -130,7 +130,7 @@ const WallpaperControls: React.FC<WallpaperControlsProps> = ({
           disabled={isLoading || !enabled}
           className={`w-10 h-10 flex items-center justify-center rounded-lg shadow-md border border-white/20 backdrop-blur-md hover:scale-105 transition-all duration-200 ${
             enabled
-              ? "bg-gradient-to-br from-rose-500 to-pink-600 text-white"
+              ? "bg-linear-to-br from-rose-500 to-pink-600 text-white"
               : "bg-white/10 text-white/50"
           } ${isLoading ? "opacity-60 cursor-not-allowed" : ""}`}
           aria-label="刷新壁纸"
@@ -144,7 +144,7 @@ const WallpaperControls: React.FC<WallpaperControlsProps> = ({
           onClick={onToggle}
           className={`w-10 h-10 flex items-center justify-center rounded-lg shadow-md border border-white/20 backdrop-blur-md hover:scale-105 transition-all duration-200 ${
             enabled
-              ? "bg-gradient-to-br from-cyan-500 to-blue-600 text-white"
+              ? "bg-linear-to-br from-cyan-500 to-blue-600 text-white"
               : "bg-white/20 text-white/70"
           }`}
           aria-label={enabled ? "关闭壁纸" : "开启壁纸"}
