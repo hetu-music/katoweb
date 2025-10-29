@@ -84,9 +84,7 @@ const Account: React.FC<AccountProps> = ({
     setDisplayNameSuccess(null);
     setDisplayNameLoading(true);
     try {
-      const res = await import("@/lib/api").then((m) =>
-        m.apiGetDisplayName(),
-      );
+      const res = await import("@/lib/api").then((m) => m.apiGetDisplayName());
       if (res.displayName !== undefined) {
         setDisplayName(res.displayName);
         setDisplayNameInput(res.displayName);
@@ -112,9 +110,7 @@ const Account: React.FC<AccountProps> = ({
     setIntroSuccess(null);
     setIntroLoading(true);
     try {
-      const res = await import("@/lib/api").then((m) =>
-        m.apiGetAccountInfo(),
-      );
+      const res = await import("@/lib/api").then((m) => m.apiGetAccountInfo());
       if (typeof res.intro === "string" || res.intro === null) {
         setIntro(res.intro);
         setIntroInput(res.intro || "");

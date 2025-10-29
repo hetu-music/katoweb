@@ -28,13 +28,13 @@ export default function LoginPage() {
     try {
       // 每次登录前都获取最新的 CSRF token
       const csrfRes = await fetch("/api/auth/csrf-token", {
-        cache: 'no-store' // 确保获取最新的 token
+        cache: "no-store", // 确保获取最新的 token
       });
-      
+
       if (!csrfRes.ok) {
         throw new Error("无法获取安全令牌");
       }
-      
+
       const csrfData = await csrfRes.json();
       const latestCsrfToken = csrfData.csrfToken || "";
 
@@ -49,9 +49,9 @@ export default function LoginPage() {
           "x-csrf-token": latestCsrfToken,
         },
         body: JSON.stringify({ email, password }),
-        cache: 'no-store'
+        cache: "no-store",
       });
-      
+
       const result = await res.json();
       if (!res.ok) {
         // 如果是 CSRF 错误，提示用户刷新页面
@@ -63,9 +63,9 @@ export default function LoginPage() {
         setLoading(false);
         return;
       }
-      
+
       // 登录成功后等待一下再跳转，确保 cookies 设置完成
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       router.push("/admin");
       router.refresh();
     } catch (err: unknown) {

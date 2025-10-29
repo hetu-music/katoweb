@@ -5,15 +5,18 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 export async function POST(request: NextRequest) {
   try {
     if (!(await verifyCSRFToken(request))) {
-      return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Invalid CSRF token" },
+        { status: 403 },
+      );
     }
-    
+
     const { email, password } = await request.json();
 
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email and password are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -23,7 +26,7 @@ export async function POST(request: NextRequest) {
       email,
       password,
     });
-    
+
     if (error) {
       console.error("Supabase auth error:", error.message);
       return NextResponse.json(
@@ -31,12 +34,12 @@ export async function POST(request: NextRequest) {
         { status: 401 },
       );
     }
-    
+
     if (!data.session) {
       console.error("Login failed: No session created");
       return NextResponse.json({ error: "Login failed" }, { status: 401 });
     }
-    
+
     // 登录成功，返回 200
     return NextResponse.json({ success: true });
   } catch (error) {

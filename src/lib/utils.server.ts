@@ -41,7 +41,9 @@ export async function verifyCSRFToken(
       headerToken =
         (request.headers as Headers).get(CSRF_HEADER_NAME) ?? undefined;
     } else if (request.headers && typeof request.headers === "object") {
-      headerToken = (request.headers as Record<string, string>)[CSRF_HEADER_NAME];
+      headerToken = (request.headers as Record<string, string>)[
+        CSRF_HEADER_NAME
+      ];
     }
 
     // 更严格的校验：token 必须为非空字符串且不能全为空白
@@ -62,10 +64,12 @@ export async function verifyCSRFToken(
 // 清理认证相关的 cookies
 export async function clearAuthCookies() {
   const cookies = await nextCookies();
-  const authCookies = cookies.getAll().filter(cookie =>
-    cookie.name.startsWith('sb-') ||
-    cookie.name === CSRF_COOKIE_NAME
-  );
+  const authCookies = cookies
+    .getAll()
+    .filter(
+      (cookie) =>
+        cookie.name.startsWith("sb-") || cookie.name === CSRF_COOKIE_NAME,
+    );
 
   authCookies.forEach(({ name }) => {
     // 使用 delete 方法删除 cookie
@@ -73,12 +77,12 @@ export async function clearAuthCookies() {
       name,
       path: "/",
     });
-    
+
     // 备用方法：同时设置过期的空值
     cookies.set(name, "", {
       path: "/",
       expires: new Date(0),
-      maxAge: 0
+      maxAge: 0,
     });
   });
 }

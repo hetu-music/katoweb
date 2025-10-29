@@ -18,7 +18,9 @@ export interface AuthResult {
 /**
  * 从请求中获取用户信息
  */
-export async function getUserFromRequest(request: NextRequest): Promise<AuthenticatedUser | null> {
+export async function getUserFromRequest(
+  request: NextRequest,
+): Promise<AuthenticatedUser | null> {
   const supabase = await createSupabaseServerClient();
 
   // 优先使用 Authorization header
@@ -53,7 +55,9 @@ export async function getUserFromRequest(request: NextRequest): Promise<Authenti
 /**
  * 验证用户身份（仅验证登录状态）
  */
-export async function authenticateUser(request: NextRequest): Promise<AuthResult> {
+export async function authenticateUser(
+  request: NextRequest,
+): Promise<AuthResult> {
   try {
     const user = await getUserFromRequest(request);
 
@@ -61,20 +65,23 @@ export async function authenticateUser(request: NextRequest): Promise<AuthResult
       return {
         success: false,
         error: "Unauthorized",
-        response: NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+        response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
       };
     }
 
     return {
       success: true,
-      user
+      user,
     };
   } catch (error) {
     console.error("Authentication error:", error);
     return {
       success: false,
       error: "Authentication failed",
-      response: NextResponse.json({ error: "Authentication failed" }, { status: 500 })
+      response: NextResponse.json(
+        { error: "Authentication failed" },
+        { status: 500 },
+      ),
     };
   }
 }
@@ -82,14 +89,19 @@ export async function authenticateUser(request: NextRequest): Promise<AuthResult
 /**
  * 验证用户身份和 CSRF token（用于需要 CSRF 保护的请求）
  */
-export async function authenticateUserWithCSRF(request: NextRequest): Promise<AuthResult> {
+export async function authenticateUserWithCSRF(
+  request: NextRequest,
+): Promise<AuthResult> {
   try {
     // 先验证 CSRF token
     if (!(await verifyCSRFToken(request))) {
       return {
         success: false,
         error: "Invalid CSRF token",
-        response: NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 })
+        response: NextResponse.json(
+          { error: "Invalid CSRF token" },
+          { status: 403 },
+        ),
       };
     }
 
@@ -100,7 +112,10 @@ export async function authenticateUserWithCSRF(request: NextRequest): Promise<Au
     return {
       success: false,
       error: "Authentication failed",
-      response: NextResponse.json({ error: "Authentication failed" }, { status: 500 })
+      response: NextResponse.json(
+        { error: "Authentication failed" },
+        { status: 500 },
+      ),
     };
   }
 }
@@ -109,8 +124,11 @@ export async function authenticateUserWithCSRF(request: NextRequest): Promise<Au
  * 高阶函数：为 API 路由添加身份验证
  */
 export function withAuth(
-  handler: (request: NextRequest, user: AuthenticatedUser) => Promise<NextResponse>,
-  options: { requireCSRF?: boolean } = {}
+  handler: (
+    request: NextRequest,
+    user: AuthenticatedUser,
+  ) => Promise<NextResponse>,
+  options: { requireCSRF?: boolean } = {},
 ) {
   return async (request: NextRequest): Promise<NextResponse> => {
     const authResult = options.requireCSRF
@@ -118,7 +136,10 @@ export function withAuth(
       : await authenticateUser(request);
 
     if (!authResult.success) {
-      return authResult.response || NextResponse.json({ error: "Authentication failed" }, { status: 500 });
+      return (
+        authResult.response ||
+        NextResponse.json({ error: "Authentication failed" }, { status: 500 })
+      );
     }
 
     if (!authResult.user) {

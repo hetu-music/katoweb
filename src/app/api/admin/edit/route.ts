@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  getSongs,
-  createSong,
-  updateSong,
-  TABLE_NAMES,
-} from "@/lib/supabase";
+import { getSongs, createSong, updateSong, TABLE_NAMES } from "@/lib/supabase";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { z } from "zod";
 import { withAuth, type AuthenticatedUser } from "@/lib/auth-middleware";
@@ -35,127 +30,135 @@ const SongSchema = z.object({
   nmn_status: z.boolean().nullable().optional(),
 });
 
-export const GET = withAuth(async (_request: NextRequest, _user: AuthenticatedUser) => {
-  try {
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    const songs = await getSongs(TABLE_NAMES.ADMIN, session?.access_token);
-    return NextResponse.json(songs);
-  } catch (e: unknown) {
-    if (
-      e &&
-      typeof e === "object" &&
-      "message" in e &&
-      typeof (e as Error).message === "string"
-    ) {
-      console.error("GET songs error:", (e as Error).message);
-    } else {
-      console.error("GET songs error:", e);
+export const GET = withAuth(
+  async (_request: NextRequest, _user: AuthenticatedUser) => {
+    try {
+      const supabase = await createSupabaseServerClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const songs = await getSongs(TABLE_NAMES.ADMIN, session?.access_token);
+      return NextResponse.json(songs);
+    } catch (e: unknown) {
+      if (
+        e &&
+        typeof e === "object" &&
+        "message" in e &&
+        typeof (e as Error).message === "string"
+      ) {
+        console.error("GET songs error:", (e as Error).message);
+      } else {
+        console.error("GET songs error:", e);
+      }
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 },
+      );
     }
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
-  }
-});
+  },
+);
 
-export const POST = withAuth(async (request: NextRequest, _user: AuthenticatedUser) => {
-  try {
-    const body = await request.json();
-    // 校验 body
-    const parseResult = SongSchema.safeParse(body);
-    if (!parseResult.success) {
-      return NextResponse.json(
-        { error: "Invalid input", details: parseResult.error.issues },
-        { status: 400 },
-      );
-    }
+export const POST = withAuth(
+  async (request: NextRequest, _user: AuthenticatedUser) => {
+    try {
+      const body = await request.json();
+      // 校验 body
+      const parseResult = SongSchema.safeParse(body);
+      if (!parseResult.success) {
+        return NextResponse.json(
+          { error: "Invalid input", details: parseResult.error.issues },
+          { status: 400 },
+        );
+      }
 
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    const song = await createSong(
-      parseResult.data,
-      TABLE_NAMES.ADMIN,
-      session?.access_token,
-    );
-    return NextResponse.json(song);
-  } catch (e: unknown) {
-    if (
-      e &&
-      typeof e === "object" &&
-      "message" in e &&
-      typeof (e as Error).message === "string"
-    ) {
-      console.error("POST song error:", (e as Error).message);
-    } else {
-      console.error("POST song error:", e);
+      const supabase = await createSupabaseServerClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const song = await createSong(
+        parseResult.data,
+        TABLE_NAMES.ADMIN,
+        session?.access_token,
+      );
+      return NextResponse.json(song);
+    } catch (e: unknown) {
+      if (
+        e &&
+        typeof e === "object" &&
+        "message" in e &&
+        typeof (e as Error).message === "string"
+      ) {
+        console.error("POST song error:", (e as Error).message);
+      } else {
+        console.error("POST song error:", e);
+      }
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 },
+      );
     }
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
-  }
-}, { requireCSRF: true });
+  },
+  { requireCSRF: true },
+);
 
-export const PUT = withAuth(async (request: NextRequest, _user: AuthenticatedUser) => {
-  try {
-    const body = await request.json();
-    const { id, updated_at, ...data } = body;
-    if (!id || typeof id !== "number" || id < 1 || !Number.isInteger(id))
-      return NextResponse.json(
-        { error: "Missing or invalid id" },
-        { status: 400 },
+export const PUT = withAuth(
+  async (request: NextRequest, _user: AuthenticatedUser) => {
+    try {
+      const body = await request.json();
+      const { id, updated_at, ...data } = body;
+      if (!id || typeof id !== "number" || id < 1 || !Number.isInteger(id))
+        return NextResponse.json(
+          { error: "Missing or invalid id" },
+          { status: 400 },
+        );
+      // 校验 data
+      const parseResult = SongSchema.safeParse(data);
+      if (!parseResult.success) {
+        return NextResponse.json(
+          { error: "Invalid input", details: parseResult.error.issues },
+          { status: 400 },
+        );
+      }
+      const supabase = await createSupabaseServerClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      // 传递 updated_at
+      const song = await updateSong(
+        id,
+        { ...parseResult.data, updated_at },
+        TABLE_NAMES.ADMIN,
+        session?.access_token,
       );
-    // 校验 data
-    const parseResult = SongSchema.safeParse(data);
-    if (!parseResult.success) {
+      return NextResponse.json(song);
+    } catch (e: unknown) {
+      if (
+        e &&
+        typeof e === "object" &&
+        ((e as { status?: number; message?: string }).status === 409 ||
+          ((e as { message?: string }).message &&
+            (e as { message: string }).message.includes("乐观锁冲突")))
+      ) {
+        return NextResponse.json(
+          { error: "数据已被他人修改，请刷新页面后重试" },
+          { status: 409 },
+        );
+      }
+      if (
+        e &&
+        typeof e === "object" &&
+        "message" in e &&
+        typeof (e as Error).message === "string"
+      ) {
+        console.error("PUT song error:", (e as Error).message);
+      } else {
+        console.error("PUT song error:", e);
+      }
       return NextResponse.json(
-        { error: "Invalid input", details: parseResult.error.issues },
-        { status: 400 },
+        { error: "Internal server error" },
+        { status: 500 },
       );
     }
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    // 传递 updated_at
-    const song = await updateSong(
-      id,
-      { ...parseResult.data, updated_at },
-      TABLE_NAMES.ADMIN,
-      session?.access_token,
-    );
-    return NextResponse.json(song);
-  } catch (e: unknown) {
-    if (
-      e &&
-      typeof e === "object" &&
-      ((e as { status?: number; message?: string }).status === 409 ||
-        ((e as { message?: string }).message &&
-          (e as { message: string }).message.includes("乐观锁冲突")))
-    ) {
-      return NextResponse.json(
-        { error: "数据已被他人修改，请刷新页面后重试" },
-        { status: 409 },
-      );
-    }
-    if (
-      e &&
-      typeof e === "object" &&
-      "message" in e &&
-      typeof (e as Error).message === "string"
-    ) {
-      console.error("PUT song error:", (e as Error).message);
-    } else {
-      console.error("PUT song error:", e);
-    }
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
-  }
-}, { requireCSRF: true });
+  },
+  { requireCSRF: true },
+);
