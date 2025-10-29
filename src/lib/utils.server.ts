@@ -3,6 +3,13 @@ import { cookies as nextCookies } from "next/headers";
 const CSRF_COOKIE_NAME = "csrf-token";
 const CSRF_HEADER_NAME = "x-csrf-token";
 
+// 生成安全的 CSRF token
+export function generateCSRFToken(): string {
+  return Array.from(crypto.getRandomValues(new Uint8Array(32)))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 // 设置 CSRF token 到 cookie
 export async function setCSRFCookie(token: string) {
   const cookies = await nextCookies();

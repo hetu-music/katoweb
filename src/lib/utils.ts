@@ -336,15 +336,6 @@ export function mapAndSortSongs(data: SongDetail[]): SongDetail[] {
   });
 }
 
-// CSRF 相关工具
-
-// 生成安全的 CSRF token
-export function generateCSRFToken(): string {
-  return Array.from(crypto.getRandomValues(new Uint8Array(32)))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
 export function getCoverUrl(song: Song | SongDetail): string {
   if (song.hascover === true) {
     return `https://cover.hetu-music.com/cover/${song.id}.jpg`;

@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { generateCSRFToken } from "@/lib/utils";
-import { setCSRFCookie } from "@/lib/utils.server";
+import { setCSRFCookie, generateCSRFToken } from "@/lib/utils.server";
 
 export async function GET() {
   const token = generateCSRFToken();
