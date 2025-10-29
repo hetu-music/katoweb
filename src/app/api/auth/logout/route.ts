@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyCSRFToken } from "@/lib/utils.server";
+import { verifyCSRFToken, clearAuthCookies } from "@/lib/utils.server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
-import { cookies } from "next/headers";
 
 export async function POST(request: NextRequest) {
   if (!(await verifyCSRFToken(request))) {
@@ -17,21 +16,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Logout failed" }, { status: 500 });
     }
 
-    // 更精确地清理 Supabase 相关的 cookies
-    const cookieStore = await cookies();
-    const supabaseCookies = cookieStore.getAll().filter(cookie => 
-      cookie.name.startsWith('sb-') || 
-      cookie.name === 'csrf-token'
-    );
-    
-    supabaseCookies.forEach(({ name }) => {
-      cookieStore.set(name, "", { 
-        path: "/admin",
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict"
-      });
-    });
+    // 清理认证相关的 cookies
+    await clearAuthCookies();
 
     return NextResponse.json({ success: true });
   } catch (error) {
