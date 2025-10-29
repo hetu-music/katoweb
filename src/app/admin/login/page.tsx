@@ -11,7 +11,7 @@ import {
   EyeOff,
 } from "lucide-react";
 
-import FloatingActionButtons from "../../components/FloatingActionButtons";
+import FloatingActionButtons from "@/components/public/FloatingActionButtons";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");

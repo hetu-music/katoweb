@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import AdminClientComponent from "@/components/admin/AdminClient";
-import { getSongs, TABLE_NAMES } from "../../lib/supabase";
-import { createSupabaseServerClient } from "../../lib/supabase-server";
-import type { Song } from "../../lib/types";
+import { getSongs, TABLE_NAMES } from "@/lib/supabase";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
+import type { Song } from "@/lib/types";
 
 // 强制动态渲染，不在构建时预渲染
 export const dynamic = "force-dynamic";
