@@ -27,9 +27,20 @@ export default function LoginPage() {
     setLoading(true);
     try {
       // 每次登录前都获取最新的 CSRF token
-      const csrfRes = await fetch("/api/auth/csrf-token");
+      const csrfRes = await fetch("/api/auth/csrf-token", {
+        cache: 'no-store' // 确保获取最新的 token
+      });
+      
+      if (!csrfRes.ok) {
+        throw new Error("无法获取安全令牌");
+      }
+      
       const csrfData = await csrfRes.json();
       const latestCsrfToken = csrfData.csrfToken || "";
+
+      if (!latestCsrfToken) {
+        throw new Error("安全令牌无效");
+      }
 
       const res = await fetch("/api/auth/login", {
         method: "POST",
@@ -38,28 +49,33 @@ export default function LoginPage() {
           "x-csrf-token": latestCsrfToken,
         },
         body: JSON.stringify({ email, password }),
+        cache: 'no-store'
       });
+      
       const result = await res.json();
       if (!res.ok) {
-        setError(result.error || "登录失败");
+        // 如果是 CSRF 错误，提示用户刷新页面
+        if (res.status === 403) {
+          setError("安全验证失败，请刷新页面后重试");
+        } else {
+          setError(result.error || "登录失败");
+        }
         setLoading(false);
         return;
       }
+      
+      // 登录成功后等待一下再跳转，确保 cookies 设置完成
+      await new Promise(resolve => setTimeout(resolve, 100));
       router.push("/admin");
       router.refresh();
     } catch (err: unknown) {
-      setError("网络连接异常，请稍后重试");
-      setLoading(false);
-      if (
-        err &&
-        typeof err === "object" &&
-        "message" in err &&
-        typeof (err as Error).message === "string"
-      ) {
-        console.error("Unexpected login error:", (err as Error).message);
+      console.error("Login error:", err);
+      if (err instanceof Error) {
+        setError(err.message);
       } else {
-        console.error("Unexpected login error:", err);
+        setError("网络连接异常，请稍后重试");
       }
+      setLoading(false);
     }
   };
 

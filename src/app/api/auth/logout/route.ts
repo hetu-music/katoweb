@@ -13,15 +13,30 @@ export async function POST(request: NextRequest) {
 
     const { error } = await supabase.auth.signOut();
     if (error) {
+      console.error("Supabase signOut error:", error);
       return NextResponse.json({ error: "Logout failed" }, { status: 500 });
     }
-    // 清理 cookie
+
+    // 更精确地清理 Supabase 相关的 cookies
     const cookieStore = await cookies();
-    cookieStore.getAll().forEach(({ name }) => {
-      cookieStore.set(name, "", { maxAge: -1 });
+    const supabaseCookies = cookieStore.getAll().filter(cookie => 
+      cookie.name.startsWith('sb-') || 
+      cookie.name === 'csrf-token'
+    );
+    
+    supabaseCookies.forEach(({ name }) => {
+      cookieStore.set(name, "", { 
+        maxAge: -1,
+        path: "/",
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict"
+      });
     });
+
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (error) {
+    console.error("Logout error:", error);
     return NextResponse.json(
       { error: "Server configuration error" },
       { status: 500 },

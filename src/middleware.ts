@@ -12,14 +12,23 @@ export async function middleware(request: NextRequest) {
       return response;
     }
 
-    const supabase = createSupabaseMiddlewareClient(request, response);
+    try {
+      const supabase = createSupabaseMiddlewareClient(request, response);
 
-    // 用 getUser 校验 session 的有效性和过期
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      // 用 getUser 校验 session 的有效性和过期
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
 
-    if (!user) {
+      // 如果有错误或没有用户，重定向到登录页
+      if (error || !user) {
+        console.warn("Auth middleware: User not authenticated", error?.message);
+        return NextResponse.redirect(new URL("/admin/login", request.url));
+      }
+    } catch (error) {
+      console.error("Auth middleware error:", error);
+      // 发生异常时也重定向到登录页，避免 500 错误
       return NextResponse.redirect(new URL("/admin/login", request.url));
     }
   }
