@@ -7,7 +7,7 @@ import {
 } from "@/lib/supabase";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { z } from "zod";
-import { withAuth, type AuthenticatedUser } from "@/lib/auth-middleware";
+import { withAuth } from "@/lib/auth-middleware";
 
 //类型校验
 const SongSchema = z.object({
