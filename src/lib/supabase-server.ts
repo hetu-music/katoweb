@@ -24,14 +24,15 @@ export async function createSupabaseServerClient() {
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value, options }) => {
           // 确保所有 Supabase cookie 都有安全设置，并设置为 session cookies
-          const { maxAge: _maxAge, expires: _expires, ...restOptions } = options || {};
           cookieStore.set(name, value, {
-            ...restOptions,
+            ...options,
             httpOnly: true,
             secure: true,
             sameSite: "strict",
             path: "/",
-            // 不设置 maxAge 和 expires，让它们成为 session cookies
+            // 覆盖 maxAge 和 expires，让它们成为 session cookies
+            maxAge: undefined,
+            expires: undefined,
           });
         });
       },
@@ -61,14 +62,15 @@ export function createSupabaseMiddlewareClient(
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value, options }) => {
           // 确保所有 Supabase cookie 都有安全设置，并设置为 session cookies
-          const { maxAge: _maxAge, expires: _expires, ...restOptions } = options || {};
           response.cookies.set(name, value, {
-            ...restOptions,
+            ...options,
             httpOnly: true,
             secure: true,
             sameSite: "strict",
             path: "/",
-            // 不设置 maxAge 和 expires，让它们成为 session cookies
+            // 覆盖 maxAge 和 expires，让它们成为 session cookies
+            maxAge: undefined,
+            expires: undefined,
           });
         });
       },
