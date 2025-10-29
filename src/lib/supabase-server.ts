@@ -27,9 +27,9 @@ export async function createSupabaseServerClient() {
           cookieStore.set(name, value, {
             ...options,
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', // 开发环境可能需要 false
+            secure: true,
             sameSite: "strict",
-            path: "/",
+            path: "/admin",
           });
         });
       },
@@ -62,9 +62,9 @@ export function createSupabaseMiddlewareClient(
           response.cookies.set(name, value, {
             ...options,
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', // 开发环境可能需要 false
+            secure: true,
             sameSite: "strict",
-            path: "/",
+            path: "/admin",
           });
         });
       },

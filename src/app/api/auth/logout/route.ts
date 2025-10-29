@@ -26,8 +26,7 @@ export async function POST(request: NextRequest) {
     
     supabaseCookies.forEach(({ name }) => {
       cookieStore.set(name, "", { 
-        maxAge: -1,
-        path: "/",
+        path: "/admin",
         httpOnly: true,
         secure: true,
         sameSite: "strict"
