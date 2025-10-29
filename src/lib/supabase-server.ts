@@ -24,7 +24,7 @@ export async function createSupabaseServerClient() {
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value, options }) => {
           // 确保所有 Supabase cookie 都有安全设置，并设置为 session cookies
-          const { maxAge, expires, ...restOptions } = options || {};
+          const { maxAge: _maxAge, expires: _expires, ...restOptions } = options || {};
           cookieStore.set(name, value, {
             ...restOptions,
             httpOnly: true,
@@ -61,7 +61,7 @@ export function createSupabaseMiddlewareClient(
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value, options }) => {
           // 确保所有 Supabase cookie 都有安全设置，并设置为 session cookies
-          const { maxAge, expires, ...restOptions } = options || {};
+          const { maxAge: _maxAge, expires: _expires, ...restOptions } = options || {};
           response.cookies.set(name, value, {
             ...restOptions,
             httpOnly: true,
