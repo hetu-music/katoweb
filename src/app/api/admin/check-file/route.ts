@@ -1,48 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyCSRFToken } from "@/lib/utils.server";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { withAuth, type AuthenticatedUser } from "@/lib/auth-middleware";
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
   try {
-    // 验证 CSRF token
-    if (!(await verifyCSRFToken(request))) {
-      return NextResponse.json(
-        { error: "Invalid CSRF token" },
-        { status: 403 },
-      );
-    }
-
-    // 验证用户身份
-    const supabase = await createSupabaseServerClient();
-
-    // 优先用 Authorization header
-    const authHeader = request.headers.get("authorization");
-    let token: string | undefined;
-    if (authHeader) {
-      // 严格校验 Bearer token 格式
-      const match = authHeader.match(/^Bearer ([A-Za-z0-9\-._~+/]+=*)$/);
-      if (match) {
-        token = match[1];
-      }
-    } else {
-      // 没有 header 时，取 session 里的 access_token
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      token = session?.access_token;
-    }
-
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser(token);
-    if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
     // 获取查询参数
     const { searchParams } = new URL(request.url);
@@ -89,4 +49,4 @@ export async function GET(request: NextRequest) {
       { status: 500 },
     );
   }
-}
+}, { requireCSRF: true });

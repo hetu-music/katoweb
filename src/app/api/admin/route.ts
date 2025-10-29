@@ -7,7 +7,7 @@ import {
 } from "../../../lib/supabase";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { z } from "zod";
-import { verifyCSRFToken } from "@/lib/utils.server";
+import { withAuth, type AuthenticatedUser } from "@/lib/auth-middleware";
 
 //类型校验
 const SongSchema = z.object({
@@ -35,43 +35,7 @@ const SongSchema = z.object({
   nmn_status: z.boolean().nullable().optional(),
 });
 
-async function getUserFromRequest(request: NextRequest) {
-  const supabase = await createSupabaseServerClient();
-
-  // 优先用 Authorization header
-  const authHeader = request.headers.get("authorization");
-  let token: string | undefined;
-  if (authHeader) {
-    // 严格校验 Bearer token 格式
-    const match = authHeader.match(/^Bearer ([A-Za-z0-9\-._~+/]+=*)$/);
-    if (match) {
-      token = match[1];
-    } else {
-      // 格式不对直接拒绝
-      return null;
-    }
-  } else {
-    // 没有 header 时，取 session 里的 access_token
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    token = session?.access_token;
-  }
-
-  if (!token) return null;
-
-  // 用 getUser(token) 校验
-  const {
-    data: { user },
-  } = await supabase.auth.getUser(token);
-  return user;
-}
-
-export async function GET(request: NextRequest) {
-  const user = await getUserFromRequest(request);
-  if (!user)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
+export const GET = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -95,16 +59,9 @@ export async function GET(request: NextRequest) {
       { status: 500 },
     );
   }
-}
+});
 
-export async function POST(request: NextRequest) {
-  if (!(await verifyCSRFToken(request))) {
-    return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
-  }
-  const user = await getUserFromRequest(request);
-  if (!user)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
+export const POST = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
   try {
     const body = await request.json();
     // 校验 body
@@ -142,16 +99,9 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     );
   }
-}
+}, { requireCSRF: true });
 
-export async function PUT(request: NextRequest) {
-  if (!(await verifyCSRFToken(request))) {
-    return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
-  }
-  const user = await getUserFromRequest(request);
-  if (!user)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
+export const PUT = withAuth(async (request: NextRequest, user: AuthenticatedUser) => {
   try {
     const body = await request.json();
     const { id, updated_at, ...data } = body;
@@ -208,4 +158,4 @@ export async function PUT(request: NextRequest) {
       { status: 500 },
     );
   }
-}
+}, { requireCSRF: true });
