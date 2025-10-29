@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { WallpaperProvider } from "./context/WallpaperContext";
-import GlobalWallpaperBackground from "./components/GlobalWallpaperBackground";
+import { WallpaperProvider } from "@/context/WallpaperContext";
+import GlobalWallpaperBackground from "@/components/public/GlobalWallpaperBackground";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-linear-to-br from-purple-900 via-blue-900 to-indigo-900`}
       >
         <WallpaperProvider>
           <GlobalWallpaperBackground />
