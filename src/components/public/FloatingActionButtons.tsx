@@ -22,7 +22,7 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
       {/* 返回顶部按钮 - 带动画的显示/隐藏 */}
       <button
         onClick={onScrollToTop}
-        className={`floating-action-button bg-gradient-to-br from-purple-700 via-blue-700 to-indigo-700 text-white ${
+        className={`floating-action-button bg-linear-to-br from-purple-700 via-blue-700 to-indigo-700 text-white ${
           showScrollTop
             ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
             : "opacity-0 scale-75 translate-y-2 pointer-events-none"
@@ -49,7 +49,7 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
       {onShare && (
         <button
           onClick={onShare}
-          className="floating-action-button bg-gradient-to-br from-green-600 via-emerald-600 to-teal-600 text-white"
+          className="floating-action-button bg-linear-to-br from-green-600 via-emerald-600 to-teal-600 text-white"
           aria-label="分享页面"
         >
           <Share className="floating-action-icon" />

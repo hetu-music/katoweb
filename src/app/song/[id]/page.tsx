@@ -1,7 +1,7 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import SongDetailClient from "./SongDetailClient";
-import { getSongById } from "../../lib/supabase";
+import { getSongById } from "@/lib/supabase";
 
 // 服务端组件
 export default async function SongDetailPage({

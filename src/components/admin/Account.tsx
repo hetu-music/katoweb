@@ -41,7 +41,7 @@ const Account: React.FC<AccountProps> = ({
   React.useEffect(() => {
     (async () => {
       try {
-        const res = await import("../../lib/api").then((m) =>
+        const res = await import("@/lib/api").then((m) =>
           m.apiGetAccountInfo(),
         );
         if (res.displayName !== undefined) {
@@ -84,7 +84,7 @@ const Account: React.FC<AccountProps> = ({
     setDisplayNameSuccess(null);
     setDisplayNameLoading(true);
     try {
-      const res = await import("../../lib/api").then((m) =>
+      const res = await import("@/lib/api").then((m) =>
         m.apiGetDisplayName(),
       );
       if (res.displayName !== undefined) {
@@ -112,7 +112,7 @@ const Account: React.FC<AccountProps> = ({
     setIntroSuccess(null);
     setIntroLoading(true);
     try {
-      const res = await import("../../lib/api").then((m) =>
+      const res = await import("@/lib/api").then((m) =>
         m.apiGetAccountInfo(),
       );
       if (typeof res.intro === "string" || res.intro === null) {
@@ -133,12 +133,12 @@ const Account: React.FC<AccountProps> = ({
     <div className="relative">
       <button
         onClick={() => setShowAccountMenu((v) => !v)}
-        className="group flex items-center gap-4 h-12 px-8 py-1 rounded-2xl bg-gradient-to-r from-blue-500/20 via-indigo-500/20 to-purple-500/20 border border-blue-400/30 text-blue-100 hover:from-blue-500/30 hover:via-indigo-500/30 hover:to-purple-500/30 hover:text-white hover:border-blue-300/50 transition-all duration-300 shadow-lg hover:shadow-xl font-medium whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed backdrop-blur-sm"
+        className="group flex items-center gap-4 h-12 px-8 py-1 rounded-2xl bg-linear-to-r from-blue-500/20 via-indigo-500/20 to-purple-500/20 border border-blue-400/30 text-blue-100 hover:from-blue-500/30 hover:via-indigo-500/30 hover:to-purple-500/30 hover:text-white hover:border-blue-300/50 transition-all duration-300 shadow-lg hover:shadow-xl font-medium whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed backdrop-blur-sm"
         style={{ minWidth: 0 }}
         type="button"
       >
         <div className="flex items-center gap-4">
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-inner">
+          <div className="w-8 h-8 bg-linear-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-inner">
             {displayName ? displayName.charAt(0).toUpperCase() : "?"}
           </div>
           <span className="inline-block max-w-[120px] truncate align-middle text-lg font-semibold">
@@ -148,7 +148,7 @@ const Account: React.FC<AccountProps> = ({
       </button>
 
       {showAccountMenu && (
-        <div className="absolute right-0 mt-3 w-48 bg-gradient-to-br from-purple-800/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-lg border border-white/20 rounded-2xl shadow-2xl z-50 overflow-hidden animate-fade-in">
+        <div className="absolute right-0 mt-3 w-48 bg-linear-to-br from-purple-800/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-lg border border-white/20 rounded-2xl shadow-2xl z-50 overflow-hidden animate-fade-in">
           <div className="p-2">
             <button
               className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-blue-500/20 transition-all duration-200 rounded-xl border-b border-white/10 group"
@@ -268,9 +268,9 @@ const Account: React.FC<AccountProps> = ({
       {/* 修改密码弹窗 */}
       {showChangePwd && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-gradient-to-br from-purple-800/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl p-8 max-w-md w-full animate-fade-in">
+          <div className="bg-linear-to-br from-purple-800/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl p-8 max-w-md w-full animate-fade-in">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-linear-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
                 <svg
                   className="w-6 h-6 text-white"
                   fill="none"
@@ -311,7 +311,7 @@ const Account: React.FC<AccountProps> = ({
                 }
                 setPwdFormLoading(true);
                 try {
-                  const res = await import("../../lib/api").then((m) =>
+                  const res = await import("@/lib/api").then((m) =>
                     m.apiChangePassword(
                       pwdForm.oldPassword,
                       pwdForm.newPassword,
@@ -402,7 +402,7 @@ const Account: React.FC<AccountProps> = ({
               {pwdFormError && (
                 <div className="bg-red-500/10 border border-red-400/30 rounded-xl p-3 text-red-300 text-sm flex items-center gap-2">
                   <svg
-                    className="w-4 h-4 flex-shrink-0"
+                    className="w-4 h-4 shrink-0"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -421,7 +421,7 @@ const Account: React.FC<AccountProps> = ({
               {pwdFormSuccess && (
                 <div className="bg-green-500/10 border border-green-400/30 rounded-xl p-3 text-green-300 text-sm flex items-center gap-2">
                   <svg
-                    className="w-4 h-4 flex-shrink-0"
+                    className="w-4 h-4 shrink-0"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -457,7 +457,7 @@ const Account: React.FC<AccountProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-400/30 text-green-100 hover:from-green-500/40 hover:to-emerald-500/40 hover:text-white transition-all duration-200 font-semibold shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="px-6 py-3 rounded-xl bg-linear-to-r from-green-500/30 to-emerald-500/30 border border-green-400/30 text-green-100 hover:from-green-500/40 hover:to-emerald-500/40 hover:text-white transition-all duration-200 font-semibold shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
                   disabled={pwdFormLoading}
                 >
                   {pwdFormLoading ? (
@@ -478,9 +478,9 @@ const Account: React.FC<AccountProps> = ({
       {/* 用户名管理弹窗 */}
       {showDisplayName && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-gradient-to-br from-purple-800/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl p-8 max-w-md w-full animate-fade-in">
+          <div className="bg-linear-to-br from-purple-800/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl p-8 max-w-md w-full animate-fade-in">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-linear-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
                 <svg
                   className="w-6 h-6 text-white"
                   fill="none"
@@ -509,7 +509,7 @@ const Account: React.FC<AccountProps> = ({
                 }
                 setDisplayNameLoading(true);
                 try {
-                  const res = await import("../../lib/api").then((m) =>
+                  const res = await import("@/lib/api").then((m) =>
                     m.apiUpdateDisplayName(
                       displayNameInput,
                       csrfToken,
@@ -577,7 +577,7 @@ const Account: React.FC<AccountProps> = ({
               {displayNameError && (
                 <div className="bg-red-500/10 border border-red-400/30 rounded-xl p-3 text-red-300 text-sm flex items-center gap-2">
                   <svg
-                    className="w-4 h-4 flex-shrink-0"
+                    className="w-4 h-4 shrink-0"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -596,7 +596,7 @@ const Account: React.FC<AccountProps> = ({
               {displayNameSuccess && (
                 <div className="bg-green-500/10 border border-green-400/30 rounded-xl p-3 text-green-300 text-sm flex items-center gap-2">
                   <svg
-                    className="w-4 h-4 flex-shrink-0"
+                    className="w-4 h-4 shrink-0"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -630,7 +630,7 @@ const Account: React.FC<AccountProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-400/30 text-green-100 hover:from-green-500/40 hover:to-emerald-500/40 hover:text-white transition-all duration-200 font-semibold shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="px-6 py-3 rounded-xl bg-linear-to-r from-green-500/30 to-emerald-500/30 border border-green-400/30 text-green-100 hover:from-green-500/40 hover:to-emerald-500/40 hover:text-white transition-all duration-200 font-semibold shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
                   disabled={displayNameLoading}
                 >
                   {displayNameLoading ? (
@@ -651,9 +651,9 @@ const Account: React.FC<AccountProps> = ({
       {/* intro（自我介绍）管理弹窗 */}
       {showIntro && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-gradient-to-br from-purple-800/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl p-8 max-w-md w-full animate-fade-in">
+          <div className="bg-linear-to-br from-purple-800/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl p-8 max-w-md w-full animate-fade-in">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-linear-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
                 <svg
                   className="w-6 h-6 text-white"
                   fill="none"
@@ -681,7 +681,7 @@ const Account: React.FC<AccountProps> = ({
                 }
                 setIntroLoading(true);
                 try {
-                  const res = await import("../../lib/api").then((m) =>
+                  const res = await import("@/lib/api").then((m) =>
                     m.apiUpdateAccountInfo(
                       displayName,
                       csrfToken,
@@ -708,7 +708,7 @@ const Account: React.FC<AccountProps> = ({
                   自我介绍
                 </label>
                 <textarea
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 placeholder-white/50 min-h-[80px]"
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 placeholder-white/50 min-h-20"
                   placeholder="请输入自我介绍（可选，最多512字）"
                   value={introInput}
                   onChange={(e) => setIntroInput(e.target.value)}
@@ -722,7 +722,7 @@ const Account: React.FC<AccountProps> = ({
               {introError && (
                 <div className="bg-red-500/10 border border-red-400/30 rounded-xl p-3 text-red-300 text-sm flex items-center gap-2">
                   <svg
-                    className="w-4 h-4 flex-shrink-0"
+                    className="w-4 h-4 shrink-0"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -740,7 +740,7 @@ const Account: React.FC<AccountProps> = ({
               {introSuccess && (
                 <div className="bg-green-500/10 border border-green-400/30 rounded-xl p-3 text-green-300 text-sm flex items-center gap-2">
                   <svg
-                    className="w-4 h-4 flex-shrink-0"
+                    className="w-4 h-4 shrink-0"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -772,7 +772,7 @@ const Account: React.FC<AccountProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-400/30 text-green-100 hover:from-green-500/40 hover:to-emerald-500/40 hover:text-white transition-all duration-200 font-semibold shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="px-6 py-3 rounded-xl bg-linear-to-r from-green-500/30 to-emerald-500/30 border border-green-400/30 text-green-100 hover:from-green-500/40 hover:to-emerald-500/40 hover:text-white transition-all duration-200 font-semibold shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
                   disabled={introLoading}
                 >
                   {introLoading ? (

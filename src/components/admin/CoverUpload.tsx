@@ -1,9 +1,9 @@
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Upload, X, Check, AlertCircle, FileCheck, FileX } from "lucide-react";
-import { apiCheckFileExists } from "../../lib/api";
+import { apiCheckFileExists } from "@/lib/api";
 
-interface ScoreUploadProps {
+interface CoverUploadProps {
   songId?: number;
   csrfToken: string;
   onUploadSuccess?: () => void;
@@ -11,13 +11,13 @@ interface ScoreUploadProps {
   hasExistingFile?: boolean; // 是否已有文件
 }
 
-export default function ScoreUpload({
+export default function CoverUpload({
   songId,
   csrfToken,
   onUploadSuccess,
   onUploadError,
   hasExistingFile = false,
-}: ScoreUploadProps) {
+}: CoverUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<
     "idle" | "success" | "error"
@@ -34,13 +34,13 @@ export default function ScoreUpload({
 
       setCheckingFile(true);
       try {
-        const result = await apiCheckFileExists(id, "score", csrfToken);
+        const result = await apiCheckFileExists(id, "cover", csrfToken);
         if (!result) return false;
         const exists = result.exists;
         setFileExists(exists);
         return exists;
       } catch (error) {
-        console.error("检查乐谱文件存在性失败:", error);
+        console.error("检查封面文件存在性失败:", error);
         setFileExists(false);
         return false;
       } finally {
@@ -68,12 +68,12 @@ export default function ScoreUpload({
     // 验证文件类型
     if (!file.type.includes("jpeg") && !file.type.includes("jpg")) {
       setUploadStatus("error");
-      setUploadMessage("只允许上传JPG格式的乐谱文件");
-      onUploadError?.("只允许上传JPG格式的乐谱文件");
+      setUploadMessage("只允许上传JPG格式的图片");
+      onUploadError?.("只允许上传JPG格式的图片");
       return;
     }
 
-    // 验证文件大小 (50MB)
+    // 验证文件大小 (5MB)
     if (file.size > 100 * 1024 * 1024) {
       setUploadStatus("error");
       setUploadMessage("文件大小不能超过100MB");
@@ -83,8 +83,8 @@ export default function ScoreUpload({
 
     if (!songId) {
       setUploadStatus("error");
-      setUploadMessage("请先保存歌曲后再上传乐谱");
-      onUploadError?.("请先保存歌曲后再上传乐谱");
+      setUploadMessage("请先保存歌曲后再上传封面");
+      onUploadError?.("请先保存歌曲后再上传封面");
       return;
     }
 
@@ -102,7 +102,7 @@ export default function ScoreUpload({
       if (!songId) return;
       formData.append("songId", songId.toString());
 
-      const response = await fetch("/api/admin/upload-score", {
+      const response = await fetch("/api/admin/upload-cover", {
         method: "POST",
         headers: {
           "X-CSRF-Token": csrfToken,
@@ -118,7 +118,7 @@ export default function ScoreUpload({
       const result = await response.json();
 
       setUploadStatus("success");
-      setUploadMessage(result.message || "乐谱上传成功");
+      setUploadMessage(result.message || "封面上传成功");
       setFileExists(true); // 上传成功后更新文件存在状态
       onUploadSuccess?.();
 
@@ -183,7 +183,7 @@ export default function ScoreUpload({
             ) : fileExists ? (
               <span className="text-green-400 text-xs flex items-center gap-1">
                 <FileCheck size={14} />
-                已有乐谱
+                已有封面
               </span>
             ) : (
               <span className="text-orange-400 text-xs flex items-center gap-1">
@@ -237,7 +237,7 @@ export default function ScoreUpload({
 
       {/* 说明文字 */}
       <div className="text-xs text-gray-400 space-y-1">
-        <div>• 只支持JPG格式的乐谱文件</div>
+        <div>• 只支持JPG格式的图片文件</div>
         <div>• 文件大小不超过100MB</div>
       </div>
     </div>

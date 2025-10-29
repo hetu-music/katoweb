@@ -10,23 +10,23 @@ import React, {
 import { Search, Grid, List, XCircle, RotateCcw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { MusicLibraryClientProps, SongDetail } from "../lib/types";
+import { MusicLibraryClientProps, SongDetail } from "@/lib/types";
 import {
   getCoverUrl,
   calculateFilterOptions,
   filterSongs,
   mapAndSortSongs,
-} from "../lib/utils";
-import { typeColorMap, genreColorMap } from "../lib/constants";
+} from "@/lib/utils";
+import { typeColorMap, genreColorMap } from "@/lib/constants";
 import About from "./About";
 import TypeExplanation from "./TypeExplanation";
 import SongFilters from "./SongFilters";
 import Pagination from "./Pagination";
-import { usePagination } from "../hooks/usePagination";
+import { usePagination } from "@/hooks/usePagination";
 
 import WallpaperControls from "./WallpaperControls";
 import FloatingActionButtons from "./FloatingActionButtons";
-import { useWallpaper } from "../context/WallpaperContext";
+import { useWallpaper } from "@/context/WallpaperContext";
 
 const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   initialSongsData,
@@ -571,7 +571,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
             <div className="w-full flex flex-col gap-3">
               {/* 搜索框 */}
               <div className="search-container">
-                <div className="h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white rounded-l-2xl select-none min-w-[60px] max-w-[60px] w-[60px]">
+                <div className="h-12 flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white rounded-l-2xl select-none min-w-[60px] max-w-[60px] w-[60px]">
                   <Search size={20} />
                 </div>
                 <input

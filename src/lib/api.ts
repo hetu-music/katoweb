@@ -3,7 +3,7 @@ import type { Song } from "./types";
 
 // 新增歌曲
 export async function apiCreateSong(song: Partial<Song>, csrfToken: string) {
-  const res = await fetch("/api/admin", {
+  const res = await fetch("/api/admin/edit", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -21,7 +21,7 @@ export async function apiUpdateSong(
   song: Partial<Song>,
   csrfToken: string,
 ) {
-  const res = await fetch("/api/admin", {
+  const res = await fetch("/api/admin/edit", {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",

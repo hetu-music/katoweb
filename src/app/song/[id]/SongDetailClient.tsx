@@ -4,12 +4,12 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
-import { SongDetailClientProps } from "../../lib/types";
-import { getCoverUrl, calculateSongInfo, getNmnUrl } from "../../lib/utils";
-import { typeColorMap, genreColorMap } from "../../lib/constants";
-import ImageModal from "../../components/ImageModal";
+import { SongDetailClientProps } from "@/lib/types";
+import { getCoverUrl, calculateSongInfo, getNmnUrl } from "@/lib/utils";
+import { typeColorMap, genreColorMap } from "@/lib/constants";
+import ImageModal from "@/components/public/ImageModal";
 
-import FloatingActionButtons from "../../components/FloatingActionButtons";
+import FloatingActionButtons from "@/components/public/FloatingActionButtons";
 
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -162,7 +162,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         {/* 主信息区 */}
         <div className="flex flex-col md:flex-row gap-8 items-start bg-white/10 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/20 mb-8">
           {/* 封面 */}
-          <div className="w-full md:w-48 flex-shrink-0 flex justify-center md:justify-start">
+          <div className="w-full md:w-48 shrink-0 flex justify-center md:justify-start">
             {coverImageLoaded ? (
               <div
                 className="cursor-pointer group relative w-48 h-48 rounded-2xl overflow-hidden shadow-lg"
@@ -203,7 +203,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
           {/* 歌曲主信息 */}
           <div className="flex-1 text-white space-y-4 w-full">
             <div>
-              <h1 className="text-3xl font-bold mb-3 break-words">
+              <h1 className="text-3xl font-bold mb-3 wrap-break-word">
                 {song.title}
               </h1>
               <div className="flex flex-wrap gap-2">
@@ -234,10 +234,10 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 block-panel-inner">
                 {songInfo?.creativeInfo.map((item, index) => (
                   <div key={index} className="flex items-start">
-                    <span className="font-semibold text-blue-300 text-base min-w-[4rem]">
+                    <span className="font-semibold text-blue-300 text-base min-w-16">
                       {item.label}：
                     </span>
-                    <span className="text-white/90 break-words text-base">
+                    <span className="text-white/90 wrap-break-word text-base">
                       {item.value}
                     </span>
                   </div>
@@ -251,10 +251,10 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 block-panel-inner">
                 {songInfo?.basicInfo.map((item, index) => (
                   <div key={index} className="flex items-start">
-                    <span className="font-semibold text-blue-300 text-base min-w-[6rem]">
+                    <span className="font-semibold text-blue-300 text-base min-w-24">
                       {item.label}：
                     </span>
-                    <span className="text-white/90 break-words text-base">
+                    <span className="text-white/90 wrap-break-word text-base">
                       {item.value}
                     </span>
                   </div>
@@ -289,7 +289,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                     href={song.kugolink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="min-w-[120px] flex justify-center items-center px-6 py-2 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/20 text-white font-semibold shadow-sm hover:from-blue-500/30 hover:to-purple-500/30 transition-all duration-200"
+                    className="min-w-[120px] flex justify-center items-center px-6 py-2 rounded-full bg-linear-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/20 text-white font-semibold shadow-sm hover:from-blue-500/30 hover:to-purple-500/30 transition-all duration-200"
                   >
                     酷狗音乐
                   </a>
@@ -299,7 +299,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                     href={song.nelink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="min-w-[120px] flex justify-center items-center px-6 py-2 rounded-full bg-gradient-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-white/20 text-white font-semibold shadow-sm hover:from-red-500/30 hover:to-pink-500/30 transition-all duration-200"
+                    className="min-w-[120px] flex justify-center items-center px-6 py-2 rounded-full bg-linear-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-white/20 text-white font-semibold shadow-sm hover:from-red-500/30 hover:to-pink-500/30 transition-all duration-200"
                   >
                     网易云音乐
                   </a>
@@ -309,7 +309,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                     href={song.qmlink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="min-w-[120px] flex justify-center items-center px-6 py-2 rounded-full bg-gradient-to-r from-green-500/20 to-blue-500/20 backdrop-blur-sm border border-white/20 text-white font-semibold shadow-sm hover:from-green-500/30 hover:to-blue-500/30 transition-all duration-200"
+                    className="min-w-[120px] flex justify-center items-center px-6 py-2 rounded-full bg-linear-to-r from-green-500/20 to-blue-500/20 backdrop-blur-sm border border-white/20 text-white font-semibold shadow-sm hover:from-green-500/30 hover:to-blue-500/30 transition-all duration-200"
                   >
                     QQ音乐
                   </a>

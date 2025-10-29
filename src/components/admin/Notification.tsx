@@ -9,7 +9,7 @@ interface NotificationProps {
 const Notification: React.FC<NotificationProps> = ({ onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-gradient-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-2xl shadow-2xl p-8 w-full max-w-4xl relative text-white max-h-[90vh] overflow-hidden">
+      <div className="bg-linear-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-2xl shadow-2xl p-8 w-full max-w-4xl relative text-white max-h-[90vh] overflow-hidden">
         <button
           className="absolute top-4 right-4 text-gray-300 hover:text-white text-xl font-bold transition-colors"
           onClick={onClose}
@@ -29,15 +29,15 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
         {/* 内容区域 */}
         <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
           {/* 重要提示 */}
-          <div className="relative p-5 rounded-xl bg-gradient-to-r from-red-500/25 to-orange-500/25 border-2 border-red-400/50 shadow-lg">
+          <div className="relative p-5 rounded-xl bg-linear-to-r from-red-500/25 to-orange-500/25 border-2 border-red-400/50 shadow-lg">
             {/* 装饰性背景 */}
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-red-400/10 to-orange-400/10 opacity-50"></div>
+            <div className="absolute inset-0 rounded-xl bg-linear-to-br from-red-400/10 to-orange-400/10 opacity-50"></div>
 
             {/* 闪烁动画的边框 */}
             <div className="absolute inset-0 rounded-xl border-2 border-red-400/30 animate-pulse"></div>
 
             <div className="relative flex items-start gap-4">
-              <div className="flex-shrink-0 mt-0.5 p-2 rounded-full bg-red-500/30 border border-red-400/50">
+              <div className="shrink-0 mt-0.5 p-2 rounded-full bg-red-500/30 border border-red-400/50">
                 <AlertTriangle className="w-6 h-6 text-red-200" />
               </div>
               <div className="flex-1">
@@ -51,13 +51,13 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
                 </div>
                 <ul className="text-sm text-red-100/90 leading-relaxed space-y-2 font-medium">
                   <li className="flex items-start gap-2">
-                    <span className="text-red-300 font-bold flex-shrink-0 leading-relaxed">
+                    <span className="text-red-300 font-bold shrink-0 leading-relaxed">
                       •
                     </span>
                     <span>数据更改不会立刻同步到主页面</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-red-300 font-bold flex-shrink-0 leading-relaxed">
+                    <span className="text-red-300 font-bold shrink-0 leading-relaxed">
                       •
                     </span>
                     <span>在本页面修改完成就是变更成功</span>
@@ -69,7 +69,7 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
           {/* 数据管理规则 */}
           <div className="p-5 rounded-xl bg-blue-500/20 border border-blue-400/30">
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 mt-1">
+              <div className="shrink-0 mt-1">
                 <Database className="w-6 h-6 text-blue-300" />
               </div>
               <div className="flex-1 min-w-0">
@@ -78,13 +78,13 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
                 </h4>
                 <ul className="text-sm text-white/80 leading-relaxed space-y-2">
                   <li className="flex items-start gap-2">
-                    <span className="text-blue-300 font-bold flex-shrink-0 leading-relaxed">
+                    <span className="text-blue-300 font-bold shrink-0 leading-relaxed">
                       •
                     </span>
                     <span>新增歌曲时请确保标题和专辑信息准确无误</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-blue-300 font-bold flex-shrink-0 leading-relaxed">
+                    <span className="text-blue-300 font-bold shrink-0 leading-relaxed">
                       •
                     </span>
                     <span>
@@ -92,19 +92,19 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-blue-300 font-bold flex-shrink-0 leading-relaxed">
+                    <span className="text-blue-300 font-bold shrink-0 leading-relaxed">
                       •
                     </span>
                     <span>歌曲时长需要换算成秒</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-blue-300 font-bold flex-shrink-0 leading-relaxed">
+                    <span className="text-blue-300 font-bold shrink-0 leading-relaxed">
                       •
                     </span>
                     <span>歌词只需填写LRC歌词</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-blue-300 font-bold flex-shrink-0 leading-relaxed">
+                    <span className="text-blue-300 font-bold shrink-0 leading-relaxed">
                       •
                     </span>
                     <span>修改完成务必点击保存按钮保存</span>
@@ -117,7 +117,7 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
           {/* 权限管理规则 */}
           <div className="p-5 rounded-xl bg-green-500/20 border border-green-400/30">
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 mt-1">
+              <div className="shrink-0 mt-1">
                 <Shield className="w-6 h-6 text-green-300" />
               </div>
               <div className="flex-1 min-w-0">
@@ -126,19 +126,19 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
                 </h4>
                 <ul className="text-sm text-white/80 leading-relaxed space-y-2">
                   <li className="flex items-start gap-2">
-                    <span className="text-green-300 font-bold flex-shrink-0 leading-relaxed">
+                    <span className="text-green-300 font-bold shrink-0 leading-relaxed">
                       •
                     </span>
                     <span>请妥善保管账号，不要与他人分享</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-green-300 font-bold flex-shrink-0 leading-relaxed">
+                    <span className="text-green-300 font-bold shrink-0 leading-relaxed">
                       •
                     </span>
                     <span>定期检查数据变更，确保信息准确性</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-green-300 font-bold flex-shrink-0 leading-relaxed">
+                    <span className="text-green-300 font-bold shrink-0 leading-relaxed">
                       •
                     </span>
                     <span>如发现异常操作请及时联系管理员</span>

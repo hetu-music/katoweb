@@ -1,44 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyCSRFToken } from "@/app/lib/utils.server";
-import { uploadCoverFile, validateFile } from "@/app/lib/upload";
-import { createSupabaseServerClient } from "@/app/lib/supabase-server";
+import { uploadCoverFile, validateFile } from "@/lib/upload";
+import { withAuth, type AuthenticatedUser } from "@/lib/auth-middleware";
 
-async function getUserFromRequest(request: NextRequest) {
-  const supabase = await createSupabaseServerClient();
-
-  const authHeader = request.headers.get("authorization");
-  let token: string | undefined;
-  if (authHeader) {
-    const match = authHeader.match(/^Bearer ([A-Za-z0-9\-._~+/]+=*)$/);
-    if (match) {
-      token = match[1];
-    } else {
-      return null;
-    }
-  } else {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    token = session?.access_token;
-  }
-
-  if (!token) return null;
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser(token);
-  return user;
-}
-
-export async function POST(request: NextRequest) {
-  if (!(await verifyCSRFToken(request))) {
-    return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
-  }
-
-  const user = await getUserFromRequest(request);
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const POST = withAuth(async (request: NextRequest, _user: AuthenticatedUser) => {
 
   try {
     const formData = await request.formData();
@@ -84,4 +48,4 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     );
   }
-}
+}, { requireCSRF: true });

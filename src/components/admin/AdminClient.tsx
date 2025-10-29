@@ -11,19 +11,19 @@ import {
   Bell,
   XCircle,
 } from "lucide-react";
-import type { Song, SongDetail, SongFieldConfig } from "../../lib/types";
+import type { Song, SongDetail, SongFieldConfig } from "@/lib/types";
 import {
   convertEmptyStringToNull,
   formatField,
   validateField,
-} from "../../lib/utils";
-import { songFields, genreColorMap, typeColorMap } from "../../lib/constants";
-import FloatingActionButtons from "../../components/FloatingActionButtons";
-import Pagination from "../../components/Pagination";
-import { usePagination } from "../../hooks/usePagination";
-import { apiCreateSong, apiUpdateSong } from "../../lib/api";
-import { useSongs } from "../../hooks/useSongs";
-import { useAuth } from "../../hooks/useAuth";
+} from "@/lib/utils";
+import { songFields, genreColorMap, typeColorMap } from "@/lib/constants";
+import FloatingActionButtons from "@/components/public/FloatingActionButtons";
+import Pagination from "@/components/public/Pagination";
+import { usePagination } from "@/hooks/usePagination";
+import { apiCreateSong, apiUpdateSong } from "@/lib/api";
+import { useSongs } from "@/hooks/useSongs";
+import { useAuth } from "@/hooks/useAuth";
 import Account from "./Account";
 import Notification from "./Notification";
 import CoverUpload from "./CoverUpload";
@@ -97,7 +97,7 @@ const SongRow = React.memo(
                     <span className="text-blue-300 text-sm font-medium mb-1">
                       {field.label}:
                     </span>
-                    <span className="text-white/80 text-sm break-words">
+                    <span className="text-white/80 text-sm wrap-break-word">
                       {field.key === "hascover"
                         ? song.hascover === true
                           ? "定制封面"
@@ -406,7 +406,7 @@ export default function AdminClientComponent({
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <div className="min-h-screen bg-linear-to-br from-purple-900 via-blue-900 to-indigo-900">
       <div className="container mx-auto px-6 py-8 max-w-7xl">
         {/* Header Section */}
         <div className="mb-8 flex flex-row items-center justify-between gap-4">
@@ -425,7 +425,7 @@ export default function AdminClientComponent({
             {/* 通知按钮 */}
             <button
               onClick={() => setShowNotification(true)}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-400/30 text-blue-200 hover:from-blue-500/30 hover:to-purple-500/30 hover:text-blue-100 transition-all duration-200 shadow-sm font-medium"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-linear-to-r from-blue-500/20 to-purple-500/20 border border-blue-400/30 text-blue-200 hover:from-blue-500/30 hover:to-purple-500/30 hover:text-blue-100 transition-all duration-200 shadow-sm font-medium"
               title="查看操作说明"
             >
               <Bell size={16} />
@@ -442,7 +442,7 @@ export default function AdminClientComponent({
         {/* Search and Add Button */}
         <div className="flex flex-col md:flex-row gap-4 mb-6">
           <div className="flex-1 search-container">
-            <div className="h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white rounded-l-2xl select-none min-w-[60px] max-w-[60px] w-[60px]">
+            <div className="h-12 flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white rounded-l-2xl select-none min-w-[60px] max-w-[60px] w-[60px]">
               <Search size={20} />
             </div>
             <input
@@ -466,7 +466,7 @@ export default function AdminClientComponent({
           </div>
           <button
             onClick={() => setShowAdd(true)}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 text-green-200 hover:from-green-500/30 hover:to-emerald-500/30 hover:text-green-100 transition-all duration-200 shadow-sm font-medium whitespace-nowrap"
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-linear-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 text-green-200 hover:from-green-500/30 hover:to-emerald-500/30 hover:text-green-100 transition-all duration-200 shadow-sm font-medium whitespace-nowrap"
           >
             <Plus size={20} />
             新增歌曲
@@ -475,8 +475,8 @@ export default function AdminClientComponent({
 
         {/* Stats */}
         <div className="flex items-center gap-2 sm:gap-4 mb-6 flex-wrap">
-          <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/20 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
-            <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-pulse flex-shrink-0"></div>
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/20 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
+            <div className="w-2 h-2 bg-linear-to-r from-blue-400 to-purple-400 rounded-full animate-pulse shrink-0"></div>
             <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
               总计{" "}
               <span className="text-blue-200 font-semibold">
@@ -485,8 +485,8 @@ export default function AdminClientComponent({
               首
             </span>
           </div>
-          <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
-            <div className="w-2 h-2 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full flex-shrink-0"></div>
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
+            <div className="w-2 h-2 bg-linear-to-r from-amber-400 to-orange-400 rounded-full shrink-0"></div>
             <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
               筛选{" "}
               <span className="text-amber-200 font-semibold">
@@ -496,8 +496,8 @@ export default function AdminClientComponent({
             </span>
           </div>
           {filteredSongs.length > 25 && (
-            <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 backdrop-blur-sm border border-emerald-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
-              <div className="w-2 h-2 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full flex-shrink-0"></div>
+            <div className="flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-emerald-500/20 to-teal-500/20 backdrop-blur-sm border border-emerald-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
+              <div className="w-2 h-2 bg-linear-to-r from-emerald-400 to-teal-400 rounded-full shrink-0"></div>
               <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
                 本页{" "}
                 <span className="text-emerald-200 font-semibold">
@@ -599,7 +599,7 @@ export default function AdminClientComponent({
       {/* Add/Edit Form Modal */}
       {(showAdd || editSong) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-gradient-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-2xl shadow-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-linear-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-2xl shadow-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white">
                 {showAdd ? "新增" : "编辑"}歌曲
@@ -654,7 +654,7 @@ export default function AdminClientComponent({
                 <button
                   type="submit"
                   form={showAdd ? "add-form" : "edit-form"}
-                  className="w-14 h-14 rounded-full bg-gradient-to-br from-green-500/80 to-emerald-600/80 border-2 border-green-400/60 text-white hover:from-green-500 hover:to-emerald-600 hover:border-green-300 transition-all duration-200 font-semibold shadow-lg backdrop-blur-sm flex items-center justify-center group"
+                  className="w-14 h-14 rounded-full bg-linear-to-br from-green-500/80 to-emerald-600/80 border-2 border-green-400/60 text-white hover:from-green-500 hover:to-emerald-600 hover:border-green-300 transition-all duration-200 font-semibold shadow-lg backdrop-blur-sm flex items-center justify-center group"
                   title={showAdd ? "提交" : "保存"}
                 >
                   <Save
@@ -671,7 +671,7 @@ export default function AdminClientComponent({
                     setAddResultMessage(null);
                     setEditResultMessage(null);
                   }}
-                  className="w-14 h-14 rounded-full bg-gradient-to-br from-gray-500/80 to-gray-600/80 border-2 border-gray-400/60 text-white hover:from-gray-500 hover:to-gray-600 hover:border-gray-300 transition-all duration-200 font-semibold shadow-lg backdrop-blur-sm flex items-center justify-center group"
+                  className="w-14 h-14 rounded-full bg-linear-to-br from-gray-500/80 to-gray-600/80 border-2 border-gray-400/60 text-white hover:from-gray-500 hover:to-gray-600 hover:border-gray-300 transition-all duration-200 font-semibold shadow-lg backdrop-blur-sm flex items-center justify-center group"
                   title="取消"
                 >
                   <X
@@ -692,13 +692,13 @@ export default function AdminClientComponent({
             className={`relative max-w-sm w-full p-6 rounded-2xl shadow-2xl border-2 backdrop-blur-md transform transition-all duration-300 animate-in zoom-in-95 slide-in-from-bottom-2
             ${
               addResultMessage === "成功" || editResultMessage === "成功"
-                ? "bg-gradient-to-br from-green-500/90 to-emerald-600/90 border-green-400/60 text-white"
-                : "bg-gradient-to-br from-red-500/90 to-red-600/90 border-red-400/60 text-white"
+                ? "bg-linear-to-br from-green-500/90 to-emerald-600/90 border-green-400/60 text-white"
+                : "bg-linear-to-br from-red-500/90 to-red-600/90 border-red-400/60 text-white"
             }
           `}
           >
             {/* 装饰性背景元素 */}
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 to-transparent opacity-50"></div>
+            <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-white/10 to-transparent opacity-50"></div>
 
             {/* 图标和消息 */}
             <div className="relative flex flex-col items-center text-center space-y-4">

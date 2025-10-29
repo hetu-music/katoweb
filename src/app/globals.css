@@ -49,11 +49,11 @@ body {
 }
 
 .filter-label {
-  @apply h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-blue-200 text-base font-semibold rounded-l-2xl select-none tracking-wide w-[120px] min-w-[120px] max-w-[140px] transition-all duration-200;
+  @apply h-12 flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-blue-200 text-base font-semibold rounded-l-2xl select-none tracking-wide w-[120px] min-w-[120px] max-w-[140px] transition-all duration-200;
 }
 
 .filter-select {
-  @apply h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none appearance-none cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] text-center font-medium transition-all duration-200;
+  @apply h-12 w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none appearance-none cursor-pointer rounded-r-2xl border-l-0 -ml-px text-center font-medium transition-all duration-200;
   text-align: center !important;
   text-align-last: center !important;
   /* Safari 兼容性 */
@@ -115,7 +115,7 @@ body {
 }
 
 .search-input {
-  @apply h-[48px] w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-300 focus:outline-none transition-all duration-200 rounded-r-2xl border-l-0 min-w-0 pr-10;
+  @apply h-12 w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-300 focus:outline-none transition-all duration-200 rounded-r-2xl border-l-0 min-w-0 pr-10;
 }
 
 /* 搜索框获得焦点时轻微变亮 */
@@ -125,7 +125,7 @@ body {
 
 /* 自定义下拉组件样式 */
 .custom-select {
-  @apply relative w-full h-[48px] focus:outline-none;
+  @apply relative w-full h-12 focus:outline-none;
   /* 防止整个组件被拖动 */
   touch-action: manipulation;
 }
@@ -135,7 +135,7 @@ body {
 }
 
 .custom-select-trigger {
-  @apply h-full w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white cursor-pointer rounded-r-2xl border-l-0 ml-[-1px] font-medium flex items-center justify-center;
+  @apply h-full w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white cursor-pointer rounded-r-2xl border-l-0 -ml-px font-medium flex items-center justify-center;
   /* iOS风格的缓动和过渡 */
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform: translateZ(0);
