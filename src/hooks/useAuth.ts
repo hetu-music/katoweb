@@ -19,19 +19,20 @@ export function useAuth() {
   const handleLogout = async () => {
     setLogoutLoading(true);
     try {
-      const csrfRes = await fetch("/api/auth/csrf-token");
-      const csrfData = await csrfRes.json();
+      // 使用当前的 CSRF token，不要获取新的
       const res = await fetch("/api/auth/logout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-csrf-token": csrfData.csrfToken || "",
+          "x-csrf-token": csrfToken,
         },
       });
       if (res.ok) {
+        // 清空当前的 CSRF token
+        setCsrfToken("");
         router.push("/admin/login");
         router.refresh();
-        await fetchCsrfToken();
+        // 只有在需要时才获取新的 CSRF token（比如用户重新访问登录页面）
       }
     } finally {
       setLogoutLoading(false);
