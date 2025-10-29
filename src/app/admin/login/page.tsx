@@ -78,7 +78,7 @@ export default function LoginPage() {
         <div className="w-full max-w-sm sm:max-w-md bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl transition-all duration-300 hover:bg-white/15">
           {/* 主标题区域 */}
           <div className="text-center pt-8 pb-6 px-6 sm:pt-10 sm:pb-8 sm:px-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl mb-4 sm:mb-6 shadow-xl">
+            <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-linear-to-br from-blue-500 to-purple-600 rounded-3xl mb-4 sm:mb-6 shadow-xl">
               <Feather className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3 tracking-wide">
@@ -159,7 +159,7 @@ export default function LoginPage() {
             <div className="flex flex-col gap-3 pt-4">
               <button
                 type="submit"
-                className="w-full h-14 flex items-center justify-center gap-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 active:from-blue-700 active:to-purple-800 text-white font-semibold rounded-xl shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="w-full h-14 flex items-center justify-center gap-3 bg-linear-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 active:from-blue-700 active:to-purple-800 text-white font-semibold rounded-xl shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
                 disabled={loading}
               >
                 {loading ? (
