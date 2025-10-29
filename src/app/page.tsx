@@ -1,6 +1,6 @@
 import MusicLibraryClient from "./components/MusicLibraryClient";
-import { getSongs } from "./lib/supabase";
-import { Song } from "./lib/types";
+import { getSongs } from "../lib/supabase";
+import { Song } from "../lib/types";
 
 // 错误回退组件
 function ErrorFallback({ error }: { error: Error }) {

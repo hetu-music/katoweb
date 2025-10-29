@@ -4,9 +4,9 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
-import { SongDetailClientProps } from "../../lib/types";
-import { getCoverUrl, calculateSongInfo, getNmnUrl } from "../../lib/utils";
-import { typeColorMap, genreColorMap } from "../../lib/constants";
+import { SongDetailClientProps } from "../../../lib/types";
+import { getCoverUrl, calculateSongInfo, getNmnUrl } from "../../../lib/utils";
+import { typeColorMap, genreColorMap } from "../../../lib/constants";
 import ImageModal from "../../components/ImageModal";
 
 import FloatingActionButtons from "../../components/FloatingActionButtons";

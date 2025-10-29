@@ -41,7 +41,7 @@ const Account: React.FC<AccountProps> = ({
   React.useEffect(() => {
     (async () => {
       try {
-        const res = await import("../../lib/api").then((m) =>
+        const res = await import("../../../lib/api").then((m) =>
           m.apiGetAccountInfo(),
         );
         if (res.displayName !== undefined) {
@@ -84,7 +84,7 @@ const Account: React.FC<AccountProps> = ({
     setDisplayNameSuccess(null);
     setDisplayNameLoading(true);
     try {
-      const res = await import("../../lib/api").then((m) =>
+      const res = await import("../../../lib/api").then((m) =>
         m.apiGetDisplayName(),
       );
       if (res.displayName !== undefined) {
@@ -112,7 +112,7 @@ const Account: React.FC<AccountProps> = ({
     setIntroSuccess(null);
     setIntroLoading(true);
     try {
-      const res = await import("../../lib/api").then((m) =>
+      const res = await import("../../../lib/api").then((m) =>
         m.apiGetAccountInfo(),
       );
       if (typeof res.intro === "string" || res.intro === null) {
@@ -311,7 +311,7 @@ const Account: React.FC<AccountProps> = ({
                 }
                 setPwdFormLoading(true);
                 try {
-                  const res = await import("../../lib/api").then((m) =>
+                  const res = await import("../../../lib/api").then((m) =>
                     m.apiChangePassword(
                       pwdForm.oldPassword,
                       pwdForm.newPassword,
@@ -509,7 +509,7 @@ const Account: React.FC<AccountProps> = ({
                 }
                 setDisplayNameLoading(true);
                 try {
-                  const res = await import("../../lib/api").then((m) =>
+                  const res = await import("../../../lib/api").then((m) =>
                     m.apiUpdateDisplayName(
                       displayNameInput,
                       csrfToken,
@@ -681,7 +681,7 @@ const Account: React.FC<AccountProps> = ({
                 }
                 setIntroLoading(true);
                 try {
-                  const res = await import("../../lib/api").then((m) =>
+                  const res = await import("../../../lib/api").then((m) =>
                     m.apiUpdateAccountInfo(
                       displayName,
                       csrfToken,

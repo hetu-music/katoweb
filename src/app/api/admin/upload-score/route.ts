@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyCSRFToken } from "@/app/lib/utils.server";
-import { uploadScoreFile, validateScoreFile } from "@/app/lib/upload";
-import { createSupabaseServerClient } from "@/app/lib/supabase-server";
+import { verifyCSRFToken } from "@/lib/utils.server";
+import { uploadScoreFile, validateScoreFile } from "@/lib/upload";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 async function getUserFromRequest(request: NextRequest) {
   const supabase = await createSupabaseServerClient();

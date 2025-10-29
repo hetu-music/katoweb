@@ -11,17 +11,17 @@ import {
   Bell,
   XCircle,
 } from "lucide-react";
-import type { Song, SongDetail, SongFieldConfig } from "../../lib/types";
+import type { Song, SongDetail, SongFieldConfig } from "../../../lib/types";
 import {
   convertEmptyStringToNull,
   formatField,
   validateField,
-} from "../../lib/utils";
-import { songFields, genreColorMap, typeColorMap } from "../../lib/constants";
+} from "../../../lib/utils";
+import { songFields, genreColorMap, typeColorMap } from "../../../lib/constants";
 import FloatingActionButtons from "../../components/FloatingActionButtons";
 import Pagination from "../../components/Pagination";
 import { usePagination } from "../../hooks/usePagination";
-import { apiCreateSong, apiUpdateSong } from "../../lib/api";
+import { apiCreateSong, apiUpdateSong } from "../../../lib/api";
 import { useSongs } from "../../hooks/useSongs";
 import { useAuth } from "../../hooks/useAuth";
 import Account from "./Account";

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Upload, X, Check, AlertCircle, FileCheck, FileX } from "lucide-react";
-import { apiCheckFileExists } from "../../lib/api";
+import { apiCheckFileExists } from "../../../lib/api";
 
 interface CoverUploadProps {
   songId?: number;

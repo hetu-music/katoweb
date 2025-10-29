@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyCSRFToken } from "@/app/lib/utils.server";
-import { createSupabaseServerClient } from "@/app/lib/supabase-server";
+import { verifyCSRFToken } from "@/lib/utils.server";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { cookies } from "next/headers";
 
 export async function POST(request: NextRequest) {

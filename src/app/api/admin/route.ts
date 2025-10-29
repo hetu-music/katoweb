@@ -4,10 +4,10 @@ import {
   createSong,
   updateSong,
   TABLE_NAMES,
-} from "../../lib/supabase";
-import { createSupabaseServerClient } from "../../lib/supabase-server";
+} from "../../../lib/supabase";
+import { createSupabaseServerClient } from "../../../lib/supabase-server";
 import { z } from "zod";
-import { verifyCSRFToken } from "@/app/lib/utils.server";
+import { verifyCSRFToken } from "@/lib/utils.server";
 
 //类型校验
 const SongSchema = z.object({
