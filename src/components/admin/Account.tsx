@@ -708,7 +708,7 @@ const Account: React.FC<AccountProps> = ({
                   自我介绍
                 </label>
                 <textarea
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 placeholder-white/50 min-h-[80px]"
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 placeholder-white/50 min-h-20"
                   placeholder="请输入自我介绍（可选，最多512字）"
                   value={introInput}
                   onChange={(e) => setIntroInput(e.target.value)}

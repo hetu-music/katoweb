@@ -442,7 +442,7 @@ export default function AdminClientComponent({
         {/* Search and Add Button */}
         <div className="flex flex-col md:flex-row gap-4 mb-6">
           <div className="flex-1 search-container">
-            <div className="h-[48px] flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white rounded-l-2xl select-none min-w-[60px] max-w-[60px] w-[60px]">
+            <div className="h-12 flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white rounded-l-2xl select-none min-w-[60px] max-w-[60px] w-[60px]">
               <Search size={20} />
             </div>
             <input
