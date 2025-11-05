@@ -72,9 +72,9 @@ const Account: React.FC<AccountProps> = ({
     const onClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       // 检查点击是否在账号按钮或菜单内
-      const accountButton = target.closest('[data-account-button]');
-      const accountMenu = target.closest('[data-account-menu]');
-      
+      const accountButton = target.closest("[data-account-button]");
+      const accountMenu = target.closest("[data-account-menu]");
+
       if (!accountButton && !accountMenu) {
         setShowAccountMenu(false);
       }
@@ -150,7 +150,10 @@ const Account: React.FC<AccountProps> = ({
       </button>
 
       {showAccountMenu && (
-        <div className="absolute right-0 mt-3 w-48 bg-linear-to-br from-purple-800/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-lg border border-white/20 rounded-2xl shadow-2xl z-50 overflow-hidden animate-fade-in" data-account-menu>
+        <div
+          className="absolute right-0 mt-3 w-48 bg-linear-to-br from-purple-800/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-lg border border-white/20 rounded-2xl shadow-2xl z-50 overflow-hidden animate-fade-in"
+          data-account-menu
+        >
           <div className="p-2">
             <button
               className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-blue-500/20 transition-all duration-200 rounded-xl border-b border-white/10 group"
