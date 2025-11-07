@@ -324,23 +324,31 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
           <div className="flex items-center justify-between mb-3">
             <h3 className="block-panel-title mb-0">歌词</h3>
             {/* 歌词类型切换胶囊 */}
-            <div className="flex bg-white/10 rounded-full p-1 border border-white/20">
+            <div className="relative flex bg-white/10 rounded-full p-1 border border-white/20">
+              {/* 滑动背景指示器 */}
+              <div
+                className={`absolute top-1 bottom-1 rounded-full bg-white/20 shadow-sm transition-all duration-300 ease-out ${
+                  lyricsType === "normal" 
+                    ? "left-1 right-[calc(50%-0.25rem)]" 
+                    : "left-[calc(50%-0.25rem)] right-1"
+                }`}
+              />
               <button
                 onClick={() => setLyricsType("normal")}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                className={`relative z-10 px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-300 ${
                   lyricsType === "normal"
-                    ? "bg-white/20 text-white shadow-sm"
-                    : "text-white/70 hover:text-white/90"
+                    ? "text-white"
+                    : "text-white/70"
                 }`}
               >
                 普通歌词
               </button>
               <button
                 onClick={() => setLyricsType("lrc")}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                className={`relative z-10 px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-300 ${
                   lyricsType === "lrc"
-                    ? "bg-white/20 text-white shadow-sm"
-                    : "text-white/70 hover:text-white/90"
+                    ? "text-white"
+                    : "text-white/70"
                 }`}
               >
                 LRC歌词
@@ -348,11 +356,12 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
             </div>
           </div>
 
-          <div className="whitespace-pre-line leading-relaxed">
+          <div className="whitespace-pre-line leading-relaxed overflow-hidden">
             {song.lyrics ? (
               <div className="block-panel-inner">
                 <div
-                  className={`${lyricsType === "normal" ? "text-center" : "text-left"}`}
+                  key={lyricsType}
+                  className={`animate-fade-in ${lyricsType === "normal" ? "text-center" : "text-left"}`}
                 >
                   {lyricsType === "normal"
                     ? song.normalLyrics || "暂无歌词"
