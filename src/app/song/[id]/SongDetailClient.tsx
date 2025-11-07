@@ -328,7 +328,9 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
               {/* 滑动背景指示器 */}
               <div
                 className={`absolute top-1 bottom-1 rounded-full bg-white/20 shadow-sm transition-all duration-300 ease-out ${
-                  lyricsType === "normal" ? "left-1 w-[88px]" : "left-[calc(50%)] w-[76px]"
+                  lyricsType === "normal" 
+                    ? "left-1 right-[calc(50%-0.25rem)]" 
+                    : "left-[calc(50%-0.25rem)] right-1"
                 }`}
               />
               <button
