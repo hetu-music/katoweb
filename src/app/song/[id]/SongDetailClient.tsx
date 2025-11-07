@@ -338,7 +338,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 className={`relative z-10 px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-300 ${
                   lyricsType === "normal"
                     ? "text-white"
-                    : "text-white/70 hover:text-white/90"
+                    : "text-white/70"
                 }`}
               >
                 普通歌词
@@ -348,7 +348,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 className={`relative z-10 px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-300 ${
                   lyricsType === "lrc"
                     ? "text-white"
-                    : "text-white/70 hover:text-white/90"
+                    : "text-white/70"
                 }`}
               >
                 LRC歌词
