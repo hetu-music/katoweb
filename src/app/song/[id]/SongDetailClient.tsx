@@ -328,17 +328,15 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
               {/* 滑动背景指示器 */}
               <div
                 className={`absolute top-1 bottom-1 rounded-full bg-white/20 shadow-sm transition-all duration-300 ease-out ${
-                  lyricsType === "normal" 
-                    ? "left-1 right-[calc(50%-0.25rem)]" 
+                  lyricsType === "normal"
+                    ? "left-1 right-[calc(50%-0.25rem)]"
                     : "left-[calc(50%-0.25rem)] right-1"
                 }`}
               />
               <button
                 onClick={() => setLyricsType("normal")}
                 className={`relative z-10 px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-300 ${
-                  lyricsType === "normal"
-                    ? "text-white"
-                    : "text-white/70"
+                  lyricsType === "normal" ? "text-white" : "text-white/70"
                 }`}
               >
                 普通歌词
@@ -346,9 +344,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
               <button
                 onClick={() => setLyricsType("lrc")}
                 className={`relative z-10 px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-300 ${
-                  lyricsType === "lrc"
-                    ? "text-white"
-                    : "text-white/70"
+                  lyricsType === "lrc" ? "text-white" : "text-white/70"
                 }`}
               >
                 LRC歌词
