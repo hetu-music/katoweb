@@ -333,20 +333,20 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
               />
               <button
                 onClick={() => setLyricsType("normal")}
-                className={`relative z-10 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${
+                className={`relative z-10 px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-300 ${
                   lyricsType === "normal"
-                    ? "text-white scale-105"
-                    : "text-white/70 hover:text-white/90 scale-100"
+                    ? "text-white"
+                    : "text-white/70 hover:text-white/90"
                 }`}
               >
                 普通歌词
               </button>
               <button
                 onClick={() => setLyricsType("lrc")}
-                className={`relative z-10 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${
+                className={`relative z-10 px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-300 ${
                   lyricsType === "lrc"
-                    ? "text-white scale-105"
-                    : "text-white/70 hover:text-white/90 scale-100"
+                    ? "text-white"
+                    : "text-white/70 hover:text-white/90"
                 }`}
               >
                 LRC歌词
