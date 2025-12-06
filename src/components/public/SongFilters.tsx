@@ -39,20 +39,18 @@ const SongFilters: React.FC<SongFiltersProps> = ({
   return (
     <div className="w-full flex flex-col xl:flex-row gap-3">
       {/* 类型筛选 */}
-      <div className="filter-container">
-        <div className="filter-label">
-          <span>类型</span>
-          <button
-            type="button"
-            className="ml-1 w-4 h-4 flex items-center justify-center rounded-full bg-white/10 border border-white/20 text-xs text-white/70 hover:text-white hover:bg-white/20 transition-all duration-200 cursor-pointer"
-            style={{ fontSize: "13px", lineHeight: "1", padding: 0 }}
-            onClick={onTypeExplanationOpen}
-            aria-label="类型说明"
-            tabIndex={0}
-          >
-            ?
-          </button>
-        </div>
+      <div className="filter-container relative">
+        <div className="filter-label">类型</div>
+        <button
+          type="button"
+          className="absolute left-[80px] top-1/2 -translate-y-1/2 w-4 h-4 flex items-center justify-center rounded-full bg-white/10 border border-white/20 text-xs text-white/70 hover:text-white hover:bg-white/20 transition-all duration-200 cursor-pointer z-10"
+          style={{ fontSize: "13px", lineHeight: "1", padding: 0 }}
+          onClick={onTypeExplanationOpen}
+          aria-label="类型说明"
+          tabIndex={0}
+        >
+          ?
+        </button>
         <CustomSelect
           value={selectedType}
           onChange={setSelectedType}
