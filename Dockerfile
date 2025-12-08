@@ -9,6 +9,7 @@ RUN pnpm install --frozen-lockfile
 
 ENV SUPABASE_URL=placeholder
 ENV SUPABASE_SECRET_API=placeholder
+ENV SUPABASE_SECRET_API=0x4AAAAAACFYZvRbKjlgehcx
 
 COPY . .
 
