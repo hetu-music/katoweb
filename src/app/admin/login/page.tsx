@@ -10,6 +10,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 import FloatingActionButtons from "@/components/public/FloatingActionButtons";
 
@@ -19,6 +20,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -26,6 +28,28 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
+      // 验证 Turnstile
+      if (!turnstileToken) {
+        setError("请完成人机验证");
+        setLoading(false);
+        return;
+      }
+
+      const turnstileRes = await fetch("/api/auth/verify-turnstile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token: turnstileToken }),
+      });
+
+      const turnstileData = await turnstileRes.json();
+      if (!turnstileData.success) {
+        setError("人机验证失败，请重试");
+        setLoading(false);
+        return;
+      }
+
       // 每次登录前都获取最新的 CSRF token
       const csrfRes = await fetch("/api/auth/csrf-token", {
         cache: "no-store", // 确保获取最新的 token
@@ -93,23 +117,23 @@ export default function LoginPage() {
         {/* 统一的竖向长容器 */}
         <div className="w-full max-w-sm sm:max-w-md bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl transition-all duration-300 hover:bg-white/15">
           {/* 主标题区域 */}
-          <div className="text-center pt-8 pb-6 px-6 sm:pt-10 sm:pb-8 sm:px-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-linear-to-br from-blue-500 to-purple-600 rounded-3xl mb-4 sm:mb-6 shadow-xl">
-              <Feather className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+          <div className="text-center pt-7 pb-5 px-6 sm:pt-8 sm:pb-6 sm:px-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 sm:w-18 sm:h-18 bg-linear-to-br from-blue-500 to-purple-600 rounded-3xl mb-4 sm:mb-5 shadow-xl">
+              <Feather className="w-8 h-8 sm:w-9 sm:h-9 text-white" />
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3 tracking-wide">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2.5 tracking-wide">
               管理页面
             </h1>
-            <p className="text-white/70 text-base">请使用您的账户登录</p>
+            <p className="text-white/70 text-sm">请使用您的账户登录</p>
           </div>
 
           {/* 登录表单 */}
           <form
             onSubmit={handleLogin}
-            className="px-6 pb-6 space-y-5 sm:px-8 sm:pb-8 sm:space-y-6"
+            className="px-6 pb-6 space-y-4.5 sm:px-8 sm:pb-7"
           >
             {/* 邮箱输入框 */}
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               <label className="text-white/90 text-sm font-medium block">
                 邮箱地址
               </label>
@@ -122,14 +146,14 @@ export default function LoginPage() {
                   placeholder="请输入您的邮箱"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full h-14 pl-14 pr-4 rounded-xl border border-white/30 bg-white/15 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:bg-white/25 transition-all duration-200"
+                  className="w-full h-12 pl-14 pr-4 rounded-xl border border-white/30 bg-white/15 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:bg-white/25 transition-all duration-200"
                   required
                 />
               </div>
             </div>
 
             {/* 密码输入框 */}
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               <label className="text-white/90 text-sm font-medium block">
                 登录密码
               </label>
@@ -142,7 +166,7 @@ export default function LoginPage() {
                   placeholder="请输入您的密码"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-14 pl-14 pr-14 rounded-xl border border-white/30 bg-white/15 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:bg-white/25 transition-all duration-200"
+                  className="w-full h-12 pl-14 pr-14 rounded-xl border border-white/30 bg-white/15 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:bg-white/25 transition-all duration-200"
                   required
                 />
                 <button
@@ -159,9 +183,23 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {/* Turnstile 人机验证 - 使用 flexible 模式适应容器宽度 */}
+            <div className="w-full pt-1">
+              <Turnstile
+                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
+                onSuccess={(token) => setTurnstileToken(token)}
+                onError={() => setError("人机验证加载失败")}
+                onExpire={() => setTurnstileToken("")}
+                options={{
+                  theme: "light",
+                  size: "flexible",
+                }}
+              />
+            </div>
+
             {/* 错误信息 */}
             {error && (
-              <div className="bg-red-500/20 border border-red-400/40 rounded-xl p-4 text-red-200 text-sm text-center backdrop-blur-sm">
+              <div className="bg-red-500/20 border border-red-400/40 rounded-xl p-3.5 text-red-200 text-sm text-center backdrop-blur-sm">
                 <div className="flex items-center justify-center gap-2">
                   <div className="w-4 h-4 bg-red-400/30 rounded-full flex items-center justify-center">
                     <div className="w-2 h-2 bg-red-300 rounded-full"></div>
@@ -172,11 +210,11 @@ export default function LoginPage() {
             )}
 
             {/* 按钮组 */}
-            <div className="flex flex-col gap-3 pt-4">
+            <div className="flex flex-col gap-3 pt-3">
               <button
                 type="submit"
-                className="w-full h-14 flex items-center justify-center gap-3 bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 active:from-blue-700 active:to-purple-800 text-white font-semibold rounded-xl shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
-                disabled={loading}
+                className="w-full h-13 flex items-center justify-center gap-2.5 bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 active:from-blue-700 active:to-purple-800 text-white font-semibold rounded-xl shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+                disabled={loading || !turnstileToken}
               >
                 {loading ? (
                   <>
@@ -203,7 +241,7 @@ export default function LoginPage() {
           </form>
 
           {/* 底部提示 */}
-          <div className="text-center pb-6 px-6 sm:pb-8 sm:px-8">
+          <div className="text-center pb-6 px-6 sm:pb-7 sm:px-8">
             <p className="text-white/50 text-xs">如有疑问请联系管理员</p>
           </div>
         </div>
