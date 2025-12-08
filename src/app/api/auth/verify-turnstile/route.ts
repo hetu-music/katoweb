@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     if (!token) {
       return NextResponse.json(
         { success: false, error: "缺少验证令牌" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       console.error("TURNSTILE_SECRET_KEY 未配置");
       return NextResponse.json(
         { success: false, error: "服务器配置错误" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
           secret: secretKey,
           response: token,
         }),
-      }
+      },
     );
 
     const verifyData = await verifyResponse.json();
@@ -46,14 +46,14 @@ export async function POST(request: NextRequest) {
           error: "验证失败",
           errorCodes: verifyData["error-codes"],
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
   } catch (error) {
     console.error("Turnstile 验证错误:", error);
     return NextResponse.json(
       { success: false, error: "验证服务异常" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

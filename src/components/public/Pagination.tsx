@@ -62,9 +62,9 @@ const Pagination: React.FC<PaginationProps> = ({
   };
 
   const visiblePages = getVisiblePages();
-  
+
   // 创建一个唯一的 key 前缀，当 visiblePages 变化时强制重新渲染所有按钮
-  const keyPrefix = visiblePages.filter(p => typeof p === 'number').join('-');
+  const keyPrefix = visiblePages.filter((p) => typeof p === "number").join("-");
 
   return (
     <div
@@ -101,18 +101,22 @@ const Pagination: React.FC<PaginationProps> = ({
             key={`${keyPrefix}-page-${pageNum}-${index}`}
             onClick={() => onPageChange(pageNum)}
             onTouchStart={(e) => {
-              e.currentTarget.style.transform = 'scale(0.9)';
+              e.currentTarget.style.transform = "scale(0.9)";
             }}
             onTouchEnd={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.transform = "scale(1)";
             }}
             style={{
-              background: isActive 
-                ? 'linear-gradient(to right, rgba(59, 130, 246, 0.8), rgba(168, 85, 247, 0.8))'
-                : 'rgba(255, 255, 255, 0.1)',
-              borderColor: isActive ? 'rgba(96, 165, 250, 0.6)' : 'rgba(255, 255, 255, 0.2)',
-              boxShadow: isActive ? '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' : 'none',
-              touchAction: 'manipulation',
+              background: isActive
+                ? "linear-gradient(to right, rgba(59, 130, 246, 0.8), rgba(168, 85, 247, 0.8))"
+                : "rgba(255, 255, 255, 0.1)",
+              borderColor: isActive
+                ? "rgba(96, 165, 250, 0.6)"
+                : "rgba(255, 255, 255, 0.2)",
+              boxShadow: isActive
+                ? "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
+                : "none",
+              touchAction: "manipulation",
             }}
             className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl border font-medium text-xs sm:text-sm shrink-0 text-white backdrop-blur-sm hover:bg-white/20 transition-transform duration-200 active:scale-90"
           >
