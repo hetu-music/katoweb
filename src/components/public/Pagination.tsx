@@ -107,7 +107,7 @@ const Pagination: React.FC<PaginationProps> = ({
               borderColor: isActive ? 'rgba(96, 165, 250, 0.6)' : 'rgba(255, 255, 255, 0.2)',
               boxShadow: isActive ? '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' : 'none',
             }}
-            className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl border font-medium text-xs sm:text-sm shrink-0 text-white backdrop-blur-sm hover:bg-white/20 transition-colors duration-200"
+            className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl border font-medium text-xs sm:text-sm shrink-0 text-white backdrop-blur-sm hover:bg-white/20 transition-transform duration-100 active:scale-90"
           >
             {pageNum}
           </button>
