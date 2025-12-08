@@ -29,7 +29,7 @@ export function usePagination<T>({
   initialPage = 1,
   resetOnDataChange = false,
 }: UsePaginationProps<T>): UsePaginationReturn<T> {
-  const [currentPage, setCurrentPage] = useState(initialPage);
+  const [currentPage, setCurrentPageState] = useState(initialPage);
   const prevInitialPageRef = useRef(initialPage);
   const prevDataLengthRef = useRef(data.length);
 
@@ -38,7 +38,7 @@ export function usePagination<T>({
     if (initialPage !== prevInitialPageRef.current) {
       prevInitialPageRef.current = initialPage;
       const updatePage = () => {
-        setCurrentPage(initialPage);
+        setCurrentPageState(initialPage);
       };
       updatePage();
     }
@@ -55,7 +55,7 @@ export function usePagination<T>({
     if (resetOnDataChange && data.length !== prevDataLengthRef.current) {
       prevDataLengthRef.current = data.length;
       const resetToFirstPage = () => {
-        setCurrentPage(1);
+        setCurrentPageState(1);
       };
       resetToFirstPage();
       return;
@@ -64,9 +64,9 @@ export function usePagination<T>({
     // 否则只确保当前页面有效
     const adjustCurrentPage = () => {
       if (currentPage > totalPages && totalPages > 0) {
-        setCurrentPage(totalPages);
+        setCurrentPageState(totalPages);
       } else if (currentPage < 1) {
-        setCurrentPage(1);
+        setCurrentPageState(1);
       }
     };
     adjustCurrentPage();
@@ -86,27 +86,27 @@ export function usePagination<T>({
   // 分页操作函数
   const goToNextPage = () => {
     if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
+      setCurrentPageState(currentPage + 1);
     }
   };
 
   const goToPrevPage = () => {
     if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
+      setCurrentPageState(currentPage - 1);
     }
   };
 
   const goToFirstPage = () => {
-    setCurrentPage(1);
+    setCurrentPageState(1);
   };
 
   const goToLastPage = () => {
-    setCurrentPage(totalPages);
+    setCurrentPageState(totalPages);
   };
 
-  const handleSetCurrentPage = (page: number) => {
+  const setCurrentPage = (page: number) => {
     if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
+      setCurrentPageState(page);
     }
   };
 
@@ -114,7 +114,7 @@ export function usePagination<T>({
     currentPage,
     totalPages,
     currentData,
-    setCurrentPage: handleSetCurrentPage,
+    setCurrentPage,
     goToNextPage,
     goToPrevPage,
     goToFirstPage,
