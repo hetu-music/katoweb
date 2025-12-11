@@ -723,28 +723,28 @@ export default function AdminClientComponent({
         {!loading && (
           <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 shadow-2xl border border-white/20 overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full table-fixed">
                 <thead>
                   <tr className="border-b border-white/20">
-                    <th className="text-left py-4 px-4 text-white font-semibold">
+                    <th className="text-left py-4 px-4 text-white font-semibold w-20">
                       序号
                     </th>
                     <th className="text-left py-4 px-4 text-white font-semibold">
                       标题
                     </th>
-                    <th className="text-left py-4 px-4 text-white font-semibold hidden md:table-cell">
+                    <th className="text-left py-4 px-4 text-white font-semibold hidden md:table-cell w-32 lg:w-48">
                       专辑
                     </th>
-                    <th className="text-left py-4 px-4 text-white font-semibold hidden md:table-cell">
+                    <th className="text-left py-4 px-4 text-white font-semibold hidden md:table-cell w-24 lg:w-32">
                       作词
                     </th>
-                    <th className="text-left py-4 px-4 text-white font-semibold hidden md:table-cell">
+                    <th className="text-left py-4 px-4 text-white font-semibold hidden md:table-cell w-24 lg:w-32">
                       作曲
                     </th>
-                    <th className="text-left py-4 px-4 text-white font-semibold hidden md:table-cell">
+                    <th className="text-left py-4 px-4 text-white font-semibold hidden md:table-cell w-24">
                       类型
                     </th>
-                    <th className="text-left py-4 px-4 text-white font-semibold">
+                    <th className="text-left py-4 px-4 text-white font-semibold w-32">
                       操作
                     </th>
                   </tr>
