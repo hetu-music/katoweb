@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import {
   Search,
   Plus,
@@ -29,6 +29,52 @@ import Notification from "./Notification";
 import CoverUpload from "./CoverUpload";
 import ScoreUpload from "./ScoreUpload";
 
+// 判断歌曲信息是否完整的函数
+function isSongIncomplete(song: SongDetail): boolean {
+  // 核心必填字段
+  const coreFields = [
+    'title', 'album', 'lyricist', 'composer', 'artist', 'type', 'genre'
+  ] as const;
+  
+  // 检查核心字段是否为空
+  for (const field of coreFields) {
+    const value = song[field];
+    if (!value || 
+        (Array.isArray(value) && value.length === 0) || 
+        (typeof value === 'string' && value.trim() === '')) {
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+// 获取缺失的字段信息
+function getMissingFields(song: SongDetail): string[] {
+  const coreFields = [
+    { key: 'title', label: '标题' },
+    { key: 'album', label: '专辑' },
+    { key: 'lyricist', label: '作词' },
+    { key: 'composer', label: '作曲' },
+    { key: 'artist', label: '演唱' },
+    { key: 'type', label: '类型' },
+    { key: 'genre', label: '流派' }
+  ] as const;
+  
+  const missing: string[] = [];
+  
+  for (const field of coreFields) {
+    const value = song[field.key];
+    if (!value || 
+        (Array.isArray(value) && value.length === 0) || 
+        (typeof value === 'string' && value.trim() === '')) {
+      missing.push(field.label);
+    }
+  }
+  
+  return missing;
+}
+
 // Memoized SongRow component
 const SongRow = React.memo(
   ({
@@ -48,7 +94,16 @@ const SongRow = React.memo(
       <>
         <tr className="border-b border-white/10 hover:bg-white/5 transition-colors">
           <td className="py-4 px-4 text-white/90">{idx + 1}</td>
-          <td className="py-4 px-4 text-white/90 font-medium">{song.title}</td>
+          <td className="py-4 px-4 text-white/90 font-medium">
+            <div className="flex items-center gap-2">
+              <span>{song.title}</span>
+              {isSongIncomplete(song) && (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-400/30 animate-pulse">
+                  待完善
+                </span>
+              )}
+            </div>
+          </td>
           <td className="py-4 px-4 text-white/80 hidden md:table-cell">
             {song.album || "-"}
           </td>
@@ -91,27 +146,70 @@ const SongRow = React.memo(
         {expandedRows.has(song.id) && (
           <tr>
             <td colSpan={7} className="py-4 px-4 bg-white/5">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {songFields.map((field) => (
-                  <div key={field.key} className="flex flex-col">
-                    <span className="text-blue-300 text-sm font-medium mb-1">
-                      {field.label}:
-                    </span>
-                    <span className="text-white/80 text-sm wrap-break-word">
-                      {field.key === "hascover"
-                        ? song.hascover === true
-                          ? "定制封面"
-                          : song.hascover === false
-                            ? "初号机（黑底机器人）"
-                            : "白底狐狸（默认）"
-                        : field.key === "nmn_status"
-                          ? song.nmn_status === true
-                            ? "有乐谱"
-                            : "无乐谱"
-                          : formatField(song[field.key], field.type)}
-                    </span>
+              {/* 如果歌曲信息不完整，显示缺失字段提示 */}
+              {isSongIncomplete(song) && (
+                <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-400/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
+                    <span className="text-amber-300 font-medium text-sm">信息待完善</span>
                   </div>
-                ))}
+                  <div className="text-amber-200/80 text-xs">
+                    缺失字段: {getMissingFields(song).join('、')}
+                  </div>
+                </div>
+              )}
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {songFields.map((field) => {
+                  const value = song[field.key];
+                  const isEmpty = !value || 
+                    (Array.isArray(value) && value.length === 0) || 
+                    (typeof value === 'string' && value.trim() === '');
+                  
+                  // 核心字段列表
+                  const coreFields = ['title', 'album', 'lyricist', 'composer', 'artist', 'type', 'genre'];
+                  const isCoreField = coreFields.includes(field.key);
+                  const shouldHighlight = isCoreField && isEmpty;
+                  
+                  return (
+                    <div 
+                      key={field.key} 
+                      className={`flex flex-col ${
+                        shouldHighlight 
+                          ? 'bg-red-500/10 border border-red-400/30 rounded-lg p-3' 
+                          : ''
+                      }`}
+                    >
+                      <span className={`text-sm font-medium mb-1 ${
+                        shouldHighlight 
+                          ? 'text-red-300' 
+                          : 'text-blue-300'
+                      }`}>
+                        {field.label}:
+                        {shouldHighlight && (
+                          <span className="ml-1 text-xs text-red-400">(缺失)</span>
+                        )}
+                      </span>
+                      <span className={`text-sm wrap-break-word ${
+                        shouldHighlight 
+                          ? 'text-red-200/80' 
+                          : 'text-white/80'
+                      }`}>
+                        {field.key === "hascover"
+                          ? song.hascover === true
+                            ? "定制封面"
+                            : song.hascover === false
+                              ? "初号机（黑底机器人）"
+                              : "白底狐狸（默认）"
+                          : field.key === "nmn_status"
+                            ? song.nmn_status === true
+                              ? "有乐谱"
+                              : "无乐谱"
+                            : formatField(song[field.key], field.type) || (shouldHighlight ? "未填写" : "-")}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </td>
           </tr>
@@ -143,6 +241,8 @@ export default function AdminClientComponent({
     }
   }, []);
 
+  const [showIncompleteOnly, setShowIncompleteOnly] = useState(false);
+
   const {
     songs,
     setSongs,
@@ -152,13 +252,30 @@ export default function AdminClientComponent({
     setError,
     searchTerm,
     setSearchTerm,
-    filteredSongs,
-    sortedSongs,
+    filteredSongs: baseFilteredSongs,
+    sortedSongs: baseSortedSongs,
   } = useSongs(
     initialSongs,
     initialError,
     isClient ? searchParams?.get("q") || "" : "",
   );
+
+  // 在基础筛选结果上再应用待完善筛选
+  const filteredSongs = useMemo(() => {
+    if (showIncompleteOnly) {
+      return baseFilteredSongs.filter(song => isSongIncomplete(song));
+    }
+    return baseFilteredSongs;
+  }, [baseFilteredSongs, showIncompleteOnly]);
+
+  const sortedSongs = useMemo(() => {
+    if (showIncompleteOnly) {
+      return filteredSongs.slice().sort((a, b) => a.title.localeCompare(b.title));
+    }
+    return baseSortedSongs.filter(song => 
+      showIncompleteOnly ? isSongIncomplete(song) : true
+    );
+  }, [filteredSongs, baseSortedSongs, showIncompleteOnly]);
 
   // 直接从 URL 获取初始页面，避免额外的状态
   const getInitialPage = () => {
@@ -416,6 +533,7 @@ export default function AdminClientComponent({
               onClick={() => {
                 // 重置搜索条件和页面
                 setSearchTerm("");
+                setShowIncompleteOnly(false);
                 setPaginationPage(1);
               }}
               title="点击重置搜索条件"
@@ -464,13 +582,29 @@ export default function AdminClientComponent({
               </button>
             )}
           </div>
-          <button
-            onClick={() => setShowAdd(true)}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-linear-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 text-green-200 hover:from-green-500/30 hover:to-emerald-500/30 hover:text-green-100 transition-all duration-200 shadow-sm font-medium whitespace-nowrap"
-          >
-            <Plus size={20} />
-            新增歌曲
-          </button>
+          
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowIncompleteOnly(!showIncompleteOnly)}
+              className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all duration-200 shadow-sm font-medium whitespace-nowrap ${
+                showIncompleteOnly
+                  ? 'bg-linear-to-r from-amber-500/30 to-orange-500/30 border-amber-400/50 text-amber-100'
+                  : 'bg-linear-to-r from-amber-500/20 to-orange-500/20 border-amber-400/30 text-amber-200 hover:from-amber-500/30 hover:to-orange-500/30 hover:text-amber-100'
+              }`}
+              title={showIncompleteOnly ? "显示全部歌曲" : "只显示待完善歌曲"}
+            >
+              <div className={`w-2 h-2 rounded-full ${showIncompleteOnly ? 'bg-amber-300 animate-pulse' : 'bg-amber-400'}`}></div>
+              {showIncompleteOnly ? "仅待完善" : "待完善"}
+            </button>
+            
+            <button
+              onClick={() => setShowAdd(true)}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-linear-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 text-green-200 hover:from-green-500/30 hover:to-emerald-500/30 hover:text-green-100 transition-all duration-200 shadow-sm font-medium whitespace-nowrap"
+            >
+              <Plus size={20} />
+              新增歌曲
+            </button>
+          </div>
         </div>
 
         {/* Stats */}
@@ -491,6 +625,16 @@ export default function AdminClientComponent({
               筛选{" "}
               <span className="text-amber-200 font-semibold">
                 {filteredSongs.length}
+              </span>{" "}
+              首
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-red-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
+            <div className="w-2 h-2 bg-linear-to-r from-red-400 to-pink-400 rounded-full animate-pulse shrink-0"></div>
+            <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
+              待完善{" "}
+              <span className="text-red-200 font-semibold">
+                {songs.filter(song => isSongIncomplete(song)).length}
               </span>{" "}
               首
             </span>
