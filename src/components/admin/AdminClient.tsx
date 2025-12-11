@@ -35,17 +35,17 @@ function isSongIncomplete(song: SongDetail): boolean {
   const coreFields = [
     'title', 'album', 'lyricist', 'composer', 'artist', 'type', 'genre'
   ] as const;
-  
+
   // 检查核心字段是否为空
   for (const field of coreFields) {
     const value = song[field];
-    if (!value || 
-        (Array.isArray(value) && value.length === 0) || 
-        (typeof value === 'string' && value.trim() === '')) {
+    if (!value ||
+      (Array.isArray(value) && value.length === 0) ||
+      (typeof value === 'string' && value.trim() === '')) {
       return true;
     }
   }
-  
+
   return false;
 }
 
@@ -60,18 +60,18 @@ function getMissingFields(song: SongDetail): string[] {
     { key: 'type', label: '类型' },
     { key: 'genre', label: '流派' }
   ] as const;
-  
+
   const missing: string[] = [];
-  
+
   for (const field of coreFields) {
     const value = song[field.key];
-    if (!value || 
-        (Array.isArray(value) && value.length === 0) || 
-        (typeof value === 'string' && value.trim() === '')) {
+    if (!value ||
+      (Array.isArray(value) && value.length === 0) ||
+      (typeof value === 'string' && value.trim() === '')) {
       missing.push(field.label);
     }
   }
-  
+
   return missing;
 }
 
@@ -90,9 +90,14 @@ const SongRow = React.memo(
     toggleRowExpansion: (id: number) => void;
     handleEdit: (song: Song) => void;
   }) => {
+    const isExpanded = expandedRows.has(song.id);
+
     return (
       <>
-        <tr className="border-b border-white/10 hover:bg-white/5 transition-colors">
+        <tr
+          className={`border-b border-white/10 transition-colors ${isExpanded ? 'bg-white/10' : 'hover:bg-white/5'
+            }`}
+        >
           <td className="py-4 px-4 text-white/90">{idx + 1}</td>
           <td className="py-4 px-4 text-white/90 font-medium">
             <div className="flex items-center gap-2">
@@ -124,10 +129,13 @@ const SongRow = React.memo(
             <div className="flex items-center gap-2">
               <button
                 onClick={() => toggleRowExpansion(song.id)}
-                className="p-2 rounded-lg bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200 transition-all duration-200"
-                title="查看详情"
+                className={`p-2 rounded-lg transition-all duration-200 ${isExpanded
+                    ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
+                    : 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200'
+                  }`}
+                title={isExpanded ? "收起详情" : "查看详情"}
               >
-                {expandedRows.has(song.id) ? (
+                {isExpanded ? (
                   <EyeOff size={16} />
                 ) : (
                   <Eye size={16} />
@@ -143,73 +151,89 @@ const SongRow = React.memo(
             </div>
           </td>
         </tr>
-        {expandedRows.has(song.id) && (
+        {isExpanded && (
           <tr>
-            <td colSpan={7} className="py-4 px-4 bg-white/5">
-              {/* 如果歌曲信息不完整，显示缺失字段提示 */}
-              {isSongIncomplete(song) && (
-                <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-400/30">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-2 h-2 bg-amber-400 rounded-full"></div>
-                    <span className="text-amber-300 font-medium text-sm">信息待完善</span>
-                  </div>
-                  <div className="text-amber-200/80 text-xs">
-                    缺失字段: {getMissingFields(song).join('、')}
+            <td colSpan={7} className="p-0 border-b border-white/5">
+              <div className="bg-gray-950/60 shadow-inner relative overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="p-6">
+                  {/* 如果歌曲信息不完整，显示缺失字段提示 */}
+                  {isSongIncomplete(song) && (
+                    <div className="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-400/20 shadow-sm flex items-start gap-4">
+                      <div className="p-2 bg-amber-500/20 rounded-lg text-amber-300 shrink-0 mt-0.5">
+                        <XCircle size={18} />
+                      </div>
+                      <div>
+                        <h4 className="text-amber-300 font-semibold mb-1">信息待完善</h4>
+                        <p className="text-amber-200/70 text-sm mb-2">
+                          以下核心字段内容缺失，请及时补充：
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {getMissingFields(song).map(field => (
+                            <span key={field} className="px-2 py-1 bg-amber-900/40 border border-amber-500/20 rounded text-xs text-amber-200">
+                              {field}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {songFields.map((field) => {
+                      const value = song[field.key];
+                      const isEmpty = !value ||
+                        (Array.isArray(value) && value.length === 0) ||
+                        (typeof value === 'string' && value.trim() === '');
+
+                      // 核心字段列表
+                      const coreFields = ['title', 'album', 'lyricist', 'composer', 'artist', 'type', 'genre'];
+                      const isCoreField = coreFields.includes(field.key);
+                      const shouldHighlight = isCoreField && isEmpty;
+
+                      return (
+                        <div
+                          key={field.key}
+                          className={`
+                            relative overflow-hidden rounded-xl border p-4 transition-all duration-200
+                            ${shouldHighlight
+                              ? 'bg-red-500/5 border-red-500/30 hover:bg-red-500/10'
+                              : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'
+                            }
+                          `}
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <span className={`text-xs font-semibold tracking-wider uppercase ${shouldHighlight ? 'text-red-400' : 'text-blue-200/70'
+                              }`}>
+                              {field.label}
+                            </span>
+                            {shouldHighlight && (
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500/20 text-red-400">
+                                required
+                              </span>
+                            )}
+                          </div>
+
+                          <div className={`text-sm break-words leading-relaxed font-medium ${shouldHighlight
+                              ? 'text-red-200/90'
+                              : 'text-white/90'
+                            }`}>
+                            {field.key === "hascover"
+                              ? song.hascover === true
+                                ? <span className="text-green-300">定制封面</span>
+                                : song.hascover === false
+                                  ? <span className="text-purple-300">初号机</span>
+                                  : <span className="text-gray-400">白底狐狸 (默认)</span>
+                              : field.key === "nmn_status"
+                                ? song.nmn_status === true
+                                  ? <span className="text-green-300 flex items-center gap-1">✓ 有乐谱</span>
+                                  : <span className="text-gray-400">无乐谱</span>
+                                : formatField(song[field.key], field.type) || (shouldHighlight ? "未填写" : <span className="text-white/20">-</span>)}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-              )}
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {songFields.map((field) => {
-                  const value = song[field.key];
-                  const isEmpty = !value || 
-                    (Array.isArray(value) && value.length === 0) || 
-                    (typeof value === 'string' && value.trim() === '');
-                  
-                  // 核心字段列表
-                  const coreFields = ['title', 'album', 'lyricist', 'composer', 'artist', 'type', 'genre'];
-                  const isCoreField = coreFields.includes(field.key);
-                  const shouldHighlight = isCoreField && isEmpty;
-                  
-                  return (
-                    <div 
-                      key={field.key} 
-                      className={`flex flex-col ${
-                        shouldHighlight 
-                          ? 'bg-red-500/10 border border-red-400/30 rounded-lg p-3' 
-                          : ''
-                      }`}
-                    >
-                      <span className={`text-sm font-medium mb-1 ${
-                        shouldHighlight 
-                          ? 'text-red-300' 
-                          : 'text-blue-300'
-                      }`}>
-                        {field.label}:
-                        {shouldHighlight && (
-                          <span className="ml-1 text-xs text-red-400">(缺失)</span>
-                        )}
-                      </span>
-                      <span className={`text-sm wrap-break-word ${
-                        shouldHighlight 
-                          ? 'text-red-200/80' 
-                          : 'text-white/80'
-                      }`}>
-                        {field.key === "hascover"
-                          ? song.hascover === true
-                            ? "定制封面"
-                            : song.hascover === false
-                              ? "初号机（黑底机器人）"
-                              : "白底狐狸（默认）"
-                          : field.key === "nmn_status"
-                            ? song.nmn_status === true
-                              ? "有乐谱"
-                              : "无乐谱"
-                            : formatField(song[field.key], field.type) || (shouldHighlight ? "未填写" : "-")}
-                      </span>
-                    </div>
-                  );
-                })}
               </div>
             </td>
           </tr>
@@ -272,7 +296,7 @@ export default function AdminClientComponent({
     if (showIncompleteOnly) {
       return filteredSongs.slice().sort((a, b) => a.title.localeCompare(b.title));
     }
-    return baseSortedSongs.filter(song => 
+    return baseSortedSongs.filter(song =>
       showIncompleteOnly ? isSongIncomplete(song) : true
     );
   }, [filteredSongs, baseSortedSongs, showIncompleteOnly]);
@@ -581,21 +605,20 @@ export default function AdminClientComponent({
               </button>
             )}
           </div>
-          
+
           <div className="flex gap-3">
             <button
               onClick={() => setShowIncompleteOnly(!showIncompleteOnly)}
-              className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all duration-200 shadow-sm font-medium whitespace-nowrap ${
-                showIncompleteOnly
+              className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all duration-200 shadow-sm font-medium whitespace-nowrap ${showIncompleteOnly
                   ? 'bg-linear-to-r from-amber-500/30 to-orange-500/30 border-amber-400/50 text-amber-100'
                   : 'bg-linear-to-r from-amber-500/20 to-orange-500/20 border-amber-400/30 text-amber-200 hover:from-amber-500/30 hover:to-orange-500/30 hover:text-amber-100'
-              }`}
+                }`}
               title={showIncompleteOnly ? "显示全部歌曲" : "只显示待完善歌曲"}
             >
               <div className={`w-2 h-2 rounded-full ${showIncompleteOnly ? 'bg-amber-300' : 'bg-amber-400'}`}></div>
               {showIncompleteOnly ? "仅待完善" : "待完善"}
             </button>
-            
+
             <button
               onClick={() => setShowAdd(true)}
               className="flex items-center gap-2 px-6 py-3 rounded-xl bg-linear-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 text-green-200 hover:from-green-500/30 hover:to-emerald-500/30 hover:text-green-100 transition-all duration-200 shadow-sm font-medium whitespace-nowrap"
@@ -833,11 +856,10 @@ export default function AdminClientComponent({
         <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div
             className={`relative max-w-sm w-full p-6 rounded-2xl shadow-2xl border-2 backdrop-blur-md transform transition-all duration-300 animate-in zoom-in-95 slide-in-from-bottom-2
-            ${
-              addResultMessage === "成功" || editResultMessage === "成功"
+            ${addResultMessage === "成功" || editResultMessage === "成功"
                 ? "bg-linear-to-br from-green-500/90 to-emerald-600/90 border-green-400/60 text-white"
                 : "bg-linear-to-br from-red-500/90 to-red-600/90 border-red-400/60 text-white"
-            }
+              }
           `}
           >
             {/* 装饰性背景元素 */}
@@ -846,11 +868,10 @@ export default function AdminClientComponent({
             {/* 图标和消息 */}
             <div className="relative flex flex-col items-center text-center space-y-4">
               <div
-                className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                  addResultMessage === "成功" || editResultMessage === "成功"
+                className={`w-16 h-16 rounded-full flex items-center justify-center ${addResultMessage === "成功" || editResultMessage === "成功"
                     ? "bg-green-400/30 border-2 border-green-300/50"
                     : "bg-red-400/30 border-2 border-red-300/50"
-                }`}
+                  }`}
               >
                 {addResultMessage === "成功" || editResultMessage === "成功" ? (
                   <svg
@@ -887,22 +908,20 @@ export default function AdminClientComponent({
 
               <div>
                 <h3
-                  className={`text-xl font-bold mb-2 ${
-                    addResultMessage === "成功" || editResultMessage === "成功"
+                  className={`text-xl font-bold mb-2 ${addResultMessage === "成功" || editResultMessage === "成功"
                       ? "text-green-100"
                       : "text-red-100"
-                  }`}
+                    }`}
                 >
                   {addResultMessage === "成功" || editResultMessage === "成功"
                     ? "操作成功"
                     : "操作失败"}
                 </h3>
                 <p
-                  className={`text-sm opacity-90 ${
-                    addResultMessage === "成功" || editResultMessage === "成功"
+                  className={`text-sm opacity-90 ${addResultMessage === "成功" || editResultMessage === "成功"
                       ? "text-green-200"
                       : "text-red-200"
-                  }`}
+                    }`}
                 >
                   {addResultMessage || editResultMessage}
                 </p>
@@ -915,11 +934,10 @@ export default function AdminClientComponent({
                 setAddResultMessage(null);
                 setEditResultMessage(null);
               }}
-              className={`absolute top-3 right-3 p-1 rounded-full hover:bg-white/20 transition-colors duration-200 ${
-                addResultMessage === "成功" || editResultMessage === "成功"
+              className={`absolute top-3 right-3 p-1 rounded-full hover:bg-white/20 transition-colors duration-200 ${addResultMessage === "成功" || editResultMessage === "成功"
                   ? "text-green-200"
                   : "text-red-200"
-              }`}
+                }`}
             >
               <X size={16} />
             </button>
@@ -927,11 +945,10 @@ export default function AdminClientComponent({
             {/* 自动关闭倒计时 */}
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 rounded-b-2xl overflow-hidden">
               <div
-                className={`h-full transition-all duration-3000 ease-linear ${
-                  addResultMessage === "成功" || editResultMessage === "成功"
+                className={`h-full transition-all duration-3000 ease-linear ${addResultMessage === "成功" || editResultMessage === "成功"
                     ? "bg-green-300"
                     : "bg-red-300"
-                }`}
+                  }`}
               ></div>
             </div>
           </div>
