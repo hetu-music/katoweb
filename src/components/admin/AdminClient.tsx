@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import {
   Search,
   Plus,
@@ -29,6 +29,70 @@ import Notification from "./Notification";
 import CoverUpload from "./CoverUpload";
 import ScoreUpload from "./ScoreUpload";
 
+// 判断歌曲信息是否完整的函数
+function isSongIncomplete(song: SongDetail): boolean {
+  // 检查所有配置字段
+  for (const field of songFields) {
+    // 封面不用检测，视作已经填写
+    if (field.key === 'hascover') continue;
+
+    const value = song[field.key];
+
+    // 特殊处理乐谱状态：只有 true 算完整，false/null/undefined 算缺失
+    if (field.key === 'nmn_status') {
+      if (value !== true) return true;
+      continue;
+    }
+
+    // 检查 null 或 undefined
+    if (value === null || value === undefined) {
+      return true;
+    }
+
+    // 检查空数组
+    if (Array.isArray(value) && value.length === 0) {
+      return true;
+    }
+
+    // 检查空字符串
+    if (typeof value === 'string' && value.trim() === '') {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// 获取缺失的字段信息
+function getMissingFields(song: SongDetail): string[] {
+  const missing: string[] = [];
+
+  for (const field of songFields) {
+    // 封面不用检测
+    if (field.key === 'hascover') continue;
+
+    const value = song[field.key];
+    let isEmpty = false;
+
+    // 特殊处理乐谱状态
+    if (field.key === 'nmn_status') {
+      if (value !== true) isEmpty = true;
+    } else if (value === null || value === undefined) {
+      isEmpty = true;
+    } else if (Array.isArray(value) && value.length === 0) {
+      isEmpty = true;
+    } else if (typeof value === 'string' && value.trim() === '') {
+      isEmpty = true;
+    }
+
+    if (isEmpty) {
+      missing.push(field.label);
+    }
+  }
+
+  return missing;
+}
+
 // Memoized SongRow component
 const SongRow = React.memo(
   ({
@@ -44,11 +108,25 @@ const SongRow = React.memo(
     toggleRowExpansion: (id: number) => void;
     handleEdit: (song: Song) => void;
   }) => {
+    const isExpanded = expandedRows.has(song.id);
+
     return (
       <>
-        <tr className="border-b border-white/10 hover:bg-white/5 transition-colors">
+        <tr
+          className={`border-b border-white/10 transition-colors ${isExpanded ? 'bg-white/10' : 'hover:bg-white/5'
+            }`}
+        >
           <td className="py-4 px-4 text-white/90">{idx + 1}</td>
-          <td className="py-4 px-4 text-white/90 font-medium">{song.title}</td>
+          <td className="py-4 px-4 text-white/90 font-medium">
+            <div className="flex items-center gap-2">
+              <span>{song.title}</span>
+              {isSongIncomplete(song) && (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                  待完善
+                </span>
+              )}
+            </div>
+          </td>
           <td className="py-4 px-4 text-white/80 hidden md:table-cell">
             {song.album || "-"}
           </td>
@@ -69,10 +147,13 @@ const SongRow = React.memo(
             <div className="flex items-center gap-2">
               <button
                 onClick={() => toggleRowExpansion(song.id)}
-                className="p-2 rounded-lg bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200 transition-all duration-200"
-                title="查看详情"
+                className={`p-2 rounded-lg transition-all duration-200 ${isExpanded
+                  ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
+                  : 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200'
+                  }`}
+                title={isExpanded ? "收起详情" : "查看详情"}
               >
-                {expandedRows.has(song.id) ? (
+                {isExpanded ? (
                   <EyeOff size={16} />
                 ) : (
                   <Eye size={16} />
@@ -88,30 +169,96 @@ const SongRow = React.memo(
             </div>
           </td>
         </tr>
-        {expandedRows.has(song.id) && (
+        {isExpanded && (
           <tr>
-            <td colSpan={7} className="py-4 px-4 bg-white/5">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {songFields.map((field) => (
-                  <div key={field.key} className="flex flex-col">
-                    <span className="text-blue-300 text-sm font-medium mb-1">
-                      {field.label}:
-                    </span>
-                    <span className="text-white/80 text-sm wrap-break-word">
-                      {field.key === "hascover"
-                        ? song.hascover === true
-                          ? "定制封面"
-                          : song.hascover === false
-                            ? "初号机（黑底机器人）"
-                            : "白底狐狸（默认）"
-                        : field.key === "nmn_status"
-                          ? song.nmn_status === true
-                            ? "有乐谱"
-                            : "无乐谱"
-                          : formatField(song[field.key], field.type)}
-                    </span>
+            <td colSpan={7} className="p-0 border-b border-white/5">
+              <div className="bg-gray-950/60 shadow-inner relative overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="p-6">
+                  {/* 如果歌曲信息不完整，显示缺失字段提示 */}
+                  {isSongIncomplete(song) && (
+                    <div className="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-400/20 shadow-sm flex items-start gap-4">
+                      <div className="p-2 bg-amber-500/20 rounded-lg text-amber-300 shrink-0 mt-0.5">
+                        <XCircle size={18} />
+                      </div>
+                      <div>
+                        <h4 className="text-amber-300 font-semibold mb-1">信息待完善</h4>
+                        <p className="text-amber-200/70 text-sm mb-2">
+                          以下核心字段内容缺失，请及时补充：
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {getMissingFields(song).map(field => (
+                            <span key={field} className="px-2 py-1 bg-amber-900/40 border border-amber-500/20 rounded text-xs text-amber-200">
+                              {field}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {songFields.map((field) => {
+                      const value = song[field.key];
+                      // 使用更严格的空值检查
+                      // 对于乐谱(nmn_status)，只有 true 算完整
+                      // 对于其他 boolean (除了hascover) 或 number 0，算完整
+                      let isEmpty = false;
+
+                      if (field.key === 'nmn_status') {
+                        isEmpty = value !== true;
+                      } else {
+                        isEmpty = (value === null || value === undefined) ||
+                          (Array.isArray(value) && value.length === 0) ||
+                          (typeof value === 'string' && value.trim() === '');
+                      }
+
+                      // 封面视为已填写，不需要高亮
+                      const shouldHighlight = field.key !== 'hascover' && isEmpty;
+
+                      return (
+                        <div
+                          key={field.key}
+                          className={`
+                            relative overflow-hidden rounded-xl border p-4 transition-all duration-200
+                            ${shouldHighlight
+                              ? 'bg-red-500/5 border-red-500/30 hover:bg-red-500/10'
+                              : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'
+                            }
+                          `}
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <span className={`text-xs font-semibold tracking-wider uppercase ${shouldHighlight ? 'text-red-400' : 'text-blue-200/70'
+                              }`}>
+                              {field.label}
+                            </span>
+                            {shouldHighlight && (
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500/20 text-red-400">
+                                required
+                              </span>
+                            )}
+                          </div>
+
+                          <div className={`text-sm break-words leading-relaxed font-medium ${shouldHighlight
+                            ? 'text-red-200/90'
+                            : 'text-white/90'
+                            }`}>
+                            {field.key === "hascover"
+                              ? song.hascover === true
+                                ? <span className="text-green-300">定制封面</span>
+                                : song.hascover === false
+                                  ? <span className="text-purple-300">初号机</span>
+                                  : <span className="text-gray-400">白底狐狸 (默认)</span>
+                              : field.key === "nmn_status"
+                                ? song.nmn_status === true
+                                  ? <span className="text-green-300 flex items-center gap-1">✓ 有乐谱</span>
+                                  : <span className="text-gray-400">无乐谱</span>
+                                : formatField(song[field.key], field.type) || (shouldHighlight ? "未填写" : <span className="text-white/20">-</span>)}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
+                </div>
               </div>
             </td>
           </tr>
@@ -143,6 +290,8 @@ export default function AdminClientComponent({
     }
   }, []);
 
+  const [showIncompleteOnly, setShowIncompleteOnly] = useState(false);
+
   const {
     songs,
     setSongs,
@@ -152,13 +301,29 @@ export default function AdminClientComponent({
     setError,
     searchTerm,
     setSearchTerm,
-    filteredSongs,
-    sortedSongs,
+    filteredSongs: baseFilteredSongs,
+    sortedSongs: baseSortedSongs,
   } = useSongs(
     initialSongs,
     initialError,
     isClient ? searchParams?.get("q") || "" : "",
   );
+
+  // 在基础筛选结果上再应用待完善筛选
+  const filteredSongs = useMemo(() => {
+    if (showIncompleteOnly) {
+      return baseFilteredSongs.filter(song => isSongIncomplete(song));
+    }
+    return baseFilteredSongs;
+  }, [baseFilteredSongs, showIncompleteOnly]);
+
+  const sortedSongs = useMemo(() => {
+    // 使用基础排序结果，再次过滤（保持原有排序逻辑）
+    if (showIncompleteOnly) {
+      return baseSortedSongs.filter(song => isSongIncomplete(song));
+    }
+    return baseSortedSongs;
+  }, [baseSortedSongs, showIncompleteOnly]);
 
   // 直接从 URL 获取初始页面，避免额外的状态
   const getInitialPage = () => {
@@ -416,6 +581,7 @@ export default function AdminClientComponent({
               onClick={() => {
                 // 重置搜索条件和页面
                 setSearchTerm("");
+                setShowIncompleteOnly(false);
                 setPaginationPage(1);
               }}
               title="点击重置搜索条件"
@@ -451,7 +617,6 @@ export default function AdminClientComponent({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
-              style={{ marginLeft: "-1px" }}
             />
             {searchTerm && (
               <button
@@ -464,13 +629,28 @@ export default function AdminClientComponent({
               </button>
             )}
           </div>
-          <button
-            onClick={() => setShowAdd(true)}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-linear-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 text-green-200 hover:from-green-500/30 hover:to-emerald-500/30 hover:text-green-100 transition-all duration-200 shadow-sm font-medium whitespace-nowrap"
-          >
-            <Plus size={20} />
-            新增歌曲
-          </button>
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowIncompleteOnly(!showIncompleteOnly)}
+              className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all duration-200 shadow-sm font-medium whitespace-nowrap ${showIncompleteOnly
+                ? 'bg-linear-to-r from-amber-500/30 to-orange-500/30 border-amber-400/50 text-amber-100'
+                : 'bg-linear-to-r from-amber-500/20 to-orange-500/20 border-amber-400/30 text-amber-200 hover:from-amber-500/30 hover:to-orange-500/30 hover:text-amber-100'
+                }`}
+              title={showIncompleteOnly ? "显示全部歌曲" : "只显示待完善歌曲"}
+            >
+              <div className={`w-2 h-2 rounded-full ${showIncompleteOnly ? 'bg-amber-300' : 'bg-amber-400'}`}></div>
+              {showIncompleteOnly ? "仅待完善" : "待完善"}
+            </button>
+
+            <button
+              onClick={() => setShowAdd(true)}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-linear-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 text-green-200 hover:from-green-500/30 hover:to-emerald-500/30 hover:text-green-100 transition-all duration-200 shadow-sm font-medium whitespace-nowrap"
+            >
+              <Plus size={20} />
+              新增歌曲
+            </button>
+          </div>
         </div>
 
         {/* Stats */}
@@ -491,6 +671,16 @@ export default function AdminClientComponent({
               筛选{" "}
               <span className="text-amber-200 font-semibold">
                 {filteredSongs.length}
+              </span>{" "}
+              首
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-red-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
+            <div className="w-2 h-2 bg-linear-to-r from-red-400 to-pink-400 rounded-full shrink-0"></div>
+            <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
+              待完善{" "}
+              <span className="text-red-200 font-semibold">
+                {songs.filter(song => isSongIncomplete(song)).length}
               </span>{" "}
               首
             </span>
@@ -533,28 +723,28 @@ export default function AdminClientComponent({
         {!loading && (
           <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 shadow-2xl border border-white/20 overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full table-fixed">
                 <thead>
                   <tr className="border-b border-white/20">
-                    <th className="text-left py-4 px-4 text-white font-semibold">
+                    <th className="text-left py-4 px-4 text-white font-semibold w-20">
                       序号
                     </th>
                     <th className="text-left py-4 px-4 text-white font-semibold">
                       标题
                     </th>
-                    <th className="text-left py-4 px-4 text-white font-semibold hidden md:table-cell">
+                    <th className="text-left py-4 px-4 text-white font-semibold hidden md:table-cell w-32 lg:w-48">
                       专辑
                     </th>
-                    <th className="text-left py-4 px-4 text-white font-semibold hidden md:table-cell">
+                    <th className="text-left py-4 px-4 text-white font-semibold hidden md:table-cell w-24 lg:w-32">
                       作词
                     </th>
-                    <th className="text-left py-4 px-4 text-white font-semibold hidden md:table-cell">
+                    <th className="text-left py-4 px-4 text-white font-semibold hidden md:table-cell w-24 lg:w-32">
                       作曲
                     </th>
-                    <th className="text-left py-4 px-4 text-white font-semibold hidden md:table-cell">
+                    <th className="text-left py-4 px-4 text-white font-semibold hidden md:table-cell w-24">
                       类型
                     </th>
-                    <th className="text-left py-4 px-4 text-white font-semibold">
+                    <th className="text-left py-4 px-4 text-white font-semibold w-32">
                       操作
                     </th>
                   </tr>
@@ -690,11 +880,10 @@ export default function AdminClientComponent({
         <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div
             className={`relative max-w-sm w-full p-6 rounded-2xl shadow-2xl border-2 backdrop-blur-md transform transition-all duration-300 animate-in zoom-in-95 slide-in-from-bottom-2
-            ${
-              addResultMessage === "成功" || editResultMessage === "成功"
+            ${addResultMessage === "成功" || editResultMessage === "成功"
                 ? "bg-linear-to-br from-green-500/90 to-emerald-600/90 border-green-400/60 text-white"
                 : "bg-linear-to-br from-red-500/90 to-red-600/90 border-red-400/60 text-white"
-            }
+              }
           `}
           >
             {/* 装饰性背景元素 */}
@@ -703,11 +892,10 @@ export default function AdminClientComponent({
             {/* 图标和消息 */}
             <div className="relative flex flex-col items-center text-center space-y-4">
               <div
-                className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                  addResultMessage === "成功" || editResultMessage === "成功"
-                    ? "bg-green-400/30 border-2 border-green-300/50"
-                    : "bg-red-400/30 border-2 border-red-300/50"
-                }`}
+                className={`w-16 h-16 rounded-full flex items-center justify-center ${addResultMessage === "成功" || editResultMessage === "成功"
+                  ? "bg-green-400/30 border-2 border-green-300/50"
+                  : "bg-red-400/30 border-2 border-red-300/50"
+                  }`}
               >
                 {addResultMessage === "成功" || editResultMessage === "成功" ? (
                   <svg
@@ -744,22 +932,20 @@ export default function AdminClientComponent({
 
               <div>
                 <h3
-                  className={`text-xl font-bold mb-2 ${
-                    addResultMessage === "成功" || editResultMessage === "成功"
-                      ? "text-green-100"
-                      : "text-red-100"
-                  }`}
+                  className={`text-xl font-bold mb-2 ${addResultMessage === "成功" || editResultMessage === "成功"
+                    ? "text-green-100"
+                    : "text-red-100"
+                    }`}
                 >
                   {addResultMessage === "成功" || editResultMessage === "成功"
                     ? "操作成功"
                     : "操作失败"}
                 </h3>
                 <p
-                  className={`text-sm opacity-90 ${
-                    addResultMessage === "成功" || editResultMessage === "成功"
-                      ? "text-green-200"
-                      : "text-red-200"
-                  }`}
+                  className={`text-sm opacity-90 ${addResultMessage === "成功" || editResultMessage === "成功"
+                    ? "text-green-200"
+                    : "text-red-200"
+                    }`}
                 >
                   {addResultMessage || editResultMessage}
                 </p>
@@ -772,11 +958,10 @@ export default function AdminClientComponent({
                 setAddResultMessage(null);
                 setEditResultMessage(null);
               }}
-              className={`absolute top-3 right-3 p-1 rounded-full hover:bg-white/20 transition-colors duration-200 ${
-                addResultMessage === "成功" || editResultMessage === "成功"
-                  ? "text-green-200"
-                  : "text-red-200"
-              }`}
+              className={`absolute top-3 right-3 p-1 rounded-full hover:bg-white/20 transition-colors duration-200 ${addResultMessage === "成功" || editResultMessage === "成功"
+                ? "text-green-200"
+                : "text-red-200"
+                }`}
             >
               <X size={16} />
             </button>
@@ -784,11 +969,10 @@ export default function AdminClientComponent({
             {/* 自动关闭倒计时 */}
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 rounded-b-2xl overflow-hidden">
               <div
-                className={`h-full transition-all duration-3000 ease-linear ${
-                  addResultMessage === "成功" || editResultMessage === "成功"
-                    ? "bg-green-300"
-                    : "bg-red-300"
-                }`}
+                className={`h-full transition-all duration-3000 ease-linear ${addResultMessage === "成功" || editResultMessage === "成功"
+                  ? "bg-green-300"
+                  : "bg-red-300"
+                  }`}
               ></div>
             </div>
           </div>
