@@ -26,7 +26,7 @@ export const GET = withAuth(
       // 构建文件URL
       const baseUrl = "https://cover.hetu-music.com";
       const filePath =
-        fileType === "cover" ? `cover/${songId}.jpg` : `nmn/${songId}.jpg`;
+        fileType === "cover" ? `cover/${songId}.jpg` : `nmn/${songId}.png`;
       const fileUrl = `${baseUrl}/${filePath}`;
 
       // 发送HEAD请求检查文件是否存在

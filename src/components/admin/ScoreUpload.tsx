@@ -66,10 +66,10 @@ export default function ScoreUpload({
     if (!file) return;
 
     // 验证文件类型
-    if (!file.type.includes("jpeg") && !file.type.includes("jpg")) {
+    if (!file.type.includes("png")) {
       setUploadStatus("error");
-      setUploadMessage("只允许上传JPG格式的乐谱文件");
-      onUploadError?.("只允许上传JPG格式的乐谱文件");
+      setUploadMessage("只允许上传PNG格式的乐谱文件");
+      onUploadError?.("只允许上传PNG格式的乐谱文件");
       return;
     }
 
@@ -161,15 +161,14 @@ export default function ScoreUpload({
           disabled={uploading || !songId}
           className={`
             flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200
-            ${
-              uploading || !songId
-                ? "bg-gray-500/20 text-gray-400 cursor-not-allowed"
-                : "bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200 border border-blue-400/30"
+            ${uploading || !songId
+              ? "bg-gray-500/20 text-gray-400 cursor-not-allowed"
+              : "bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200 border border-blue-400/30"
             }
           `}
         >
           <Upload size={16} />
-          {uploading ? "上传中..." : "选择JPG文件"}
+          {uploading ? "上传中..." : "选择PNG文件"}
         </button>
 
         {/* 文件状态提示 */}
@@ -203,7 +202,7 @@ export default function ScoreUpload({
       <input
         ref={fileInputRef}
         type="file"
-        accept=".jpg,.jpeg,image/jpeg"
+        accept=".png,image/png"
         onChange={handleFileSelect}
         className="hidden"
       />
@@ -213,12 +212,11 @@ export default function ScoreUpload({
         <div
           className={`
             flex items-center gap-2 p-3 rounded-lg text-sm
-            ${
-              uploadStatus === "success"
-                ? "bg-green-500/20 text-green-300 border border-green-400/30"
-                : uploadStatus === "error"
-                  ? "bg-red-500/20 text-red-300 border border-red-400/30"
-                  : "bg-blue-500/20 text-blue-300 border border-blue-400/30"
+            ${uploadStatus === "success"
+              ? "bg-green-500/20 text-green-300 border border-green-400/30"
+              : uploadStatus === "error"
+                ? "bg-red-500/20 text-red-300 border border-red-400/30"
+                : "bg-blue-500/20 text-blue-300 border border-blue-400/30"
             }
           `}
         >
@@ -237,7 +235,7 @@ export default function ScoreUpload({
 
       {/* 说明文字 */}
       <div className="text-xs text-gray-400 space-y-1">
-        <div>• 只支持JPG格式的乐谱文件</div>
+        <div>• 只支持PNG格式的乐谱文件</div>
         <div>• 文件大小不超过100MB</div>
       </div>
     </div>

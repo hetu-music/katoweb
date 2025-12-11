@@ -39,7 +39,7 @@ export const POST = withAuth(
       return NextResponse.json({
         success: true,
         message: "乐谱上传成功",
-        fileName: `${songId}.jpg`,
+        fileName: `${songId}.png`,
       });
     } catch (error) {
       console.error("Upload score error:", error);

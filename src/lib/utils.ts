@@ -238,7 +238,7 @@ export function filterSongs(
       (selectedArranger === "未知"
         ? !songDetail.arranger || songDetail.arranger.length === 0
         : songDetail.arranger &&
-          songDetail.arranger.includes(selectedArranger));
+        songDetail.arranger.includes(selectedArranger));
 
     return (
       matchesType &&
@@ -348,7 +348,7 @@ export function getCoverUrl(song: Song | SongDetail): string {
 
 // 获取乐谱图片 URL
 export function getNmnUrl(song: Song | SongDetail): string {
-  return `https://cover.hetu-music.com/nmn/${song.id}.jpg`;
+  return `https://cover.hetu-music.com/nmn/${song.id}.png`;
 }
 
 // admin 页面函数

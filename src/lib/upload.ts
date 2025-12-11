@@ -12,7 +12,7 @@ export const coverUploadConfig: UploadConfig = {
 
 export const scoreUploadConfig: UploadConfig = {
   maxFileSize: 100 * 1024 * 1024,
-  allowedTypes: ["image/jpeg", "image/jpg"],
+  allowedTypes: ["image/png"],
   baseUrl: "https://cover.hetu-music.com/nmn",
 };
 
@@ -75,14 +75,14 @@ export async function uploadScoreFile(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // 生成文件名和上传URL
-    const fileName = `${songId}.jpg`;
+    const fileName = `${songId}.png`;
     const uploadUrl = `${config.baseUrl}/${fileName}`;
 
     // 直接上传到R2存储
     const response = await fetch(uploadUrl, {
       method: "PUT",
       headers: {
-        "Content-Type": "image/jpeg",
+        "Content-Type": "image/png",
       },
       body: new Uint8Array(buffer),
     });
