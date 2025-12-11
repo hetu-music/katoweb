@@ -98,7 +98,7 @@ const SongRow = React.memo(
             <div className="flex items-center gap-2">
               <span>{song.title}</span>
               {isSongIncomplete(song) && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-400/30 animate-pulse">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-400/30">
                   待完善
                 </span>
               )}
@@ -150,7 +150,7 @@ const SongRow = React.memo(
               {isSongIncomplete(song) && (
                 <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-400/30">
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-amber-400 rounded-full"></div>
                     <span className="text-amber-300 font-medium text-sm">信息待完善</span>
                   </div>
                   <div className="text-amber-200/80 text-xs">
@@ -593,7 +593,7 @@ export default function AdminClientComponent({
               }`}
               title={showIncompleteOnly ? "显示全部歌曲" : "只显示待完善歌曲"}
             >
-              <div className={`w-2 h-2 rounded-full ${showIncompleteOnly ? 'bg-amber-300 animate-pulse' : 'bg-amber-400'}`}></div>
+              <div className={`w-2 h-2 rounded-full ${showIncompleteOnly ? 'bg-amber-300' : 'bg-amber-400'}`}></div>
               {showIncompleteOnly ? "仅待完善" : "待完善"}
             </button>
             
@@ -630,7 +630,7 @@ export default function AdminClientComponent({
             </span>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-red-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
-            <div className="w-2 h-2 bg-linear-to-r from-red-400 to-pink-400 rounded-full animate-pulse shrink-0"></div>
+            <div className="w-2 h-2 bg-linear-to-r from-red-400 to-pink-400 rounded-full shrink-0"></div>
             <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
               待完善{" "}
               <span className="text-red-200 font-semibold">
