@@ -569,7 +569,6 @@ export default function AdminClientComponent({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
-              style={{ marginLeft: "-1px" }}
             />
             {searchTerm && (
               <button
