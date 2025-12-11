@@ -31,17 +31,31 @@ import ScoreUpload from "./ScoreUpload";
 
 // 判断歌曲信息是否完整的函数
 function isSongIncomplete(song: SongDetail): boolean {
-  // 核心必填字段
-  const coreFields = [
-    'title', 'album', 'lyricist', 'composer', 'artist', 'type', 'genre'
-  ] as const;
+  // 检查所有配置字段
+  for (const field of songFields) {
+    // 封面不用检测，视作已经填写
+    if (field.key === 'hascover') continue;
 
-  // 检查核心字段是否为空
-  for (const field of coreFields) {
-    const value = song[field];
-    if (!value ||
-      (Array.isArray(value) && value.length === 0) ||
-      (typeof value === 'string' && value.trim() === '')) {
+    const value = song[field.key];
+
+    // 特殊处理乐谱状态：只有 true 算完整，false/null/undefined 算缺失
+    if (field.key === 'nmn_status') {
+      if (value !== true) return true;
+      continue;
+    }
+
+    // 检查 null 或 undefined
+    if (value === null || value === undefined) {
+      return true;
+    }
+
+    // 检查空数组
+    if (Array.isArray(value) && value.length === 0) {
+      return true;
+    }
+
+    // 检查空字符串
+    if (typeof value === 'string' && value.trim() === '') {
       return true;
     }
   }
@@ -51,23 +65,27 @@ function isSongIncomplete(song: SongDetail): boolean {
 
 // 获取缺失的字段信息
 function getMissingFields(song: SongDetail): string[] {
-  const coreFields = [
-    { key: 'title', label: '标题' },
-    { key: 'album', label: '专辑' },
-    { key: 'lyricist', label: '作词' },
-    { key: 'composer', label: '作曲' },
-    { key: 'artist', label: '演唱' },
-    { key: 'type', label: '类型' },
-    { key: 'genre', label: '流派' }
-  ] as const;
-
   const missing: string[] = [];
 
-  for (const field of coreFields) {
+  for (const field of songFields) {
+    // 封面不用检测
+    if (field.key === 'hascover') continue;
+
     const value = song[field.key];
-    if (!value ||
-      (Array.isArray(value) && value.length === 0) ||
-      (typeof value === 'string' && value.trim() === '')) {
+    let isEmpty = false;
+
+    // 特殊处理乐谱状态
+    if (field.key === 'nmn_status') {
+      if (value !== true) isEmpty = true;
+    } else if (value === null || value === undefined) {
+      isEmpty = true;
+    } else if (Array.isArray(value) && value.length === 0) {
+      isEmpty = true;
+    } else if (typeof value === 'string' && value.trim() === '') {
+      isEmpty = true;
+    }
+
+    if (isEmpty) {
       missing.push(field.label);
     }
   }
@@ -130,8 +148,8 @@ const SongRow = React.memo(
               <button
                 onClick={() => toggleRowExpansion(song.id)}
                 className={`p-2 rounded-lg transition-all duration-200 ${isExpanded
-                    ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
-                    : 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200'
+                  ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
+                  : 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200'
                   }`}
                 title={isExpanded ? "收起详情" : "查看详情"}
               >
@@ -181,14 +199,21 @@ const SongRow = React.memo(
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {songFields.map((field) => {
                       const value = song[field.key];
-                      const isEmpty = !value ||
-                        (Array.isArray(value) && value.length === 0) ||
-                        (typeof value === 'string' && value.trim() === '');
+                      // 使用更严格的空值检查
+                      // 对于乐谱(nmn_status)，只有 true 算完整
+                      // 对于其他 boolean (除了hascover) 或 number 0，算完整
+                      let isEmpty = false;
 
-                      // 核心字段列表
-                      const coreFields = ['title', 'album', 'lyricist', 'composer', 'artist', 'type', 'genre'];
-                      const isCoreField = coreFields.includes(field.key);
-                      const shouldHighlight = isCoreField && isEmpty;
+                      if (field.key === 'nmn_status') {
+                        isEmpty = value !== true;
+                      } else {
+                        isEmpty = (value === null || value === undefined) ||
+                          (Array.isArray(value) && value.length === 0) ||
+                          (typeof value === 'string' && value.trim() === '');
+                      }
+
+                      // 封面视为已填写，不需要高亮
+                      const shouldHighlight = field.key !== 'hascover' && isEmpty;
 
                       return (
                         <div
@@ -214,8 +239,8 @@ const SongRow = React.memo(
                           </div>
 
                           <div className={`text-sm break-words leading-relaxed font-medium ${shouldHighlight
-                              ? 'text-red-200/90'
-                              : 'text-white/90'
+                            ? 'text-red-200/90'
+                            : 'text-white/90'
                             }`}>
                             {field.key === "hascover"
                               ? song.hascover === true
@@ -293,13 +318,12 @@ export default function AdminClientComponent({
   }, [baseFilteredSongs, showIncompleteOnly]);
 
   const sortedSongs = useMemo(() => {
+    // 使用基础排序结果，再次过滤（保持原有排序逻辑）
     if (showIncompleteOnly) {
-      return filteredSongs.slice().sort((a, b) => a.title.localeCompare(b.title));
+      return baseSortedSongs.filter(song => isSongIncomplete(song));
     }
-    return baseSortedSongs.filter(song =>
-      showIncompleteOnly ? isSongIncomplete(song) : true
-    );
-  }, [filteredSongs, baseSortedSongs, showIncompleteOnly]);
+    return baseSortedSongs;
+  }, [baseSortedSongs, showIncompleteOnly]);
 
   // 直接从 URL 获取初始页面，避免额外的状态
   const getInitialPage = () => {
@@ -610,8 +634,8 @@ export default function AdminClientComponent({
             <button
               onClick={() => setShowIncompleteOnly(!showIncompleteOnly)}
               className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all duration-200 shadow-sm font-medium whitespace-nowrap ${showIncompleteOnly
-                  ? 'bg-linear-to-r from-amber-500/30 to-orange-500/30 border-amber-400/50 text-amber-100'
-                  : 'bg-linear-to-r from-amber-500/20 to-orange-500/20 border-amber-400/30 text-amber-200 hover:from-amber-500/30 hover:to-orange-500/30 hover:text-amber-100'
+                ? 'bg-linear-to-r from-amber-500/30 to-orange-500/30 border-amber-400/50 text-amber-100'
+                : 'bg-linear-to-r from-amber-500/20 to-orange-500/20 border-amber-400/30 text-amber-200 hover:from-amber-500/30 hover:to-orange-500/30 hover:text-amber-100'
                 }`}
               title={showIncompleteOnly ? "显示全部歌曲" : "只显示待完善歌曲"}
             >
@@ -869,8 +893,8 @@ export default function AdminClientComponent({
             <div className="relative flex flex-col items-center text-center space-y-4">
               <div
                 className={`w-16 h-16 rounded-full flex items-center justify-center ${addResultMessage === "成功" || editResultMessage === "成功"
-                    ? "bg-green-400/30 border-2 border-green-300/50"
-                    : "bg-red-400/30 border-2 border-red-300/50"
+                  ? "bg-green-400/30 border-2 border-green-300/50"
+                  : "bg-red-400/30 border-2 border-red-300/50"
                   }`}
               >
                 {addResultMessage === "成功" || editResultMessage === "成功" ? (
@@ -909,8 +933,8 @@ export default function AdminClientComponent({
               <div>
                 <h3
                   className={`text-xl font-bold mb-2 ${addResultMessage === "成功" || editResultMessage === "成功"
-                      ? "text-green-100"
-                      : "text-red-100"
+                    ? "text-green-100"
+                    : "text-red-100"
                     }`}
                 >
                   {addResultMessage === "成功" || editResultMessage === "成功"
@@ -919,8 +943,8 @@ export default function AdminClientComponent({
                 </h3>
                 <p
                   className={`text-sm opacity-90 ${addResultMessage === "成功" || editResultMessage === "成功"
-                      ? "text-green-200"
-                      : "text-red-200"
+                    ? "text-green-200"
+                    : "text-red-200"
                     }`}
                 >
                   {addResultMessage || editResultMessage}
@@ -935,8 +959,8 @@ export default function AdminClientComponent({
                 setEditResultMessage(null);
               }}
               className={`absolute top-3 right-3 p-1 rounded-full hover:bg-white/20 transition-colors duration-200 ${addResultMessage === "成功" || editResultMessage === "成功"
-                  ? "text-green-200"
-                  : "text-red-200"
+                ? "text-green-200"
+                : "text-red-200"
                 }`}
             >
               <X size={16} />
@@ -946,8 +970,8 @@ export default function AdminClientComponent({
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 rounded-b-2xl overflow-hidden">
               <div
                 className={`h-full transition-all duration-3000 ease-linear ${addResultMessage === "成功" || editResultMessage === "成功"
-                    ? "bg-green-300"
-                    : "bg-red-300"
+                  ? "bg-green-300"
+                  : "bg-red-300"
                   }`}
               ></div>
             </div>
