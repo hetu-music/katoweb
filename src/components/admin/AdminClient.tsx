@@ -34,7 +34,8 @@ function isSongIncomplete(song: SongDetail): boolean {
   // 检查所有配置字段
   for (const field of songFields) {
     // 封面、外链不用检测，视作已经填写
-    if (['hascover', 'kugolink', 'qmlink', 'nelink'].includes(field.key)) continue;
+    if (["hascover", "kugolink", "qmlink", "nelink"].includes(field.key))
+      continue;
 
     const value = song[field.key];
 
@@ -69,7 +70,8 @@ function getMissingFields(song: SongDetail): string[] {
 
   for (const field of songFields) {
     // 封面、外链不用检测
-    if (['hascover', 'kugolink', 'qmlink', 'nelink'].includes(field.key)) continue;
+    if (["hascover", "kugolink", "qmlink", "nelink"].includes(field.key))
+      continue;
 
     const value = song[field.key];
     let isEmpty = false;
@@ -113,8 +115,9 @@ const SongRow = React.memo(
     return (
       <>
         <tr
-          className={`border-b border-white/10 transition-colors ${isExpanded ? "bg-white/10" : "hover:bg-white/5"
-            }`}
+          className={`border-b border-white/10 transition-colors ${
+            isExpanded ? "bg-white/10" : "hover:bg-white/5"
+          }`}
         >
           <td className="py-4 px-4 text-white/90">{idx + 1}</td>
           <td className="py-4 px-4 text-white/90 font-medium">
@@ -147,10 +150,11 @@ const SongRow = React.memo(
             <div className="flex items-center gap-2">
               <button
                 onClick={() => toggleRowExpansion(song.id)}
-                className={`p-2 rounded-lg transition-all duration-200 ${isExpanded
-                  ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20"
-                  : "bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200"
-                  }`}
+                className={`p-2 rounded-lg transition-all duration-200 ${
+                  isExpanded
+                    ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20"
+                    : "bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200"
+                }`}
                 title={isExpanded ? "收起详情" : "查看详情"}
               >
                 {isExpanded ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -217,25 +221,29 @@ const SongRow = React.memo(
 
                       // 封面和外链视为已填写，不需要高亮
                       const shouldHighlight =
-                        !['hascover', 'kugolink', 'qmlink', 'nelink'].includes(field.key) && isEmpty;
+                        !["hascover", "kugolink", "qmlink", "nelink"].includes(
+                          field.key,
+                        ) && isEmpty;
 
                       return (
                         <div
                           key={field.key}
                           className={`
                             relative overflow-hidden rounded-xl border p-4 transition-all duration-200
-                            ${shouldHighlight
-                              ? "bg-red-500/5 border-red-500/30 hover:bg-red-500/10"
-                              : "bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10"
+                            ${
+                              shouldHighlight
+                                ? "bg-red-500/5 border-red-500/30 hover:bg-red-500/10"
+                                : "bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10"
                             }
                           `}
                         >
                           <div className="flex justify-between items-start mb-2">
                             <span
-                              className={`text-xs font-semibold tracking-wider uppercase ${shouldHighlight
-                                ? "text-red-400"
-                                : "text-blue-200/70"
-                                }`}
+                              className={`text-xs font-semibold tracking-wider uppercase ${
+                                shouldHighlight
+                                  ? "text-red-400"
+                                  : "text-blue-200/70"
+                              }`}
                             >
                               {field.label}
                             </span>
@@ -247,10 +255,11 @@ const SongRow = React.memo(
                           </div>
 
                           <div
-                            className={`text-sm break-words leading-relaxed font-medium ${shouldHighlight
-                              ? "text-red-200/90"
-                              : "text-white/90"
-                              }`}
+                            className={`text-sm break-words leading-relaxed font-medium ${
+                              shouldHighlight
+                                ? "text-red-200/90"
+                                : "text-white/90"
+                            }`}
                           >
                             {field.key === "hascover" ? (
                               song.hascover === true ? (
@@ -658,10 +667,11 @@ export default function AdminClientComponent({
           <div className="flex gap-3">
             <button
               onClick={() => setShowIncompleteOnly(!showIncompleteOnly)}
-              className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all duration-200 shadow-sm font-medium whitespace-nowrap ${showIncompleteOnly
-                ? "bg-linear-to-r from-amber-500/30 to-orange-500/30 border-amber-400/50 text-amber-100"
-                : "bg-linear-to-r from-amber-500/20 to-orange-500/20 border-amber-400/30 text-amber-200 hover:from-amber-500/30 hover:to-orange-500/30 hover:text-amber-100"
-                }`}
+              className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all duration-200 shadow-sm font-medium whitespace-nowrap ${
+                showIncompleteOnly
+                  ? "bg-linear-to-r from-amber-500/30 to-orange-500/30 border-amber-400/50 text-amber-100"
+                  : "bg-linear-to-r from-amber-500/20 to-orange-500/20 border-amber-400/30 text-amber-200 hover:from-amber-500/30 hover:to-orange-500/30 hover:text-amber-100"
+              }`}
               title={showIncompleteOnly ? "显示全部歌曲" : "只显示待完善歌曲"}
             >
               <div
@@ -907,10 +917,11 @@ export default function AdminClientComponent({
         <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div
             className={`relative max-w-sm w-full p-6 rounded-2xl shadow-2xl border-2 backdrop-blur-md transform transition-all duration-300 animate-in zoom-in-95 slide-in-from-bottom-2
-            ${addResultMessage === "成功" || editResultMessage === "成功"
+            ${
+              addResultMessage === "成功" || editResultMessage === "成功"
                 ? "bg-linear-to-br from-green-500/90 to-emerald-600/90 border-green-400/60 text-white"
                 : "bg-linear-to-br from-red-500/90 to-red-600/90 border-red-400/60 text-white"
-              }
+            }
           `}
           >
             {/* 装饰性背景元素 */}
@@ -919,10 +930,11 @@ export default function AdminClientComponent({
             {/* 图标和消息 */}
             <div className="relative flex flex-col items-center text-center space-y-4">
               <div
-                className={`w-16 h-16 rounded-full flex items-center justify-center ${addResultMessage === "成功" || editResultMessage === "成功"
-                  ? "bg-green-400/30 border-2 border-green-300/50"
-                  : "bg-red-400/30 border-2 border-red-300/50"
-                  }`}
+                className={`w-16 h-16 rounded-full flex items-center justify-center ${
+                  addResultMessage === "成功" || editResultMessage === "成功"
+                    ? "bg-green-400/30 border-2 border-green-300/50"
+                    : "bg-red-400/30 border-2 border-red-300/50"
+                }`}
               >
                 {addResultMessage === "成功" || editResultMessage === "成功" ? (
                   <svg
@@ -959,20 +971,22 @@ export default function AdminClientComponent({
 
               <div>
                 <h3
-                  className={`text-xl font-bold mb-2 ${addResultMessage === "成功" || editResultMessage === "成功"
-                    ? "text-green-100"
-                    : "text-red-100"
-                    }`}
+                  className={`text-xl font-bold mb-2 ${
+                    addResultMessage === "成功" || editResultMessage === "成功"
+                      ? "text-green-100"
+                      : "text-red-100"
+                  }`}
                 >
                   {addResultMessage === "成功" || editResultMessage === "成功"
                     ? "操作成功"
                     : "操作失败"}
                 </h3>
                 <p
-                  className={`text-sm opacity-90 ${addResultMessage === "成功" || editResultMessage === "成功"
-                    ? "text-green-200"
-                    : "text-red-200"
-                    }`}
+                  className={`text-sm opacity-90 ${
+                    addResultMessage === "成功" || editResultMessage === "成功"
+                      ? "text-green-200"
+                      : "text-red-200"
+                  }`}
                 >
                   {addResultMessage || editResultMessage}
                 </p>
@@ -985,10 +999,11 @@ export default function AdminClientComponent({
                 setAddResultMessage(null);
                 setEditResultMessage(null);
               }}
-              className={`absolute top-3 right-3 p-1 rounded-full hover:bg-white/20 transition-colors duration-200 ${addResultMessage === "成功" || editResultMessage === "成功"
-                ? "text-green-200"
-                : "text-red-200"
-                }`}
+              className={`absolute top-3 right-3 p-1 rounded-full hover:bg-white/20 transition-colors duration-200 ${
+                addResultMessage === "成功" || editResultMessage === "成功"
+                  ? "text-green-200"
+                  : "text-red-200"
+              }`}
             >
               <X size={16} />
             </button>
@@ -996,10 +1011,11 @@ export default function AdminClientComponent({
             {/* 自动关闭倒计时 */}
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 rounded-b-2xl overflow-hidden">
               <div
-                className={`h-full transition-all duration-3000 ease-linear ${addResultMessage === "成功" || editResultMessage === "成功"
-                  ? "bg-green-300"
-                  : "bg-red-300"
-                  }`}
+                className={`h-full transition-all duration-3000 ease-linear ${
+                  addResultMessage === "成功" || editResultMessage === "成功"
+                    ? "bg-green-300"
+                    : "bg-red-300"
+                }`}
               ></div>
             </div>
           </div>

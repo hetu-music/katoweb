@@ -238,7 +238,7 @@ export function filterSongs(
       (selectedArranger === "未知"
         ? !songDetail.arranger || songDetail.arranger.length === 0
         : songDetail.arranger &&
-        songDetail.arranger.includes(selectedArranger));
+          songDetail.arranger.includes(selectedArranger));
 
     return (
       matchesType &&
