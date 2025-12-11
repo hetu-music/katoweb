@@ -7,7 +7,19 @@ import React, {
   useRef,
   useCallback,
 } from "react";
-import { Search, Grid, List, XCircle, RotateCcw } from "lucide-react";
+import { 
+  Search, 
+  Grid, 
+  List, 
+  X,
+  RotateCcw, 
+  Info, 
+  Music, 
+  Calendar, 
+  Mic2,
+  User,
+  Disc
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MusicLibraryClientProps, SongDetail } from "@/lib/types";
@@ -23,26 +35,20 @@ import TypeExplanation from "./TypeExplanation";
 import SongFilters from "./SongFilters";
 import Pagination from "./Pagination";
 import { usePagination } from "@/hooks/usePagination";
-
 import WallpaperControls from "./WallpaperControls";
 import FloatingActionButtons from "./FloatingActionButtons";
 import { useWallpaper } from "@/context/WallpaperContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   initialSongsData,
 }) => {
   const router = useRouter();
 
-  // 使用 useState 来管理 URL 参数，避免 hydration 错误
   const [isClient, setIsClient] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Helper function to safely get first array element
-  const getFirstElement = (arr: string[] | null | undefined): string => {
-    return arr && arr.length > 0 && arr[0] ? arr[0] : "";
-  };
-
-  // 1. 状态初始化 - 使用默认值避免 hydration 错误
+  // Filter States
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState("全部");
   const [selectedYear, setSelectedYear] = useState("全部");
@@ -50,14 +56,15 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   const [selectedComposer, setSelectedComposer] = useState("全部");
   const [selectedArranger, setSelectedArranger] = useState("全部");
   const [viewMode, setViewMode] = useState("grid");
-  // 移除单独的页面状态，直接使用 usePagination
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [typeExplanationOpen, setTypeExplanationOpen] = useState(false);
+  
+  // Scroll Restoration States
   const [showScrollTop, setShowScrollTop] = useState(false);
   const hasRestoredScroll = useRef(false);
   const [restoringScroll, setRestoringScroll] = useState(true);
-  const [typeExplanationOpen, setTypeExplanationOpen] = useState(false);
 
-  // 壁纸功能
+  // Wallpaper
   const {
     isLoading: wallpaperLoading,
     refreshWallpaper,
@@ -68,7 +75,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
   const songsData = initialSongsData;
 
-  // 跟踪初始的搜索条件，用于判断是否是用户主动改变
   const initialFiltersRef = useRef<{
     searchTerm: string;
     selectedType: string;
@@ -78,13 +84,14 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     selectedArranger: string;
   } | null>(null);
 
-  // 检测是否是从详情页返回
   const isReturningFromDetail = useRef(false);
-
-  // 防抖搜索 - 移到这里避免变量声明顺序问题
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
-  // 在客户端挂载后初始化 URL 参数
+  const getFirstElement = (arr: string[] | null | undefined): string => {
+    return arr && arr.length > 0 && arr[0] ? arr[0] : "";
+  };
+
+  // Initialize Client & URL Params
   useEffect(() => {
     const initializeClient = () => {
       setIsClient(true);
@@ -94,13 +101,13 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
 
-      // 检测是否是从详情页返回（通过检查是否有保存的滚动位置）
+      // Scroll restoration check
       const hasScrollPosition = sessionStorage.getItem("music_scrollY");
       if (hasScrollPosition) {
         isReturningFromDetail.current = true;
       }
 
-      // 从 URL 参数恢复状态
+      // Restore params
       const urlSearchTerm = params.get("q") || "";
       const urlType = params.get("type") || "全部";
       const urlYear = params.get("year") || "全部";
@@ -109,18 +116,14 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       const urlArranger = params.get("arranger") || "全部";
       const urlViewMode = params.get("view") || "grid";
 
-      const restoreUrlState = () => {
-        setSearchTerm(urlSearchTerm);
-        setSelectedType(urlType);
-        setSelectedYear(urlYear);
-        setSelectedLyricist(urlLyricist);
-        setSelectedComposer(urlComposer);
-        setSelectedArranger(urlArranger);
-        setViewMode(urlViewMode);
-      };
-      restoreUrlState();
+      setSearchTerm(urlSearchTerm);
+      setSelectedType(urlType);
+      setSelectedYear(urlYear);
+      setSelectedLyricist(urlLyricist);
+      setSelectedComposer(urlComposer);
+      setSelectedArranger(urlArranger);
+      setViewMode(urlViewMode);
 
-      // 如果是从详情页返回且有任何筛选条件，立即同步设置防抖搜索词，避免跳跃效果
       if (
         isReturningFromDetail.current &&
         (urlSearchTerm ||
@@ -130,23 +133,16 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
           urlComposer !== "全部" ||
           urlArranger !== "全部")
       ) {
-        const setInitialDebouncedTerm = () => {
-          setDebouncedSearchTerm(urlSearchTerm);
-        };
-        setInitialDebouncedTerm();
+        setDebouncedSearchTerm(urlSearchTerm);
       }
 
-      // 页面状态将通过 usePagination 的 initialPage 处理
-
-      // 标记初始化完成
       setTimeout(() => setIsInitialized(true), 0);
     }
   }, []);
 
-  // 清理触摸动画状态
+  // Clean up touch states
   useEffect(() => {
     if (isClient) {
-      // 清理所有可能残留的触摸动画状态
       const cleanupTouchStates = () => {
         const elements = document.querySelectorAll(
           ".touch-active-pressed, .touch-navigating",
@@ -155,35 +151,18 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
           element.classList.remove("touch-active-pressed", "touch-navigating");
         });
       };
-
-      // 立即清理
       cleanupTouchStates();
-
-      // 监听页面获得焦点时清理（从其他页面返回时）
-      const handleFocus = () => {
-        cleanupTouchStates();
-      };
-
+      const handleFocus = () => cleanupTouchStates();
       const handleVisibilityChange = () => {
-        if (!document.hidden) {
-          cleanupTouchStates();
-        }
+        if (!document.hidden) cleanupTouchStates();
       };
-
-      // 监听浏览器前进后退按钮
-      const handlePopState = () => {
-        cleanupTouchStates();
-      };
+      const handlePopState = () => cleanupTouchStates();
 
       window.addEventListener("focus", handleFocus);
       document.addEventListener("visibilitychange", handleVisibilityChange);
       window.addEventListener("popstate", handlePopState);
 
-      // 页面加载完成后也清理一次
-      const handleLoad = () => {
-        cleanupTouchStates();
-      };
-
+      const handleLoad = () => cleanupTouchStates();
       if (document.readyState === "complete") {
         handleLoad();
       } else {
@@ -192,40 +171,32 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
       return () => {
         window.removeEventListener("focus", handleFocus);
-        document.removeEventListener(
-          "visibilitychange",
-          handleVisibilityChange,
-        );
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
         window.removeEventListener("popstate", handlePopState);
         window.removeEventListener("load", handleLoad);
       };
     }
   }, [isClient]);
 
-  // 3. 滚动位置保存与恢复
+  // Scroll Restoration Logic
   useEffect(() => {
     if (!hasRestoredScroll.current && isClient) {
       const scrollY = sessionStorage.getItem("music_scrollY");
       if (scrollY) {
-        // 延迟执行滚动恢复，确保页面内容已完全渲染
         const timeoutId = setTimeout(() => {
           window.scrollTo(0, parseInt(scrollY, 10));
           sessionStorage.removeItem("music_scrollY");
           hasRestoredScroll.current = true;
           setRestoringScroll(false);
-        }, 200); // 增加延迟时间
-
+        }, 200);
         return () => clearTimeout(timeoutId);
       } else {
         requestAnimationFrame(() => setRestoringScroll(false));
       }
     } else if (isClient) {
-      const finishScrollRestore = () => {
-        setRestoringScroll(false);
-      };
-      finishScrollRestore();
+      setRestoringScroll(false);
     }
-  }, [isClient]); // 依赖客户端状态
+  }, [isClient]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -239,9 +210,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // 清除所有筛选条件的函数
   const handleClearAllFilters = () => {
-    // 重置所有筛选条件和页面
     setSearchTerm("");
     setSelectedType("全部");
     setSelectedYear("全部");
@@ -251,16 +220,11 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     setViewMode("grid");
     setPaginationPage(1);
 
-    // 直接清除URL中的所有参数，确保返回干净的主页面
     if (typeof window !== "undefined") {
       const newUrl = window.location.pathname;
       window.history.replaceState(null, "", newUrl);
     }
-
-    // 清理可能存储的滚动位置，避免从详情页返回时回到错误的状态
     sessionStorage.removeItem("music_scrollY");
-
-    // 标记已重置，用于详情页返回时的判断
     sessionStorage.setItem("music_filters_reset", "true");
   };
 
@@ -275,48 +239,38 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       try {
         await navigator.share(shareData);
       } catch {
-        console.warn("分享取消或失败");
+        // ignore
       }
     } else {
-      // 备用方案：复制链接到剪贴板
       try {
         await navigator.clipboard.writeText(window.location.href);
         alert("链接已复制到剪贴板");
       } catch {
-        console.warn("复制失败");
+        // ignore
       }
     }
   };
 
-  // 使用 useMemo 优化筛选选项计算
   const filterOptions = useMemo(() => {
     return calculateFilterOptions(songsData);
   }, [songsData]);
 
-  // 防抖搜索效果
+  // Debounce Search
   useEffect(() => {
-    // 如果是初始化阶段或从详情页返回，立即设置防抖搜索词，避免跳跃
     if (!isInitialized || isReturningFromDetail.current) {
-      const updateDebouncedTerm = () => {
-        setDebouncedSearchTerm(searchTerm);
-      };
-      updateDebouncedTerm();
-
-      // 重置返回标记
+      setDebouncedSearchTerm(searchTerm);
       if (isReturningFromDetail.current) {
         isReturningFromDetail.current = false;
       }
       return;
     }
-
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
     }, 300);
-
     return () => clearTimeout(timer);
   }, [searchTerm, isInitialized]);
 
-  // 过滤歌曲 - 使用防抖后的搜索词
+  // Filter Logic
   const filteredSongs = useMemo(() => {
     return mapAndSortSongs(
       filterSongs(
@@ -339,14 +293,12 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     selectedArranger,
   ]);
 
-  // 获取初始页面
   const getInitialPage = () => {
     if (!isClient || typeof window === "undefined") return 1;
     const params = new URLSearchParams(window.location.search);
     return parseInt(params.get("page") || "1", 10);
   };
 
-  // 分页功能
   const {
     currentPage,
     totalPages,
@@ -358,15 +310,12 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     data: filteredSongs,
     itemsPerPage: 30,
     initialPage: getInitialPage(),
-    resetOnDataChange: false, // 不自动重置，由 URL 同步逻辑处理
+    resetOnDataChange: false,
   });
 
-  // 包装分页函数以同步URL
   const setCurrentPage = useCallback(
     (page: number) => {
       setPaginationPage(page);
-
-      // 同步更新 URL
       if (isClient && typeof window !== "undefined") {
         const params = new URLSearchParams(window.location.search);
         if (page !== 1) {
@@ -381,34 +330,27 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     [setPaginationPage, isClient],
   );
 
-  // 2. 状态变化时同步到URL参数 - 只在客户端执行
+  // Sync URL
   useEffect(() => {
     if (!isClient || typeof window === "undefined") return;
 
     const params = new URLSearchParams(window.location.search);
 
-    // 更新搜索和筛选参数
     if (searchTerm) params.set("q", searchTerm);
     else params.delete("q");
-    if (selectedType && selectedType !== "全部")
-      params.set("type", selectedType);
+    if (selectedType && selectedType !== "全部") params.set("type", selectedType);
     else params.delete("type");
-    if (selectedYear && selectedYear !== "全部")
-      params.set("year", selectedYear);
+    if (selectedYear && selectedYear !== "全部") params.set("year", selectedYear);
     else params.delete("year");
-    if (selectedLyricist && selectedLyricist !== "全部")
-      params.set("lyricist", selectedLyricist);
+    if (selectedLyricist && selectedLyricist !== "全部") params.set("lyricist", selectedLyricist);
     else params.delete("lyricist");
-    if (selectedComposer && selectedComposer !== "全部")
-      params.set("composer", selectedComposer);
+    if (selectedComposer && selectedComposer !== "全部") params.set("composer", selectedComposer);
     else params.delete("composer");
-    if (selectedArranger && selectedArranger !== "全部")
-      params.set("arranger", selectedArranger);
+    if (selectedArranger && selectedArranger !== "全部") params.set("arranger", selectedArranger);
     else params.delete("arranger");
     if (viewMode && viewMode !== "grid") params.set("view", viewMode);
     else params.delete("view");
 
-    // 检查是否是用户主动改变了搜索或筛选条件
     if (isInitialized && initialFiltersRef.current) {
       const filtersChanged =
         searchTerm !== initialFiltersRef.current.searchTerm ||
@@ -419,11 +361,8 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
         selectedArranger !== initialFiltersRef.current.selectedArranger;
 
       if (filtersChanged) {
-        // 用户主动改变了筛选条件，重置到第一页
         params.delete("page");
         setPaginationPage(1);
-
-        // 更新初始筛选条件
         initialFiltersRef.current = {
           searchTerm,
           selectedType,
@@ -434,7 +373,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
         };
       }
     } else if (isInitialized && !initialFiltersRef.current) {
-      // 记录初始的筛选条件
       initialFiltersRef.current = {
         searchTerm,
         selectedType,
@@ -462,480 +400,354 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     setPaginationPage,
   ]);
 
-  // 额外的滚动恢复逻辑 - 在分页数据更新后执行
   useEffect(() => {
     if (!hasRestoredScroll.current && isClient && paginatedSongs.length > 0) {
       const scrollY = sessionStorage.getItem("music_scrollY");
       if (scrollY) {
-        // 确保在分页数据渲染后恢复滚动位置
         const timeoutId = setTimeout(() => {
           window.scrollTo(0, parseInt(scrollY, 10));
           sessionStorage.removeItem("music_scrollY");
           hasRestoredScroll.current = true;
           setRestoringScroll(false);
         }, 50);
-
         return () => clearTimeout(timeoutId);
       }
     }
   }, [isClient, paginatedSongs.length, currentPage]);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 25 } },
+  };
+
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen text-slate-100">
       <div
-        style={{ opacity: restoringScroll ? 0 : 1, transition: "opacity 0.2s" }}
+        style={{ opacity: restoringScroll ? 0 : 1, transition: "opacity 0.4s ease-out" }}
+        className="pb-24"
       >
-        {/* 关于弹窗 */}
         {aboutOpen && <About onClose={() => setAboutOpen(false)} />}
-        {/* 类型说明弹窗 */}
         {typeExplanationOpen && (
           <TypeExplanation onClose={() => setTypeExplanationOpen(false)} />
         )}
 
-        {/* 主容器 */}
-        <div className="container mx-auto px-6 py-8">
-          {/* 头部区域 */}
-          <div className="mb-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-2">
-              <div className="flex flex-col sm:flex-row sm:items-center w-full">
-                <h1
-                  className="text-4xl font-extrabold bg-clip-text text-transparent bg-linear-to-r from-purple-300 via-blue-300 to-indigo-400 drop-shadow-lg tracking-wider mb-2 sm:mb-0 cursor-pointer hover:from-purple-200 hover:via-blue-200 hover:to-indigo-300 transition-all duration-300 select-none"
-                  onClick={handleClearAllFilters}
-                  title="点击重置所有筛选条件"
-                >
+        {/* Hero Section */}
+        <section className="relative pt-24 pb-12 px-6 flex flex-col items-center justify-center text-center z-10 overflow-hidden">
+             {/* Background Decoration */}
+             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-purple-600/20 blur-[120px] rounded-full pointer-events-none -z-10" />
+             
+            <motion.div
+             initial={{ opacity: 0, y: -30 }}
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ duration: 0.7, ease: "easeOut" }}
+             className="relative z-10"
+            >
+              <h1 
+                className="text-6xl md:text-8xl font-black mb-6 tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-white via-purple-200 to-indigo-300 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] cursor-pointer hover:scale-[1.01] transition-transform duration-500"
+                onClick={handleClearAllFilters}
+              >
                   河图作品勘鉴
-                </h1>
-                {/* 小屏下按钮行 */}
-                <div className="flex w-full sm:hidden justify-between mt-2 items-center">
-                  <button
-                    className="px-4 py-1 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 text-sm font-medium shadow"
-                    onClick={() => setAboutOpen(true)}
-                  >
-                    关于
-                  </button>
-                  <div className="flex items-center space-x-4">
-                    <WallpaperControls
-                      enabled={wallpaperEnabled}
-                      isLoading={wallpaperLoading}
-                      onToggle={toggleWallpaper}
-                      onRefresh={refreshWallpaper}
-                      isHydrated={isHydrated}
-                    />
-                    <button
-                      onClick={() =>
-                        setViewMode(viewMode === "grid" ? "list" : "grid")
-                      }
-                      className="p-2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all duration-200"
-                    >
-                      {viewMode === "grid" ? (
-                        <List size={20} />
-                      ) : (
-                        <Grid size={20} />
-                      )}
-                    </button>
+              </h1>
+              <p className="text-xl md:text-2xl text-blue-100/80 font-light tracking-wide max-w-2xl mx-auto mb-10 leading-relaxed">
+                聆听岁月流淌的声音，探索每一首歌曲背后的故事
+              </p>
+            </motion.div>
+
+            {/* Search Bar */}
+            <motion.div 
+               className="w-full max-w-3xl relative group z-20"
+               initial={{ opacity: 0, scale: 0.9 }}
+               animate={{ opacity: 1, scale: 1 }}
+               transition={{ delay: 0.2, duration: 0.5 }}
+            >
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-blue-200/50 group-focus-within:text-blue-200 transition-colors">
+                      <Search size={24} />
                   </div>
-                </div>
-                {/* 大屏下关于按钮 */}
-                <button
-                  className="hidden sm:inline-block sm:ml-4 px-4 py-1 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 text-sm font-medium shadow self-start sm:self-auto"
-                  onClick={() => setAboutOpen(true)}
-                >
-                  关于
-                </button>
-              </div>
-              {/* 大屏下壁纸控制和视图切换按钮 */}
-              <div className="hidden sm:flex items-center space-x-4">
-                <WallpaperControls
-                  enabled={wallpaperEnabled}
-                  isLoading={wallpaperLoading}
-                  onToggle={toggleWallpaper}
-                  onRefresh={refreshWallpaper}
-                  isHydrated={isHydrated}
-                />
-                <button
-                  onClick={() =>
-                    setViewMode(viewMode === "grid" ? "list" : "grid")
-                  }
-                  className="p-2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all duration-200"
-                >
-                  {viewMode === "grid" ? (
-                    <List size={20} />
-                  ) : (
-                    <Grid size={20} />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* 搜索和筛选区域 - 上下布局，保证两端对齐 */}
-            <div className="w-full flex flex-col gap-3">
-              {/* 搜索框 */}
-              <div className="search-container">
-                <div className="h-12 flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white rounded-l-2xl select-none min-w-[60px] max-w-[60px] w-[60px]">
-                  <Search size={20} />
-                </div>
-                <input
-                  type="text"
-                  placeholder="搜索歌曲、歌词、专辑等..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="search-input"
-                  style={{ marginLeft: "-1px" }}
-                />
-                {searchTerm && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchTerm("")}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full text-gray-300 hover:text-white focus:outline-none bg-transparent active:bg-white/10 transition-all"
-                    aria-label="清空搜索"
-                  >
-                    <XCircle size={24} />
-                  </button>
-                )}
-              </div>
-              {/* 筛选框 */}
-              <SongFilters
-                selectedType={selectedType}
-                setSelectedType={setSelectedType}
-                selectedYear={selectedYear}
-                setSelectedYear={setSelectedYear}
-                selectedLyricist={selectedLyricist}
-                setSelectedLyricist={setSelectedLyricist}
-                selectedComposer={selectedComposer}
-                setSelectedComposer={setSelectedComposer}
-                selectedArranger={selectedArranger}
-                setSelectedArranger={setSelectedArranger}
-                filterOptions={filterOptions}
-                onTypeExplanationOpen={() => setTypeExplanationOpen(true)}
-              />
-              {/* 歌曲总数和筛选数统计 */}
-              <div className="mt-4 mb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                {/* 统计信息 */}
-                <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
-                  <div className="flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/20 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
-                    <div className="w-2 h-2 bg-linear-to-r from-blue-400 to-purple-400 rounded-full animate-pulse shrink-0"></div>
-                    <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
-                      总计{" "}
-                      <span className="text-blue-200 font-semibold">
-                        {songsData.length}
-                      </span>{" "}
-                      首
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
-                    <div className="w-2 h-2 bg-linear-to-r from-amber-400 to-orange-400 rounded-full shrink-0"></div>
-                    <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
-                      筛选{" "}
-                      <span className="text-amber-200 font-semibold">
-                        {filteredSongs.length}
-                      </span>{" "}
-                      首
-                    </span>
-                  </div>
-
-                  {filteredSongs.length > 30 && (
-                    <div className="flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-emerald-500/20 to-teal-500/20 backdrop-blur-sm border border-emerald-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
-                      <div className="w-2 h-2 bg-linear-to-r from-emerald-400 to-teal-400 rounded-full shrink-0"></div>
-                      <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
-                        本页{" "}
-                        <span className="text-emerald-200 font-semibold">
-                          {startIndex}-{endIndex}
-                        </span>{" "}
-                        首
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* 清除所有筛选按钮 - 右对齐 */}
-                {(searchTerm ||
-                  selectedType !== "全部" ||
-                  selectedYear !== "全部" ||
-                  selectedLyricist !== "全部" ||
-                  selectedComposer !== "全部" ||
-                  selectedArranger !== "全部") && (
-                  <div className="flex justify-start sm:justify-end">
+                  <input
+                    type="text"
+                    placeholder="搜索歌曲、专辑、歌词、作曲者..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full h-16 pl-14 pr-14 rounded-full bg-white/5 backdrop-blur-xl border border-white/20 text-white placeholder-blue-200/30 text-lg shadow-[0_8px_32px_rgba(0,0,0,0.1)] focus:outline-none focus:ring-2 focus:ring-purple-400/30 focus:bg-white/10 focus:border-white/30 transition-all duration-300"
+                  />
+                  {searchTerm && (
                     <button
                       type="button"
-                      onClick={handleClearAllFilters}
-                      className="flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-red-400/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0 text-red-200 hover:from-red-500/30 hover:to-pink-500/30 hover:text-red-100 hover:border-red-300/50 transition-all duration-200 cursor-pointer"
-                      title="清除所有筛选条件"
+                      onClick={() => setSearchTerm("")}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full text-blue-200/50 hover:text-white hover:bg-white/10 transition-all"
                     >
-                      <RotateCcw size={12} className="shrink-0" />
-                      <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
-                        <span className="text-red-200 font-semibold">
-                          清除筛选
-                        </span>
-                      </span>
+                      <X size={20} />
                     </button>
-                  </div>
-                )}
-              </div>
-            </div>
+                  )}
+                </div>
+            </motion.div>
+        </section>
+
+        {/* Main Content */}
+        <div className="container mx-auto px-4 md:px-8">
+          
+          {/* Controls & Filters */}
+          <div className="mb-10 space-y-6">
+             {/* Filter Bar */}
+             <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-5 shadow-xl"
+             >
+                 <SongFilters
+                    selectedType={selectedType}
+                    setSelectedType={setSelectedType}
+                    selectedYear={selectedYear}
+                    setSelectedYear={setSelectedYear}
+                    selectedLyricist={selectedLyricist}
+                    setSelectedLyricist={setSelectedLyricist}
+                    selectedComposer={selectedComposer}
+                    setSelectedComposer={setSelectedComposer}
+                    selectedArranger={selectedArranger}
+                    setSelectedArranger={setSelectedArranger}
+                    filterOptions={filterOptions}
+                    onTypeExplanationOpen={() => setTypeExplanationOpen(true)}
+                  />
+             </motion.div>
+
+             {/* Status & Toggle Bar */}
+             <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+                className="flex flex-col md:flex-row items-center justify-between gap-4 px-2"
+              >
+                 {/* Stats */}
+                 <div className="flex items-center gap-4 text-sm font-medium">
+                    <div className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 border border-indigo-400/20 rounded-full text-indigo-200">
+                        <Disc size={16} />
+                        <span>总计 <span className="text-white font-bold ml-1">{songsData.length}</span></span>
+                    </div>
+                    {(filteredSongs.length !== songsData.length) && (
+                       <div className="flex items-center gap-2 px-4 py-2 bg-pink-500/10 border border-pink-400/20 rounded-full text-pink-200">
+                           <div className="w-2 h-2 rounded-full bg-pink-400 animate-pulse"/>
+                           <span>筛选 <span className="text-white font-bold ml-1">{filteredSongs.length}</span></span>
+                       </div>
+                    )}
+                 </div>
+
+                 {/* Actions */}
+                 <div className="flex items-center gap-3">
+                     <div className="hidden md:flex items-center gap-3 mr-4 border-r border-white/10 pr-4">
+                         <WallpaperControls
+                            enabled={wallpaperEnabled}
+                            isLoading={wallpaperLoading}
+                            onToggle={toggleWallpaper}
+                            onRefresh={refreshWallpaper}
+                            isHydrated={isHydrated}
+                          />
+                          <button
+                            onClick={() => setAboutOpen(true)}
+                            className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/20 hover:scale-105 transition-all text-white/80"
+                            title="关于本站"
+                          >
+                            <Info size={18} />
+                          </button>
+                     </div>
+
+                     <div className="flex bg-black/20 p-1 rounded-full border border-white/10 backdrop-blur-md">
+                        <button
+                          onClick={() => setViewMode("grid")}
+                          className={`p-2.5 rounded-full transition-all duration-300 ${viewMode === 'grid' ? 'bg-white/10 text-white shadow-lg' : 'text-white/40 hover:text-white/80'}`}
+                          title="网格视图"
+                        >
+                           <Grid size={18} />
+                        </button>
+                        <button
+                          onClick={() => setViewMode("list")}
+                          className={`p-2.5 rounded-full transition-all duration-300 ${viewMode === 'list' ? 'bg-white/10 text-white shadow-lg' : 'text-white/40 hover:text-white/80'}`}
+                          title="列表视图"
+                        >
+                           <List size={18} />
+                        </button>
+                    </div>
+                    
+                    {/* Reset Button */}
+                    {(searchTerm || selectedType !== "全部" || selectedYear !== "全部" || selectedLyricist !== "全部" || selectedComposer !== "全部" || selectedArranger !== "全部") && (
+                        <button
+                            onClick={handleClearAllFilters}
+                            className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/20 text-red-100 border border-red-500/30 hover:bg-red-500/30 hover:border-red-400/50 transition-all text-sm font-medium"
+                        >
+                            <RotateCcw size={14} />
+                            重置
+                        </button>
+                    )}
+                 </div>
+             </motion.div>
           </div>
 
-          {/* 歌曲列表 */}
-          {viewMode === "grid" ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-6">
-              {paginatedSongs.map((song) => (
-                <div
-                  key={song.id}
-                  className="group cursor-pointer touch-active"
-                  onClick={(e) => {
-                    sessionStorage.setItem(
-                      "music_scrollY",
-                      String(window.scrollY),
-                    );
-
-                    if (
-                      typeof window !== "undefined" &&
-                      window.matchMedia("(hover: none) and (pointer: coarse)")
-                        .matches
-                    ) {
-                      const target = e.currentTarget;
-
-                      // 立即添加按下效果
-                      target.classList.add("touch-active-pressed");
-
-                      // 短暂延迟后开始导航
-                      setTimeout(() => {
-                        target.classList.remove("touch-active-pressed");
-                        target.classList.add("touch-navigating");
-
-                        // 立即开始导航，不等待动画完成
-                        router.push(
-                          `/song/${song.id}${window.location.search}`,
-                        );
-                      }, 180);
-                    } else {
-                      router.push(`/song/${song.id}${window.location.search}`);
-                    }
-                  }}
+          {/* Song Grid/List */}
+          <AnimatePresence mode="wait">
+            {paginatedSongs.length === 0 ? (
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }} 
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }} 
+                    className="flex flex-col items-center justify-center py-20 text-blue-100/50 min-h-[400px]"
                 >
-                  <div className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 p-4 transition-all duration-300 hover:bg-white/10 hover:scale-105 hover:shadow-2xl">
-                    {/* 专辑封面 */}
-                    <div className="relative mb-4">
-                      <Image
-                        src={getCoverUrl(song)}
-                        alt={song.album || song.title}
-                        width={400}
-                        height={400}
-                        className="w-full aspect-square object-cover rounded-xl"
-                        style={{ objectFit: "cover" }}
-                      />
+                    <div className="relative">
+                        <div className="absolute inset-0 bg-blue-400/20 blur-2xl rounded-full" />
+                        <Music size={80} strokeWidth={1} className="relative mb-6 opacity-60 text-blue-200" />
                     </div>
-
-                    {/* 歌曲信息 */}
-                    <div className="space-y-1">
-                      <h3 className="font-semibold text-white text-lg truncate">
-                        {song.title}
-                      </h3>
-                      <p className="text-gray-300 text-sm truncate">
-                        {song.album || "未知"}
-                      </p>
-                      <p className="text-gray-400 text-xs">
-                        {song.year || "未知"} •{" "}
-                        {song.length
-                          ? `${Math.floor(song.length / 60)}:${(song.length % 60).toString().padStart(2, "0")}`
-                          : "未知"}
-                      </p>
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {(song.genre || []).map((g: string) => (
-                          <span
-                            key={g}
-                            className={`px-2 py-1 text-xs rounded-full border ${genreColorMap[g] || "bg-blue-500/20 text-blue-300 border-blue-400/30"}`}
-                          >
-                            {g}
-                          </span>
-                        ))}
-                        {(song.type || []).map((t: string) => (
-                          <span
-                            key={t}
-                            className={`px-2 py-1 text-xs rounded-full border ${typeColorMap[t] || "bg-gray-500/20 text-gray-300 border-gray-400/30"}`}
-                          >
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {paginatedSongs.map((song, index) => (
-                <div
-                  key={song.id}
-                  className="group flex items-center p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-200 cursor-pointer touch-active"
-                  onClick={(e) => {
-                    sessionStorage.setItem(
-                      "music_scrollY",
-                      String(window.scrollY),
-                    );
-
-                    if (
-                      typeof window !== "undefined" &&
-                      window.matchMedia("(hover: none) and (pointer: coarse)")
-                        .matches
-                    ) {
-                      const target = e.currentTarget;
-
-                      // 立即添加按下效果
-                      target.classList.add("touch-active-pressed");
-
-                      // 短暂延迟后开始导航
-                      setTimeout(() => {
-                        target.classList.remove("touch-active-pressed");
-                        target.classList.add("touch-navigating");
-
-                        // 立即开始导航
-                        router.push(
-                          `/song/${song.id}${window.location.search}`,
-                        );
-                      }, 180);
-                    } else {
+                    <p className="text-2xl font-light tracking-wider mb-2">没有找到相关歌曲</p>
+                    <p className="text-sm opacity-60 mb-8">换个关键词试试，或者清除筛选条件</p>
+                    <button 
+                        onClick={handleClearAllFilters}
+                        className="px-8 py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-full transition-all hover:scale-105 active:scale-95"
+                    >
+                        清除所有筛选
+                    </button>
+                </motion.div>
+            ) : viewMode === "grid" ? (
+              <motion.div
+                key="grid"
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6"
+              >
+                {paginatedSongs.map((song) => (
+                  <motion.div
+                    key={song.id}
+                    variants={itemVariants}
+                    layoutId={`song-${song.id}`}
+                    className="group"
+                    onClick={(e) => {
+                      sessionStorage.setItem("music_scrollY", String(window.scrollY));
                       router.push(`/song/${song.id}${window.location.search}`);
-                    }
-                  }}
+                    }}
+                  >
+                     <div className="relative aspect-square rounded-3xl overflow-hidden bg-white/5 cursor-pointer transform transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] ring-1 ring-white/10 hover:ring-white/30 group">
+                        <Image
+                            src={getCoverUrl(song)}
+                            alt={song.title}
+                            fill
+                            className="object-cover transition-transform duration-700 group-hover:scale-110"
+                            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-80 transition-opacity duration-300"/>
+                        
+                        {/* Play Icon Overlay */}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100 pointer-events-none">
+                             <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/40 text-white shadow-2xl">
+                                 <Music size={24} fill="currentColor" />
+                             </div>
+                        </div>
+
+                        <div className="absolute bottom-0 left-0 right-0 p-5 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                            <h3 className="font-bold text-white text-xl truncate leading-tight mb-1 drop-shadow-md">{song.title}</h3>
+                            <div className="flex items-center gap-2 text-sm text-gray-300/90 font-medium">
+                                <span className="truncate max-w-[60%]">{song.album || "单曲"}</span>
+                                <span className="w-1 h-1 bg-gray-400 rounded-full shrink-0"/>
+                                <span>{song.year || "-"}</span>
+                            </div>
+                            <div className="flex gap-1 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-75">
+                                {(song.type || []).slice(0, 3).map((t) => (
+                                   <span key={t} className="text-[10px] px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-sm border border-white/10 text-white/90">
+                                     {t}
+                                   </span>
+                                ))}
+                            </div>
+                        </div>
+                     </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            ) : (
+                <motion.div
+                    key="list"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="show"
+                    className="flex flex-col gap-3"
                 >
-                  {/* 序号 */}
-                  <div className="w-8 text-center text-gray-400 text-sm">
-                    {startIndex + index}
-                  </div>
+                    {paginatedSongs.map((song) => (
+                        <motion.div
+                            key={song.id}
+                            variants={itemVariants}
+                            layoutId={`song-list-${song.id}`}
+                            className="group flex items-center p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all hover:shadow-lg cursor-pointer"
+                            onClick={() => {
+                                sessionStorage.setItem("music_scrollY", String(window.scrollY));
+                                router.push(`/song/${song.id}${window.location.search}`);
+                            }}
+                        >
+                            <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 shadow-lg">
+                                <Image 
+                                    src={getCoverUrl(song)} 
+                                    alt={song.title} 
+                                    fill 
+                                    className="object-cover group-hover:scale-110 transition-transform duration-500" 
+                                />
+                            </div>
+                            
+                            <div className="ml-5 flex-1 min-w-0 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                                <div className="md:col-span-4">
+                                     <h3 className="text-white font-bold text-lg truncate group-hover:text-purple-300 transition-colors">{song.title}</h3>
+                                     <p className="text-sm text-gray-400 truncate mt-0.5">{song.album || "单曲"}</p>
+                                </div>
+                                
+                                <div className="hidden md:flex md:col-span-3 items-center gap-2 text-sm text-gray-400">
+                                   <User size={14} className="text-gray-500"/>
+                                   <span className="truncate">{getFirstElement(song.lyricist) || "未知作词"}</span>
+                                </div>
 
-                  {/* 专辑封面 */}
-                  <Image
-                    src={getCoverUrl(song)}
-                    alt={song.album || song.title}
-                    width={48}
-                    height={48}
-                    className="w-12 h-12 rounded-lg ml-4"
-                    style={{ objectFit: "cover" }}
-                  />
+                                <div className="hidden md:flex md:col-span-3 items-center gap-2 text-sm text-gray-400">
+                                    <Mic2 size={14} className="text-gray-500"/>
+                                    <span className="truncate">{getFirstElement(song.composer) || "未知作曲"}</span>
+                                </div>
 
-                  {/* 歌曲信息 */}
-                  <div className="flex-1 ml-4">
-                    {/* 小屏：精简显示 */}
-                    <div className="flex items-center justify-between md:hidden">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-white font-medium truncate">
-                          {song.title}
-                        </h3>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {getFirstElement(song.lyricist) && (
-                            <span className="text-gray-300 text-sm truncate">
-                              {getFirstElement(song.lyricist)}
-                            </span>
-                          )}
-                          {getFirstElement(song.composer) && (
-                            <span className="text-gray-300 text-sm truncate">
-                              {getFirstElement(song.composer)}
-                            </span>
-                          )}
-                          {getFirstElement((song as SongDetail).arranger) && (
-                            <span className="text-gray-300 text-sm truncate">
-                              {getFirstElement((song as SongDetail).arranger)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap gap-1 ml-2">
-                        {(song.genre || []).map((g: string) => (
-                          <span
-                            key={g}
-                            className={`px-2 py-1 text-xs rounded-full border ${genreColorMap[g] || "bg-blue-500/20 text-blue-300 border-blue-400/30"}`}
-                          >
-                            {g}
-                          </span>
-                        ))}
-                        {(song.type || []).map((t: string) => (
-                          <span
-                            key={t}
-                            className={`px-2 py-1 text-xs rounded-full border ${typeColorMap[t] || "bg-gray-500/20 text-gray-300 border-gray-400/30"}`}
-                          >
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    {/* 大屏：原有详细显示 */}
-                    <div className="hidden md:flex items-center justify-between">
-                      <div>
-                        <h3 className="text-white font-medium">{song.title}</h3>
-                        <p className="text-gray-400 text-sm">
-                          {song.album || "未知"} • {song.year || "未知"}
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-6 text-gray-400 text-sm">
-                        <span>
-                          作词: {getFirstElement(song.lyricist) || "未知"}
-                        </span>
-                        <span>
-                          作曲: {getFirstElement(song.composer) || "未知"}
-                        </span>
-                        <span>
-                          编曲:{" "}
-                          {getFirstElement((song as SongDetail).arranger) ||
-                            "未知"}
-                        </span>
-                        <span>
-                          {song.length
-                            ? `${Math.floor(song.length / 60)}:${(song.length % 60).toString().padStart(2, "0")}`
-                            : "未知"}
-                        </span>
-                        <div className="flex flex-wrap gap-1 ml-4">
-                          {(song.genre || []).map((g: string) => (
-                            <span
-                              key={g}
-                              className={`px-2 py-1 text-xs rounded-full border ${genreColorMap[g] || "bg-blue-500/20 text-blue-300 border-blue-400/30"}`}
-                            >
-                              {g}
-                            </span>
-                          ))}
-                          {(song.type || []).map((t: string) => (
-                            <span
-                              key={t}
-                              className={`px-2 py-1 text-xs rounded-full border ${typeColorMap[t] || "bg-gray-500/20 text-gray-300 border-gray-400/30"}`}
-                            >
-                              {t}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                                <div className="hidden md:flex md:col-span-2 items-center justify-end text-sm text-gray-500 font-mono">
+                                    {song.year || "未知"}
+                                </div>
+                            </div>
 
-          {/* 分页组件 */}
+                            <div className="ml-4 flex items-center">
+                                <div className="p-2 rounded-full bg-white/5 text-gray-400 group-hover:bg-purple-500/20 group-hover:text-purple-200 transition-colors">
+                                     <Music size={18} />
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
+                </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Pagination */}
           {filteredSongs.length > 30 && (
-            <div className="mt-8">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-              />
-            </div>
-          )}
-
-          {/* 无结果提示 */}
-          {filteredSongs.length === 0 && (
-            <div className="text-center py-16">
-              <div className="text-gray-400 text-lg mb-2">
-                没有找到匹配的歌曲
-              </div>
-              <div className="text-gray-500 text-sm">
-                尝试调整搜索条件或筛选器
-              </div>
-            </div>
+             <motion.div 
+               className="mt-16 mb-8"
+               initial={{ opacity: 0 }}
+               whileInView={{ opacity: 1 }}
+               viewport={{ once: true }}
+             >
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                />
+             </motion.div>
           )}
         </div>
-
-        {/* 浮动操作按钮组 */}
+        
+        {/* Floating Actions */}
         <FloatingActionButtons
           showScrollTop={showScrollTop}
           onScrollToTop={scrollToTop}
