@@ -59,6 +59,7 @@ export const typeColorMap: Record<string, string> = {
   商业: "bg-orange-500/20 text-orange-300 border-orange-400/30",
   墨宝: "bg-red-500/20 text-red-300 border-red-400/30",
   参与: "bg-pink-500/20 text-pink-300 border-pink-400/30",
+  文宣: "bg-blue-500/20 text-blue-300 border-blue-400/30",
 };
 
 // 流派标签颜色映射
