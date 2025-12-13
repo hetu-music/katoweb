@@ -34,7 +34,11 @@ function isSongIncomplete(song: SongDetail): boolean {
   // 检查所有配置字段
   for (const field of songFields) {
     // 封面、外链不用检测，视作已经填写
-    if (["hascover", "kugolink", "qmlink", "nelink"].includes(field.key))
+    if (
+      ["hascover", "kugolink", "qmlink", "nelink", "comment"].includes(
+        field.key,
+      )
+    )
       continue;
 
     const value = song[field.key];
@@ -70,7 +74,11 @@ function getMissingFields(song: SongDetail): string[] {
 
   for (const field of songFields) {
     // 封面、外链不用检测
-    if (["hascover", "kugolink", "qmlink", "nelink"].includes(field.key))
+    if (
+      ["hascover", "kugolink", "qmlink", "nelink", "comment"].includes(
+        field.key,
+      )
+    )
       continue;
 
     const value = song[field.key];
@@ -242,7 +250,7 @@ function ExpandedContent({ song }: { song: SongDetail }) {
 
             // 封面和外链视为已填写，不需要高亮
             const shouldHighlight =
-              !["hascover", "kugolink", "qmlink", "nelink"].includes(
+              !["hascover", "kugolink", "qmlink", "nelink", "comment"].includes(
                 field.key,
               ) && isEmpty;
 
