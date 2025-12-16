@@ -19,20 +19,24 @@ export const metadata: Metadata = {
   description: "河图音乐作品收录与筛选",
 };
 
+import { Providers } from "./providers";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-linear-to-br from-purple-900 via-blue-900 to-indigo-900`}
       >
-        <WallpaperProvider>
-          <GlobalWallpaperBackground />
-          <div className="relative z-10 min-h-screen">{children}</div>
-        </WallpaperProvider>
+        <Providers>
+          <WallpaperProvider>
+            <GlobalWallpaperBackground />
+            <div className="relative z-10 min-h-screen">{children}</div>
+          </WallpaperProvider>
+        </Providers>
       </body>
     </html>
   );
