@@ -673,5 +673,4 @@ html.wallpaper-active {
 .no-transitions *::before,
 .no-transitions *::after {
   transition: none !important;
-  animation: none !important;
 }
