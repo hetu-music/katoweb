@@ -1,13 +1,24 @@
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
+@variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
 
 body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
   margin: 0;
   padding: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  /* 确保页面切换时有一致的背景 */
-  background: linear-gradient(135deg, #581c87 0%, #1e3a8a 50%, #312e81 100%);
-  /* 移除 background-attachment: fixed 以避免移动端问题 */
+  transition: background-color 0.3s ease-out, color 0.3s ease-out;
 }
 
 /* 触摸动画，仅在触摸设备生效 */
@@ -39,7 +50,7 @@ body {
   }
 }
 
-/* 筛选框样式 */
+/* 筛选框样式 - 保持原样以便 WallpaperContext 的部分组件还能用 */
 .filter-container {
   @apply flex items-center flex-1 min-w-0 relative rounded-2xl transition-all duration-200;
 }
@@ -253,6 +264,7 @@ body {
 
 /* 移动端滚动条特殊处理 - iOS原生行为 */
 @media (max-width: 768px) {
+
   /* 默认状态：隐藏滚动条 */
   .custom-select-options.mobile {
     scrollbar-width: none;
@@ -528,6 +540,7 @@ html.wallpaper-active::after {
 
 /* 移动端特殊优化 */
 @media (hover: none) and (pointer: coarse) {
+
   html.wallpaper-active::before,
   html.wallpaper-active::after {
     /* 在移动设备上确保平滑滚动 */
@@ -541,22 +554,6 @@ html.wallpaper-active::after {
 html.wallpaper-active {
   /* 防止出现滚动条影响布局 */
   overflow-x: hidden;
-}
-
-/* 页面切换过渡优化 */
-html {
-  /* 确保根元素也有背景，防止闪动 */
-  background: linear-gradient(135deg, #581c87 0%, #1e3a8a 50%, #312e81 100%);
-  /* 移除 background-attachment: fixed 以避免移动端问题 */
-}
-
-/* 防止页面切换时的白屏闪动 */
-html,
-body {
-  background-color: #581c87;
-  /* 紫色作为备用颜色 */
-  /* 确保页面切换时的平滑过渡 */
-  transition: background-color 0.3s ease-out;
 }
 
 /* 页面过渡动画 */
@@ -593,8 +590,7 @@ body {
   }
 }
 
-/* 壁纸控
-制按钮位置优化 */
+/* 壁纸控制按钮位置优化 */
 .wallpaper-controls-middle {
   @apply fixed right-8 top-1/2 -translate-y-1/2 z-40;
 }
