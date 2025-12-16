@@ -44,15 +44,11 @@ const CoverArt = ({ song, className }: { song: Song; className?: string }) => {
 const GridCard = ({ song, onClick, style, className }: { song: Song; onClick: () => void; style?: React.CSSProperties; className?: string }) => (
   <div onClick={onClick} className={cn("group flex flex-col gap-4 cursor-pointer", className)} style={style}>
     {/* 封面容器 */}
-    <div className="relative aspect-square w-full rounded-sm transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-2xl shadow-lg shadow-slate-200/50 dark:shadow-black/40">
+    <div className="relative aspect-square w-full rounded-sm overflow-hidden transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-2xl shadow-lg shadow-slate-200/50 dark:shadow-black/40">
       <CoverArt song={song} />
 
-      {/* 悬浮播放遮罩 (这里作为详情/点击提示) */}
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-        <div className="w-12 h-12 bg-white/90 dark:bg-black/80 rounded-full flex items-center justify-center backdrop-blur-sm shadow-sm transform scale-90 group-hover:scale-100 transition-transform">
-          <div className="w-0 h-0 border-l-[10px] border-l-slate-900 dark:border-l-white border-y-[6px] border-y-transparent ml-1" />
-        </div>
-      </div>
+      {/* 悬浮遮罩 */}
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors opacity-0 group-hover:opacity-100" />
     </div>
 
     {/* 信息区 */}
@@ -234,15 +230,16 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       {/* 顶部导航 */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="text-2xl font-serif font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-            <span className="w-3 h-3 bg-blue-600 rounded-full" />
-            Artist Archive
+          <div className="text-2xl font-serif font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-1">
+            河图
+            <span className="w-[2px] h-5 bg-blue-600 mx-2 rounded-full" />
+            作品勘鉴
           </div>
           <button
             onClick={toggleTheme}
             className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
           >
-            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
           </button>
         </div>
       </nav>
@@ -252,10 +249,10 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
         {/* Header */}
         <section className="mb-16 space-y-4">
           <h1 className="text-5xl md:text-6xl font-serif text-slate-900 dark:text-slate-50">
-            Discography
+            河山万里
           </h1>
           <p className="text-slate-500 dark:text-slate-400 font-light max-w-lg">
-            收录河图所有作品，包括专辑、单曲及其他。
+            你一定想知道，戏里讲了什么故事。
           </p>
         </section>
 
