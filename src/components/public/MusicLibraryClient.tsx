@@ -165,7 +165,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     setCurrentPage: setPaginationPage,
   } = usePagination({
     data: filteredWorks,
-    itemsPerPage: 12, // 示例中网格看起来比较疏朗，每页少一点可能更好，或者保持原来的 30
+    itemsPerPage: 24, // 每页显示24个结果
     initialPage: 1,
   });
 
