@@ -335,8 +335,8 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       key={work.id}
                       song={work}
                       onClick={() => router.push(`/song/${work.id}`)}
-                      className="animate-in fade-in slide-in-from-bottom-4 duration-500"
-                      style={{ animationDelay: `${(i % 8) * 100}ms`, animationFillMode: 'both' }}
+                      className="animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both"
+                      style={{ animationDelay: `${(i % 8) * 40}ms`, animationFillMode: 'both' }}
                     />
                   ))}
                 </div>
@@ -356,8 +356,8 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       key={work.id}
                       song={work}
                       onClick={() => router.push(`/song/${work.id}`)}
-                      className="animate-in fade-in slide-in-from-bottom-4 duration-500"
-                      style={{ animationDelay: `${(i % 8) * 100}ms`, animationFillMode: 'both' }}
+                      className="animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both"
+                      style={{ animationDelay: `${(i % 8) * 40}ms`, animationFillMode: 'both' }}
                     />
                   ))}
                 </div>
