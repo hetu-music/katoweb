@@ -54,11 +54,11 @@ export const songFields: SongFieldConfig[] = [
 // 类型标签颜色映射
 export const typeColorMap: Record<string, string> = {
   原创: "bg-purple-500/20 text-purple-300 border-purple-400/30",
-  翻唱: "bg-blue-500/20 text-blue-300 border-blue-400/30",
   合作: "bg-yellow-500/20 text-yellow-300 border-yellow-400/30",
   文宣: "bg-green-500/20 text-green-300 border-green-400/30",
   商业: "bg-orange-500/20 text-orange-300 border-orange-400/30",
   墨宝: "bg-red-500/20 text-red-300 border-red-400/30",
+  翻唱: "bg-blue-500/20 text-blue-300 border-blue-400/30",
   参与: "bg-pink-500/20 text-pink-300 border-pink-400/30",
 };
 

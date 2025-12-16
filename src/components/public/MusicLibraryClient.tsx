@@ -2,14 +2,16 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { flushSync } from "react-dom";
-import { Search, LayoutGrid, List, Disc, Calendar, Clock, Moon, Sun } from "lucide-react";
+import { Search, LayoutGrid, List, Disc, Calendar, Clock, Moon, Sun, SlidersHorizontal, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { MusicLibraryClientProps, Song } from "@/lib/types";
-import { getCoverUrl, formatTime } from "@/lib/utils";
+import { getCoverUrl, formatTime, filterSongs, calculateFilterOptions } from "@/lib/utils";
+import { typeColorMap } from "@/lib/constants";
 import { usePagination } from "@/hooks/usePagination";
 import Pagination from "./Pagination";
+import SongFilters from "./SongFilters";
 
 // 简易 classNames 工具 (替代 clsx/tailwind-merge)
 function cn(...classes: (string | undefined | null | false)[]) {
@@ -130,29 +132,38 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   // 视图状态：Grid vs List
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
+  // 高级筛选展开状态
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
   // 筛选状态
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterType, setFilterType] = useState("All");
+  const [filterType, setFilterType] = useState("全部");
+  const [filterYear, setFilterYear] = useState("全部");
+  const [filterLyricist, setFilterLyricist] = useState("全部");
+  const [filterComposer, setFilterComposer] = useState("全部");
+  const [filterArranger, setFilterArranger] = useState("全部");
+
+  // 计算筛选选项
+  const filterOptions = useMemo(() => {
+    return calculateFilterOptions(initialSongsData);
+  }, [initialSongsData]);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // 数据过滤 (客户端)
+  // 数据过滤 (使用 fuse.js 模糊搜索)
   const filteredWorks = useMemo(() => {
-    return initialSongsData.filter((work) => {
-      const matchesSearch =
-        work.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (work.album && work.album.toLowerCase().includes(searchQuery.toLowerCase()));
-
-      const matchesType =
-        filterType === "All" ||
-        (work.type && work.type.includes(filterType)) ||
-        (filterType === "Other" && (!work.type || work.type.length === 0));
-
-      return matchesSearch && matchesType;
-    });
-  }, [initialSongsData, searchQuery, filterType]);
+    return filterSongs(
+      initialSongsData,
+      searchQuery,
+      filterType,
+      filterYear,
+      filterLyricist,
+      filterComposer,
+      filterArranger
+    );
+  }, [initialSongsData, searchQuery, filterType, filterYear, filterLyricist, filterComposer, filterArranger]);
 
   // 分页处理
   const {
@@ -166,12 +177,11 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     initialPage: 1,
   });
 
-  // 提取所有可用的类型 (用于 FilterPill)
+  // 使用 filterOptions 中的类型
   const availableTypes = useMemo(() => {
-    // 固定的一些大类，或者动态生成
-    return ["All", "原创", "翻唱", "纯音乐", "其他"];
-    // 实际项目中可能需要遍历 initialSongsData 来获取所有 type
-  }, []);
+    // 使用从数据中计算出的类型，这些类型已按 typeColorMap 排序
+    return filterOptions.allTypes;
+  }, [filterOptions]);
 
   // 切换主题动画
   const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -258,65 +268,101 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
         {/* 控制栏 */}
         <section className="sticky top-20 z-40 bg-[#FAFAFA]/95 dark:bg-[#0B0F19]/95 backdrop-blur-sm py-4 mb-8 -mx-6 px-6 border-y border-transparent data-[scrolled=true]:border-slate-100">
-          <div className="flex flex-col md:flex-row justify-between gap-4 md:items-center">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row justify-between gap-4 md:items-center">
 
-            {/* 左侧：筛选器 */}
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0">
-              {availableTypes.map(type => (
-                <FilterPill
-                  key={type}
-                  label={type === "All" ? "全部" : type}
-                  active={filterType === type}
-                  onClick={() => {
-                    setFilterType(type);
-                    setPaginationPage(1); // 切换类型时重置页码
-                  }}
-                />
-              ))}
-            </div>
+              {/* 左侧：筛选器 */}
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0">
+                {availableTypes.map(type => (
+                  <FilterPill
+                    key={type}
+                    label={type}
+                    active={filterType === type}
+                    onClick={() => {
+                      setFilterType(type);
+                      setPaginationPage(1); // 切换类型时重置页码
+                    }}
+                  />
+                ))}
 
-            {/* 右侧：搜索与视图切换 */}
-            <div className="flex items-center gap-4">
-              <div className="relative group w-full md:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setPaginationPage(1); // 搜索时重置页码
-                  }}
-                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full py-2 pl-9 pr-4 text-sm outline-none focus:border-blue-500 transition-colors"
-                />
-              </div>
-
-              <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 hidden md:block" />
-
-              {/* 视图切换按钮组 */}
-              <div className="flex bg-slate-100 dark:bg-slate-800/50 rounded-lg p-1 gap-1">
+                {/* 高级筛选按钮 */}
                 <button
-                  onClick={() => setViewMode('grid')}
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
                   className={cn(
-                    "p-1.5 rounded-md transition-all",
-                    viewMode === 'grid' ? "bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400" : "text-slate-400 hover:text-slate-600"
+                    "p-2 rounded-lg transition-all duration-300 border shrink-0",
+                    showAdvancedFilters
+                      ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                      : "bg-transparent text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
                   )}
-                  title="Grid View"
+                  title="高级筛选"
                 >
-                  <LayoutGrid size={18} />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={cn(
-                    "p-1.5 rounded-md transition-all",
-                    viewMode === 'list' ? "bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400" : "text-slate-400 hover:text-slate-600"
-                  )}
-                  title="List View"
-                >
-                  <List size={18} />
+                  {showAdvancedFilters ? <X size={16} /> : <SlidersHorizontal size={16} />}
                 </button>
               </div>
+
+              {/* 右侧：搜索与视图切换 */}
+              <div className="flex items-center gap-4">
+                <div className="relative group w-full md:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setPaginationPage(1); // 搜索时重置页码
+                    }}
+                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full py-2 pl-9 pr-4 text-sm outline-none focus:border-blue-500 transition-colors"
+                  />
+                </div>
+
+                <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 hidden md:block" />
+
+                {/* 视图切换按钮组 */}
+                <div className="flex bg-slate-100 dark:bg-slate-800/50 rounded-lg p-1 gap-1">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={cn(
+                      "p-1.5 rounded-md transition-all",
+                      viewMode === 'grid' ? "bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400" : "text-slate-400 hover:text-slate-600"
+                    )}
+                    title="Grid View"
+                  >
+                    <LayoutGrid size={18} />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={cn(
+                      "p-1.5 rounded-md transition-all",
+                      viewMode === 'list' ? "bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400" : "text-slate-400 hover:text-slate-600"
+                    )}
+                    title="List View"
+                  >
+                    <List size={18} />
+                  </button>
+                </div>
+              </div>
             </div>
+
+            {/* 高级筛选面板 */}
+            {showAdvancedFilters && (
+              <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                <SongFilters
+                  selectedType={filterType}
+                  setSelectedType={setFilterType}
+                  selectedYear={filterYear}
+                  setSelectedYear={setFilterYear}
+                  selectedLyricist={filterLyricist}
+                  setSelectedLyricist={setFilterLyricist}
+                  selectedComposer={filterComposer}
+                  setSelectedComposer={setFilterComposer}
+                  selectedArranger={filterArranger}
+                  setSelectedArranger={setFilterArranger}
+                  filterOptions={filterOptions}
+                  onTypeExplanationOpen={() => { }}
+                />
+              </div>
+            )}
           </div>
         </section>
 
