@@ -659,3 +659,19 @@ html.wallpaper-active {
     @apply top-20 translate-y-0;
   }
 }
+
+/* View Transitions API Customization */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* Disable transitions for View Transitions */
+.no-transitions,
+.no-transitions *,
+.no-transitions *::before,
+.no-transitions *::after {
+  transition: none !important;
+  animation: none !important;
+}

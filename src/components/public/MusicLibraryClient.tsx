@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
+import { flushSync } from "react-dom";
 import { Search, LayoutGrid, List, Disc, Calendar, Clock, Moon, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -176,6 +177,53 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     // 实际项目中可能需要遍历 initialSongsData 来获取所有 type
   }, []);
 
+  // 切换主题动画
+  const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
+    // @ts-ignore
+    if (!document.startViewTransition) {
+      setTheme(theme === 'dark' ? 'light' : 'dark');
+      return;
+    }
+
+    const x = e.clientX;
+    const y = e.clientY;
+    const endRadius = Math.hypot(
+      Math.max(x, innerWidth - x),
+      Math.max(y, innerHeight - y)
+    );
+
+    document.documentElement.classList.add('no-transitions');
+
+    // @ts-ignore
+    const transition = document.startViewTransition(() => {
+      flushSync(() => {
+        setTheme(theme === 'dark' ? 'light' : 'dark');
+      });
+    });
+
+    transition.finished.then(() => {
+      document.documentElement.classList.remove('no-transitions');
+    });
+
+    transition.ready.then(() => {
+      const clipPath = [
+        `circle(0px at ${x}px ${y}px)`,
+        `circle(${endRadius}px at ${x}px ${y}px)`,
+      ];
+
+      document.documentElement.animate(
+        {
+          clipPath: clipPath,
+        },
+        {
+          duration: 500,
+          easing: "ease-in-out",
+          pseudoElement: "::view-transition-new(root)",
+        }
+      );
+    });
+  };
+
   if (!mounted) {
     return null;
   }
@@ -191,7 +239,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
             Artist Archive
           </div>
           <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            onClick={toggleTheme}
             className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
           >
             {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
