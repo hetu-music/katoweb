@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   description: "河图音乐作品收录与筛选",
 };
 
-import { Providers } from "./providers";
+import { Providers } from "@/context/providers";
 
 export default function RootLayout({
   children,
