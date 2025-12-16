@@ -41,8 +41,8 @@ const CoverArt = ({ song, className }: { song: Song; className?: string }) => {
 };
 
 // 2. 网格模式卡片 (Grid Card)
-const GridCard = ({ song, onClick }: { song: Song; onClick: () => void }) => (
-  <div onClick={onClick} className="group flex flex-col gap-4 cursor-pointer">
+const GridCard = ({ song, onClick, style, className }: { song: Song; onClick: () => void; style?: React.CSSProperties; className?: string }) => (
+  <div onClick={onClick} className={cn("group flex flex-col gap-4 cursor-pointer", className)} style={style}>
     {/* 封面容器 */}
     <div className="relative aspect-square w-full rounded-sm transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-2xl shadow-lg shadow-slate-200/50 dark:shadow-black/40">
       <CoverArt song={song} />
@@ -75,8 +75,8 @@ const GridCard = ({ song, onClick }: { song: Song; onClick: () => void }) => (
 );
 
 // 3. 列表模式行 (List Row)
-const ListRow = ({ song, onClick }: { song: Song; onClick: () => void }) => (
-  <div onClick={onClick} className="group flex items-center gap-6 p-4 rounded-xl hover:bg-white dark:hover:bg-slate-800/50 transition-all border border-transparent hover:border-slate-100 dark:hover:border-slate-700/50 hover:shadow-sm cursor-pointer">
+const ListRow = ({ song, onClick, style, className }: { song: Song; onClick: () => void; style?: React.CSSProperties; className?: string }) => (
+  <div onClick={onClick} className={cn("group flex items-center gap-6 p-4 rounded-xl hover:bg-white dark:hover:bg-slate-800/50 transition-all border border-transparent hover:border-slate-100 dark:hover:border-slate-700/50 hover:shadow-sm cursor-pointer", className)} style={style}>
     {/* 小封面 */}
     <div className="w-16 h-16 shrink-0 rounded shadow-sm overflow-hidden">
       <CoverArt song={song} />
@@ -329,18 +329,20 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
             <>
               {viewMode === 'grid' ? (
                 // --- 网格模式 ---
-                <div key={`grid-page-${currentPage}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  {paginatedSongs.map((work) => (
+                <div key={`grid-page-${currentPage}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12">
+                  {paginatedSongs.map((work, i) => (
                     <GridCard
                       key={work.id}
                       song={work}
                       onClick={() => router.push(`/song/${work.id}`)}
+                      className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+                      style={{ animationDelay: `${(i % 8) * 100}ms`, animationFillMode: 'both' }}
                     />
                   ))}
                 </div>
               ) : (
                 // --- 列表模式 ---
-                <div key={`list-page-${currentPage}`} className="flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div key={`list-page-${currentPage}`} className="flex flex-col gap-2">
                   {/* 列表表头 */}
                   <div className="hidden md:flex px-4 py-2 text-xs font-bold tracking-wider text-slate-400 uppercase border-b border-slate-100 dark:border-slate-800 mb-2">
                     <div className="w-16 mr-6">Cover</div>
@@ -349,11 +351,13 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                     <div className="w-16 ml-8">Year</div>
                     <div className="w-16 ml-8">Time</div>
                   </div>
-                  {paginatedSongs.map((work) => (
+                  {paginatedSongs.map((work, i) => (
                     <ListRow
                       key={work.id}
                       song={work}
                       onClick={() => router.push(`/song/${work.id}`)}
+                      className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+                      style={{ animationDelay: `${(i % 8) * 100}ms`, animationFillMode: 'both' }}
                     />
                   ))}
                 </div>
