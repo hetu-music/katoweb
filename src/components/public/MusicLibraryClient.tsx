@@ -46,7 +46,7 @@ const CoverArt = ({ song, className }: { song: Song; className?: string }) => {
 const GridCard = ({ song, onClick, style, className }: { song: Song; onClick: () => void; style?: React.CSSProperties; className?: string }) => (
   <div onClick={onClick} className={cn("group flex flex-col gap-4 cursor-pointer", className)} style={style}>
     {/* 封面容器 */}
-    <div className="relative aspect-square w-full rounded-sm overflow-hidden transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-2xl shadow-lg shadow-slate-200/50 dark:shadow-black/40">
+    <div className="relative aspect-square w-full rounded-sm overflow-hidden transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-2xl shadow-lg shadow-slate-200/50 dark:shadow-black/40 ring-1 ring-slate-900/5 dark:ring-white/10">
       <CoverArt song={song} />
 
       {/* 悬浮遮罩 */}
