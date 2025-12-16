@@ -281,7 +281,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
             <>
               {viewMode === 'grid' ? (
                 // --- 网格模式 ---
-                <div key={`grid-page-${currentPage}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div key="grid-view" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   {paginatedSongs.map((work) => (
                     <GridCard
                       key={work.id}
@@ -292,7 +292,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                 </div>
               ) : (
                 // --- 列表模式 ---
-                <div key={`list-page-${currentPage}`} className="flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div key="list-view" className="flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   {/* 列表表头 */}
                   <div className="hidden md:flex px-4 py-2 text-xs font-bold tracking-wider text-slate-400 uppercase border-b border-slate-100 dark:border-slate-800 mb-2">
                     <div className="w-16 mr-6">Cover</div>
