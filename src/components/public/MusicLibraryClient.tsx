@@ -65,16 +65,17 @@ const GridCard = ({ song, onClick, style, className }: { song: Song; onClick: ()
         </h3>
         <span className="text-xs font-mono text-slate-400 shrink-0">{song.year || "未知"}</span>
       </div>
-      <div className="flex justify-between items-baseline gap-4">
-        <p className="text-sm text-slate-500 dark:text-slate-400 font-light flex-1 min-w-0">
-          <span className="truncate">{song.album || "单曲"}</span>
-        </p>
+      <p className="text-sm text-slate-500 dark:text-slate-400 font-light flex items-center gap-2 overflow-hidden">
+        <span className="truncate">{song.album || "单曲"}</span>
         {song.type && song.type[0] && (
-          <span className={cn("text-xs font-medium uppercase tracking-wider shrink-0", getTypeTagStyle(song.type[0]))}>
-            {song.type[0]}
-          </span>
+          <>
+            <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 shrink-0" />
+            <span className={cn("text-sm font-medium uppercase tracking-wider shrink-0", getTypeTagStyle(song.type[0]))}>
+              {song.type[0]}
+            </span>
+          </>
         )}
-      </div>
+      </p>
     </div>
   </div>
 );
