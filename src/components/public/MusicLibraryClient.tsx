@@ -491,7 +491,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
         {/* 内容展示区 */}
         <section className={cn(
-          "min-h-[50vh] transition-opacity duration-300",
+          "min-h-[50vh] transition-opacity duration-200",
           isRestoringScroll ? "opacity-0 [&_*]:!animate-none" : "opacity-100"
         )}>
           {filteredWorks.length > 0 ? (

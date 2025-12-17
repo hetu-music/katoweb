@@ -38,8 +38,8 @@ interface FilterState {
 
 const STORAGE_KEY = "music_library_scrollY";
 const URL_DEBOUNCE_MS = 300;
-const SCROLL_RESTORE_DELAY_MS = 200;
-const SCROLL_RESTORE_INTERVAL_MS = 50;
+const SCROLL_RESTORE_DELAY_MS = 50;  // Reduced from 200ms for faster restoration
+const SCROLL_RESTORE_INTERVAL_MS = 30;  // Reduced from 50ms for faster retry
 const MAX_SCROLL_ATTEMPTS = 20;
 const SCROLL_TOLERANCE_PX = 100;
 
