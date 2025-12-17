@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import MusicLibraryClient from "@/components/public/MusicLibraryClient";
 import { getSongs } from "@/lib/supabase";
 import { Song } from "@/lib/types";
@@ -10,8 +11,20 @@ function ErrorFallback({ error }: { error: Error }) {
         <h1 className="text-2xl font-bold mb-4">加载失败</h1>
         <p className="text-gray-300 mb-4">无法加载歌曲数据，请稍后再试</p>
         <p className="text-sm text-gray-400">
-          错误信息：{error.message || "未知错误"}
+          错误信息:{error.message || "未知错误"}
         </p>
+      </div>
+    </div>
+  );
+}
+
+// 加载中组件
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] flex items-center justify-center">
+      <div className="text-center">
+        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+        <p className="mt-4 text-slate-600 dark:text-slate-400">加载中...</p>
       </div>
     </div>
   );
@@ -33,7 +46,11 @@ export default async function MusicLibraryPage() {
     return <ErrorFallback error={error} />;
   }
 
-  return <MusicLibraryClient initialSongsData={songsData} />;
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <MusicLibraryClient initialSongsData={songsData} />
+    </Suspense>
+  );
 }
 
 // 启用 ISR - 每2小时重新生成页面，减少服务器负载
