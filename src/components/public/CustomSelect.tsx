@@ -13,6 +13,8 @@ interface CustomSelectProps {
   options: Option[];
   placeholder?: string;
   className?: string;
+  triggerClassName?: string;
+  optionsClassName?: string;
   disabled?: boolean;
 }
 
@@ -38,6 +40,8 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   options,
   placeholder = "请选择",
   className = "",
+  triggerClassName = "",
+  optionsClassName = "",
   disabled = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -80,10 +84,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         // 桌面端计算
         const dropdownHeight = Math.min(
           options.length * DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.borderAndPadding,
           DROPDOWN_CONFIG.desktop.maxVisibleOptions *
-            DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.optionHeight +
+          DROPDOWN_CONFIG.borderAndPadding,
         );
 
         const viewportHeight = window.innerHeight;
@@ -280,10 +284,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         // 计算下拉选项位置
         const dropdownHeight = Math.min(
           options.length * DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.borderAndPadding,
           DROPDOWN_CONFIG.mobile.maxVisibleOptions *
-            DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.optionHeight +
+          DROPDOWN_CONFIG.borderAndPadding,
         );
 
         // 计算垂直位置 - 以筛选框为中心
@@ -466,7 +470,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     >
       {/* 选择框主体 */}
       <div
-        className="custom-select-trigger"
+        className={`custom-select-trigger ${triggerClassName}`}
         onClick={(e) => {
           e.stopPropagation();
           if (!disabled) {
@@ -536,7 +540,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             }
           }}
           id="custom-select-options"
-          className={`custom-select-options ${isMobile ? "mobile" : "desktop"} ${isAnimating && !isOpen ? "closing" : ""}`}
+          className={`custom-select-options ${isMobile ? "mobile" : "desktop"} ${isAnimating && !isOpen ? "closing" : ""} ${optionsClassName}`}
           role="listbox"
           onClick={(e) => e.stopPropagation()}
           onTouchStart={(e) => {
@@ -558,22 +562,21 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           style={
             isMobile && dropdownPosition
               ? {
-                  position: "fixed",
-                  top: `${dropdownPosition.top}px`,
-                  left: `${dropdownPosition.left}px`,
-                  width: `${dropdownPosition.width}px`,
-                  maxHeight: `${dropdownPosition.maxHeight}px`,
-                  zIndex: 50,
-                }
+                position: "fixed",
+                top: `${dropdownPosition.top}px`,
+                left: `${dropdownPosition.left}px`,
+                width: `${dropdownPosition.width}px`,
+                maxHeight: `${dropdownPosition.maxHeight}px`,
+                zIndex: 50,
+              }
               : {}
           }
         >
           {options.map((option, index) => (
             <div
               key={option.value}
-              className={`custom-select-option ${
-                option.value === value ? "selected" : ""
-              } ${index === focusedIndex ? "focused" : ""}`}
+              className={`custom-select-option ${option.value === value ? "selected" : ""
+                } ${index === focusedIndex ? "focused" : ""}`}
               onClick={(e) => {
                 e.stopPropagation();
                 handleOptionClick(option.value);

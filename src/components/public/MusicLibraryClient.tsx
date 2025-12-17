@@ -361,8 +361,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
             {showAdvancedFilters && (
               <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                 <SongFilters
-                  selectedType={filterType}
-                  setSelectedType={setFilterType}
                   selectedYear={filterYear}
                   setSelectedYear={setFilterYear}
                   selectedLyricist={filterLyricist}
@@ -372,7 +370,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   selectedArranger={filterArranger}
                   setSelectedArranger={setFilterArranger}
                   filterOptions={filterOptions}
-                  onTypeExplanationOpen={() => { }}
                 />
               </div>
             )}

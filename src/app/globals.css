@@ -211,7 +211,7 @@ h6 {
 }
 
 .custom-select-option {
-  @apply px-0 py-2 text-black text-center cursor-pointer border-b border-gray-300 last:border-b-0 w-full flex items-center justify-center;
+  @apply px-0 py-2 text-slate-900 dark:text-slate-100 text-center cursor-pointer border-b border-slate-100 dark:border-slate-800 last:border-b-0 w-full flex items-center justify-center;
   /* iOS风格的过渡效果 */
   transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform: translateZ(0);

@@ -2,8 +2,6 @@ import React from "react";
 import CustomSelect from "./CustomSelect";
 
 interface SongFiltersProps {
-  selectedType: string;
-  setSelectedType: (type: string) => void;
   selectedYear: string;
   setSelectedYear: (year: string) => void;
   selectedLyricist: string;
@@ -19,12 +17,9 @@ interface SongFiltersProps {
     allComposers: string[];
     allArrangers: string[];
   };
-  onTypeExplanationOpen: () => void;
 }
 
 const SongFilters: React.FC<SongFiltersProps> = ({
-  selectedType,
-  setSelectedType,
   selectedYear,
   setSelectedYear,
   selectedLyricist,
@@ -34,83 +29,90 @@ const SongFilters: React.FC<SongFiltersProps> = ({
   selectedArranger,
   setSelectedArranger,
   filterOptions,
-  onTypeExplanationOpen,
 }) => {
+  // Flatter design: removed shadow, transparent background in inactive state (or minimal white), clean borders
+  const triggerStyle =
+    "!bg-white/50 dark:!bg-slate-900/50 hover:!bg-white dark:hover:!bg-slate-900 !border !border-slate-200 dark:!border-slate-800 !rounded-lg !text-slate-600 dark:!text-slate-300 !h-10 !px-3 !mx-0 transition-all duration-200 focus:!ring-1 focus:!ring-blue-500/20";
+
+  const optionsStyle =
+    "!bg-white dark:!bg-slate-900 !border !border-slate-100 dark:!border-slate-800 !rounded-xl !shadow-2xl !p-1";
+
   return (
-    <div className="w-full flex flex-col xl:flex-row gap-3">
-      {/* 类型筛选 */}
-      <div className="filter-container relative">
-        <div className="filter-label">类型</div>
-        <button
-          type="button"
-          className="absolute left-[80px] top-1/2 -translate-y-1/2 w-4 h-4 flex items-center justify-center rounded-full bg-white/10 border border-white/20 text-xs text-white/70 hover:text-white hover:bg-white/20 transition-all duration-200 cursor-pointer z-10"
-          style={{ fontSize: "13px", lineHeight: "1", padding: 0 }}
-          onClick={onTypeExplanationOpen}
-          aria-label="类型说明"
-          tabIndex={0}
-        >
-          ?
-        </button>
-        <CustomSelect
-          value={selectedType}
-          onChange={setSelectedType}
-          options={filterOptions.allTypes.map((type) => ({
-            value: type,
-            label: type,
-          }))}
-          className="flex-1"
-        />
-      </div>
-      {/* 发行日期筛选 */}
-      <div className="filter-container">
-        <div className="filter-label">年份</div>
+    <div className="w-full grid grid-cols-2 lg:grid-cols-4 gap-3 p-1">
+
+      {/* Year Filter */}
+      <div className="flex flex-col gap-1">
+        <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 ml-1 uppercase tracking-widest">
+          Year
+        </label>
         <CustomSelect
           value={selectedYear}
           onChange={setSelectedYear}
+          placeholder="Year"
           options={filterOptions.allYears.map((year) => ({
             value: year === null ? "" : String(year),
             label: String(year),
           }))}
-          className="flex-1"
+          className="flex-1 w-full min-w-0"
+          triggerClassName={triggerStyle}
+          optionsClassName={optionsStyle}
         />
       </div>
-      {/* 作词筛选 */}
-      <div className="filter-container">
-        <div className="filter-label">作词</div>
+
+      {/* Lyricist Filter */}
+      <div className="flex flex-col gap-1">
+        <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 ml-1 uppercase tracking-widest">
+          Lyricist
+        </label>
         <CustomSelect
           value={selectedLyricist}
           onChange={setSelectedLyricist}
+          placeholder="Lyricist"
           options={filterOptions.allLyricists.map((lyricist) => ({
             value: lyricist,
             label: lyricist,
           }))}
-          className="flex-1"
+          className="flex-1 w-full min-w-0"
+          triggerClassName={triggerStyle}
+          optionsClassName={optionsStyle}
         />
       </div>
-      {/* 作曲筛选 */}
-      <div className="filter-container">
-        <div className="filter-label">作曲</div>
+
+      {/* Composer Filter */}
+      <div className="flex flex-col gap-1">
+        <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 ml-1 uppercase tracking-widest">
+          Composer
+        </label>
         <CustomSelect
           value={selectedComposer}
           onChange={setSelectedComposer}
+          placeholder="Composer"
           options={filterOptions.allComposers.map((composer) => ({
             value: composer,
             label: composer,
           }))}
-          className="flex-1"
+          className="flex-1 w-full min-w-0"
+          triggerClassName={triggerStyle}
+          optionsClassName={optionsStyle}
         />
       </div>
-      {/* 编曲筛选 */}
-      <div className="filter-container">
-        <div className="filter-label">编曲</div>
+
+      {/* Arranger Filter */}
+      <div className="flex flex-col gap-1">
+        <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 ml-1 uppercase tracking-widest">
+          Arranger
+        </label>
         <CustomSelect
           value={selectedArranger}
           onChange={setSelectedArranger}
+          placeholder="Arranger"
           options={filterOptions.allArrangers.map((arranger) => ({
             value: arranger,
             label: arranger,
           }))}
-          className="flex-1"
+          className="flex-1 w-full min-w-0"
+          triggerClassName={triggerStyle}
+          optionsClassName={optionsStyle}
         />
       </div>
     </div>
