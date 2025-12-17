@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export interface MusicLibraryState {
@@ -50,33 +50,12 @@ export function useMusicLibraryState(
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    // Initialization flag
-    const [isInitialized, setIsInitialized] = useState(false);
-
-    // Filter and view states
-    const [searchQuery, setSearchQuery] = useState("");
-    const [filterType, setFilterType] = useState("全部");
-    const [filterLyricist, setFilterLyricist] = useState("全部");
-    const [filterComposer, setFilterComposer] = useState("全部");
-    const [filterArranger, setFilterArranger] = useState("全部");
-    const [yearRangeIndices, setYearRangeIndices] = useState<[number, number]>([0, 0]);
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>(defaultViewMode);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-
-    // Scroll restoration
-    const [isRestoringScroll, setIsRestoringScroll] = useState(true);
-    const hasRestoredScroll = useRef(false);
-
-    // Track previous filters to detect actual changes
-    const previousFilters = useRef<FilterState | null>(null);
-
     // Helper: Get max year index
     const getMaxYearIndex = useCallback(() => Math.max(0, initialSliderYearsLength - 1), [initialSliderYearsLength]);
 
-    // Helper: Parse year range from URL
-    const parseYearRange = useCallback((): [number, number] => {
-        const maxIndex = getMaxYearIndex();
+    // Helper: Parse year range from URL - memoized
+    const parseYearRange = useMemo((): [number, number] => {
+        const maxIndex = Math.max(0, initialSliderYearsLength - 1);
         const yearStartStr = searchParams.get("yearStart");
         const yearEndStr = searchParams.get("yearEnd");
 
@@ -88,58 +67,46 @@ export function useMusicLibraryState(
         endIdx = Math.max(0, Math.min(endIdx, maxIndex));
 
         return [startIdx, endIdx];
-    }, [searchParams, getMaxYearIndex]);
+    }, [searchParams, initialSliderYearsLength]);
 
-    // Helper: Get URL param with default
+    // Helper: Get URL param with default - memoized
     const getParam = useCallback((key: string, defaultValue: string) => {
         return searchParams.get(key) ?? defaultValue;
     }, [searchParams]);
 
-    // Initialize state from URL on mount
+    // Initialize states directly from URL to avoid flickering
+    const [searchQuery, setSearchQuery] = useState(() => searchParams.get("q") ?? "");
+    const [filterType, setFilterType] = useState(() => searchParams.get("type") ?? "全部");
+    const [filterLyricist, setFilterLyricist] = useState(() => searchParams.get("lyricist") ?? "全部");
+    const [filterComposer, setFilterComposer] = useState(() => searchParams.get("composer") ?? "全部");
+    const [filterArranger, setFilterArranger] = useState(() => searchParams.get("arranger") ?? "全部");
+    const [yearRangeIndices, setYearRangeIndices] = useState<[number, number]>(() => parseYearRange);
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+        const view = searchParams.get("view");
+        return (view === 'grid' || view === 'list') ? view : defaultViewMode;
+    });
+    const [currentPage, setCurrentPage] = useState(() => {
+        const page = searchParams.get("page");
+        return page ? parseInt(page, 10) : 1;
+    });
+    const [showAdvancedFilters, setShowAdvancedFilters] = useState(() => searchParams.get("advanced") === "true");
+
+    // Scroll restoration
+    const [isRestoringScroll, setIsRestoringScroll] = useState(true);
+    const hasRestoredScroll = useRef(false);
+
+    // Track previous filters to detect actual changes - Initialize with current values
+    const previousFilters = useRef<FilterState>({
+        searchQuery: searchParams.get("q") ?? "",
+        filterType: searchParams.get("type") ?? "全部",
+        filterLyricist: searchParams.get("lyricist") ?? "全部",
+        filterComposer: searchParams.get("composer") ?? "全部",
+        filterArranger: searchParams.get("arranger") ?? "全部",
+        yearRangeIndices: parseYearRange
+    });
+
+    // Reset page to 1 when filters change
     useEffect(() => {
-        if (isInitialized) return;
-
-        const q = getParam("q", "");
-        const type = getParam("type", "全部");
-        const lyricist = getParam("lyricist", "全部");
-        const composer = getParam("composer", "全部");
-        const arranger = getParam("arranger", "全部");
-        const view = getParam("view", defaultViewMode) as 'grid' | 'list';
-        const page = parseInt(getParam("page", "1"), 10);
-        const advanced = getParam("advanced", "false") === "true";
-        const [startIdx, endIdx] = parseYearRange();
-
-        // Set all states
-        setSearchQuery(q);
-        setFilterType(type);
-        setFilterLyricist(lyricist);
-        setFilterComposer(composer);
-        setFilterArranger(arranger);
-        setViewMode(view);
-        setCurrentPage(page);
-        setShowAdvancedFilters(advanced);
-
-        if (initialSliderYearsLength > 0) {
-            setYearRangeIndices([startIdx, endIdx]);
-        }
-
-        // Initialize previous filters to prevent reset on first load
-        previousFilters.current = {
-            searchQuery: q,
-            filterType: type,
-            filterLyricist: lyricist,
-            filterComposer: composer,
-            filterArranger: arranger,
-            yearRangeIndices: [startIdx, endIdx]
-        };
-
-        setIsInitialized(true);
-    }, [searchParams, isInitialized, initialSliderYearsLength, defaultViewMode, getParam, parseYearRange]);
-
-    // Reset page to 1 when filters change (excluding initialization)
-    useEffect(() => {
-        if (!isInitialized || !previousFilters.current) return;
-
         const prev = previousFilters.current;
         const filtersChanged =
             prev.searchQuery !== searchQuery ||
@@ -163,11 +130,10 @@ export function useMusicLibraryState(
                 yearRangeIndices: [...yearRangeIndices]
             };
         }
-    }, [isInitialized, searchQuery, filterType, filterLyricist, filterComposer, filterArranger, yearRangeIndices]);
+    }, [searchQuery, filterType, filterLyricist, filterComposer, filterArranger, yearRangeIndices]);
 
     // Sync state to URL (debounced)
     useEffect(() => {
-        if (!isInitialized) return;
 
         const timer = setTimeout(() => {
             const params = new URLSearchParams();
@@ -197,14 +163,14 @@ export function useMusicLibraryState(
 
         return () => clearTimeout(timer);
     }, [
-        isInitialized, searchQuery, filterType, filterLyricist, filterComposer,
+        searchQuery, filterType, filterLyricist, filterComposer,
         filterArranger, viewMode, currentPage, showAdvancedFilters,
         yearRangeIndices, defaultViewMode, getMaxYearIndex
     ]);
 
     // Scroll restoration logic
     useEffect(() => {
-        if (!isInitialized || hasRestoredScroll.current) {
+        if (hasRestoredScroll.current) {
             if (hasRestoredScroll.current) {
                 setIsRestoringScroll(false);
             }
@@ -256,7 +222,7 @@ export function useMusicLibraryState(
         };
 
         setTimeout(attemptScroll, SCROLL_RESTORE_DELAY_MS);
-    }, [isInitialized]);
+    }, []);
 
     // Save scroll position when navigating to song detail
     const handleSongClick = useCallback(() => {

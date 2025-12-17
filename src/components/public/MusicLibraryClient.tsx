@@ -131,7 +131,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 }) => {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
 
   // 计算筛选选项
   const filterOptions = useMemo(() => {
@@ -171,9 +170,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     return createFuseInstance(initialSongsData);
   }, [initialSongsData]);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+
 
   // 数据过滤 (使用 fuse.js 模糊搜索)
   const filteredWorks = useMemo(() => {
@@ -326,9 +323,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     }
   }, []);
 
-  if (!mounted) {
-    return null;
-  }
+
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500 font-sans">
