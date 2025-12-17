@@ -42,7 +42,15 @@ function cn(...classes: (string | undefined | null | false)[]) {
 }
 
 // 1. 封面组件
-const CoverArt = ({ song, className }: { song: Song; className?: string }) => {
+const CoverArt = ({
+  song,
+  className,
+  isActive,
+}: {
+  song: Song;
+  className?: string;
+  isActive?: boolean;
+}) => {
   const coverUrl = getCoverUrl(song);
 
   return (
@@ -59,10 +67,18 @@ const CoverArt = ({ song, className }: { song: Song; className?: string }) => {
         alt={song.title}
         width={400}
         height={400}
-        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        className={cn(
+          "w-full h-full object-cover transition-transform duration-500",
+          isActive ? "scale-105" : "group-hover:scale-105",
+        )}
       />
       {/* 装饰纹理 (可选，叠加在图片上可能不太明显，保留以前的装饰层思路但调整透明度) */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-10 bg-black mix-blend-overlay transition-opacity" />
+      <div
+        className={cn(
+          "absolute inset-0 bg-black mix-blend-overlay transition-opacity",
+          isActive ? "opacity-10" : "opacity-0 group-hover:opacity-10",
+        )}
+      />
     </div>
   );
 };
@@ -73,11 +89,13 @@ const GridCard = ({
   onClick,
   style,
   className,
+  isActive,
 }: {
   song: Song;
   onClick: () => void;
   style?: React.CSSProperties;
   className?: string;
+  isActive?: boolean;
 }) => (
   <div
     onClick={onClick}
@@ -85,18 +103,37 @@ const GridCard = ({
     style={style}
   >
     {/* 封面容器 */}
-    <div className="relative aspect-square w-full rounded-sm overflow-hidden transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-2xl shadow-lg shadow-slate-200/50 dark:shadow-black/40 ring-1 ring-slate-900/5 dark:ring-white/10">
-      <CoverArt song={song} />
+    <div
+      className={cn(
+        "relative aspect-square w-full rounded-sm overflow-hidden transition-all duration-500 shadow-lg shadow-slate-200/50 dark:shadow-black/40 ring-1 ring-slate-900/5 dark:ring-white/10",
+        isActive
+          ? "-translate-y-2 shadow-2xl"
+          : "group-hover:-translate-y-2 group-hover:shadow-2xl",
+      )}
+    >
+      <CoverArt song={song} isActive={isActive} />
 
       {/* 悬浮遮罩 */}
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors opacity-0 group-hover:opacity-100" />
+      <div
+        className={cn(
+          "absolute inset-0 bg-black/0 transition-colors opacity-0",
+          isActive
+            ? "bg-black/10 opacity-100"
+            : "group-hover:bg-black/10 group-hover:opacity-100",
+        )}
+      />
     </div>
 
     {/* 信息区 */}
     <div className="space-y-1">
       <div className="flex justify-between items-start gap-4">
         <h3
-          className="text-xl font-serif text-slate-900 dark:text-slate-100 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1 flex-1 min-w-0"
+          className={cn(
+            "text-xl font-serif text-slate-900 dark:text-slate-100 leading-tight transition-colors line-clamp-1 flex-1 min-w-0",
+            isActive
+              ? "text-blue-600 dark:text-blue-400"
+              : "group-hover:text-blue-600 dark:group-hover:text-blue-400",
+          )}
           title={song.title}
         >
           {song.title}
@@ -131,28 +168,40 @@ const ListRow = ({
   onClick,
   style,
   className,
+  isActive,
 }: {
   song: Song;
   onClick: () => void;
   style?: React.CSSProperties;
   className?: string;
+  isActive?: boolean;
 }) => (
   <div
     onClick={onClick}
     className={cn(
-      "group flex items-center gap-6 p-4 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors cursor-pointer",
+      "group flex items-center gap-6 p-4 rounded-xl transition-colors cursor-pointer",
+      isActive
+        ? "bg-slate-100 dark:bg-slate-800/50"
+        : "hover:bg-slate-100 dark:hover:bg-slate-800/50",
       className,
     )}
     style={style}
   >
     {/* 小封面 */}
     <div className="w-16 h-16 shrink-0 rounded shadow-sm overflow-hidden">
-      <CoverArt song={song} />
+      <CoverArt song={song} isActive={isActive} />
     </div>
 
     {/* 主要信息 */}
     <div className="grow min-w-0 flex flex-col justify-center">
-      <h3 className="text-lg font-serif text-slate-900 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+      <h3
+        className={cn(
+          "text-lg font-serif text-slate-900 dark:text-slate-100 truncate transition-colors",
+          isActive
+            ? "text-blue-600 dark:text-blue-400"
+            : "group-hover:text-blue-600 dark:group-hover:text-blue-400",
+        )}
+      >
         {song.title}
       </h3>
       <p className="text-sm text-slate-500 dark:text-slate-400 font-light truncate">
@@ -274,6 +323,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
   // 关于弹窗状态 (Local UI state)
   const [showAbout, setShowAbout] = useState(false);
+  const [activeSongId, setActiveSongId] = useState<number | null>(null);
 
   // Debounced values for expensive filtering operations
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -434,7 +484,12 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   }, []);
 
   // Handle title click - comprehensive reset
+  const [isTitleActive, setIsTitleActive] = useState(false);
+
   const handleTitleReset = useCallback(() => {
+    setIsTitleActive(true);
+    setTimeout(() => setIsTitleActive(false), 1000);
+
     // Close advanced filters panel
     setShowAdvancedFilters(false);
 
@@ -452,7 +507,12 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <button
             onClick={handleTitleReset}
-            className="text-2xl font-serif font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-1 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            className={cn(
+              "text-2xl font-serif font-bold tracking-tight flex items-center gap-1 cursor-pointer transition-colors",
+              isTitleActive
+                ? "text-blue-600 dark:text-blue-400"
+                : "text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400",
+            )}
             title="点击刷新页面"
           >
             河图
@@ -471,10 +531,14 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
               onClick={toggleTheme}
               className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
             >
-              {mounted && resolvedTheme === "dark" ? (
-                <Moon size={20} />
+              {mounted ? (
+                resolvedTheme === "dark" ? (
+                  <Moon size={20} className="animate-in fade-in duration-200" />
+                ) : (
+                  <Sun size={20} className="animate-in fade-in duration-200" />
+                )
               ) : (
-                <Sun size={20} />
+                <div className="w-5 h-5" />
               )}
             </button>
           </div>
@@ -485,7 +549,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
         {/* Header */}
         <section className="mb-16 space-y-4">
           <h1 className="text-5xl md:text-6xl font-serif text-slate-900 dark:text-slate-50">
-            河山万里
+            谣歌半首
           </h1>
           <p className="text-slate-500 dark:text-slate-400 font-light max-w-lg">
             你一定想知道，戏里讲了什么故事。
@@ -646,7 +710,9 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                     <GridCard
                       key={work.id}
                       song={work}
+                      isActive={activeSongId === work.id}
                       onClick={() => {
+                        setActiveSongId(work.id);
                         handleSongClick();
                         router.push(`/song/${work.id}`);
                       }}
@@ -677,7 +743,9 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                     <ListRow
                       key={work.id}
                       song={work}
+                      isActive={activeSongId === work.id}
                       onClick={() => {
+                        setActiveSongId(work.id);
                         handleSongClick();
                         router.push(`/song/${work.id}`);
                       }}
