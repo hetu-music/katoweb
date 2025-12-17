@@ -400,10 +400,10 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
         {/* 控制栏 */}
         <section className="sticky top-20 z-40 bg-[#FAFAFA]/95 dark:bg-[#0B0F19]/95 backdrop-blur-sm py-4 mb-8 -mx-6 px-6 border-y border-transparent data-[scrolled=true]:border-slate-100">
           <div className="flex flex-col gap-4">
-            <div className="flex flex-col md:flex-row justify-between gap-4 md:items-center">
+            <div className="flex flex-col-reverse md:flex-row justify-between gap-4 md:items-center">
 
-              {/* 左侧：筛选器 */}
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0">
+              {/* Left Group (Desktop) / Bottom Group (Mobile): Type Filters */}
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0 w-full md:w-auto">
                 {availableTypes.map(type => {
                   if (type === "全部") {
                     const isAnyFilterActive =
@@ -440,29 +440,15 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                     />
                   );
                 })}
-
-                {/* 高级筛选按钮 */}
-                <button
-                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                  className={cn(
-                    "p-2 rounded-lg transition-all duration-300 border shrink-0",
-                    showAdvancedFilters
-                      ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                      : "bg-transparent text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
-                  )}
-                  title="高级筛选"
-                >
-                  {showAdvancedFilters ? <X size={16} /> : <SlidersHorizontal size={16} />}
-                </button>
               </div>
 
-              {/* 右侧：搜索与视图切换 */}
-              <div className="flex items-center gap-4">
-                <div className="relative group w-full md:w-64">
+              {/* Right Group (Desktop) / Top Group (Mobile): Search & Controls */}
+              <div className="flex items-center gap-2 w-full md:w-auto">
+                <div className="relative group flex-1 md:w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                   <input
                     type="text"
-                    placeholder="搜索歌曲、歌词等..."
+                    placeholder="搜索歌曲..."
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
@@ -472,10 +458,24 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   />
                 </div>
 
+                {/* Advanced Filter Button */}
+                <button
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  className={cn(
+                    "p-2 rounded-lg transition-all duration-300 border shrink-0",
+                    showAdvancedFilters
+                      ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                      : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
+                  )}
+                  title="高级筛选"
+                >
+                  {showAdvancedFilters ? <X size={16} /> : <SlidersHorizontal size={16} />}
+                </button>
+
                 <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 hidden md:block" />
 
-                {/* 视图切换按钮组 */}
-                <div className="flex bg-slate-100 dark:bg-slate-800/50 rounded-lg p-1 gap-1">
+                {/* View Toggle */}
+                <div className="flex bg-slate-100 dark:bg-slate-800/50 rounded-lg p-1 gap-1 shrink-0">
                   <button
                     onClick={() => setViewMode('grid')}
                     className={cn(
