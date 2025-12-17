@@ -317,8 +317,8 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
   const handleShare = useCallback(async () => {
     const shareData = {
-      title: "河图 - 作品勘鉴",
-      text: "河山万里，戏里讲了什么故事。",
+      title: "河图作品勘鉴",
+      text: "你一定想知道，戏里讲了什么故事。",
       url: window.location.href,
     };
 
@@ -338,6 +338,18 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     }
   }, []);
 
+  // Handle title click - comprehensive reset
+  const handleTitleReset = useCallback(() => {
+    // Close advanced filters panel
+    setShowAdvancedFilters(false);
+
+    // Reset all filters and pagination
+    resetAllFilters();
+
+    // Scroll to top of page
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [resetAllFilters]);
+
 
 
   return (
@@ -346,11 +358,15 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       {/* 顶部导航 */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="text-2xl font-serif font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-1">
+          <button
+            onClick={handleTitleReset}
+            className="text-2xl font-serif font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-1 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            title="点击刷新页面"
+          >
             河图
             <span className="w-[2px] h-5 bg-blue-600 mx-2 rounded-full" />
             作品勘鉴
-          </div>
+          </button>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowAbout(true)}
@@ -446,7 +462,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                   <input
                     type="text"
-                    placeholder="Search..."
+                    placeholder="搜索歌曲、歌词等..."
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
