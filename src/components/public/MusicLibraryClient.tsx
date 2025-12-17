@@ -11,6 +11,7 @@ import { getCoverUrl, formatTime, filterSongs, calculateFilterOptions, createFus
 import { typeColorMap } from "@/lib/constants";
 import { usePagination } from "@/hooks/usePagination";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useMusicLibraryState } from "@/hooks/useMusicLibraryState";
 import Pagination from "./Pagination";
 import SongFilters from "./SongFilters";
 import About from "./About";
@@ -132,51 +133,43 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  // 视图状态：Grid vs List
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-
-  // 高级筛选展开状态
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-
-  // 关于弹窗状态
-  const [showAbout, setShowAbout] = useState(false);
-
-  // 筛选状态
-  const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
-
-  const [filterType, setFilterType] = useState("全部");
-  // const [filterYear, setFilterYear] = useState("全部"); // Deprecated
-  const [yearRangeIndices, setYearRangeIndices] = useState<[number, number]>([0, 0]); // Indices for year slider
-  const debouncedYearRangeIndices = useDebounce(yearRangeIndices, 300);
-
-  const [filterLyricist, setFilterLyricist] = useState("全部");
-  const [filterComposer, setFilterComposer] = useState("全部");
-  const [filterArranger, setFilterArranger] = useState("全部");
-
   // 计算筛选选项
   const filterOptions = useMemo(() => {
     return calculateFilterOptions(initialSongsData);
   }, [initialSongsData]);
 
+  // Initialize year range options
+  const sliderYears = useMemo(() => {
+    return filterOptions.allYears.slice(1);
+  }, [filterOptions.allYears]);
+
+  // 使用自定义 Hook 管理状态
+  const {
+    searchQuery, setSearchQuery,
+    filterType, setFilterType,
+    yearRangeIndices, setYearRangeIndices,
+    filterLyricist, setFilterLyricist,
+    filterComposer, setFilterComposer,
+    filterArranger, setFilterArranger,
+    viewMode, setViewMode,
+    currentPage, setPaginationPage,
+    showAdvancedFilters, setShowAdvancedFilters,
+    resetAllFilters,
+    handleSongClick,
+    isRestoringScroll
+  } = useMusicLibraryState(sliderYears.length);
+
+  // 关于弹窗状态 (Local UI state)
+  const [showAbout, setShowAbout] = useState(false);
+
+  // Debounced values for expensive filtering operations
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const debouncedYearRangeIndices = useDebounce(yearRangeIndices, 300);
+
   // Memoize Fuse instance only when data changes
   const fuseInstance = useMemo(() => {
     return createFuseInstance(initialSongsData);
   }, [initialSongsData]);
-
-  // Initialize year range when options are ready
-  const sliderYears = useMemo(() => {
-    // filterOptions.allYears includes "全部" at index 0, so we slice it
-    return filterOptions.allYears.slice(1);
-  }, [filterOptions.allYears]);
-
-  useEffect(() => {
-    // Only set if not already set or data changed significantly
-    if (sliderYears.length > 0) {
-      // Default to full range
-      setYearRangeIndices([0, sliderYears.length - 1]);
-    }
-  }, [sliderYears.length]);
 
   useEffect(() => {
     setMounted(true);
@@ -188,11 +181,10 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     let selectedYear: string | (string | number)[] = "全部";
     if (sliderYears.length > 0) {
       const [start, end] = debouncedYearRangeIndices;
-      // If range covers everything, treat as "全部" (or just pass all)
+      // If range covers everything, treat as "全部"
       if (start === 0 && end === sliderYears.length - 1) {
         selectedYear = "全部";
       } else {
-        // Slice includes start, excludes end. But our indices are inclusive [start, end]
         selectedYear = sliderYears.slice(start, end + 1);
       }
     }
@@ -221,15 +213,28 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
   // 分页处理
   const {
-    currentPage,
     totalPages,
     currentData: paginatedSongs,
-    setCurrentPage: setPaginationPage,
+    setCurrentPage: setPaginationInternal,
   } = usePagination({
     data: filteredWorks,
-    itemsPerPage: 24, // 每页显示24个结果
-    initialPage: 1,
+    itemsPerPage: 24,
+    initialPage: currentPage, // Pass controlled page
   });
+
+  // Sync pagination hook state with our controlled state if needed
+  // Note: usePagination usually maintains its own state if not controlled perfectly.
+  // We need to ensure when 'currentPage' changes (from URL), usePagination updates.
+  // The 'initialPage' prop is only used on mount or reset.
+  // We need to make sure the hook updates when currentPage changes.
+  useEffect(() => {
+    setPaginationInternal(currentPage);
+  }, [currentPage, setPaginationInternal]);
+
+  // When usePagination updates page internally (if it does), we should sync back?
+  // Our shared hook exposes setPaginationPage which updates state and URL.
+  // We pass setPaginationPage to the Pagination component below.
+  // So we are driving it from outside. All good.
 
   // 使用 filterOptions 中的类型
   const availableTypes = useMemo(() => {
@@ -387,17 +392,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       return (
                         <button
                           key="reset"
-                          onClick={() => {
-                            setSearchQuery("");
-                            setFilterType("全部");
-                            setFilterLyricist("全部");
-                            setFilterComposer("全部");
-                            setFilterArranger("全部");
-                            if (sliderYears.length > 0) {
-                              setYearRangeIndices([0, sliderYears.length - 1]);
-                            }
-                            setPaginationPage(1);
-                          }}
+                          onClick={resetAllFilters}
                           className="px-4 py-1.5 rounded-full text-sm transition-all duration-300 border select-none whitespace-nowrap bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:border-red-300 dark:bg-red-900/10 dark:text-red-400 dark:border-red-900/30 flex items-center gap-1.5"
                         >
                           <RotateCcw size={12} />
@@ -500,7 +495,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
         </section>
 
         {/* 内容展示区 */}
-        <section className="min-h-[50vh] transition-all duration-500">
+        <section className="min-h-[50vh] transition-all duration-500" style={{ opacity: isRestoringScroll ? 0 : 1 }}>
           {filteredWorks.length > 0 ? (
             <>
               {viewMode === 'grid' ? (
@@ -510,7 +505,10 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                     <GridCard
                       key={work.id}
                       song={work}
-                      onClick={() => router.push(`/song/${work.id}`)}
+                      onClick={() => {
+                        handleSongClick();
+                        router.push(`/song/${work.id}`);
+                      }}
                       className="animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both"
                       style={{ animationDelay: `${(i % 8) * 40}ms`, animationFillMode: 'both' }}
                     />
@@ -531,7 +529,10 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                     <ListRow
                       key={work.id}
                       song={work}
-                      onClick={() => router.push(`/song/${work.id}`)}
+                      onClick={() => {
+                        handleSongClick();
+                        router.push(`/song/${work.id}`);
+                      }}
                       className="animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both"
                       style={{ animationDelay: `${(i % 8) * 40}ms`, animationFillMode: 'both' }}
                     />
