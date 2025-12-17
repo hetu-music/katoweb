@@ -123,10 +123,11 @@ const SongRow = React.memo(
     return (
       <>
         <tr
-          className={`border-b border-slate-200 dark:border-slate-800 transition-colors ${isExpanded
-            ? "bg-blue-50/50 dark:bg-blue-900/10"
-            : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
-            }`}
+          className={`border-b border-slate-200 dark:border-slate-800 transition-colors ${
+            isExpanded
+              ? "bg-blue-50/50 dark:bg-blue-900/10"
+              : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
+          }`}
         >
           <td className="py-3 px-2 md:py-4 md:px-4 text-slate-500 dark:text-slate-400 font-mono text-sm">
             {idx + 1}
@@ -163,10 +164,11 @@ const SongRow = React.memo(
             <div className="flex items-center gap-2">
               <button
                 onClick={() => toggleRowExpansion(song.id)}
-                className={`p-2 rounded-lg transition-all duration-200 ${isExpanded
-                  ? "bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-300"
-                  : "text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-300"
-                  }`}
+                className={`p-2 rounded-lg transition-all duration-200 ${
+                  isExpanded
+                    ? "bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-300"
+                    : "text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+                }`}
                 title={isExpanded ? "收起详情" : "查看详情"}
               >
                 {isExpanded ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -185,13 +187,19 @@ const SongRow = React.memo(
           <>
             {/* Mobile Expanded Row */}
             <tr className="md:hidden">
-              <td colSpan={3} className="p-0 border-b border-slate-200 dark:border-slate-800">
+              <td
+                colSpan={3}
+                className="p-0 border-b border-slate-200 dark:border-slate-800"
+              >
                 <ExpandedContent song={song} />
               </td>
             </tr>
             {/* Desktop Expanded Row */}
             <tr className="hidden md:table-row">
-              <td colSpan={7} className="p-0 border-b border-slate-200 dark:border-slate-800">
+              <td
+                colSpan={7}
+                className="p-0 border-b border-slate-200 dark:border-slate-800"
+              >
                 <ExpandedContent song={song} />
               </td>
             </tr>
@@ -261,18 +269,20 @@ function ExpandedContent({ song }: { song: SongDetail }) {
                 key={field.key}
                 className={`
                   relative overflow-hidden rounded-xl border p-4 transition-all duration-200
-                  ${shouldHighlight
-                    ? "bg-red-50 border-red-200 hover:bg-red-100/50 dark:bg-red-500/5 dark:border-red-500/30 dark:hover:bg-red-500/10"
-                    : "bg-white border-slate-200 hover:border-slate-300 dark:bg-slate-900/50 dark:border-slate-700 dark:hover:border-slate-600"
+                  ${
+                    shouldHighlight
+                      ? "bg-red-50 border-red-200 hover:bg-red-100/50 dark:bg-red-500/5 dark:border-red-500/30 dark:hover:bg-red-500/10"
+                      : "bg-white border-slate-200 hover:border-slate-300 dark:bg-slate-900/50 dark:border-slate-700 dark:hover:border-slate-600"
                   }
                 `}
               >
                 <div className="flex justify-between items-start mb-2">
                   <span
-                    className={`text-xs font-semibold tracking-wider uppercase ${shouldHighlight
-                      ? "text-red-500 dark:text-red-400"
-                      : "text-slate-400 dark:text-slate-500"
-                      }`}
+                    className={`text-xs font-semibold tracking-wider uppercase ${
+                      shouldHighlight
+                        ? "text-red-500 dark:text-red-400"
+                        : "text-slate-400 dark:text-slate-500"
+                    }`}
                   >
                     {field.label}
                   </span>
@@ -284,16 +294,21 @@ function ExpandedContent({ song }: { song: SongDetail }) {
                 </div>
 
                 <div
-                  className={`text-sm break-words leading-relaxed font-medium ${shouldHighlight
-                    ? "text-red-700 dark:text-red-200/90"
-                    : "text-slate-700 dark:text-slate-200"
-                    }`}
+                  className={`text-sm break-words leading-relaxed font-medium ${
+                    shouldHighlight
+                      ? "text-red-700 dark:text-red-200/90"
+                      : "text-slate-700 dark:text-slate-200"
+                  }`}
                 >
                   {field.key === "hascover" ? (
                     song.hascover === true ? (
-                      <span className="text-green-600 dark:text-green-400">定制封面</span>
+                      <span className="text-green-600 dark:text-green-400">
+                        定制封面
+                      </span>
                     ) : song.hascover === false ? (
-                      <span className="text-purple-600 dark:text-purple-400">初号机</span>
+                      <span className="text-purple-600 dark:text-purple-400">
+                        初号机
+                      </span>
                     ) : (
                       <span className="text-slate-400">白底狐狸 (默认)</span>
                     )
@@ -310,7 +325,9 @@ function ExpandedContent({ song }: { song: SongDetail }) {
                     (shouldHighlight ? (
                       "未填写"
                     ) : (
-                      <span className="text-slate-300 dark:text-slate-600">-</span>
+                      <span className="text-slate-300 dark:text-slate-600">
+                        -
+                      </span>
                     ))
                   )}
                 </div>
@@ -689,10 +706,11 @@ export default function AdminClientComponent({
           <div className="flex gap-3">
             <button
               onClick={() => setShowIncompleteOnly(!showIncompleteOnly)}
-              className={`flex items-center gap-2 px-5 py-3 rounded-2xl border transition-all duration-200 shadow-sm font-medium whitespace-nowrap ${showIncompleteOnly
-                ? "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20"
-                : "bg-white text-slate-600 border-slate-200 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800 dark:hover:bg-amber-500/10 dark:hover:text-amber-300 dark:hover:border-amber-500/20"
-                }`}
+              className={`flex items-center gap-2 px-5 py-3 rounded-2xl border transition-all duration-200 shadow-sm font-medium whitespace-nowrap ${
+                showIncompleteOnly
+                  ? "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20"
+                  : "bg-white text-slate-600 border-slate-200 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800 dark:hover:bg-amber-500/10 dark:hover:text-amber-300 dark:hover:border-amber-500/20"
+              }`}
               title={showIncompleteOnly ? "显示全部歌曲" : "只显示待完善歌曲"}
             >
               <div
@@ -715,20 +733,35 @@ export default function AdminClientComponent({
         <div className="flex items-center gap-3 sm:gap-4 mb-8 flex-wrap">
           <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full px-4 py-2 shadow-sm text-sm text-slate-600 dark:text-slate-400">
             <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-            总计 <span className="text-slate-900 dark:text-slate-200 font-bold">{songs.length}</span> 首
+            总计{" "}
+            <span className="text-slate-900 dark:text-slate-200 font-bold">
+              {songs.length}
+            </span>{" "}
+            首
           </div>
           <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full px-4 py-2 shadow-sm text-sm text-slate-600 dark:text-slate-400">
             <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-            筛选 <span className="text-slate-900 dark:text-slate-200 font-bold">{filteredSongs.length}</span> 首
+            筛选{" "}
+            <span className="text-slate-900 dark:text-slate-200 font-bold">
+              {filteredSongs.length}
+            </span>{" "}
+            首
           </div>
           <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full px-4 py-2 shadow-sm text-sm text-slate-600 dark:text-slate-400">
             <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-            待完善 <span className="text-red-600 dark:text-red-400 font-bold">{songs.filter((song) => isSongIncomplete(song)).length}</span> 首
+            待完善{" "}
+            <span className="text-red-600 dark:text-red-400 font-bold">
+              {songs.filter((song) => isSongIncomplete(song)).length}
+            </span>{" "}
+            首
           </div>
           {filteredSongs.length > 25 && (
             <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full px-4 py-2 shadow-sm text-sm text-slate-600 dark:text-slate-400">
               <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-              本页 <span className="text-slate-900 dark:text-slate-200 font-bold">{startIndex}-{endIndex}</span>
+              本页{" "}
+              <span className="text-slate-900 dark:text-slate-200 font-bold">
+                {startIndex}-{endIndex}
+              </span>
             </div>
           )}
         </div>
@@ -815,10 +848,17 @@ export default function AdminClientComponent({
         {!loading && filteredSongs.length === 0 && (
           <div className="text-center py-20">
             <div className="bg-slate-50 dark:bg-slate-800/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search size={32} className="text-slate-300 dark:text-slate-600" />
+              <Search
+                size={32}
+                className="text-slate-300 dark:text-slate-600"
+              />
             </div>
-            <div className="text-slate-900 dark:text-slate-200 text-lg font-medium mb-1">未找到匹配的歌曲</div>
-            <div className="text-slate-500 dark:text-slate-400 text-sm">请尝试调整搜索关键词或筛选条件</div>
+            <div className="text-slate-900 dark:text-slate-200 text-lg font-medium mb-1">
+              未找到匹配的歌曲
+            </div>
+            <div className="text-slate-500 dark:text-slate-400 text-sm">
+              请尝试调整搜索关键词或筛选条件
+            </div>
           </div>
         )}
       </div>
@@ -882,10 +922,11 @@ export default function AdminClientComponent({
                   type="submit"
                   form={showAdd ? "add-form" : "edit-form"}
                   disabled={isSubmitting}
-                  className={`w-14 h-14 rounded-full border-2 text-white transition-all duration-200 font-semibold shadow-lg backdrop-blur-sm flex items-center justify-center group ${isSubmitting
+                  className={`w-14 h-14 rounded-full border-2 text-white transition-all duration-200 font-semibold shadow-lg backdrop-blur-sm flex items-center justify-center group ${
+                    isSubmitting
                       ? "bg-slate-500/50 border-slate-400/30 cursor-not-allowed"
                       : "bg-blue-600 border-blue-500 hover:bg-blue-500 hover:border-blue-400 dark:bg-blue-600 dark:border-blue-500"
-                    }`}
+                  }`}
                   title={showAdd ? "提交" : "保存"}
                 >
                   {isSubmitting ? (
@@ -925,19 +966,21 @@ export default function AdminClientComponent({
         <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div
             className={`relative max-w-sm w-full p-6 rounded-2xl shadow-2xl border backdrop-blur-md transform transition-all duration-300 animate-in zoom-in-95 slide-in-from-bottom-2
-            ${addResultMessage === "成功" || editResultMessage === "成功"
+            ${
+              addResultMessage === "成功" || editResultMessage === "成功"
                 ? "bg-emerald-50 border-emerald-200 text-emerald-900 dark:bg-emerald-900/90 dark:border-emerald-700 dark:text-emerald-100"
                 : "bg-red-50 border-red-200 text-red-900 dark:bg-red-900/90 dark:border-red-700 dark:text-red-100"
-              }
+            }
           `}
           >
             {/* 图标和消息 */}
             <div className="relative flex flex-col items-center text-center space-y-4">
               <div
-                className={`w-16 h-16 rounded-full flex items-center justify-center ${addResultMessage === "成功" || editResultMessage === "成功"
+                className={`w-16 h-16 rounded-full flex items-center justify-center ${
+                  addResultMessage === "成功" || editResultMessage === "成功"
                     ? "bg-emerald-100 dark:bg-emerald-800/50 border-2 border-emerald-200 dark:border-emerald-600"
                     : "bg-red-100 dark:bg-red-800/50 border-2 border-red-200 dark:border-red-600"
-                  }`}
+                }`}
               >
                 {addResultMessage === "成功" || editResultMessage === "成功" ? (
                   <svg
@@ -973,9 +1016,7 @@ export default function AdminClientComponent({
               </div>
 
               <div>
-                <h3
-                  className="text-xl font-bold mb-2"
-                >
+                <h3 className="text-xl font-bold mb-2">
                   {addResultMessage === "成功" || editResultMessage === "成功"
                     ? "操作成功"
                     : "操作失败"}
@@ -1000,10 +1041,11 @@ export default function AdminClientComponent({
             {/* 自动关闭倒计时 */}
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/5 dark:bg-white/10 rounded-b-2xl overflow-hidden">
               <div
-                className={`h-full transition-all duration-3000 ease-linear ${addResultMessage === "成功" || editResultMessage === "成功"
+                className={`h-full transition-all duration-3000 ease-linear ${
+                  addResultMessage === "成功" || editResultMessage === "成功"
                     ? "bg-emerald-500"
                     : "bg-red-500"
-                  }`}
+                }`}
               ></div>
             </div>
           </div>
@@ -1077,7 +1119,9 @@ function renderInput(
             );
           })}
         </div>
-        <div className="text-xs text-slate-400 dark:text-slate-500 mt-1">可多选，点击标签切换</div>
+        <div className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+          可多选，点击标签切换
+        </div>
         {errorMsg && (
           <div className="text-red-500 text-xs mt-1">{errorMsg}</div>
         )}
@@ -1112,7 +1156,9 @@ function renderInput(
       <>
         <div className="space-y-2">
           {arr.length === 0 && (
-            <div className="text-slate-400 dark:text-slate-500 text-xs mb-2 pl-1">暂无{f.label}</div>
+            <div className="text-slate-400 dark:text-slate-500 text-xs mb-2 pl-1">
+              暂无{f.label}
+            </div>
           )}
           {arr.map((item, idx) => (
             <div key={idx} className="flex items-center gap-2 mb-1 group">
@@ -1190,13 +1236,22 @@ function renderInput(
             }
             className={baseInputClass}
           >
-            <option value="" className="filter-option text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900">
+            <option
+              value=""
+              className="filter-option text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900"
+            >
               白底狐狸（默认）
             </option>
-            <option value="false" className="filter-option text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900">
+            <option
+              value="false"
+              className="filter-option text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900"
+            >
               初号机（黑底机器人）
             </option>
-            <option value="true" className="filter-option text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900">
+            <option
+              value="true"
+              className="filter-option text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900"
+            >
               定制封面
             </option>
           </select>
@@ -1242,10 +1297,16 @@ function renderInput(
             }
             className={baseInputClass}
           >
-            <option value="false" className="filter-option text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900">
+            <option
+              value="false"
+              className="filter-option text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900"
+            >
               无乐谱
             </option>
-            <option value="true" className="filter-option text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900">
+            <option
+              value="true"
+              className="filter-option text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900"
+            >
               有乐谱
             </option>
           </select>
@@ -1290,9 +1351,24 @@ function renderInput(
           }
           className={baseInputClass}
         >
-          <option value="" className="text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900">请选择</option>
-          <option value="true" className="text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900">是</option>
-          <option value="false" className="text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900">否</option>
+          <option
+            value=""
+            className="text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900"
+          >
+            请选择
+          </option>
+          <option
+            value="true"
+            className="text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900"
+          >
+            是
+          </option>
+          <option
+            value="false"
+            className="text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900"
+          >
+            否
+          </option>
         </select>
         {errorMsg && (
           <div className="text-red-500 text-xs mt-1">{errorMsg}</div>
