@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { flushSync } from "react-dom";
-import { Search, LayoutGrid, List, Disc, Calendar, Clock, Moon, Sun, SlidersHorizontal, X } from "lucide-react";
+import { Search, LayoutGrid, List, Disc, Calendar, Clock, Moon, Sun, SlidersHorizontal, X, Info } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useTheme } from "next-themes";
@@ -12,6 +12,7 @@ import { typeColorMap } from "@/lib/constants";
 import { usePagination } from "@/hooks/usePagination";
 import Pagination from "./Pagination";
 import SongFilters from "./SongFilters";
+import About from "./About";
 
 // 简易 classNames 工具 (替代 clsx/tailwind-merge)
 function cn(...classes: (string | undefined | null | false)[]) {
@@ -135,6 +136,9 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   // 高级筛选展开状态
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
+  // 关于弹窗状态
+  const [showAbout, setShowAbout] = useState(false);
+
   // 筛选状态
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("全部");
@@ -245,12 +249,21 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
             <span className="w-[2px] h-5 bg-blue-600 mx-2 rounded-full" />
             作品勘鉴
           </div>
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
-          >
-            {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowAbout(true)}
+              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+              title="About"
+            >
+              <Info size={20} />
+            </button>
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+            >
+              {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -424,8 +437,13 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
           )}
         </section>
       </main>
+
+      {/* 关于弹窗 */}
+      {showAbout && <About onClose={() => setShowAbout(false)} />}
     </div>
   );
 };
 
 export default MusicLibraryClient;
+
+
