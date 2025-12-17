@@ -10,10 +10,9 @@ import {
   Eye,
   EyeOff,
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
 } from "lucide-react";
 import { Turnstile } from "@marsidev/react-turnstile";
-import Link from 'next/link';
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -48,7 +47,9 @@ export default function LoginPage() {
         return;
       }
 
-      const csrfRes = await fetch("/api/auth/csrf-token", { cache: "no-store" });
+      const csrfRes = await fetch("/api/auth/csrf-token", {
+        cache: "no-store",
+      });
       if (!csrfRes.ok) throw new Error("无法获取安全令牌");
 
       const csrfData = await csrfRes.json();
@@ -100,7 +101,6 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md relative z-10">
         <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-slate-800 overflow-hidden">
-
           {/* Header Section */}
           <div className="px-8 pt-12 pb-8 text-center space-y-4">
             <div className="mx-auto w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 mb-6 ring-1 ring-blue-100 dark:ring-blue-800">
@@ -116,7 +116,6 @@ export default function LoginPage() {
 
           {/* Form Section */}
           <form onSubmit={handleLogin} className="px-8 pb-12 space-y-6">
-
             {/* Email Field */}
             <div className="space-y-2">
               <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ml-1">
@@ -199,7 +198,10 @@ export default function LoginPage() {
                 ) : (
                   <>
                     <span>Sign In</span>
-                    <LogIn size={18} className="group-hover:translate-x-0.5 transition-transform" />
+                    <LogIn
+                      size={18}
+                      className="group-hover:translate-x-0.5 transition-transform"
+                    />
                   </>
                 )}
               </button>
@@ -217,7 +219,6 @@ export default function LoginPage() {
               <span>Back to Library</span>
             </button>
           </div>
-
         </div>
 
         <div className="text-center mt-8">

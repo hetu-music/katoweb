@@ -1,6 +1,5 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import CustomSelect from "./CustomSelect";
-import { motion, useMotionValue, useTransform } from "framer-motion";
 
 interface SongFiltersProps {
   yearRangeIndices: [number, number];
@@ -31,12 +30,11 @@ const YearRangeSlider = ({
   values: (string | number)[];
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dragging, setDragging] = useState<'left' | 'right' | null>(null);
+  const [dragging, setDragging] = useState<"left" | "right" | null>(null);
 
-  // No local state needed if we update parent fast enough. 
+  // No local state needed if we update parent fast enough.
   // If performance is bad, we can re-introduce local state, but usually React is fast enough for this.
 
-  const minIndex = 0;
   const maxIndex = values.length - 1;
 
   // Calculate percentage for a given index
@@ -46,10 +44,13 @@ const YearRangeSlider = ({
   };
 
   // Convert position (0-1) to nearest index
-  const getIndexFromPos = (pos: number) => {
-    const idx = Math.round(pos * maxIndex);
-    return Math.max(0, Math.min(maxIndex, idx));
-  };
+  const getIndexFromPos = useCallback(
+    (pos: number) => {
+      const idx = Math.round(pos * maxIndex);
+      return Math.max(0, Math.min(maxIndex, idx));
+    },
+    [maxIndex],
+  );
 
   useEffect(() => {
     const handleMove = (e: PointerEvent) => {
@@ -63,7 +64,7 @@ const YearRangeSlider = ({
 
       const newIndex = getIndexFromPos(clampedRelativeX);
 
-      if (dragging === 'left') {
+      if (dragging === "left") {
         // Clamp to valid range (cannot cross right thumb)
         const clampedIndex = Math.min(newIndex, range[1]);
         if (clampedIndex !== range[0]) {
@@ -83,20 +84,20 @@ const YearRangeSlider = ({
     };
 
     if (dragging) {
-      window.addEventListener('pointermove', handleMove);
-      window.addEventListener('pointerup', handleUp);
+      window.addEventListener("pointermove", handleMove);
+      window.addEventListener("pointerup", handleUp);
       // Disable text selection while dragging
-      document.body.style.userSelect = 'none';
-      document.body.style.cursor = 'grabbing';
+      document.body.style.userSelect = "none";
+      document.body.style.cursor = "grabbing";
     }
 
     return () => {
-      window.removeEventListener('pointermove', handleMove);
-      window.removeEventListener('pointerup', handleUp);
-      document.body.style.userSelect = '';
-      document.body.style.cursor = '';
+      window.removeEventListener("pointermove", handleMove);
+      window.removeEventListener("pointerup", handleUp);
+      document.body.style.userSelect = "";
+      document.body.style.cursor = "";
     };
-  }, [dragging, range, setRange, maxIndex]);
+  }, [dragging, range, setRange, maxIndex, getIndexFromPos]);
 
   // Click on track to jump closest handle
   const handleTrackClick = (e: React.MouseEvent) => {
@@ -148,7 +149,7 @@ const YearRangeSlider = ({
           className="absolute h-1.5 bg-blue-500 rounded-full pointer-events-none"
           style={{
             left: `${leftPercent}%`,
-            width: `${rightPercent - leftPercent}%`
+            width: `${rightPercent - leftPercent}%`,
           }}
         />
 
@@ -157,9 +158,9 @@ const YearRangeSlider = ({
           onPointerDown={(e) => {
             e.preventDefault();
             e.stopPropagation(); // Prevent track click
-            setDragging('left');
+            setDragging("left");
           }}
-          className={`absolute top-1/2 -translate-y-1/2 -ml-3 w-6 h-6 bg-white dark:bg-slate-200 rounded-full shadow-md border border-slate-200 hover:scale-110 focus:outline-none z-10 flex items-center justify-center cursor-grab ${dragging === 'left' ? '!scale-110 !cursor-grabbing ring-2 ring-blue-500/30' : ''} transition-transform`}
+          className={`absolute top-1/2 -translate-y-1/2 -ml-3 w-6 h-6 bg-white dark:bg-slate-200 rounded-full shadow-md border border-slate-200 hover:scale-110 focus:outline-none z-10 flex items-center justify-center cursor-grab ${dragging === "left" ? "!scale-110 !cursor-grabbing ring-2 ring-blue-500/30" : ""} transition-transform`}
           style={{ left: `${leftPercent}%` }}
           role="slider"
           aria-label="Start Year"
@@ -173,9 +174,9 @@ const YearRangeSlider = ({
           onPointerDown={(e) => {
             e.preventDefault();
             e.stopPropagation(); // Prevent track click
-            setDragging('right');
+            setDragging("right");
           }}
-          className={`absolute top-1/2 -translate-y-1/2 -ml-3 w-6 h-6 bg-white dark:bg-slate-200 rounded-full shadow-md border border-slate-200 hover:scale-110 focus:outline-none z-10 flex items-center justify-center cursor-grab ${dragging === 'right' ? '!scale-110 !cursor-grabbing ring-2 ring-blue-500/30' : ''} transition-transform`}
+          className={`absolute top-1/2 -translate-y-1/2 -ml-3 w-6 h-6 bg-white dark:bg-slate-200 rounded-full shadow-md border border-slate-200 hover:scale-110 focus:outline-none z-10 flex items-center justify-center cursor-grab ${dragging === "right" ? "!scale-110 !cursor-grabbing ring-2 ring-blue-500/30" : ""} transition-transform`}
           style={{ left: `${rightPercent}%` }}
           role="slider"
           aria-label="End Year"
@@ -213,7 +214,8 @@ const SongFilters: React.FC<SongFiltersProps> = ({
     "!bg-white dark:!bg-slate-900 !border !border-slate-100 dark:!border-slate-800 !rounded-xl !shadow-2xl !p-1";
 
   // If no years loaded yet, use dummy
-  const displayYears = sliderYears.length > 0 ? sliderYears : [new Date().getFullYear(), "未知"];
+  const displayYears =
+    sliderYears.length > 0 ? sliderYears : [new Date().getFullYear(), "未知"];
 
   return (
     <div className="w-full flex flex-col gap-4 p-1">

@@ -3,7 +3,19 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { flushSync } from "react-dom";
-import { ArrowLeft, Moon, Sun, Share2, Music, FileText, Info, Download, Disc, User, Mic2, PenTool, LayoutTemplate, ExternalLink } from "lucide-react";
+import {
+  ArrowLeft,
+  Moon,
+  Sun,
+  FileText,
+  Info,
+  Disc,
+  User,
+  Mic2,
+  PenTool,
+  LayoutTemplate,
+  ExternalLink,
+} from "lucide-react";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { SongDetailClientProps } from "@/lib/types";
@@ -19,11 +31,14 @@ function cn(...classes: (string | undefined | null | false)[]) {
 
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const router = useRouter();
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    // Use requestAnimationFrame to avoid synchronous setState in effect
+    requestAnimationFrame(() => {
+      setMounted(true);
+    });
   }, []);
 
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -67,9 +82,9 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
   // 切换主题动画
   const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
-    // @ts-ignore
+    // @ts-expect-error - startViewTransition is not yet in TypeScript DOM types
     if (!document.startViewTransition) {
-      setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+      setTheme(resolvedTheme === "dark" ? "light" : "dark");
       return;
     }
 
@@ -77,20 +92,20 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
     const y = e.clientY;
     const endRadius = Math.hypot(
       Math.max(x, innerWidth - x),
-      Math.max(y, innerHeight - y)
+      Math.max(y, innerHeight - y),
     );
 
-    document.documentElement.classList.add('no-transitions');
+    document.documentElement.classList.add("no-transitions");
 
-    // @ts-ignore
+    // @ts-expect-error - startViewTransition is not yet in TypeScript DOM types
     const transition = document.startViewTransition(() => {
       flushSync(() => {
-        setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+        setTheme(resolvedTheme === "dark" ? "light" : "dark");
       });
     });
 
     transition.finished.then(() => {
-      document.documentElement.classList.remove('no-transitions');
+      document.documentElement.classList.remove("no-transitions");
     });
 
     transition.ready.then(() => {
@@ -107,7 +122,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
           duration: 500,
           easing: "ease-in-out",
           pseudoElement: "::view-transition-new(root)",
-        }
+        },
       );
     });
   };
@@ -142,20 +157,28 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   }, [song.title, song.artist]);
 
   // 打开/关闭图片模态框
-  const openImageModal = useCallback((src: string, alt: string, title: string) => {
-    setImageModal({ isOpen: true, src, alt, title });
-  }, []);
+  const openImageModal = useCallback(
+    (src: string, alt: string, title: string) => {
+      setImageModal({ isOpen: true, src, alt, title });
+    },
+    [],
+  );
 
   const closeImageModal = useCallback(() => {
     setImageModal({ isOpen: false, src: "", alt: "", title: "" });
   }, []);
 
-  const handleCoverImageError = useCallback(() => setCoverImageLoaded(false), []);
-  const handleScoreImageError = useCallback(() => setScoreImageLoaded(false), []);
+  const handleCoverImageError = useCallback(
+    () => setCoverImageLoaded(false),
+    [],
+  );
+  const handleScoreImageError = useCallback(
+    () => setScoreImageLoaded(false),
+    [],
+  );
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500 font-sans">
-
       {/* 顶部导航 - 与 MusicLibraryClient 保持一致 */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -165,7 +188,10 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
               className="p-2 -ml-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400 group"
               title="返回"
             >
-              <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+              <ArrowLeft
+                size={20}
+                className="group-hover:-translate-x-1 transition-transform"
+              />
             </button>
             <div className="text-xl font-serif font-bold text-slate-900 dark:text-white tracking-tight hidden sm:block">
               {song.title}
@@ -176,27 +202,38 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
             onClick={toggleTheme}
             className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
           >
-            {mounted && resolvedTheme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
+            {mounted && resolvedTheme === "dark" ? (
+              <Moon size={20} />
+            ) : (
+              <Sun size={20} />
+            )}
           </button>
         </div>
       </nav>
 
       <main className="pt-32 pb-20 max-w-7xl mx-auto px-6">
-
         {/* 主要内容网格 */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-
           {/* 左侧：封面与元信息 (Col-4) */}
-          <div className={cn(
-            "lg:col-span-4 space-y-8 lg:sticky lg:top-32 transition-all",
-            animationReady
-              ? "animate-in fade-in slide-in-from-bottom-8 duration-700"
-              : "opacity-0"
-          )}>
+          <div
+            className={cn(
+              "lg:col-span-4 space-y-8 lg:sticky lg:top-32 transition-all",
+              animationReady
+                ? "animate-in fade-in slide-in-from-bottom-8 duration-700"
+                : "opacity-0",
+            )}
+          >
             {/* 封面卡片 */}
             <div
               className="group relative aspect-square w-full rounded-2xl overflow-hidden shadow-2xl shadow-slate-200/50 dark:shadow-black/40 ring-1 ring-slate-900/5 dark:ring-white/10 cursor-pointer"
-              onClick={() => coverImageLoaded && openImageModal(getCoverUrl(song), song.album || song.title, `${song.title} - 封面`)}
+              onClick={() =>
+                coverImageLoaded &&
+                openImageModal(
+                  getCoverUrl(song),
+                  song.album || song.title,
+                  `${song.title} - 封面`,
+                )
+              }
             >
               {coverImageLoaded ? (
                 <>
@@ -225,23 +262,25 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
             {/* 标签云 */}
             <div className="flex flex-wrap gap-2">
-              {(song.type && song.type.length > 0 ? song.type : ["原创"]).map((t) => (
-                <span
-                  key={t}
-                  className={cn(
-                    "px-3 py-1 text-xs font-medium rounded-full border tracking-wide uppercase",
-                    getTypeTagStyle(t, "emphasized")
-                  )}
-                >
-                  {t}
-                </span>
-              ))}
+              {(song.type && song.type.length > 0 ? song.type : ["原创"]).map(
+                (t) => (
+                  <span
+                    key={t}
+                    className={cn(
+                      "px-3 py-1 text-xs font-medium rounded-full border tracking-wide uppercase",
+                      getTypeTagStyle(t, "emphasized"),
+                    )}
+                  >
+                    {t}
+                  </span>
+                ),
+              )}
               {(song.genre || []).map((g) => (
                 <span
                   key={g}
                   className={cn(
                     "px-3 py-1 text-xs font-medium rounded-full border",
-                    getGenreTagStyle(g, "emphasized")
+                    getGenreTagStyle(g, "emphasized"),
                   )}
                 >
                   {g}
@@ -252,27 +291,56 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
             {/* 外部链接 */}
             {(song.kugolink || song.qmlink || song.nelink) && (
               <div className="flex flex-col gap-3">
-                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">Listen On</h3>
+                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">
+                  Listen On
+                </h3>
                 <div className="grid grid-cols-1 gap-2">
                   {song.nelink && (
-                    <a href={song.nelink} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center justify-between px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-red-500/50 hover:shadow-sm transition-all group">
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-red-500">网易云音乐</span>
-                      <ExternalLink size={14} className="text-slate-400 group-hover:text-red-400" />
+                    <a
+                      href={song.nelink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-red-500/50 hover:shadow-sm transition-all group"
+                    >
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-red-500">
+                        网易云音乐
+                      </span>
+                      <ExternalLink
+                        size={14}
+                        className="text-slate-400 group-hover:text-red-400"
+                      />
                     </a>
                   )}
                   {song.qmlink && (
-                    <a href={song.qmlink} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center justify-between px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-green-500/50 hover:shadow-sm transition-all group">
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-green-500">QQ音乐</span>
-                      <ExternalLink size={14} className="text-slate-400 group-hover:text-green-400" />
+                    <a
+                      href={song.qmlink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-green-500/50 hover:shadow-sm transition-all group"
+                    >
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-green-500">
+                        QQ音乐
+                      </span>
+                      <ExternalLink
+                        size={14}
+                        className="text-slate-400 group-hover:text-green-400"
+                      />
                     </a>
                   )}
                   {song.kugolink && (
-                    <a href={song.kugolink} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center justify-between px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-500/50 hover:shadow-sm transition-all group">
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-blue-500">酷狗音乐</span>
-                      <ExternalLink size={14} className="text-slate-400 group-hover:text-blue-400" />
+                    <a
+                      href={song.kugolink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-500/50 hover:shadow-sm transition-all group"
+                    >
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-blue-500">
+                        酷狗音乐
+                      </span>
+                      <ExternalLink
+                        size={14}
+                        className="text-slate-400 group-hover:text-blue-400"
+                      />
                     </a>
                   )}
                 </div>
@@ -281,13 +349,14 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
           </div>
 
           {/* 右侧：详细内容 (Col-8) */}
-          <div className={cn(
-            "lg:col-span-8 space-y-12 transition-all",
-            animationReady
-              ? "animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100"
-              : "opacity-0"
-          )}>
-
+          <div
+            className={cn(
+              "lg:col-span-8 space-y-12 transition-all",
+              animationReady
+                ? "animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100"
+                : "opacity-0",
+            )}
+          >
             {/* 标题 & 基础信息 */}
             <section className="space-y-6">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 dark:text-slate-50 leading-tight">
@@ -299,13 +368,22 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm">
                   <div className="flex items-center gap-2 mb-4 text-blue-600 dark:text-blue-400">
                     <User size={18} />
-                    <h3 className="text-sm font-bold uppercase tracking-wider">Creative Info</h3>
+                    <h3 className="text-sm font-bold uppercase tracking-wider">
+                      Creative Info
+                    </h3>
                   </div>
                   <div className="space-y-3">
                     {songInfo?.creativeInfo.map((item, index) => (
-                      <div key={index} className="flex justify-between text-sm border-b border-slate-50 dark:border-slate-800/50 last:border-0 pb-2 last:pb-0">
-                        <span className="text-slate-500 dark:text-slate-400">{item.label}</span>
-                        <span className="font-medium text-slate-900 dark:text-slate-200 text-right">{item.value}</span>
+                      <div
+                        key={index}
+                        className="flex justify-between text-sm border-b border-slate-50 dark:border-slate-800/50 last:border-0 pb-2 last:pb-0"
+                      >
+                        <span className="text-slate-500 dark:text-slate-400">
+                          {item.label}
+                        </span>
+                        <span className="font-medium text-slate-900 dark:text-slate-200 text-right">
+                          {item.value}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -314,13 +392,22 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm">
                   <div className="flex items-center gap-2 mb-4 text-purple-600 dark:text-purple-400">
                     <Info size={18} />
-                    <h3 className="text-sm font-bold uppercase tracking-wider">Basic Info</h3>
+                    <h3 className="text-sm font-bold uppercase tracking-wider">
+                      Basic Info
+                    </h3>
                   </div>
                   <div className="space-y-3">
                     {songInfo?.basicInfo.map((item, index) => (
-                      <div key={index} className="flex justify-between text-sm border-b border-slate-50 dark:border-slate-800/50 last:border-0 pb-2 last:pb-0">
-                        <span className="text-slate-500 dark:text-slate-400">{item.label}</span>
-                        <span className="font-medium text-slate-900 dark:text-slate-200 text-right">{item.value}</span>
+                      <div
+                        key={index}
+                        className="flex justify-between text-sm border-b border-slate-50 dark:border-slate-800/50 last:border-0 pb-2 last:pb-0"
+                      >
+                        <span className="text-slate-500 dark:text-slate-400">
+                          {item.label}
+                        </span>
+                        <span className="font-medium text-slate-900 dark:text-slate-200 text-right">
+                          {item.value}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -332,7 +419,9 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800">
                   <div className="flex items-center gap-2 mb-3 text-slate-400">
                     <PenTool size={16} />
-                    <h3 className="text-xs font-bold uppercase tracking-wider">Remarks</h3>
+                    <h3 className="text-xs font-bold uppercase tracking-wider">
+                      Remarks
+                    </h3>
                   </div>
                   <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm whitespace-pre-line">
                     {song.comment}
@@ -357,7 +446,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                       "px-4 py-1.5 rounded-md text-sm font-medium transition-all",
                       lyricsType === "normal"
                         ? "bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white"
-                        : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                        : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
                     )}
                   >
                     普通
@@ -368,7 +457,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                       "px-4 py-1.5 rounded-md text-sm font-medium transition-all",
                       lyricsType === "lrc"
                         ? "bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white"
-                        : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                        : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
                     )}
                   >
                     LRC
@@ -378,11 +467,17 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
               <div className="bg-white dark:bg-slate-900/50 rounded-3xl p-8 md:p-12 border border-slate-100 dark:border-slate-800 shadow-sm min-h-[400px]">
                 {song.lyrics ? (
-                  <div className={cn(
-                    "whitespace-pre-line leading-loose text-lg text-slate-700 dark:text-slate-300 font-light",
-                    lyricsType === "normal" ? "text-center" : "text-left font-mono text-base"
-                  )}>
-                    {lyricsType === "normal" ? (song.normalLyrics || song.lyrics) : song.lyrics}
+                  <div
+                    className={cn(
+                      "whitespace-pre-line leading-loose text-lg text-slate-700 dark:text-slate-300 font-light",
+                      lyricsType === "normal"
+                        ? "text-center"
+                        : "text-left font-mono text-base",
+                    )}
+                  >
+                    {lyricsType === "normal"
+                      ? song.normalLyrics || song.lyrics
+                      : song.lyrics}
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full text-slate-400 opacity-50">
@@ -405,7 +500,13 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                   {scoreImageLoaded ? (
                     <div
                       className="relative group cursor-pointer rounded-lg overflow-hidden"
-                      onClick={() => openImageModal(getNmnUrl(song), `${song.title} - 乐谱`, "乐谱")}
+                      onClick={() =>
+                        openImageModal(
+                          getNmnUrl(song),
+                          `${song.title} - 乐谱`,
+                          "乐谱",
+                        )
+                      }
                     >
                       <Image
                         src={getNmnUrl(song)}
@@ -416,7 +517,9 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                         onError={handleScoreImageError}
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                        <span className="bg-white/90 text-slate-900 px-4 py-2 rounded-full shadow-lg font-medium text-sm">点击放大</span>
+                        <span className="bg-white/90 text-slate-900 px-4 py-2 rounded-full shadow-lg font-medium text-sm">
+                          点击放大
+                        </span>
                       </div>
                     </div>
                   ) : (
@@ -427,7 +530,6 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 </div>
               </section>
             )}
-
           </div>
         </div>
       </main>

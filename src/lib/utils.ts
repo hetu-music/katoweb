@@ -195,7 +195,7 @@ export function filterSongs(
   selectedLyricist: string,
   selectedComposer: string,
   selectedArranger: string,
-  fuseInstance?: Fuse<any>
+  fuseInstance?: Fuse<Song & { searchableContent: string }>,
 ): Song[] {
   let filteredBySearch = songsData;
 
@@ -250,7 +250,7 @@ export function filterSongs(
       (selectedArranger === "未知"
         ? !songDetail.arranger || songDetail.arranger.length === 0
         : songDetail.arranger &&
-        songDetail.arranger.includes(selectedArranger));
+          songDetail.arranger.includes(selectedArranger));
 
     return (
       matchesType &&

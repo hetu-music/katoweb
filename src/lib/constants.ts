@@ -52,7 +52,15 @@ export const songFields: SongFieldConfig[] = [
 ];
 
 // 类型顺序（用于排序）
-export const TYPE_ORDER = ["原创", "合作", "文宣", "商业", "墨宝", "翻唱", "参与"];
+export const TYPE_ORDER = [
+  "原创",
+  "合作",
+  "文宣",
+  "商业",
+  "墨宝",
+  "翻唱",
+  "参与",
+];
 
 // 类型标签样式映射（标签显示：纯文字样式，无边框无背景）
 const typeTagStyleMap: Record<string, string> = {
@@ -109,8 +117,10 @@ const genreTagStyleMap: Record<string, string> = {
   民族: "bg-transparent text-amber-500/60 dark:text-amber-400/60 border-amber-200/50 dark:border-amber-500/20",
   古典: "bg-transparent text-indigo-500/60 dark:text-indigo-400/60 border-indigo-200/50 dark:border-indigo-500/20",
   其他: "bg-transparent text-fuchsia-500/60 dark:text-fuchsia-400/60 border-fuchsia-200/50 dark:border-fuchsia-500/20",
-  布鲁斯: "bg-transparent text-cyan-500/60 dark:text-cyan-400/60 border-cyan-200/50 dark:border-cyan-500/20",
-  新世纪: "bg-transparent text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700",
+  布鲁斯:
+    "bg-transparent text-cyan-500/60 dark:text-cyan-400/60 border-cyan-200/50 dark:border-cyan-500/20",
+  新世纪:
+    "bg-transparent text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700",
 };
 
 // 流派标签强调样式映射（用于详情页等需要突出显示的场景）
@@ -124,12 +134,15 @@ const genreTagEmphasizedStyleMap: Record<string, string> = {
   民族: "bg-white dark:bg-slate-800/50 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/30",
   古典: "bg-white dark:bg-slate-800/50 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/30",
   其他: "bg-white dark:bg-slate-800/50 text-fuchsia-600 dark:text-fuchsia-400 border-fuchsia-200 dark:border-fuchsia-500/30",
-  布鲁斯: "bg-white dark:bg-slate-800/50 text-cyan-600 dark:text-cyan-400 border-cyan-200 dark:border-cyan-500/30",
-  新世纪: "bg-white dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700",
+  布鲁斯:
+    "bg-white dark:bg-slate-800/50 text-cyan-600 dark:text-cyan-400 border-cyan-200 dark:border-cyan-500/30",
+  新世纪:
+    "bg-white dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700",
 };
 
 // 默认标签样式
-const defaultTagStyle = "bg-white dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700";
+const defaultTagStyle =
+  "bg-white dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700";
 
 /**
  * 获取类型标签的样式类名
@@ -137,7 +150,10 @@ const defaultTagStyle = "bg-white dark:bg-slate-800/50 text-slate-600 dark:text-
  * @param variant 样式变体：'tag' 用于标签显示（默认，纯文字），'card' 用于卡片背景，'emphasized' 用于强调显示，'subtle' 用于列表显示（透明带框）
  * @returns Tailwind CSS 类名字符串
  */
-export function getTypeTagStyle(type: string, variant: "tag" | "card" | "emphasized" | "subtle" = "tag"): string {
+export function getTypeTagStyle(
+  type: string,
+  variant: "tag" | "card" | "emphasized" | "subtle" = "tag",
+): string {
   if (variant === "card") {
     return typeCardStyleMap[type] || defaultTagStyle;
   }
@@ -156,7 +172,10 @@ export function getTypeTagStyle(type: string, variant: "tag" | "card" | "emphasi
  * @param variant 样式变体：'tag' 用于标签显示（默认，subtle样式），'emphasized' 用于强调显示
  * @returns Tailwind CSS 类名字符串
  */
-export function getGenreTagStyle(genre: string, variant: "tag" | "emphasized" = "tag"): string {
+export function getGenreTagStyle(
+  genre: string,
+  variant: "tag" | "emphasized" = "tag",
+): string {
   if (variant === "emphasized") {
     return genreTagEmphasizedStyleMap[genre] || defaultTagStyle;
   }

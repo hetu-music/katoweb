@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter, Noto_Serif_SC, Noto_Sans_SC } from "next/font/google";
+import {
+  Playfair_Display,
+  Inter,
+  Noto_Serif_SC,
+  Noto_Sans_SC,
+} from "next/font/google";
 import "./globals.css";
 import { WallpaperProvider } from "@/context/WallpaperContext";
 import GlobalWallpaperBackground from "@/components/public/GlobalWallpaperBackground";

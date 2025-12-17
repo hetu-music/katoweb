@@ -83,16 +83,16 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         if (!rect) return;
 
         // 根据设备类型选择最大可见选项数
-        const maxVisibleOptions = isMobile 
-          ? DROPDOWN_CONFIG.mobile.maxVisibleOptions 
+        const maxVisibleOptions = isMobile
+          ? DROPDOWN_CONFIG.mobile.maxVisibleOptions
           : DROPDOWN_CONFIG.desktop.maxVisibleOptions;
 
         // 计算下拉选项位置
         const dropdownHeight = Math.min(
           options.length * DROPDOWN_CONFIG.optionHeight +
-          DROPDOWN_CONFIG.borderAndPadding,
+            DROPDOWN_CONFIG.borderAndPadding,
           maxVisibleOptions * DROPDOWN_CONFIG.optionHeight +
-          DROPDOWN_CONFIG.borderAndPadding,
+            DROPDOWN_CONFIG.borderAndPadding,
         );
 
         // 计算垂直位置 - 优先在下方显示，如果空间不够则在上方显示
@@ -100,9 +100,9 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         const spaceBelow = viewportHeight - rect.bottom;
         const spaceAbove = rect.top;
         const minSpace = 10; // 最小边距
-        
+
         let finalTop: number;
-        
+
         // 优先在下方显示
         if (spaceBelow >= dropdownHeight + minSpace) {
           // 下方空间足够，在触发按钮下方显示
@@ -114,7 +114,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           // 上下空间都不够，选择空间更大的一侧
           if (spaceBelow >= spaceAbove) {
             // 下方空间更大，尽量显示在下方
-            finalTop = Math.max(minSpace, viewportHeight - dropdownHeight - minSpace);
+            finalTop = Math.max(
+              minSpace,
+              viewportHeight - dropdownHeight - minSpace,
+            );
           } else {
             // 上方空间更大，尽量显示在上方
             finalTop = Math.min(rect.top - 4, minSpace);
@@ -124,7 +127,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             }
           }
         }
-        
+
         // 最终边界检查
         if (finalTop < minSpace) {
           finalTop = minSpace;
@@ -156,8 +159,8 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       const handleResize = () => {
         calculatePosition();
       };
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
     }
   }, [isOpen, options.length, isMobile]);
 
@@ -216,7 +219,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       // 检查点击是否在触发按钮或下拉菜单内部
       const isClickInsideTrigger = selectRef.current?.contains(target);
       const isClickInsideOptions = optionsRef.current?.contains(target);
-      
+
       // 如果点击在外部，关闭下拉框
       if (!isClickInsideTrigger && !isClickInsideOptions) {
         handleClose();
@@ -325,16 +328,16 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         if (!rect) return null;
 
         // 根据设备类型选择最大可见选项数
-        const maxVisibleOptions = isMobile 
-          ? DROPDOWN_CONFIG.mobile.maxVisibleOptions 
+        const maxVisibleOptions = isMobile
+          ? DROPDOWN_CONFIG.mobile.maxVisibleOptions
           : DROPDOWN_CONFIG.desktop.maxVisibleOptions;
 
         // 计算下拉选项位置
         const dropdownHeight = Math.min(
           options.length * DROPDOWN_CONFIG.optionHeight +
-          DROPDOWN_CONFIG.borderAndPadding,
+            DROPDOWN_CONFIG.borderAndPadding,
           maxVisibleOptions * DROPDOWN_CONFIG.optionHeight +
-          DROPDOWN_CONFIG.borderAndPadding,
+            DROPDOWN_CONFIG.borderAndPadding,
         );
 
         // 计算垂直位置 - 优先在下方显示，如果空间不够则在上方显示
@@ -342,9 +345,9 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         const spaceBelow = viewportHeight - rect.bottom;
         const spaceAbove = rect.top;
         const minSpace = 10; // 最小边距
-        
+
         let finalTop: number;
-        
+
         // 优先在下方显示
         if (spaceBelow >= dropdownHeight + minSpace) {
           // 下方空间足够，在触发按钮下方显示
@@ -356,7 +359,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           // 上下空间都不够，选择空间更大的一侧
           if (spaceBelow >= spaceAbove) {
             // 下方空间更大，尽量显示在下方
-            finalTop = Math.max(minSpace, viewportHeight - dropdownHeight - minSpace);
+            finalTop = Math.max(
+              minSpace,
+              viewportHeight - dropdownHeight - minSpace,
+            );
           } else {
             // 上方空间更大，尽量显示在上方
             finalTop = Math.min(rect.top - 4, minSpace);
@@ -366,7 +372,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             }
           }
         }
-        
+
         // 最终边界检查
         if (finalTop < minSpace) {
           finalTop = minSpace;
@@ -577,104 +583,110 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       )}
 
       {/* 下拉选项 - 使用 Portal 渲染到 body，避免父容器影响 */}
-      {isOpen && dropdownPosition && typeof window !== 'undefined' && createPortal(
-        <div
-          ref={(el) => {
-            optionsRef.current = el;
-            // 在元素创建时立即设置滚动位置，避免用户看到跳跃
-            if (el) {
-              setInitialScrollPosition(el);
+      {isOpen &&
+        dropdownPosition &&
+        typeof window !== "undefined" &&
+        createPortal(
+          <div
+            ref={(el) => {
+              optionsRef.current = el;
+              // 在元素创建时立即设置滚动位置，避免用户看到跳跃
+              if (el) {
+                setInitialScrollPosition(el);
 
-              // 移动端：添加iOS风格的滚动条行为
+                // 移动端：添加iOS风格的滚动条行为
+                if (isMobile) {
+                  let scrollTimeout: NodeJS.Timeout;
+
+                  const handleScroll = () => {
+                    // 滚动时显示滚动条
+                    el.classList.add("scrolling");
+
+                    // 清除之前的定时器
+                    clearTimeout(scrollTimeout);
+
+                    // 滚动停止1秒后隐藏滚动条
+                    scrollTimeout = setTimeout(() => {
+                      el.classList.remove("scrolling");
+                    }, 1000);
+                  };
+
+                  el.addEventListener("scroll", handleScroll, {
+                    passive: true,
+                  });
+
+                  // 清理函数
+                  return () => {
+                    el.removeEventListener("scroll", handleScroll);
+                    clearTimeout(scrollTimeout);
+                  };
+                }
+              }
+            }}
+            id="custom-select-options"
+            className={`custom-select-options ${isMobile ? "mobile" : "desktop"} ${isAnimating && !isOpen ? "closing" : ""} ${optionsClassName}`}
+            role="listbox"
+            onClick={(e) => {
+              // 如果点击的是容器本身（空白区域），阻止事件冒泡
+              if (e.target === e.currentTarget) {
+                e.stopPropagation();
+              }
+            }}
+            onTouchStart={(e) => {
               if (isMobile) {
-                let scrollTimeout: NodeJS.Timeout;
-
-                const handleScroll = () => {
-                  // 滚动时显示滚动条
-                  el.classList.add("scrolling");
-
-                  // 清除之前的定时器
-                  clearTimeout(scrollTimeout);
-
-                  // 滚动停止1秒后隐藏滚动条
-                  scrollTimeout = setTimeout(() => {
-                    el.classList.remove("scrolling");
-                  }, 1000);
-                };
-
-                el.addEventListener("scroll", handleScroll, { passive: true });
-
-                // 清理函数
-                return () => {
-                  el.removeEventListener("scroll", handleScroll);
-                  clearTimeout(scrollTimeout);
-                };
+                handleOptionsTouch.start(e);
               }
-            }
-          }}
-          id="custom-select-options"
-          className={`custom-select-options ${isMobile ? "mobile" : "desktop"} ${isAnimating && !isOpen ? "closing" : ""} ${optionsClassName}`}
-          role="listbox"
-          onClick={(e) => {
-            // 如果点击的是容器本身（空白区域），阻止事件冒泡
-            if (e.target === e.currentTarget) {
-              e.stopPropagation();
-            }
-          }}
-          onTouchStart={(e) => {
-            if (isMobile) {
-              handleOptionsTouch.start(e);
-            }
-          }}
-          onTouchMove={(e) => {
-            if (isMobile) {
-              handleOptionsTouch.move(e);
-            }
-          }}
-          onTouchEnd={() => {
-            if (isMobile) {
-              handleOptionsTouch.end();
-            }
-          }}
-          style={
-            dropdownPosition
-              ? {
-                position: "fixed",
-                top: `${dropdownPosition.top}px`,
-                left: `${dropdownPosition.left}px`,
-                width: `${dropdownPosition.width}px`,
-                maxHeight: `${dropdownPosition.maxHeight}px`,
-                zIndex: 9999,
+            }}
+            onTouchMove={(e) => {
+              if (isMobile) {
+                handleOptionsTouch.move(e);
               }
-              : {}
-          }
-        >
-          {options.map((option, index) => (
-            <div
-              key={option.value}
-              className={`custom-select-option ${option.value === value ? "selected" : ""
+            }}
+            onTouchEnd={() => {
+              if (isMobile) {
+                handleOptionsTouch.end();
+              }
+            }}
+            style={
+              dropdownPosition
+                ? {
+                    position: "fixed",
+                    top: `${dropdownPosition.top}px`,
+                    left: `${dropdownPosition.left}px`,
+                    width: `${dropdownPosition.width}px`,
+                    maxHeight: `${dropdownPosition.maxHeight}px`,
+                    zIndex: 9999,
+                  }
+                : {}
+            }
+          >
+            {options.map((option, index) => (
+              <div
+                key={option.value}
+                className={`custom-select-option ${
+                  option.value === value ? "selected" : ""
                 } ${index === focusedIndex ? "focused" : ""}`}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleOptionClick(option.value);
-              }}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              onTouchStart={(e) => {
-                e.stopPropagation();
-              }}
-              role="option"
-              aria-selected={option.value === value}
-            >
-              {option.label}
-            </div>
-          ))}
-        </div>,
-        document.body
-      )}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleOptionClick(option.value);
+                }}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onTouchStart={(e) => {
+                  e.stopPropagation();
+                }}
+                role="option"
+                aria-selected={option.value === value}
+              >
+                {option.label}
+              </div>
+            ))}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };

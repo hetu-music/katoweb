@@ -2,12 +2,31 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { flushSync } from "react-dom";
-import { Search, LayoutGrid, List, Disc, Calendar, Clock, Moon, Sun, SlidersHorizontal, X, Info, RotateCcw } from "lucide-react";
+import {
+  Search,
+  LayoutGrid,
+  List,
+  Disc,
+  Calendar,
+  Clock,
+  Moon,
+  Sun,
+  SlidersHorizontal,
+  X,
+  Info,
+  RotateCcw,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { MusicLibraryClientProps, Song } from "@/lib/types";
-import { getCoverUrl, formatTime, filterSongs, calculateFilterOptions, createFuseInstance } from "@/lib/utils";
+import {
+  getCoverUrl,
+  formatTime,
+  filterSongs,
+  calculateFilterOptions,
+  createFuseInstance,
+} from "@/lib/utils";
 import { getTypeTagStyle, getGenreTagStyle } from "@/lib/constants";
 import { usePagination } from "@/hooks/usePagination";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -27,11 +46,13 @@ const CoverArt = ({ song, className }: { song: Song; className?: string }) => {
   const coverUrl = getCoverUrl(song);
 
   return (
-    <div className={cn(
-      "relative overflow-hidden w-full h-full bg-slate-100 dark:bg-slate-800",
-      "ring-1 ring-slate-900/5 dark:ring-white/10",
-      className
-    )}>
+    <div
+      className={cn(
+        "relative overflow-hidden w-full h-full bg-slate-100 dark:bg-slate-800",
+        "ring-1 ring-slate-900/5 dark:ring-white/10",
+        className,
+      )}
+    >
       {/* 封面图片 */}
       <Image
         src={coverUrl}
@@ -47,8 +68,22 @@ const CoverArt = ({ song, className }: { song: Song; className?: string }) => {
 };
 
 // 2. 网格模式卡片 (Grid Card)
-const GridCard = ({ song, onClick, style, className }: { song: Song; onClick: () => void; style?: React.CSSProperties; className?: string }) => (
-  <div onClick={onClick} className={cn("group flex flex-col gap-4 cursor-pointer", className)} style={style}>
+const GridCard = ({
+  song,
+  onClick,
+  style,
+  className,
+}: {
+  song: Song;
+  onClick: () => void;
+  style?: React.CSSProperties;
+  className?: string;
+}) => (
+  <div
+    onClick={onClick}
+    className={cn("group flex flex-col gap-4 cursor-pointer", className)}
+    style={style}
+  >
     {/* 封面容器 */}
     <div className="relative aspect-square w-full rounded-sm overflow-hidden transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-2xl shadow-lg shadow-slate-200/50 dark:shadow-black/40 ring-1 ring-slate-900/5 dark:ring-white/10">
       <CoverArt song={song} />
@@ -60,17 +95,27 @@ const GridCard = ({ song, onClick, style, className }: { song: Song; onClick: ()
     {/* 信息区 */}
     <div className="space-y-1">
       <div className="flex justify-between items-start gap-4">
-        <h3 className="text-xl font-serif text-slate-900 dark:text-slate-100 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1 flex-1 min-w-0" title={song.title}>
+        <h3
+          className="text-xl font-serif text-slate-900 dark:text-slate-100 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1 flex-1 min-w-0"
+          title={song.title}
+        >
           {song.title}
         </h3>
-        <span className="text-xs font-mono text-slate-400 shrink-0">{song.year || "未知"}</span>
+        <span className="text-xs font-mono text-slate-400 shrink-0">
+          {song.year || "未知"}
+        </span>
       </div>
       <p className="text-sm text-slate-500 dark:text-slate-400 font-light flex items-center gap-2 overflow-hidden">
         <span className="truncate">{song.album || "单曲"}</span>
         {song.type && song.type[0] && (
           <>
             <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 shrink-0" />
-            <span className={cn("text-sm font-light uppercase tracking-wider shrink-0", getTypeTagStyle(song.type[0]))}>
+            <span
+              className={cn(
+                "text-sm font-light uppercase tracking-wider shrink-0",
+                getTypeTagStyle(song.type[0]),
+              )}
+            >
               {song.type[0]}
             </span>
           </>
@@ -81,32 +126,61 @@ const GridCard = ({ song, onClick, style, className }: { song: Song; onClick: ()
 );
 
 // 3. 列表模式行 (List Row)
-const ListRow = ({ song, onClick, style, className }: { song: Song; onClick: () => void; style?: React.CSSProperties; className?: string }) => (
-  <div onClick={onClick} className={cn("group flex items-center gap-6 p-4 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors cursor-pointer", className)} style={style}>
+const ListRow = ({
+  song,
+  onClick,
+  style,
+  className,
+}: {
+  song: Song;
+  onClick: () => void;
+  style?: React.CSSProperties;
+  className?: string;
+}) => (
+  <div
+    onClick={onClick}
+    className={cn(
+      "group flex items-center gap-6 p-4 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors cursor-pointer",
+      className,
+    )}
+    style={style}
+  >
     {/* 小封面 */}
     <div className="w-16 h-16 shrink-0 rounded shadow-sm overflow-hidden">
       <CoverArt song={song} />
     </div>
 
     {/* 主要信息 */}
-    <div className="flex-grow min-w-0 flex flex-col justify-center">
+    <div className="grow min-w-0 flex flex-col justify-center">
       <h3 className="text-lg font-serif text-slate-900 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
         {song.title}
       </h3>
       <p className="text-sm text-slate-500 dark:text-slate-400 font-light truncate">
-        {song.lyricist?.join(', ') || '-'} <span className="opacity-50 mx-1">/</span> {song.composer?.join(', ') || '-'}
+        {song.lyricist?.join(", ") || "-"}{" "}
+        <span className="opacity-50 mx-1">/</span>{" "}
+        {song.composer?.join(", ") || "-"}
       </p>
     </div>
 
     {/* 辅助信息 (在大屏幕显示) */}
     <div className="hidden md:flex items-center gap-8 text-sm text-slate-500 dark:text-slate-400 shrink-0">
       {song.type && song.type[0] && (
-        <span className={cn("px-3 py-1 rounded-full text-xs font-medium w-24 text-center truncate border", getTypeTagStyle(song.type[0], "subtle"))}>
+        <span
+          className={cn(
+            "px-3 py-1 rounded-full text-xs font-medium w-24 text-center truncate border",
+            getTypeTagStyle(song.type[0], "subtle"),
+          )}
+        >
           {song.type[0]}
         </span>
       )}
       {song.genre && song.genre[0] ? (
-        <span className={cn("px-3 py-1 rounded-full text-xs font-medium w-24 text-center truncate border", getGenreTagStyle(song.genre[0]))}>
+        <span
+          className={cn(
+            "px-3 py-1 rounded-full text-xs font-medium w-24 text-center truncate border",
+            getGenreTagStyle(song.genre[0]),
+          )}
+        >
           {song.genre[0]}
         </span>
       ) : (
@@ -127,14 +201,22 @@ const ListRow = ({ song, onClick, style, className }: { song: Song; onClick: () 
 );
 
 // 筛选按钮组件
-const FilterPill = ({ label, active, onClick }: { label: string, active: boolean, onClick: () => void }) => (
+const FilterPill = ({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) => (
   <button
     onClick={onClick}
     className={cn(
       "px-4 py-1.5 rounded-full text-sm transition-all duration-300 border select-none whitespace-nowrap",
       active
         ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-200 dark:shadow-none"
-        : "bg-transparent text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
+        : "bg-transparent text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10",
     )}
   >
     {label}
@@ -145,11 +227,14 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   initialSongsData,
 }) => {
   const router = useRouter();
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    // Use requestAnimationFrame to avoid synchronous setState in effect
+    requestAnimationFrame(() => {
+      setMounted(true);
+    });
   }, []);
 
   // 计算筛选选项
@@ -164,18 +249,27 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
   // 使用自定义 Hook 管理状态
   const {
-    searchQuery, setSearchQuery,
-    filterType, setFilterType,
-    yearRangeIndices, setYearRangeIndices,
-    filterLyricist, setFilterLyricist,
-    filterComposer, setFilterComposer,
-    filterArranger, setFilterArranger,
-    viewMode, setViewMode,
-    currentPage, setPaginationPage,
-    showAdvancedFilters, setShowAdvancedFilters,
+    searchQuery,
+    setSearchQuery,
+    filterType,
+    setFilterType,
+    yearRangeIndices,
+    setYearRangeIndices,
+    filterLyricist,
+    setFilterLyricist,
+    filterComposer,
+    setFilterComposer,
+    filterArranger,
+    setFilterArranger,
+    viewMode,
+    setViewMode,
+    currentPage,
+    setPaginationPage,
+    showAdvancedFilters,
+    setShowAdvancedFilters,
     resetAllFilters,
     handleSongClick,
-    isRestoringScroll
+    isRestoringScroll,
   } = useMusicLibraryState(sliderYears.length);
 
   // 关于弹窗状态 (Local UI state)
@@ -189,8 +283,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   const fuseInstance = useMemo(() => {
     return createFuseInstance(initialSongsData);
   }, [initialSongsData]);
-
-
 
   // 数据过滤 (使用 fuse.js 模糊搜索)
   const filteredWorks = useMemo(() => {
@@ -214,7 +306,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       filterLyricist,
       filterComposer,
       filterArranger,
-      fuseInstance
+      fuseInstance,
     );
   }, [
     initialSongsData,
@@ -225,7 +317,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     filterLyricist,
     filterComposer,
     filterArranger,
-    fuseInstance
+    fuseInstance,
   ]);
 
   // 分页处理
@@ -260,9 +352,8 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   }, [filterOptions]);
 
   const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
-    // @ts-ignore
     if (!document.startViewTransition) {
-      setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+      setTheme(resolvedTheme === "dark" ? "light" : "dark");
       return;
     }
 
@@ -270,20 +361,19 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     const y = e.clientY;
     const endRadius = Math.hypot(
       Math.max(x, innerWidth - x),
-      Math.max(y, innerHeight - y)
+      Math.max(y, innerHeight - y),
     );
 
-    document.documentElement.classList.add('no-transitions');
+    document.documentElement.classList.add("no-transitions");
 
-    // @ts-ignore
     const transition = document.startViewTransition(() => {
       flushSync(() => {
-        setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+        setTheme(resolvedTheme === "dark" ? "light" : "dark");
       });
     });
 
     transition.finished.then(() => {
-      document.documentElement.classList.remove('no-transitions');
+      document.documentElement.classList.remove("no-transitions");
     });
 
     transition.ready.then(() => {
@@ -300,7 +390,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
           duration: 500,
           easing: "ease-in-out",
           pseudoElement: "::view-transition-new(root)",
-        }
+        },
       );
     });
   };
@@ -353,13 +443,10 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
     // Scroll to top of page
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [resetAllFilters]);
-
-
+  }, [resetAllFilters, setShowAdvancedFilters]);
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500 font-sans">
-
       {/* 顶部导航 */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -384,14 +471,17 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
               onClick={toggleTheme}
               className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
             >
-              {mounted && resolvedTheme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
+              {mounted && resolvedTheme === "dark" ? (
+                <Moon size={20} />
+              ) : (
+                <Sun size={20} />
+              )}
             </button>
           </div>
         </div>
       </nav>
 
       <main className="pt-32 pb-20 max-w-7xl mx-auto px-6">
-
         {/* Header */}
         <section className="mb-16 space-y-4">
           <h1 className="text-5xl md:text-6xl font-serif text-slate-900 dark:text-slate-50">
@@ -406,10 +496,9 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
         <section className="sticky top-20 z-40 bg-[#FAFAFA]/95 dark:bg-[#0B0F19]/95 backdrop-blur-sm py-4 mb-8 -mx-6 px-6 border-y border-transparent data-[scrolled=true]:border-slate-100">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col-reverse md:flex-row justify-between gap-4 md:items-center">
-
               {/* Left Group (Desktop) / Bottom Group (Mobile): Type Filters */}
               <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0 w-full md:w-auto">
-                {availableTypes.map(type => {
+                {availableTypes.map((type) => {
                   if (type === "全部") {
                     const isAnyFilterActive =
                       searchQuery !== "" ||
@@ -417,7 +506,9 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       filterLyricist !== "全部" ||
                       filterComposer !== "全部" ||
                       filterArranger !== "全部" ||
-                      (sliderYears.length > 0 && (yearRangeIndices[0] !== 0 || yearRangeIndices[1] !== sliderYears.length - 1));
+                      (sliderYears.length > 0 &&
+                        (yearRangeIndices[0] !== 0 ||
+                          yearRangeIndices[1] !== sliderYears.length - 1));
 
                     if (isAnyFilterActive) {
                       return (
@@ -450,7 +541,10 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
               {/* Right Group (Desktop) / Top Group (Mobile): Search & Controls */}
               <div className="flex items-center gap-2 w-full md:w-auto">
                 <div className="relative group flex-1 md:w-64">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                  <Search
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    size={16}
+                  />
                   <input
                     type="text"
                     placeholder="搜索歌曲、歌词等..."
@@ -470,11 +564,15 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                     "p-2 rounded-lg transition-all duration-300 border shrink-0",
                     showAdvancedFilters
                       ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                      : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
+                      : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10",
                   )}
                   title="高级筛选"
                 >
-                  {showAdvancedFilters ? <X size={16} /> : <SlidersHorizontal size={16} />}
+                  {showAdvancedFilters ? (
+                    <X size={16} />
+                  ) : (
+                    <SlidersHorizontal size={16} />
+                  )}
                 </button>
 
                 <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 hidden md:block" />
@@ -482,20 +580,24 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                 {/* View Toggle */}
                 <div className="flex bg-slate-100 dark:bg-slate-800/50 rounded-lg p-1 gap-1 shrink-0">
                   <button
-                    onClick={() => setViewMode('grid')}
+                    onClick={() => setViewMode("grid")}
                     className={cn(
                       "p-1.5 rounded-md transition-all",
-                      viewMode === 'grid' ? "bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400" : "text-slate-400 hover:text-slate-600"
+                      viewMode === "grid"
+                        ? "bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400"
+                        : "text-slate-400 hover:text-slate-600",
                     )}
                     title="Grid View"
                   >
                     <LayoutGrid size={18} />
                   </button>
                   <button
-                    onClick={() => setViewMode('list')}
+                    onClick={() => setViewMode("list")}
                     className={cn(
                       "p-1.5 rounded-md transition-all",
-                      viewMode === 'list' ? "bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400" : "text-slate-400 hover:text-slate-600"
+                      viewMode === "list"
+                        ? "bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400"
+                        : "text-slate-400 hover:text-slate-600",
                     )}
                     title="List View"
                   >
@@ -526,15 +628,20 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
         </section>
 
         {/* 内容展示区 */}
-        <section className={cn(
-          "min-h-[50vh] transition-opacity duration-200",
-          isRestoringScroll ? "opacity-0 [&_*]:!animate-none" : "opacity-100"
-        )}>
+        <section
+          className={cn(
+            "min-h-[50vh] transition-opacity duration-200",
+            isRestoringScroll ? "opacity-0 **:animate-none!" : "opacity-100",
+          )}
+        >
           {filteredWorks.length > 0 ? (
             <>
-              {viewMode === 'grid' ? (
+              {viewMode === "grid" ? (
                 // --- 网格模式 ---
-                <div key={`grid-page-${currentPage}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12">
+                <div
+                  key={`grid-page-${currentPage}`}
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12"
+                >
                   {paginatedSongs.map((work, i) => (
                     <GridCard
                       key={work.id}
@@ -544,17 +651,23 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                         router.push(`/song/${work.id}`);
                       }}
                       className="animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both"
-                      style={{ animationDelay: `${(i % 8) * 40}ms`, animationFillMode: 'both' }}
+                      style={{
+                        animationDelay: `${(i % 8) * 40}ms`,
+                        animationFillMode: "both",
+                      }}
                     />
                   ))}
                 </div>
               ) : (
                 // --- 列表模式 ---
-                <div key={`list-page-${currentPage}`} className="flex flex-col gap-2">
+                <div
+                  key={`list-page-${currentPage}`}
+                  className="flex flex-col gap-2"
+                >
                   {/* 列表表头 */}
                   <div className="hidden md:flex px-4 py-2 text-xs font-bold tracking-wider text-slate-400 uppercase border-b border-slate-100 dark:border-slate-800 mb-2">
                     <div className="w-16 mr-6">Cover</div>
-                    <div className="flex-grow">Title / Lyricist / Composer</div>
+                    <div className="grow">Title / Lyricist / Composer</div>
                     <div className="w-24 text-center ml-8">Type</div>
                     <div className="w-24 text-center ml-8">Genre</div>
                     <div className="w-16 ml-8">Year</div>
@@ -569,7 +682,10 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                         router.push(`/song/${work.id}`);
                       }}
                       className="animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both"
-                      style={{ animationDelay: `${(i % 8) * 40}ms`, animationFillMode: 'both' }}
+                      style={{
+                        animationDelay: `${(i % 8) * 40}ms`,
+                        animationFillMode: "both",
+                      }}
                     />
                   ))}
                 </div>
@@ -607,5 +723,3 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 };
 
 export default MusicLibraryClient;
-
-

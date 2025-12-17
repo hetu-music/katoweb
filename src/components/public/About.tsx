@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Mail, LogIn, X, User, Award, Info } from "lucide-react";
+import { Mail, LogIn, X, User, Award } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { getTypeTagStyle, TYPE_ORDER } from "@/lib/constants";
 
 interface Contributor {
@@ -21,18 +20,22 @@ const typeDescriptions: Record<string, string> = {
   参与: "以非主创身份参与的作品。",
 };
 
-
 const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const [activeTab, setActiveTab] = useState<"about" | "types" | "maintainer">("about");
+  const [activeTab, setActiveTab] = useState<"about" | "types" | "maintainer">(
+    "about",
+  );
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [contributorsLoading, setContributorsLoading] = useState(false);
-  const [contributorsError, setContributorsError] = useState<string | null>(null);
+  const [contributorsError, setContributorsError] = useState<string | null>(
+    null,
+  );
   const router = useRouter();
 
   useEffect(() => {
     // Prevent scrolling when modal is open and compensate for scrollbar width to prevent shift
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-    document.body.style.overflow = 'hidden';
+    const scrollbarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = "hidden";
     document.body.style.paddingRight = `${scrollbarWidth}px`;
 
     const fetchContributors = async () => {
@@ -60,10 +63,10 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     }
 
     return () => {
-      document.body.style.overflow = 'unset';
-      document.body.style.paddingRight = '0px';
+      document.body.style.overflow = "unset";
+      document.body.style.paddingRight = "0px";
     };
-  }, [activeTab]);
+  }, [activeTab, contributors.length]);
 
   const handleLoginClick = () => {
     router.push("/admin/login");
@@ -81,7 +84,6 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
       {/* Modal Card */}
       <div className="relative bg-white dark:bg-[#111] w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200">
-
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800 shrink-0">
           <h2 className="text-xl font-serif font-bold text-slate-900 dark:text-white">
@@ -99,10 +101,11 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         <div className="flex px-6 border-b border-slate-100 dark:border-slate-800 shrink-0">
           <button
             onClick={() => setActiveTab("about")}
-            className={`flex-1 pb-3 pt-4 text-sm font-medium transition-colors relative ${activeTab === "about"
-              ? "text-blue-600 dark:text-blue-400"
-              : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-              }`}
+            className={`flex-1 pb-3 pt-4 text-sm font-medium transition-colors relative ${
+              activeTab === "about"
+                ? "text-blue-600 dark:text-blue-400"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+            }`}
           >
             项目介绍
             {activeTab === "about" && (
@@ -111,10 +114,11 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </button>
           <button
             onClick={() => setActiveTab("types")}
-            className={`flex-1 pb-3 pt-4 text-sm font-medium transition-colors relative ${activeTab === "types"
-              ? "text-blue-600 dark:text-blue-400"
-              : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-              }`}
+            className={`flex-1 pb-3 pt-4 text-sm font-medium transition-colors relative ${
+              activeTab === "types"
+                ? "text-blue-600 dark:text-blue-400"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+            }`}
           >
             类型说明
             {activeTab === "types" && (
@@ -123,10 +127,11 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </button>
           <button
             onClick={() => setActiveTab("maintainer")}
-            className={`flex-1 pb-3 pt-4 text-sm font-medium transition-colors relative ${activeTab === "maintainer"
-              ? "text-blue-600 dark:text-blue-400"
-              : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-              }`}
+            className={`flex-1 pb-3 pt-4 text-sm font-medium transition-colors relative ${
+              activeTab === "maintainer"
+                ? "text-blue-600 dark:text-blue-400"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+            }`}
           >
             维护团队
             {activeTab === "maintainer" && (
@@ -140,14 +145,22 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           {activeTab === "about" && (
             <div className="space-y-6 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
               <div className="space-y-2">
-                <h3 className="font-semibold text-slate-900 dark:text-white">简介</h3>
+                <h3 className="font-semibold text-slate-900 dark:text-white">
+                  简介
+                </h3>
                 <p>
-                  本项目为<span className="font-medium text-slate-900 dark:text-white">河图作品勘鉴</span>，致力于收录整理河图的音乐作品资料，为听众提供便捷的筛选与搜索服务。
+                  本项目为
+                  <span className="font-medium text-slate-900 dark:text-white">
+                    河图作品勘鉴
+                  </span>
+                  ，致力于收录整理河图的音乐作品资料，为听众提供便捷的筛选与搜索服务。
                 </p>
               </div>
 
               <div className="space-y-2">
-                <h3 className="font-semibold text-slate-900 dark:text-white">数据与反馈</h3>
+                <h3 className="font-semibold text-slate-900 dark:text-white">
+                  数据与反馈
+                </h3>
                 <p>
                   数据来源于创作者微博及各大音乐平台。若发现误漏或有意共同维护数据，欢迎邮件联系。
                 </p>
@@ -166,7 +179,11 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                   <span>特别鸣谢</span>
                 </div>
                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  感谢正版河图吧吧主 <span className="font-semibold text-slate-900 dark:text-white">{mainContributor ? mainContributor.name : "顾大一"}</span> 及众位网友整理的《歌手河图作品发布勘鉴》，为本项目提供了宝贵参考资料。
+                  感谢正版河图吧吧主{" "}
+                  <span className="font-semibold text-slate-900 dark:text-white">
+                    {mainContributor ? mainContributor.name : "顾大一"}
+                  </span>{" "}
+                  及众位网友整理的《歌手河图作品发布勘鉴》，为本项目提供了宝贵参考资料。
                 </p>
               </div>
             </div>
@@ -174,13 +191,15 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
           {activeTab === "types" && (
             <div className="space-y-2">
-              {TYPE_ORDER.filter(t => typeDescriptions[t]).map((type) => (
+              {TYPE_ORDER.filter((t) => typeDescriptions[t]).map((type) => (
                 <div
                   key={type}
                   className="flex items-start gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-transparent hover:border-slate-100 dark:hover:border-slate-800 transition-colors group"
                 >
                   <div className="shrink-0 pt-0.5">
-                    <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded-md text-xs font-bold border shadow-sm ${getTypeTagStyle(type, "emphasized")}`}>
+                    <span
+                      className={`inline-flex items-center justify-center px-2.5 py-1 rounded-md text-xs font-bold border shadow-sm ${getTypeTagStyle(type, "emphasized")}`}
+                    >
                       {type}
                     </span>
                   </div>
@@ -212,7 +231,9 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               ) : (
                 <div className="space-y-3">
                   {contributors
-                    .sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999))
+                    .sort(
+                      (a, b) => (a.sort_order || 999) - (b.sort_order || 999),
+                    )
                     .map((contributor, idx) => (
                       <div
                         key={idx}
