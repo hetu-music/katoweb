@@ -93,8 +93,8 @@ const ListRow = ({ song, onClick, style, className }: { song: Song; onClick: () 
       <h3 className="text-lg font-serif text-slate-900 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
         {song.title}
       </h3>
-      <p className="text-sm text-slate-500 font-light truncate">
-        {song.album || "未知专辑"}
+      <p className="text-sm text-slate-500 dark:text-slate-400 font-light truncate">
+        {song.lyricist?.join(', ') || '-'} <span className="opacity-50 mx-1">/</span> {song.composer?.join(', ') || '-'}
       </p>
     </div>
 
@@ -533,7 +533,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   {/* 列表表头 */}
                   <div className="hidden md:flex px-4 py-2 text-xs font-bold tracking-wider text-slate-400 uppercase border-b border-slate-100 dark:border-slate-800 mb-2">
                     <div className="w-16 mr-6">Cover</div>
-                    <div className="flex-grow">Title / Album</div>
+                    <div className="flex-grow">Title / Lyricist / Composer</div>
                     <div className="w-24 text-center ml-8">Type</div>
                     <div className="w-24 text-center ml-8">Genre</div>
                     <div className="w-16 ml-8">Year</div>
