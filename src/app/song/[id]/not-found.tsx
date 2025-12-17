@@ -10,9 +10,14 @@ export default function NotFound() {
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500 font-sans flex items-center justify-center p-6">
       <div className="text-center space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
         <div className="relative inline-block">
-          <Disc size={120} className="text-slate-200 dark:text-slate-800 animate-[spin_10s_linear_infinite]" />
+          <Disc
+            size={120}
+            className="text-slate-200 dark:text-slate-800 animate-[spin_10s_linear_infinite]"
+          />
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-4xl font-serif font-bold text-slate-400 dark:text-slate-600">404</span>
+            <span className="text-4xl font-serif font-bold text-slate-400 dark:text-slate-600">
+              404
+            </span>
           </div>
         </div>
 
@@ -30,7 +35,10 @@ export default function NotFound() {
             onClick={() => router.back()}
             className="group px-6 py-2.5 rounded-full border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300 flex items-center gap-2"
           >
-            <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft
+              size={18}
+              className="group-hover:-translate-x-1 transition-transform"
+            />
             <span>返回上页</span>
           </button>
 
