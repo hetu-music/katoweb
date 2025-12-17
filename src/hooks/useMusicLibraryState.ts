@@ -91,8 +91,11 @@ export function useMusicLibraryState(
     });
     const [showAdvancedFilters, setShowAdvancedFilters] = useState(() => searchParams.get("advanced") === "true");
 
-    // Scroll restoration
-    const [isRestoringScroll, setIsRestoringScroll] = useState(true);
+    // Scroll restoration - only set to true if there's actually a scroll position to restore
+    const [isRestoringScroll, setIsRestoringScroll] = useState(() => {
+        if (typeof window === "undefined") return false;
+        return sessionStorage.getItem(STORAGE_KEY) !== null;
+    });
     const hasRestoredScroll = useRef(false);
 
     // Track previous filters to detect actual changes - Initialize with current values
