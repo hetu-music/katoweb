@@ -54,15 +54,15 @@ export const songFields: SongFieldConfig[] = [
 // 类型顺序（用于排序）
 export const TYPE_ORDER = ["原创", "合作", "文宣", "商业", "墨宝", "翻唱", "参与"];
 
-// 类型标签样式映射（标签显示：subtle样式，与强调颜色匹配但更淡）
+// 类型标签样式映射（标签显示：纯文字样式，无边框无背景）
 const typeTagStyleMap: Record<string, string> = {
-  原创: "bg-transparent text-purple-500/60 dark:text-purple-400/60 border-purple-200/50 dark:border-purple-500/20",
-  合作: "bg-transparent text-amber-500/60 dark:text-amber-400/60 border-amber-200/50 dark:border-amber-500/20",
-  文宣: "bg-transparent text-emerald-500/60 dark:text-emerald-400/60 border-emerald-200/50 dark:border-emerald-500/20",
-  商业: "bg-transparent text-orange-500/60 dark:text-orange-400/60 border-orange-200/50 dark:border-orange-500/20",
-  墨宝: "bg-transparent text-rose-500/60 dark:text-rose-400/60 border-rose-200/50 dark:border-rose-500/20",
-  翻唱: "bg-transparent text-blue-500/60 dark:text-blue-400/60 border-blue-200/50 dark:border-blue-500/20",
-  参与: "bg-transparent text-fuchsia-500/60 dark:text-fuchsia-400/60 border-fuchsia-200/50 dark:border-fuchsia-500/20",
+  原创: "text-purple-500/60 dark:text-purple-400/60",
+  合作: "text-amber-500/60 dark:text-amber-400/60",
+  文宣: "text-emerald-500/60 dark:text-emerald-400/60",
+  商业: "text-orange-500/60 dark:text-orange-400/60",
+  墨宝: "text-rose-500/60 dark:text-rose-400/60",
+  翻唱: "text-blue-500/60 dark:text-blue-400/60",
+  参与: "text-fuchsia-500/60 dark:text-fuchsia-400/60",
 };
 
 // 类型标签强调样式映射（用于详情页等需要突出显示的场景）

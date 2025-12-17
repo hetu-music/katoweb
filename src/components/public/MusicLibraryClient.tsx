@@ -60,23 +60,21 @@ const GridCard = ({ song, onClick, style, className }: { song: Song; onClick: ()
     {/* 信息区 */}
     <div className="space-y-1">
       <div className="flex justify-between items-start gap-4">
-        <div className="flex-1 min-w-0">
-          <h3 className="text-xl font-serif text-slate-900 dark:text-slate-100 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1" title={song.title}>
-            {song.title}
-          </h3>
-        </div>
-        <div className="flex flex-col items-end gap-1 shrink-0">
-          <span className="text-xs font-mono text-slate-400">{song.year || "未知"}</span>
-          {song.type && song.type[0] && (
-            <span className={cn("px-2 py-0.5 text-xs font-medium rounded-full border uppercase tracking-wider", getTypeTagStyle(song.type[0]))}>
-              {song.type[0]}
-            </span>
-          )}
-        </div>
+        <h3 className="text-xl font-serif text-slate-900 dark:text-slate-100 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1 flex-1 min-w-0" title={song.title}>
+          {song.title}
+        </h3>
+        <span className="text-xs font-mono text-slate-400 shrink-0">{song.year || "未知"}</span>
       </div>
-      <p className="text-sm text-slate-500 dark:text-slate-400 font-light">
-        <span className="truncate">{song.album || "单曲"}</span>
-      </p>
+      <div className="flex justify-between items-baseline gap-4">
+        <p className="text-sm text-slate-500 dark:text-slate-400 font-light flex-1 min-w-0">
+          <span className="truncate">{song.album || "单曲"}</span>
+        </p>
+        {song.type && song.type[0] && (
+          <span className={cn("text-xs font-medium uppercase tracking-wider shrink-0", getTypeTagStyle(song.type[0]))}>
+            {song.type[0]}
+          </span>
+        )}
+      </div>
     </div>
   </div>
 );
