@@ -531,10 +531,14 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
               onClick={toggleTheme}
               className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
             >
-              {mounted && resolvedTheme === "dark" ? (
-                <Moon size={20} />
+              {mounted ? (
+                resolvedTheme === "dark" ? (
+                  <Moon size={20} className="animate-in fade-in duration-200" />
+                ) : (
+                  <Sun size={20} className="animate-in fade-in duration-200" />
+                )
               ) : (
-                <Sun size={20} />
+                <div className="w-5 h-5" />
               )}
             </button>
           </div>
