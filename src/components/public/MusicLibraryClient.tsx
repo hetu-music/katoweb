@@ -70,7 +70,7 @@ const GridCard = ({ song, onClick, style, className }: { song: Song; onClick: ()
         {song.type && song.type[0] && (
           <>
             <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 shrink-0" />
-            <span className={cn("text-sm font-medium uppercase tracking-wider shrink-0", getTypeTagStyle(song.type[0]))}>
+            <span className={cn("text-sm font-light uppercase tracking-wider shrink-0", getTypeTagStyle(song.type[0]))}>
               {song.type[0]}
             </span>
           </>
