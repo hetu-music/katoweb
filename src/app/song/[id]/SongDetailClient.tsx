@@ -19,7 +19,12 @@ function cn(...classes: (string | undefined | null | false)[]) {
 
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const router = useRouter();
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [lyricsType, setLyricsType] = useState<"normal" | "lrc">("normal");
@@ -64,7 +69,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
     // @ts-ignore
     if (!document.startViewTransition) {
-      setTheme(theme === 'dark' ? 'light' : 'dark');
+      setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
       return;
     }
 
@@ -80,7 +85,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
     // @ts-ignore
     const transition = document.startViewTransition(() => {
       flushSync(() => {
-        setTheme(theme === 'dark' ? 'light' : 'dark');
+        setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
       });
     });
 
@@ -171,7 +176,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
             onClick={toggleTheme}
             className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
           >
-            {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
+            {mounted && resolvedTheme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
           </button>
         </div>
       </nav>

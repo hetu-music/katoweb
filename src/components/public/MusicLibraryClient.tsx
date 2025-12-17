@@ -145,7 +145,12 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   initialSongsData,
 }) => {
   const router = useRouter();
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // 计算筛选选项
   const filterOptions = useMemo(() => {
@@ -257,7 +262,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
     // @ts-ignore
     if (!document.startViewTransition) {
-      setTheme(theme === 'dark' ? 'light' : 'dark');
+      setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
       return;
     }
 
@@ -273,7 +278,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     // @ts-ignore
     const transition = document.startViewTransition(() => {
       flushSync(() => {
-        setTheme(theme === 'dark' ? 'light' : 'dark');
+        setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
       });
     });
 
@@ -379,7 +384,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
               onClick={toggleTheme}
               className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
             >
-              {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
+              {mounted && resolvedTheme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
             </button>
           </div>
         </div>
@@ -422,7 +427,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                           className="px-4 py-1.5 rounded-full text-sm transition-all duration-300 border select-none whitespace-nowrap bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:border-red-300 dark:bg-red-900/10 dark:text-red-400 dark:border-red-900/30 flex items-center gap-1.5"
                         >
                           <RotateCcw size={12} />
-                          Reset
+                          重置
                         </button>
                       );
                     }
