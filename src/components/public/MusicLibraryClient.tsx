@@ -495,7 +495,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
         </section>
 
         {/* 内容展示区 */}
-        <section className="min-h-[50vh] transition-all duration-500" style={{ opacity: isRestoringScroll ? 0 : 1 }}>
+        <section className="min-h-[50vh]">
           {filteredWorks.length > 0 ? (
             <>
               {viewMode === 'grid' ? (
@@ -509,8 +509,8 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                         handleSongClick();
                         router.push(`/song/${work.id}`);
                       }}
-                      className="animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both"
-                      style={{ animationDelay: `${(i % 8) * 40}ms`, animationFillMode: 'both' }}
+                      className={isRestoringScroll ? "" : "animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both"}
+                      style={isRestoringScroll ? {} : { animationDelay: `${(i % 8) * 40}ms`, animationFillMode: 'both' }}
                     />
                   ))}
                 </div>
@@ -533,8 +533,8 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                         handleSongClick();
                         router.push(`/song/${work.id}`);
                       }}
-                      className="animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both"
-                      style={{ animationDelay: `${(i % 8) * 40}ms`, animationFillMode: 'both' }}
+                      className={isRestoringScroll ? "" : "animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both"}
+                      style={isRestoringScroll ? {} : { animationDelay: `${(i % 8) * 40}ms`, animationFillMode: 'both' }}
                     />
                   ))}
                 </div>

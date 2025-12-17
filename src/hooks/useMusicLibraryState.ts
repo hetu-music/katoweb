@@ -171,31 +171,49 @@ export function useMusicLibraryState(
             if (savedScroll) {
                 // Need a bit of time for layout to settle (items to populate)
                 // Use requestAnimationFrame or setTimeout
-                const attemptScroll = () => {
-                    const y = parseInt(savedScroll, 10);
-                    // Only scroll if document height is enough? 
-                    // Whatever, just try.
-                    window.scrollTo(0, y);
+                const targetY = parseInt(savedScroll, 10);
+                let attempts = 0;
+                const maxAttempts = 20;
 
-                    // Check if it worked (simple heuristic)
-                    if (Math.abs(window.scrollY - y) < 50) {
-                        sessionStorage.removeItem("music_library_scrollY");
-                        hasRestoredScroll.current = true;
-                        setIsRestoringScroll(false);
+                const attemptScroll = () => {
+                    attempts++;
+
+                    const docHeight = Math.max(
+                        document.body.scrollHeight,
+                        document.documentElement.scrollHeight
+                    );
+
+                    if (docHeight >= targetY + window.innerHeight * 0.5) {
+                        window.scrollTo(0, targetY);
+
+                        requestAnimationFrame(() => {
+                            const currentY = window.scrollY;
+                            const diff = Math.abs(currentY - targetY);
+
+                            if (diff < 100 || attempts >= maxAttempts) {
+                                sessionStorage.removeItem("music_library_scrollY");
+                                hasRestoredScroll.current = true;
+                                requestAnimationFrame(() => {
+                                    setIsRestoringScroll(false);
+                                });
+                            } else {
+                                setTimeout(attemptScroll, 50);
+                            }
+                        });
+                    } else if (attempts < maxAttempts) {
+                        setTimeout(attemptScroll, 50);
                     } else {
-                        // Maybe list hasn't rendered yet. 
-                        // Since we can't know for sure when list renders from here, 
-                        // we just try once with a bit longer delay or rely on the component to tell us?
-                        // For now, simpler is better.
-                        sessionStorage.removeItem("music_library_scrollY"); // Clear anyway to prevent stuck
+                        sessionStorage.removeItem("music_library_scrollY");
                         setIsRestoringScroll(false);
                     }
                 };
 
-                setTimeout(attemptScroll, 100);
+                setTimeout(attemptScroll, 200);
             } else {
                 setIsRestoringScroll(false);
             }
+        } else if (isInitialized && hasRestoredScroll.current) {
+            setIsRestoringScroll(false);
         }
     }, [isInitialized]);
 
