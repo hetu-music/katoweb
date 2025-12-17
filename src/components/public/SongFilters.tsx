@@ -222,7 +222,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
       {/* Top Row: Year Slider */}
       <div className="w-full bg-white/30 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800/50 rounded-xl p-3">
         <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">
-          Realease Date Range
+          Realease Year Range
         </div>
         <YearRangeSlider
           range={yearRangeIndices}

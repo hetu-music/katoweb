@@ -101,11 +101,10 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         <div className="flex px-6 border-b border-slate-100 dark:border-slate-800 shrink-0">
           <button
             onClick={() => setActiveTab("about")}
-            className={`flex-1 pb-3 pt-4 text-sm font-medium transition-colors relative ${
-              activeTab === "about"
+            className={`flex-1 pb-3 pt-4 text-sm font-medium transition-colors relative ${activeTab === "about"
                 ? "text-blue-600 dark:text-blue-400"
                 : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-            }`}
+              }`}
           >
             项目介绍
             {activeTab === "about" && (
@@ -114,11 +113,10 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </button>
           <button
             onClick={() => setActiveTab("types")}
-            className={`flex-1 pb-3 pt-4 text-sm font-medium transition-colors relative ${
-              activeTab === "types"
+            className={`flex-1 pb-3 pt-4 text-sm font-medium transition-colors relative ${activeTab === "types"
                 ? "text-blue-600 dark:text-blue-400"
                 : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-            }`}
+              }`}
           >
             类型说明
             {activeTab === "types" && (
@@ -127,11 +125,10 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </button>
           <button
             onClick={() => setActiveTab("maintainer")}
-            className={`flex-1 pb-3 pt-4 text-sm font-medium transition-colors relative ${
-              activeTab === "maintainer"
+            className={`flex-1 pb-3 pt-4 text-sm font-medium transition-colors relative ${activeTab === "maintainer"
                 ? "text-blue-600 dark:text-blue-400"
                 : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-            }`}
+              }`}
           >
             维护团队
             {activeTab === "maintainer" && (
@@ -179,7 +176,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                   <span>特别鸣谢</span>
                 </div>
                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  感谢正版河图吧吧主{" "}
+                  正版河图吧吧主{" "}
                   <span className="font-semibold text-slate-900 dark:text-white">
                     {mainContributor ? mainContributor.name : "顾大一"}
                   </span>{" "}
