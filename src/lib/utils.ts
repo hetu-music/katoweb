@@ -1,5 +1,5 @@
 import { Song, SongDetail, FilterOptions, SongInfo } from "./types";
-import { typeColorMap } from "./constants";
+import { TYPE_ORDER } from "./constants";
 import Fuse from "fuse.js";
 
 // 格式化时间
@@ -53,8 +53,8 @@ export function calculateFilterOptions(songsData: Song[]): FilterOptions {
       song.type.forEach((t) => typeSet.add(t));
     }
   });
-  // 按 typeColorMap 顺序排序
-  const preferredOrder = Object.keys(typeColorMap);
+  // 按 TYPE_ORDER 顺序排序
+  const preferredOrder = TYPE_ORDER;
   let allTypes = Array.from(typeSet);
   allTypes = preferredOrder
     .filter((t) => allTypes.includes(t))
@@ -148,7 +148,8 @@ export function processLyricsForSearch(lrcLyrics: string | null): string {
 }
 
 // 创建 Fuse.js 搜索实例
-function createFuseInstance(songs: Song[]) {
+// 创建 Fuse.js 搜索实例
+export function createFuseInstance(songs: Song[]) {
   // 为每首歌准备搜索数据
   const searchData = songs.map((song) => {
     const songDetail = song as SongDetail;
@@ -190,16 +191,17 @@ export function filterSongs(
   songsData: Song[],
   searchTerm: string,
   selectedType: string,
-  selectedYear: string,
+  selectedYear: string | (string | number)[],
   selectedLyricist: string,
   selectedComposer: string,
   selectedArranger: string,
+  fuseInstance?: Fuse<any>
 ): Song[] {
   let filteredBySearch = songsData;
 
   // 如果有搜索词，使用 Fuse.js 进行模糊搜索
   if (searchTerm.trim()) {
-    const fuse = createFuseInstance(songsData);
+    const fuse = fuseInstance || createFuseInstance(songsData);
     const searchResults = fuse.search(searchTerm);
     filteredBySearch = searchResults.map((result) => result.item);
   }
@@ -215,11 +217,21 @@ export function filterSongs(
         ? !song.type || song.type.length === 0
         : song.type && song.type.includes(selectedType));
 
-    const matchesYear =
-      selectedYear === "全部" ||
-      (selectedYear === "未知"
-        ? !song.year
-        : song.year && song.year.toString() === selectedYear);
+    // year 筛选
+    let matchesYear = true;
+    if (Array.isArray(selectedYear)) {
+      if (selectedYear.length > 0) {
+        // 如果是数组，检查是否包含
+        const yearVal = song.year || "未知";
+        matchesYear = selectedYear.includes(yearVal);
+      }
+    } else {
+      matchesYear =
+        selectedYear === "全部" ||
+        (selectedYear === "未知"
+          ? !song.year
+          : (song.year?.toString() ?? "") === selectedYear);
+    }
 
     const matchesLyricist =
       selectedLyricist === "全部" ||
@@ -238,7 +250,7 @@ export function filterSongs(
       (selectedArranger === "未知"
         ? !songDetail.arranger || songDetail.arranger.length === 0
         : songDetail.arranger &&
-          songDetail.arranger.includes(selectedArranger));
+        songDetail.arranger.includes(selectedArranger));
 
     return (
       matchesType &&

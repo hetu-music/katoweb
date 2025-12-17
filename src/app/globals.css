@@ -1,12 +1,42 @@
 @import "tailwindcss";
+@plugin "tailwindcss-animate";
+@variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+
+  /* 字体变量定义 */
+  --font-heading: var(--font-heading);
+  --font-heading-sc: var(--font-heading-sc);
+  --font-body: var(--font-body);
+  --font-body-sc: var(--font-body-sc);
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
 
 body {
+  background: var(--background);
+  color: var(--foreground);
+  /* 正文使用无衬线体：英文 Inter，中文 Noto Sans SC */
+  font-family: var(--font-body), var(--font-body-sc), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   margin: 0;
   padding: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  /* 确保页面切换时有一致的背景 */
-  background: linear-gradient(135deg, #581c87 0%, #1e3a8a 50%, #312e81 100%);
-  /* 移除 background-attachment: fixed 以避免移动端问题 */
+  transition: background-color 0.3s ease-out, color 0.3s ease-out;
+}
+
+/* 标题使用衬线体：英文 Playfair Display，中文 Noto Serif SC */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading), var(--font-heading-sc), Georgia, "Times New Roman", serif;
+  font-weight: 700;
 }
 
 /* 触摸动画，仅在触摸设备生效 */
@@ -38,7 +68,7 @@ body {
   }
 }
 
-/* 筛选框样式 */
+/* 筛选框样式 - 保持原样以便 WallpaperContext 的部分组件还能用 */
 .filter-container {
   @apply flex items-center flex-1 min-w-0 relative rounded-2xl transition-all duration-200;
 }
@@ -159,33 +189,53 @@ body {
 }
 
 .custom-select-options {
-  @apply absolute top-full left-0 right-0 mt-1 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg z-50 max-h-100 overflow-y-auto;
-  /* 使用白色背景 */
-  background-color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(20px);
-  /* iOS风格的阴影 */
+  @apply absolute top-full left-0 right-0 mt-1 z-50 max-h-100 overflow-y-auto;
+  /* 精致的背景和边框 */
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 0.875rem;
+  /* 精致的多层阴影 */
   box-shadow:
-    0 10px 40px rgba(0, 0, 0, 0.15),
-    0 4px 12px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    0 20px 60px -12px rgba(0, 0, 0, 0.12),
+    0 8px 24px -8px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.02),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
   /* 桌面端恢复原来的逻辑：在筛选框下方弹出 */
   max-height: 490px;
   /* 12个选项 (40px * 12) + 边框和间距 (10px) = 490px */
-  /* iOS风格的过渡 */
-  transition: all 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* 流畅的过渡 */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
   /* 禁止横向滚动 */
   overflow-x: hidden;
   overscroll-behavior-x: none;
+  /* 内边距 */
+  padding: 0.375rem;
+}
+
+/* 深色模式下的下拉菜单样式 */
+.dark .custom-select-options {
+  background-color: rgba(15, 23, 42, 0.95);
+  border-color: rgba(51, 65, 85, 0.6);
+  box-shadow:
+    0 20px 60px -12px rgba(0, 0, 0, 0.4),
+    0 8px 24px -8px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .custom-select-option {
-  @apply px-0 py-2 text-black text-center cursor-pointer border-b border-gray-300 last:border-b-0 w-full flex items-center justify-center;
-  /* iOS风格的过渡效果 */
-  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  @apply px-4 py-2.5 text-slate-700 dark:text-slate-200 text-center cursor-pointer w-full flex items-center justify-center;
+  /* 精致的过渡效果 */
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
+  /* 圆角和间距 */
+  border-radius: 0.625rem;
+  margin: 0.125rem 0;
   /* 防止选项被拖动 */
   touch-action: manipulation;
   /* 防止用户选择文本 */
@@ -193,65 +243,112 @@ body {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+  /* 字体 */
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  /* 背景透明，通过 hover 和 selected 状态显示 */
+  background-color: transparent;
 }
 
 .custom-select-option.selected {
-  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: #fff !important;
-  border-radius: 0.5rem;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+  box-shadow: 
+    0 2px 8px rgba(37, 99, 235, 0.25),
+    0 0 0 1px rgba(37, 99, 235, 0.1);
+  font-weight: 600;
+  /* 选中状态的微妙动画 */
+  animation: selectedPulse 0.3s ease-out;
+}
+
+@keyframes selectedPulse {
+  0% {
+    transform: scale(0.98);
+  }
+  50% {
+    transform: scale(1.01);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* 统一的按压效果 */
 .custom-select-option:active {
-  transform: scale(0.98) translateZ(0);
-  transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: scale(0.97) translateZ(0);
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* 焦点状态 - 键盘导航 */
 .custom-select-option.focused {
-  background-color: rgba(203, 202, 202, 0.8);
-  /* 焦点状态使用更明显的灰色背景 */
-  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  background-color: rgba(241, 245, 249, 0.8);
+  color: #1e293b;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .custom-select-option.focused {
+  background-color: rgba(30, 41, 59, 0.8);
+  color: #e2e8f0;
 }
 
 /* 桌面端选项hover效果 */
 @media (hover: hover) and (pointer: fine) {
-  .custom-select-option:hover {
-    background-color: rgba(203, 202, 202, 0.8);
-    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  .custom-select-option:hover:not(.selected) {
+    background-color: rgba(241, 245, 249, 0.6);
+    color: #1e293b;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .dark .custom-select-option:hover:not(.selected) {
+    background-color: rgba(30, 41, 59, 0.6);
+    color: #e2e8f0;
+  }
+  
+  /* 选中状态的 hover 效果 */
+  .custom-select-option.selected:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    box-shadow: 
+      0 4px 12px rgba(37, 99, 235, 0.35),
+      0 0 0 1px rgba(37, 99, 235, 0.15);
   }
 }
 
-.custom-select-option:first-child {
-  @apply rounded-t-2xl;
-}
-
-.custom-select-option:last-child {
-  @apply rounded-b-2xl;
-}
+/* 移除首尾圆角，因为现在每个选项都有独立的圆角 */
 
 /* 自定义下拉框滚动条样式 - 仅桌面端 */
 @media (min-width: 769px) {
   .custom-select-options::-webkit-scrollbar {
-    width: 4px;
+    width: 6px;
   }
 
   .custom-select-options::-webkit-scrollbar-track {
     background: transparent;
+    margin: 0.375rem 0;
   }
 
   .custom-select-options::-webkit-scrollbar-thumb {
-    background-color: rgba(107, 114, 128, 0.4);
-    border-radius: 2px;
+    background-color: rgba(148, 163, 184, 0.3);
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
   }
 
   .custom-select-options::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(107, 114, 128, 0.6);
+    background-color: rgba(148, 163, 184, 0.5);
+  }
+  
+  .dark .custom-select-options::-webkit-scrollbar-thumb {
+    background-color: rgba(71, 85, 105, 0.4);
+  }
+  
+  .dark .custom-select-options::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(71, 85, 105, 0.6);
   }
 }
 
 /* 移动端滚动条特殊处理 - iOS原生行为 */
 @media (max-width: 768px) {
+
   /* 默认状态：隐藏滚动条 */
   .custom-select-options.mobile {
     scrollbar-width: none;
@@ -336,18 +433,12 @@ body {
   }
 }
 
-/* iOS风格的下拉框弹出动画 - 桌面端 */
+/* 精致的下拉框弹出动画 - 桌面端 */
 @keyframes desktopDropdownFadeIn {
   0% {
     opacity: 0;
-    transform: translateY(-20px) scale(0.9) translateZ(0);
-    filter: blur(3px);
-  }
-
-  50% {
-    opacity: 0.8;
-    transform: translateY(-5px) scale(0.95) translateZ(0);
-    filter: blur(1px);
+    transform: translateY(-8px) scale(0.96) translateZ(0);
+    filter: blur(4px);
   }
 
   100% {
@@ -357,36 +448,33 @@ body {
   }
 }
 
-/* iOS风格的下拉框弹出动画 - 移动端 */
+/* 精致的下拉框弹出动画 - 移动端 */
 @keyframes mobileDropdownFadeIn {
   0% {
     opacity: 0;
-    transform: scale(0.8) translateY(-10px) translateZ(0);
-  }
-
-  60% {
-    opacity: 0.9;
-    transform: scale(1.02) translateY(2px) translateZ(0);
+    transform: scale(0.95) translateY(-8px) translateZ(0);
+    filter: blur(4px);
   }
 
   100% {
     opacity: 1;
     transform: scale(1) translateY(0) translateZ(0);
+    filter: blur(0);
   }
 }
 
-/* iOS风格的下拉框关闭动画 - 移动端 */
+/* 精致的下拉框关闭动画 - 移动端 */
 @keyframes mobileDropdownFadeOut {
   0% {
     opacity: 1;
-    transform: scale(1) translateZ(0);
+    transform: scale(1) translateY(0) translateZ(0);
     filter: blur(0);
   }
 
   100% {
     opacity: 0;
-    transform: scale(0.9) translateZ(0);
-    filter: blur(1px);
+    transform: scale(0.95) translateY(-4px) translateZ(0);
+    filter: blur(2px);
   }
 }
 
@@ -527,6 +615,7 @@ html.wallpaper-active::after {
 
 /* 移动端特殊优化 */
 @media (hover: none) and (pointer: coarse) {
+
   html.wallpaper-active::before,
   html.wallpaper-active::after {
     /* 在移动设备上确保平滑滚动 */
@@ -540,22 +629,6 @@ html.wallpaper-active::after {
 html.wallpaper-active {
   /* 防止出现滚动条影响布局 */
   overflow-x: hidden;
-}
-
-/* 页面切换过渡优化 */
-html {
-  /* 确保根元素也有背景，防止闪动 */
-  background: linear-gradient(135deg, #581c87 0%, #1e3a8a 50%, #312e81 100%);
-  /* 移除 background-attachment: fixed 以避免移动端问题 */
-}
-
-/* 防止页面切换时的白屏闪动 */
-html,
-body {
-  background-color: #581c87;
-  /* 紫色作为备用颜色 */
-  /* 确保页面切换时的平滑过渡 */
-  transition: background-color 0.3s ease-out;
 }
 
 /* 页面过渡动画 */
@@ -592,8 +665,7 @@ body {
   }
 }
 
-/* 壁纸控
-制按钮位置优化 */
+/* 壁纸控制按钮位置优化 */
 .wallpaper-controls-middle {
   @apply fixed right-8 top-1/2 -translate-y-1/2 z-40;
 }
@@ -643,4 +715,30 @@ body {
   .wallpaper-controls-middle {
     @apply top-20 translate-y-0;
   }
+}
+
+/* View Transitions API Customization */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* Disable transitions for View Transitions */
+.no-transitions,
+.no-transitions *,
+.no-transitions *::before,
+.no-transitions *::after {
+  transition: none !important;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
