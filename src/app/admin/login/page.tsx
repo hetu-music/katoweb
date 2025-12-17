@@ -1,18 +1,19 @@
 "use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Mail,
   Lock,
   ArrowLeft,
-  Feather,
   LogIn,
   Eye,
   EyeOff,
+  ShieldCheck,
+  AlertCircle
 } from "lucide-react";
 import { Turnstile } from "@marsidev/react-turnstile";
-
-import FloatingActionButtons from "@/components/public/FloatingActionButtons";
+import Link from 'next/link';
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -28,7 +29,6 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      // 验证 Turnstile
       if (!turnstileToken) {
         setError("请完成人机验证");
         setLoading(false);
@@ -37,9 +37,7 @@ export default function LoginPage() {
 
       const turnstileRes = await fetch("/api/auth/verify-turnstile", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: turnstileToken }),
       });
 
@@ -50,21 +48,12 @@ export default function LoginPage() {
         return;
       }
 
-      // 每次登录前都获取最新的 CSRF token
-      const csrfRes = await fetch("/api/auth/csrf-token", {
-        cache: "no-store", // 确保获取最新的 token
-      });
-
-      if (!csrfRes.ok) {
-        throw new Error("无法获取安全令牌");
-      }
+      const csrfRes = await fetch("/api/auth/csrf-token", { cache: "no-store" });
+      if (!csrfRes.ok) throw new Error("无法获取安全令牌");
 
       const csrfData = await csrfRes.json();
       const latestCsrfToken = csrfData.csrfToken || "";
-
-      if (!latestCsrfToken) {
-        throw new Error("安全令牌无效");
-      }
+      if (!latestCsrfToken) throw new Error("安全令牌无效");
 
       const res = await fetch("/api/auth/login", {
         method: "POST",
@@ -78,7 +67,6 @@ export default function LoginPage() {
 
       const result = await res.json();
       if (!res.ok) {
-        // 如果是 CSRF 错误，提示用户刷新页面
         if (res.status === 403) {
           setError("安全验证失败，请刷新页面后重试");
         } else {
@@ -88,7 +76,6 @@ export default function LoginPage() {
         return;
       }
 
-      // 登录成功后等待一下再跳转，确保 cookies 设置完成
       await new Promise((resolve) => setTimeout(resolve, 100));
       router.push("/admin");
       router.refresh();
@@ -104,146 +91,139 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen">
-      <div className="min-h-screen flex items-center justify-center relative p-4">
-        {/* 浮动操作按钮组 - 仅返回顶部（登录页面不需要，所以不显示） */}
-        <FloatingActionButtons
-          showScrollTop={false}
-          onScrollToTop={() => {
-            // No scroll to top needed on login page
-          }}
-        />
+    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500 font-sans flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Decor (Optional subtle gradients) */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/5 rounded-full blur-3xl" />
+      </div>
 
-        {/* 统一的竖向长容器 */}
-        <div className="w-full max-w-sm sm:max-w-md bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl transition-all duration-300 hover:bg-white/15">
-          {/* 主标题区域 */}
-          <div className="text-center pt-7 pb-5 px-6 sm:pt-8 sm:pb-6 sm:px-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 sm:w-18 sm:h-18 bg-linear-to-br from-blue-500 to-purple-600 rounded-3xl mb-4 sm:mb-5 shadow-xl">
-              <Feather className="w-8 h-8 sm:w-9 sm:h-9 text-white" />
+      <div className="w-full max-w-md relative z-10">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-slate-800 overflow-hidden">
+
+          {/* Header Section */}
+          <div className="px-8 pt-12 pb-8 text-center space-y-4">
+            <div className="mx-auto w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 mb-6 ring-1 ring-blue-100 dark:ring-blue-800">
+              <ShieldCheck size={32} strokeWidth={1.5} />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2.5 tracking-wide">
-              管理页面
+            <h1 className="text-3xl font-serif font-medium text-slate-900 dark:text-white tracking-tight">
+              Admin Portal
             </h1>
-            <p className="text-white/70 text-sm">请使用您的账户登录</p>
+            <p className="text-slate-500 dark:text-slate-400 font-light text-sm">
+              Sign in to manage the library content.
+            </p>
           </div>
 
-          {/* 登录表单 */}
-          <form
-            onSubmit={handleLogin}
-            className="px-6 pb-6 space-y-4.5 sm:px-8 sm:pb-7"
-          >
-            {/* 邮箱输入框 */}
-            <div className="space-y-2.5">
-              <label className="text-white/90 text-sm font-medium block">
-                邮箱地址
+          {/* Form Section */}
+          <form onSubmit={handleLogin} className="px-8 pb-12 space-y-6">
+
+            {/* Email Field */}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ml-1">
+                Email
               </label>
-              <div className="relative">
-                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white/50 backdrop-blur-sm rounded-lg flex items-center justify-center shadow-md border border-white/40 z-10">
-                  <Mail className="w-4 h-4 text-gray-700 font-semibold" />
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                  <Mail size={18} />
                 </div>
                 <input
                   type="email"
-                  placeholder="请输入您的邮箱"
+                  placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full h-12 pl-14 pr-4 rounded-xl border border-white/30 bg-white/15 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:bg-white/25 transition-all duration-200"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 pl-11 pr-4 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
                   required
                 />
               </div>
             </div>
 
-            {/* 密码输入框 */}
-            <div className="space-y-2.5">
-              <label className="text-white/90 text-sm font-medium block">
-                登录密码
+            {/* Password Field */}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ml-1">
+                Password
               </label>
-              <div className="relative">
-                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white/50 backdrop-blur-sm rounded-lg flex items-center justify-center shadow-md border border-white/40 z-10">
-                  <Lock className="w-4 h-4 text-gray-700 font-semibold" />
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                  <Lock size={18} />
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
-                  placeholder="请输入您的密码"
+                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-12 pl-14 pr-14 rounded-xl border border-white/30 bg-white/15 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:bg-white/25 transition-all duration-200"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 pl-11 pr-11 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white/50 backdrop-blur-sm rounded-lg flex items-center justify-center hover:bg-white/60 transition-all duration-200 shadow-md border border-white/40 z-10"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-all"
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4 text-gray-700 font-semibold" />
-                  ) : (
-                    <Eye className="w-4 h-4 text-gray-700 font-semibold" />
-                  )}
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
 
-            {/* Turnstile 人机验证 - 使用 flexible 模式适应容器宽度 */}
-            <div className="w-full pt-1">
+            {/* Turnstile */}
+            <div className="flex justify-center pt-2">
               <Turnstile
                 siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
                 onSuccess={(token) => setTurnstileToken(token)}
-                onError={() => setError("人机验证加载失败")}
+                onError={() => setError("Captcha failed to load")}
                 onExpire={() => setTurnstileToken("")}
                 options={{
-                  theme: "light",
+                  theme: "auto",
                   size: "flexible",
                 }}
+                className="w-full"
               />
             </div>
 
-            {/* 错误信息 */}
+            {/* Error Message */}
             {error && (
-              <div className="bg-red-500/20 border border-red-400/40 rounded-xl p-3.5 text-red-200 text-sm text-center backdrop-blur-sm">
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 bg-red-400/30 rounded-full flex items-center justify-center">
-                    <div className="w-2 h-2 bg-red-300 rounded-full"></div>
-                  </div>
-                  <span>{error}</span>
-                </div>
+              <div className="animate-in fade-in slide-in-from-top-2 duration-300 flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 text-red-600 dark:text-red-400 text-sm leading-relaxed">
+                <AlertCircle size={18} className="shrink-0 mt-0.5" />
+                <span>{error}</span>
               </div>
             )}
 
-            {/* 按钮组 */}
-            <div className="flex flex-col gap-3 pt-3">
+            {/* Actions */}
+            <div className="space-y-4 pt-2">
               <button
                 type="submit"
-                className="w-full h-13 flex items-center justify-center gap-2.5 bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 active:from-blue-700 active:to-purple-800 text-white font-semibold rounded-xl shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
                 disabled={loading || !turnstileToken}
+                className="w-full py-3.5 px-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2 group"
               >
                 {loading ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>登录中...</span>
-                  </>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
                   <>
-                    <LogIn className="w-5 h-5" />
-                    <span>立即登录</span>
+                    <span>Sign In</span>
+                    <LogIn size={18} className="group-hover:translate-x-0.5 transition-transform" />
                   </>
                 )}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => router.push("/")}
-                className="w-full h-12 flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 active:bg-white/40 text-indigo-700 font-semibold rounded-xl border border-white/30 shadow-lg backdrop-blur-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] hover:shadow-xl"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                <span>返回主页</span>
               </button>
             </div>
           </form>
 
-          {/* 底部提示 */}
-          <div className="text-center pb-6 px-6 sm:pb-7 sm:px-8">
-            <p className="text-white/50 text-xs">如有疑问请联系管理员</p>
+          {/* Footer Link */}
+          <div className="bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 p-6 text-center">
+            <button
+              type="button"
+              onClick={() => router.push("/")}
+              className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+            >
+              <ArrowLeft size={16} />
+              <span>Back to Library</span>
+            </button>
           </div>
+
+        </div>
+
+        <div className="text-center mt-8">
+          <p className="text-xs text-slate-400 dark:text-slate-600 font-mono">
+            &copy; {new Date().getFullYear()} Katoweb Admin
+          </p>
         </div>
       </div>
     </div>
