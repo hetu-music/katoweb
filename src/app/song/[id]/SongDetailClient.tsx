@@ -225,7 +225,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                   key={t}
                   className={cn(
                     "px-3 py-1 text-xs font-medium rounded-full border tracking-wide uppercase",
-                    getTypeTagStyle(t)
+                    getTypeTagStyle(t, "emphasized")
                   )}
                 >
                   {t}
@@ -236,7 +236,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                   key={g}
                   className={cn(
                     "px-3 py-1 text-xs font-medium rounded-full border",
-                    getGenreTagStyle(g)
+                    getGenreTagStyle(g, "emphasized")
                   )}
                 >
                   {g}
