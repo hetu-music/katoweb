@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Mail, LogIn, X, User, Award, Info } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { getTypeTagStyle } from "@/lib/constants";
+import { getTypeTagStyle, TYPE_ORDER } from "@/lib/constants";
 
 interface Contributor {
   name?: string;
@@ -173,18 +173,20 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           )}
 
           {activeTab === "types" && (
-            <div className="space-y-3">
-              {Object.entries(typeDescriptions).map(([type, desc]) => (
+            <div className="space-y-2">
+              {TYPE_ORDER.filter(t => typeDescriptions[t]).map((type) => (
                 <div
                   key={type}
-                  className={`flex items-start gap-4 p-3 rounded-xl border transition-colors ${getTypeTagStyle(type, "card")}`}
+                  className="flex items-start gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-transparent hover:border-slate-100 dark:hover:border-slate-800 transition-colors group"
                 >
-                  <span className="px-2 py-0.5 rounded text-xs font-bold bg-white/50 dark:bg-black/20 shrink-0">
-                    {type}
-                  </span>
-                  <p className="text-sm font-medium opacity-90 pt-0.5">
-                    {desc}
-                  </p>
+                  <div className="shrink-0 pt-0.5">
+                    <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded-md text-xs font-bold border shadow-sm ${getTypeTagStyle(type, "emphasized")}`}>
+                      {type}
+                    </span>
+                  </div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed pt-1">
+                    {typeDescriptions[type]}
+                  </div>
                 </div>
               ))}
             </div>
