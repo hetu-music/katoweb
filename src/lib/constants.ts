@@ -76,6 +76,17 @@ const typeTagEmphasizedStyleMap: Record<string, string> = {
   参与: "bg-white dark:bg-slate-800/50 text-fuchsia-600 dark:text-fuchsia-400 border-fuchsia-200 dark:border-fuchsia-500/30",
 };
 
+// 类型标签Subtle样式映射 (与Genre tags一致，透明背景 + 边框)
+const typeTagSubtleStyleMap: Record<string, string> = {
+  原创: "bg-transparent text-purple-500/60 dark:text-purple-400/60 border-purple-200/50 dark:border-purple-500/20",
+  合作: "bg-transparent text-amber-500/60 dark:text-amber-400/60 border-amber-200/50 dark:border-amber-500/20",
+  文宣: "bg-transparent text-emerald-500/60 dark:text-emerald-400/60 border-emerald-200/50 dark:border-emerald-500/20",
+  商业: "bg-transparent text-orange-500/60 dark:text-orange-400/60 border-orange-200/50 dark:border-orange-500/20",
+  墨宝: "bg-transparent text-rose-500/60 dark:text-rose-400/60 border-rose-200/50 dark:border-rose-500/20",
+  翻唱: "bg-transparent text-blue-500/60 dark:text-blue-400/60 border-blue-200/50 dark:border-blue-500/20",
+  参与: "bg-transparent text-fuchsia-500/60 dark:text-fuchsia-400/60 border-fuchsia-200/50 dark:border-fuchsia-500/20",
+};
+
 // 类型标签卡片样式映射（卡片背景：浅色背景）
 const typeCardStyleMap: Record<string, string> = {
   原创: "bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-500/20",
@@ -123,15 +134,18 @@ const defaultTagStyle = "bg-white dark:bg-slate-800/50 text-slate-600 dark:text-
 /**
  * 获取类型标签的样式类名
  * @param type 类型名称
- * @param variant 样式变体：'tag' 用于标签显示（默认，subtle样式），'card' 用于卡片背景，'emphasized' 用于强调显示
+ * @param variant 样式变体：'tag' 用于标签显示（默认，纯文字），'card' 用于卡片背景，'emphasized' 用于强调显示，'subtle' 用于列表显示（透明带框）
  * @returns Tailwind CSS 类名字符串
  */
-export function getTypeTagStyle(type: string, variant: "tag" | "card" | "emphasized" = "tag"): string {
+export function getTypeTagStyle(type: string, variant: "tag" | "card" | "emphasized" | "subtle" = "tag"): string {
   if (variant === "card") {
     return typeCardStyleMap[type] || defaultTagStyle;
   }
   if (variant === "emphasized") {
     return typeTagEmphasizedStyleMap[type] || defaultTagStyle;
+  }
+  if (variant === "subtle") {
+    return typeTagSubtleStyleMap[type] || defaultTagStyle;
   }
   return typeTagStyleMap[type] || defaultTagStyle;
 }

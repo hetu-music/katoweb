@@ -82,7 +82,7 @@ const GridCard = ({ song, onClick, style, className }: { song: Song; onClick: ()
 
 // 3. 列表模式行 (List Row)
 const ListRow = ({ song, onClick, style, className }: { song: Song; onClick: () => void; style?: React.CSSProperties; className?: string }) => (
-  <div onClick={onClick} className={cn("group flex items-center gap-6 p-4 rounded-xl hover:bg-white dark:hover:bg-slate-800/50 transition-all border border-transparent hover:border-slate-100 dark:hover:border-slate-700/50 hover:shadow-sm cursor-pointer", className)} style={style}>
+  <div onClick={onClick} className={cn("group flex items-center gap-6 p-4 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors cursor-pointer", className)} style={style}>
     {/* 小封面 */}
     <div className="w-16 h-16 shrink-0 rounded shadow-sm overflow-hidden">
       <CoverArt song={song} />
@@ -100,6 +100,11 @@ const ListRow = ({ song, onClick, style, className }: { song: Song; onClick: () 
 
     {/* 辅助信息 (在大屏幕显示) */}
     <div className="hidden md:flex items-center gap-8 text-sm text-slate-500 dark:text-slate-400 shrink-0">
+      {song.type && song.type[0] && (
+        <span className={cn("px-3 py-1 rounded-full text-xs font-medium w-24 text-center truncate border", getTypeTagStyle(song.type[0], "subtle"))}>
+          {song.type[0]}
+        </span>
+      )}
       {song.genre && song.genre[0] ? (
         <span className={cn("px-3 py-1 rounded-full text-xs font-medium w-24 text-center truncate border", getGenreTagStyle(song.genre[0]))}>
           {song.genre[0]}
@@ -529,6 +534,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   <div className="hidden md:flex px-4 py-2 text-xs font-bold tracking-wider text-slate-400 uppercase border-b border-slate-100 dark:border-slate-800 mb-2">
                     <div className="w-16 mr-6">Cover</div>
                     <div className="flex-grow">Title / Album</div>
+                    <div className="w-24 text-center ml-8">Type</div>
                     <div className="w-24 text-center ml-8">Genre</div>
                     <div className="w-16 ml-8">Year</div>
                     <div className="w-16 ml-8">Time</div>
