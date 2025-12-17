@@ -190,7 +190,7 @@ export function filterSongs(
   songsData: Song[],
   searchTerm: string,
   selectedType: string,
-  selectedYear: string,
+  selectedYear: string | (string | number)[],
   selectedLyricist: string,
   selectedComposer: string,
   selectedArranger: string,
@@ -215,11 +215,21 @@ export function filterSongs(
         ? !song.type || song.type.length === 0
         : song.type && song.type.includes(selectedType));
 
-    const matchesYear =
-      selectedYear === "全部" ||
-      (selectedYear === "未知"
-        ? !song.year
-        : song.year && song.year.toString() === selectedYear);
+    // year 筛选
+    let matchesYear = true;
+    if (Array.isArray(selectedYear)) {
+      if (selectedYear.length > 0) {
+        // 如果是数组，检查是否包含
+        const yearVal = song.year || "未知";
+        matchesYear = selectedYear.includes(yearVal);
+      }
+    } else {
+      matchesYear =
+        selectedYear === "全部" ||
+        (selectedYear === "未知"
+          ? !song.year
+          : (song.year?.toString() ?? "") === selectedYear);
+    }
 
     const matchesLyricist =
       selectedLyricist === "全部" ||
@@ -238,7 +248,7 @@ export function filterSongs(
       (selectedArranger === "未知"
         ? !songDetail.arranger || songDetail.arranger.length === 0
         : songDetail.arranger &&
-          songDetail.arranger.includes(selectedArranger));
+        songDetail.arranger.includes(selectedArranger));
 
     return (
       matchesType &&

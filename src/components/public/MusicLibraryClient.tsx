@@ -142,7 +142,8 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   // 筛选状态
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("全部");
-  const [filterYear, setFilterYear] = useState("全部");
+  // const [filterYear, setFilterYear] = useState("全部"); // Deprecated
+  const [yearRangeIndices, setYearRangeIndices] = useState<[number, number]>([0, 0]); // Indices for year slider
   const [filterLyricist, setFilterLyricist] = useState("全部");
   const [filterComposer, setFilterComposer] = useState("全部");
   const [filterArranger, setFilterArranger] = useState("全部");
@@ -152,22 +153,51 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     return calculateFilterOptions(initialSongsData);
   }, [initialSongsData]);
 
+  // Initialize year range when options are ready
+  const sliderYears = useMemo(() => {
+    // filterOptions.allYears includes "全部" at index 0, so we slice it
+    return filterOptions.allYears.slice(1);
+  }, [filterOptions.allYears]);
+
+  useEffect(() => {
+    // Only set if not already set or data changed significantly
+    if (sliderYears.length > 0) {
+      // Default to full range
+      setYearRangeIndices([0, sliderYears.length - 1]);
+    }
+  }, [sliderYears.length]);
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
   // 数据过滤 (使用 fuse.js 模糊搜索)
   const filteredWorks = useMemo(() => {
+    // Derive selected years from range
+    let selectedYear: string | (string | number)[] = "全部";
+    if (sliderYears.length > 0) {
+      const [start, end] = yearRangeIndices;
+      // If range covers everything, treat as "全部" (or just pass all)
+      // Actually strictly passing subset is better for consistency if user moves sliders
+      // But if start=0 and end=max, it is conceptually "All"
+      if (start === 0 && end === sliderYears.length - 1) {
+        selectedYear = "全部";
+      } else {
+        // Slice includes start, excludes end. But our indices are inclusive [start, end]
+        selectedYear = sliderYears.slice(start, end + 1);
+      }
+    }
+
     return filterSongs(
       initialSongsData,
       searchQuery,
       filterType,
-      filterYear,
+      selectedYear,
       filterLyricist,
       filterComposer,
       filterArranger
     );
-  }, [initialSongsData, searchQuery, filterType, filterYear, filterLyricist, filterComposer, filterArranger]);
+  }, [initialSongsData, searchQuery, filterType, yearRangeIndices, sliderYears, filterLyricist, filterComposer, filterArranger]);
 
   // 分页处理
   const {
@@ -361,8 +391,9 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
             {showAdvancedFilters && (
               <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                 <SongFilters
-                  selectedYear={filterYear}
-                  setSelectedYear={setFilterYear}
+                  yearRangeIndices={yearRangeIndices}
+                  setYearRangeIndices={setYearRangeIndices}
+                  sliderYears={sliderYears}
                   selectedLyricist={filterLyricist}
                   setSelectedLyricist={setFilterLyricist}
                   selectedComposer={filterComposer}
