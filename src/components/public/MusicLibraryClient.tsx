@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { flushSync } from "react-dom";
 import { Search, LayoutGrid, List, Disc, Calendar, Clock, Moon, Sun, SlidersHorizontal, X, Info, RotateCcw } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -13,6 +13,7 @@ import { usePagination } from "@/hooks/usePagination";
 import Pagination from "./Pagination";
 import SongFilters from "./SongFilters";
 import About from "./About";
+import FloatingActionButtons from "./FloatingActionButtons";
 
 // 简易 classNames 工具 (替代 clsx/tailwind-merge)
 function cn(...classes: (string | undefined | null | false)[]) {
@@ -217,7 +218,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     return filterOptions.allTypes;
   }, [filterOptions]);
 
-  // 切换主题动画
   const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
     // @ts-ignore
     if (!document.startViewTransition) {
@@ -263,6 +263,44 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       );
     });
   };
+
+  // Scroll to top logic
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      setShowScrollTop(window.scrollY > 200);
+    };
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  const handleShare = useCallback(async () => {
+    const shareData = {
+      title: "河图 - 作品勘鉴",
+      text: "河山万里，戏里讲了什么故事。",
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch {
+        // Share cancelled
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        alert("链接已复制到剪贴板");
+      } catch {
+        // Copy failed
+      }
+    }
+  }, []);
 
   if (!mounted) {
     return null;
@@ -503,6 +541,12 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
       {/* 关于弹窗 */}
       {showAbout && <About onClose={() => setShowAbout(false)} />}
+
+      <FloatingActionButtons
+        showScrollTop={showScrollTop}
+        onScrollToTop={scrollToTop}
+        onShare={handleShare}
+      />
     </div>
   );
 };
