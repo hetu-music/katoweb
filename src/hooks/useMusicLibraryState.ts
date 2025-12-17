@@ -111,6 +111,22 @@ export function useMusicLibraryState(
         }
     }, [initialSliderYearsLength, isInitialized]);
 
+    // Reset page to 1 when any filter changes
+    useEffect(() => {
+        if (!isInitialized) return;
+
+        // Reset to page 1 when any filter changes
+        setCurrentPage(1);
+    }, [
+        isInitialized,
+        searchQuery,
+        filterType,
+        filterLyricist,
+        filterComposer,
+        filterArranger,
+        yearRangeIndices[0],
+        yearRangeIndices[1]
+    ]);
 
     // Sync state to URL with debounce
     useEffect(() => {
