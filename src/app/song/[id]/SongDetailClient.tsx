@@ -8,7 +8,7 @@ import Image from "next/image";
 import { useTheme } from "next-themes";
 import { SongDetailClientProps } from "@/lib/types";
 import { getCoverUrl, calculateSongInfo, getNmnUrl } from "@/lib/utils";
-import { typeColorMap, genreColorMap } from "@/lib/constants";
+import { getTypeTagStyle, getGenreTagStyle } from "@/lib/constants";
 import ImageModal from "@/components/public/ImageModal";
 import FloatingActionButtons from "@/components/public/FloatingActionButtons";
 
@@ -225,8 +225,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                   key={t}
                   className={cn(
                     "px-3 py-1 text-xs font-medium rounded-full border tracking-wide uppercase",
-                    // 在这里我们可以适配 typeColorMap，目前简单处理为统一风格或复用映射
-                    "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+                    getTypeTagStyle(t)
                   )}
                 >
                   {t}
@@ -235,7 +234,10 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
               {(song.genre || []).map((g) => (
                 <span
                   key={g}
-                  className="px-3 py-1 text-xs font-medium rounded-full border bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 border-blue-100 dark:border-blue-800"
+                  className={cn(
+                    "px-3 py-1 text-xs font-medium rounded-full border",
+                    getGenreTagStyle(g)
+                  )}
                 >
                   {g}
                 </span>

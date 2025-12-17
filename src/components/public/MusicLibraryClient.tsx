@@ -8,7 +8,7 @@ import Image from "next/image";
 import { useTheme } from "next-themes";
 import { MusicLibraryClientProps, Song } from "@/lib/types";
 import { getCoverUrl, formatTime, filterSongs, calculateFilterOptions, createFuseInstance } from "@/lib/utils";
-import { typeColorMap } from "@/lib/constants";
+import { getTypeTagStyle, getGenreTagStyle } from "@/lib/constants";
 import { usePagination } from "@/hooks/usePagination";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useMusicLibraryState } from "@/hooks/useMusicLibraryState";
@@ -68,9 +68,11 @@ const GridCard = ({ song, onClick, style, className }: { song: Song; onClick: ()
       <p className="text-sm text-slate-500 dark:text-slate-400 font-light flex items-center gap-2 overflow-hidden">
         <span className="truncate">{song.album || "单曲"}</span>
         <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 shrink-0"></span>
-        <span className="text-xs uppercase tracking-wider text-slate-400 shrink-0">
-          {(song.type && song.type[0]) || "歌曲"}
-        </span>
+        {song.type && song.type[0] && (
+          <span className={cn("px-2 py-0.5 text-xs font-medium rounded-full border uppercase tracking-wider shrink-0", getTypeTagStyle(song.type[0]))}>
+            {song.type[0]}
+          </span>
+        )}
       </p>
     </div>
   </div>
@@ -96,9 +98,15 @@ const ListRow = ({ song, onClick, style, className }: { song: Song; onClick: () 
 
     {/* 辅助信息 (在大屏幕显示) */}
     <div className="hidden md:flex items-center gap-8 text-sm text-slate-500 dark:text-slate-400 shrink-0">
-      <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-medium w-24 text-center truncate">
-        {(song.genre && song.genre[0]) || "未知流派"}
-      </span>
+      {song.genre && song.genre[0] ? (
+        <span className={cn("px-3 py-1 rounded-full text-xs font-medium w-24 text-center truncate border", getGenreTagStyle(song.genre[0]))}>
+          {song.genre[0]}
+        </span>
+      ) : (
+        <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-medium w-24 text-center truncate">
+          未知流派
+        </span>
+      )}
       <div className="flex items-center gap-2 w-16 font-mono text-xs opacity-70">
         <Calendar size={14} />
         {song.year || "-"}

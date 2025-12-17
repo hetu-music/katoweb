@@ -1,5 +1,5 @@
 import { Song, SongDetail, FilterOptions, SongInfo } from "./types";
-import { typeColorMap } from "./constants";
+import { TYPE_ORDER } from "./constants";
 import Fuse from "fuse.js";
 
 // 格式化时间
@@ -53,8 +53,8 @@ export function calculateFilterOptions(songsData: Song[]): FilterOptions {
       song.type.forEach((t) => typeSet.add(t));
     }
   });
-  // 按 typeColorMap 顺序排序
-  const preferredOrder = Object.keys(typeColorMap);
+  // 按 TYPE_ORDER 顺序排序
+  const preferredOrder = TYPE_ORDER;
   let allTypes = Array.from(typeSet);
   allTypes = preferredOrder
     .filter((t) => allTypes.includes(t))
