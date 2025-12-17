@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Mail, LogIn, X, User } from "lucide-react";
+import { Mail, LogIn, X, User, Award, Info } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -10,8 +10,28 @@ interface Contributor {
   sort_order?: number;
 }
 
+const typeDescriptions: Record<string, string> = {
+  原创: "河图原创作品。",
+  翻唱: "翻唱他人作品，非原创。",
+  合作: "与其他歌手或音乐人合作完成的作品。",
+  文宣: "用于文旅宣传推广的作品。",
+  商业: "为商业项目或品牌创作的作品。",
+  墨宝: "与墨明棋妙相关的作品。",
+  参与: "以非主创身份参与的作品。",
+};
+
+const typeStyles: Record<string, string> = {
+  原创: "bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-300 dark:border-purple-500/20",
+  翻唱: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20",
+  合作: "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-500/10 dark:text-yellow-300 dark:border-yellow-500/20",
+  文宣: "bg-green-100 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-300 dark:border-green-500/20",
+  商业: "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-500/10 dark:text-orange-300 dark:border-orange-500/20",
+  墨宝: "bg-red-100 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-300 dark:border-red-500/20",
+  参与: "bg-pink-100 text-pink-700 border-pink-200 dark:bg-pink-500/10 dark:text-pink-300 dark:border-pink-500/20",
+};
+
 const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const [activeTab, setActiveTab] = useState<"about" | "maintainer">("about");
+  const [activeTab, setActiveTab] = useState<"about" | "types" | "maintainer">("about");
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [contributorsLoading, setContributorsLoading] = useState(false);
   const [contributorsError, setContributorsError] = useState<string | null>(null);
@@ -98,6 +118,18 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             )}
           </button>
           <button
+            onClick={() => setActiveTab("types")}
+            className={`flex-1 pb-3 pt-4 text-sm font-medium transition-colors relative ${activeTab === "types"
+              ? "text-blue-600 dark:text-blue-400"
+              : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+              }`}
+          >
+            类型说明
+            {activeTab === "types" && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400 rounded-full" />
+            )}
+          </button>
+          <button
             onClick={() => setActiveTab("maintainer")}
             className={`flex-1 pb-3 pt-4 text-sm font-medium transition-colors relative ${activeTab === "maintainer"
               ? "text-blue-600 dark:text-blue-400"
@@ -113,7 +145,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 scrollbar-track-transparent">
-          {activeTab === "about" ? (
+          {activeTab === "about" && (
             <div className="space-y-6 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
               <div className="space-y-2">
                 <h3 className="font-semibold text-slate-900 dark:text-white">简介</h3>
@@ -136,13 +168,38 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 </a>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 text-xs">
-                <p>
-                  特别鸣谢：正版河图吧吧主 <span className="font-semibold text-slate-900 dark:text-white">{mainContributor ? mainContributor.name : "顾大一"}</span> 及众位网友整理的《歌手河图作品发布勘鉴》，为本项目提供了宝贵参考资料。
+              <div className="p-5 rounded-xl bg-linear-to-br from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 border border-amber-100 dark:border-amber-900/20 text-sm">
+                <div className="flex items-center gap-2 mb-2 text-amber-700 dark:text-amber-500 font-bold">
+                  <Award size={18} />
+                  <span>特别鸣谢</span>
+                </div>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
+                  感谢正版河图吧吧主 <span className="font-semibold text-slate-900 dark:text-white">{mainContributor ? mainContributor.name : "顾大一"}</span> 及众位网友整理的《歌手河图作品发布勘鉴》，为本项目提供了宝贵参考资料。
                 </p>
               </div>
             </div>
-          ) : (
+          )}
+
+          {activeTab === "types" && (
+            <div className="space-y-3">
+              {Object.entries(typeDescriptions).map(([type, desc]) => (
+                <div
+                  key={type}
+                  className={`flex items-start gap-4 p-3 rounded-xl border transition-colors ${typeStyles[type] || "bg-slate-50 border-slate-200"
+                    }`}
+                >
+                  <span className="px-2 py-0.5 rounded text-xs font-bold bg-white/50 dark:bg-black/20 shrink-0">
+                    {type}
+                  </span>
+                  <p className="text-sm font-medium opacity-90 pt-0.5">
+                    {desc}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {activeTab === "maintainer" && (
             <div className="space-y-4">
               {contributorsLoading ? (
                 <div className="flex flex-col items-center justify-center py-12 text-slate-400 gap-3">
