@@ -73,7 +73,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800 shrink-0">
           <h2 className="text-xl font-serif font-bold text-slate-900 dark:text-white">
-            关于本项目
+            关于
           </h2>
           <button
             onClick={onClose}
@@ -123,9 +123,9 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               </div>
 
               <div className="space-y-2">
-                <h3 className="font-semibold text-slate-900 dark:text-white">数据来源与反馈</h3>
+                <h3 className="font-semibold text-slate-900 dark:text-white">数据与反馈</h3>
                 <p>
-                  数据来源于创作者微博及各大音乐平台。若发现误漏或有意共同维护数据，欢迎联系我们。
+                  数据来源于创作者微博及各大音乐平台。若发现误漏或有意共同维护数据，欢迎邮件联系。
                 </p>
                 <a
                   href="mailto:feedback@hetu-music.com"
