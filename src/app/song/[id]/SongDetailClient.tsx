@@ -20,7 +20,6 @@ function cn(...classes: (string | undefined | null | false)[]) {
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
 
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [lyricsType, setLyricsType] = useState<"normal" | "lrc">("normal");
@@ -37,14 +36,19 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   });
   const [coverImageLoaded, setCoverImageLoaded] = useState(true);
   const [scoreImageLoaded, setScoreImageLoaded] = useState(true);
+  const [animationReady, setAnimationReady] = useState(false);
 
   // songInfo 计算逻辑
   const songInfo = useMemo(() => {
     return calculateSongInfo(song);
   }, [song]);
 
+  // 在组件挂载后立即启动动画
   useEffect(() => {
-    setMounted(true);
+    // 使用 requestAnimationFrame 确保在下一帧启动动画
+    requestAnimationFrame(() => {
+      setAnimationReady(true);
+    });
   }, []);
 
   // 滚动监听
@@ -144,8 +148,6 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const handleCoverImageError = useCallback(() => setCoverImageLoaded(false), []);
   const handleScoreImageError = useCallback(() => setScoreImageLoaded(false), []);
 
-  if (!mounted) return null;
-
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500 font-sans">
 
@@ -180,7 +182,12 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
 
           {/* 左侧：封面与元信息 (Col-4) */}
-          <div className="lg:col-span-4 space-y-8 lg:sticky lg:top-32 animate-in fade-in slide-in-from-bottom-8 duration-700">
+          <div className={cn(
+            "lg:col-span-4 space-y-8 lg:sticky lg:top-32 transition-all",
+            animationReady
+              ? "animate-in fade-in slide-in-from-bottom-8 duration-700"
+              : "opacity-0"
+          )}>
             {/* 封面卡片 */}
             <div
               className="group relative aspect-square w-full rounded-2xl overflow-hidden shadow-2xl shadow-slate-200/50 dark:shadow-black/40 ring-1 ring-slate-900/5 dark:ring-white/10 cursor-pointer"
@@ -267,7 +274,12 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
           </div>
 
           {/* 右侧：详细内容 (Col-8) */}
-          <div className="lg:col-span-8 space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100 fill-backwards">
+          <div className={cn(
+            "lg:col-span-8 space-y-12 transition-all",
+            animationReady
+              ? "animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100"
+              : "opacity-0"
+          )}>
 
             {/* 标题 & 基础信息 */}
             <section className="space-y-6">
