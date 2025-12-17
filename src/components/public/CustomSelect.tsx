@@ -21,17 +21,17 @@ interface CustomSelectProps {
 
 // 下拉框配置 - 在这里修改显示的选项数量和框的长度
 const DROPDOWN_CONFIG = {
-  // 每个选项的高度（px）
-  optionHeight: 40,
-  // 边框和间距的额外高度（px）
-  borderAndPadding: 10,
+  // 每个选项的高度（px）- 包括 padding (py-2.5 = 20px) + margin (0.125rem * 2 = 4px) + line-height (1.25rem = 20px) ≈ 44px
+  optionHeight: 44,
+  // 边框和间距的额外高度（px）- 包括容器的 padding (0.375rem * 2 = 12px)
+  borderAndPadding: 12,
   // 桌面端设置
   desktop: {
     maxVisibleOptions: 12, // 桌面端最多显示12个选项
   },
   // 移动端设置
   mobile: {
-    maxVisibleOptions: 15, // 移动端最多显示11个选项
+    maxVisibleOptions: 15, // 移动端最多显示15个选项
   },
 };
 
@@ -212,10 +212,13 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   // 点击外部关闭下拉框
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-      if (
-        selectRef.current &&
-        !selectRef.current.contains(event.target as Node)
-      ) {
+      const target = event.target as Node;
+      // 检查点击是否在触发按钮或下拉菜单内部
+      const isClickInsideTrigger = selectRef.current?.contains(target);
+      const isClickInsideOptions = optionsRef.current?.contains(target);
+      
+      // 如果点击在外部，关闭下拉框
+      if (!isClickInsideTrigger && !isClickInsideOptions) {
         handleClose();
       }
     };
@@ -612,9 +615,13 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           id="custom-select-options"
           className={`custom-select-options ${isMobile ? "mobile" : "desktop"} ${isAnimating && !isOpen ? "closing" : ""} ${optionsClassName}`}
           role="listbox"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            // 如果点击的是容器本身（空白区域），阻止事件冒泡
+            if (e.target === e.currentTarget) {
+              e.stopPropagation();
+            }
+          }}
           onTouchStart={(e) => {
-            e.stopPropagation();
             if (isMobile) {
               handleOptionsTouch.start(e);
             }
@@ -648,10 +655,17 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
               className={`custom-select-option ${option.value === value ? "selected" : ""
                 } ${index === focusedIndex ? "focused" : ""}`}
               onClick={(e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 handleOptionClick(option.value);
               }}
-              onTouchStart={(e) => e.stopPropagation()}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onTouchStart={(e) => {
+                e.stopPropagation();
+              }}
               role="option"
               aria-selected={option.value === value}
             >
