@@ -181,3 +181,6 @@ export function getGenreTagStyle(
   }
   return genreTagStyleMap[genre] || defaultTagStyle;
 }
+
+export const typeColorMap = typeTagSubtleStyleMap;
+export const genreColorMap = genreTagStyleMap;

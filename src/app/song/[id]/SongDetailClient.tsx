@@ -82,7 +82,6 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
   // 切换主题动画
   const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
-    // @ts-expect-error - startViewTransition is not yet in TypeScript DOM types
     if (!document.startViewTransition) {
       setTheme(resolvedTheme === "dark" ? "light" : "dark");
       return;
@@ -97,7 +96,6 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
     document.documentElement.classList.add("no-transitions");
 
-    // @ts-expect-error - startViewTransition is not yet in TypeScript DOM types
     const transition = document.startViewTransition(() => {
       flushSync(() => {
         setTheme(resolvedTheme === "dark" ? "light" : "dark");

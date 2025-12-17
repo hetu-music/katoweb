@@ -123,55 +123,57 @@ const SongRow = React.memo(
     return (
       <>
         <tr
-          className={`border-b border-white/10 transition-colors ${
-            isExpanded ? "bg-white/10" : "hover:bg-white/5"
-          }`}
+          className={`border-b border-slate-200 dark:border-slate-800 transition-colors ${isExpanded
+            ? "bg-blue-50/50 dark:bg-blue-900/10"
+            : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
+            }`}
         >
-          <td className="py-3 px-2 md:py-4 md:px-4 text-white/90">{idx + 1}</td>
-          <td className="py-3 px-2 md:py-4 md:px-4 text-white/90 font-medium">
+          <td className="py-3 px-2 md:py-4 md:px-4 text-slate-500 dark:text-slate-400 font-mono text-sm">
+            {idx + 1}
+          </td>
+          <td className="py-3 px-2 md:py-4 md:px-4 text-slate-900 dark:text-slate-100 font-medium">
             <div className="flex flex-col items-start gap-1 md:flex-row md:items-center md:gap-2">
-              <span className="break-words line-clamp-2 md:line-clamp-none">
+              <span className="break-words line-clamp-2 md:line-clamp-none font-serif">
                 {song.title}
               </span>
               {isSongIncomplete(song) && (
-                <span className="inline-flex items-center px-1.5 py-0.5 md:px-2 md:py-1 rounded-full text-[10px] md:text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-400/30 whitespace-nowrap">
+                <span className="inline-flex items-center px-1.5 py-0.5 md:px-2 md:py-1 rounded-full text-[10px] md:text-xs font-medium bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300 border border-amber-200 dark:border-amber-400/30 whitespace-nowrap">
                   待完善
                 </span>
               )}
             </div>
           </td>
-          <td className="py-3 px-2 md:py-4 md:px-4 text-white/80 hidden md:table-cell">
+          <td className="py-3 px-2 md:py-4 md:px-4 text-slate-600 dark:text-slate-300 hidden md:table-cell text-sm">
             {song.album || "-"}
           </td>
-          <td className="py-3 px-2 md:py-4 md:px-4 text-white/80 hidden md:table-cell">
+          <td className="py-3 px-2 md:py-4 md:px-4 text-slate-500 dark:text-slate-400 hidden md:table-cell text-sm">
             {Array.isArray(song.lyricist)
               ? song.lyricist.join(", ")
               : song.lyricist || "-"}
           </td>
-          <td className="py-3 px-2 md:py-4 md:px-4 text-white/80 hidden md:table-cell">
+          <td className="py-3 px-2 md:py-4 md:px-4 text-slate-500 dark:text-slate-400 hidden md:table-cell text-sm">
             {Array.isArray(song.composer)
               ? song.composer.join(", ")
               : song.composer || "-"}
           </td>
-          <td className="py-3 px-2 md:py-4 md:px-4 text-white/80 hidden md:table-cell">
+          <td className="py-3 px-2 md:py-4 md:px-4 text-slate-500 dark:text-slate-400 hidden md:table-cell text-sm">
             {Array.isArray(song.type) ? song.type.join(", ") : song.type || "-"}
           </td>
           <td className="py-3 px-2 md:py-4 md:px-4">
             <div className="flex items-center gap-2">
               <button
                 onClick={() => toggleRowExpansion(song.id)}
-                className={`p-2 rounded-lg transition-all duration-200 ${
-                  isExpanded
-                    ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20"
-                    : "bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200"
-                }`}
+                className={`p-2 rounded-lg transition-all duration-200 ${isExpanded
+                  ? "bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-300"
+                  : "text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+                  }`}
                 title={isExpanded ? "收起详情" : "查看详情"}
               >
                 {isExpanded ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
               <button
                 onClick={() => handleEdit(song)}
-                className="p-2 rounded-lg bg-green-500/20 text-green-300 hover:bg-green-500/30 hover:text-green-200 transition-all duration-200"
+                className="p-2 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-500/10 transition-all duration-200"
                 title="编辑"
               >
                 <Edit size={16} />
@@ -183,13 +185,13 @@ const SongRow = React.memo(
           <>
             {/* Mobile Expanded Row */}
             <tr className="md:hidden">
-              <td colSpan={3} className="p-0 border-b border-white/5">
+              <td colSpan={3} className="p-0 border-b border-slate-200 dark:border-slate-800">
                 <ExpandedContent song={song} />
               </td>
             </tr>
             {/* Desktop Expanded Row */}
             <tr className="hidden md:table-row">
-              <td colSpan={7} className="p-0 border-b border-white/5">
+              <td colSpan={7} className="p-0 border-b border-slate-200 dark:border-slate-800">
                 <ExpandedContent song={song} />
               </td>
             </tr>
@@ -203,24 +205,24 @@ SongRow.displayName = "SongRow";
 
 function ExpandedContent({ song }: { song: SongDetail }) {
   return (
-    <div className="bg-gray-950/60 shadow-inner relative overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+    <div className="bg-slate-50 dark:bg-slate-800/50 shadow-inner relative overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
       <div className="p-4 md:p-6">
         {/* 如果歌曲信息不完整，显示缺失字段提示 */}
         {isSongIncomplete(song) && (
-          <div className="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-400/20 shadow-sm flex items-start gap-4">
-            <div className="p-2 bg-amber-500/20 rounded-lg text-amber-300 shrink-0 mt-0.5">
+          <div className="mb-6 p-4 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-100 dark:border-amber-500/20 shadow-sm flex items-start gap-4">
+            <div className="p-2 bg-amber-100 dark:bg-amber-500/20 rounded-lg text-amber-600 dark:text-amber-300 shrink-0 mt-0.5">
               <XCircle size={18} />
             </div>
             <div>
-              <h4 className="text-amber-300 font-semibold mb-1">信息待完善</h4>
-              <p className="text-amber-200/70 text-sm mb-2">
+              <h4 className="font-semibold mb-1">信息待完善</h4>
+              <p className="text-sm opacity-80 mb-2">
                 以下字段内容缺失，请及时补充：
               </p>
               <div className="flex flex-wrap gap-2">
                 {getMissingFields(song).map((field) => (
                   <span
                     key={field}
-                    className="px-2 py-1 bg-amber-900/40 border border-amber-500/20 rounded text-xs text-amber-200"
+                    className="px-2 py-1 bg-amber-100 border border-amber-200 rounded text-xs text-amber-700 dark:bg-amber-900/40 dark:border-amber-500/20 dark:text-amber-200"
                   >
                     {field}
                   </span>
@@ -259,55 +261,56 @@ function ExpandedContent({ song }: { song: SongDetail }) {
                 key={field.key}
                 className={`
                   relative overflow-hidden rounded-xl border p-4 transition-all duration-200
-                  ${
-                    shouldHighlight
-                      ? "bg-red-500/5 border-red-500/30 hover:bg-red-500/10"
-                      : "bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10"
+                  ${shouldHighlight
+                    ? "bg-red-50 border-red-200 hover:bg-red-100/50 dark:bg-red-500/5 dark:border-red-500/30 dark:hover:bg-red-500/10"
+                    : "bg-white border-slate-200 hover:border-slate-300 dark:bg-slate-900/50 dark:border-slate-700 dark:hover:border-slate-600"
                   }
                 `}
               >
                 <div className="flex justify-between items-start mb-2">
                   <span
-                    className={`text-xs font-semibold tracking-wider uppercase ${
-                      shouldHighlight ? "text-red-400" : "text-blue-200/70"
-                    }`}
+                    className={`text-xs font-semibold tracking-wider uppercase ${shouldHighlight
+                      ? "text-red-500 dark:text-red-400"
+                      : "text-slate-400 dark:text-slate-500"
+                      }`}
                   >
                     {field.label}
                   </span>
                   {shouldHighlight && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500/20 text-red-400">
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400">
                       required
                     </span>
                   )}
                 </div>
 
                 <div
-                  className={`text-sm break-words leading-relaxed font-medium ${
-                    shouldHighlight ? "text-red-200/90" : "text-white/90"
-                  }`}
+                  className={`text-sm break-words leading-relaxed font-medium ${shouldHighlight
+                    ? "text-red-700 dark:text-red-200/90"
+                    : "text-slate-700 dark:text-slate-200"
+                    }`}
                 >
                   {field.key === "hascover" ? (
                     song.hascover === true ? (
-                      <span className="text-green-300">定制封面</span>
+                      <span className="text-green-600 dark:text-green-400">定制封面</span>
                     ) : song.hascover === false ? (
-                      <span className="text-purple-300">初号机</span>
+                      <span className="text-purple-600 dark:text-purple-400">初号机</span>
                     ) : (
-                      <span className="text-gray-400">白底狐狸 (默认)</span>
+                      <span className="text-slate-400">白底狐狸 (默认)</span>
                     )
                   ) : field.key === "nmn_status" ? (
                     song.nmn_status === true ? (
-                      <span className="text-green-300 flex items-center gap-1">
+                      <span className="text-green-600 dark:text-green-400 flex items-center gap-1">
                         ✓ 有乐谱
                       </span>
                     ) : (
-                      <span className="text-gray-400">无乐谱</span>
+                      <span className="text-slate-400">无乐谱</span>
                     )
                   ) : (
                     formatField(song[field.key], field.type) ||
                     (shouldHighlight ? (
                       "未填写"
                     ) : (
-                      <span className="text-white/20">-</span>
+                      <span className="text-slate-300 dark:text-slate-600">-</span>
                     ))
                   )}
                 </div>
@@ -624,13 +627,13 @@ export default function AdminClientComponent({
   );
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-purple-900 via-blue-900 to-indigo-900">
-      <div className="container mx-auto px-6 py-8 max-w-7xl">
+    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500 font-sans">
+      <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header Section */}
-        <div className="mb-8 flex flex-row items-center justify-between gap-4">
+        <div className="mb-8 flex flex-row items-center justify-between gap-4 pt-4">
           <div className="flex items-center gap-4">
             <h1
-              className="text-4xl font-bold text-white mb-0 cursor-pointer hover:text-blue-200 transition-colors duration-300 select-none"
+              className="text-4xl font-serif font-bold text-slate-900 dark:text-white mb-0 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300 select-none tracking-tight"
               onClick={() => {
                 // 重置搜索条件和页面
                 setSearchTerm("");
@@ -639,12 +642,12 @@ export default function AdminClientComponent({
               }}
               title="点击重置搜索条件"
             >
-              管理页面
+              Admin Dashboard
             </h1>
             {/* 通知按钮 */}
             <button
               onClick={() => setShowNotification(true)}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-linear-to-r from-blue-500/20 to-purple-500/20 border border-blue-400/30 text-blue-200 hover:from-blue-500/30 hover:to-purple-500/30 hover:text-blue-100 transition-all duration-200 shadow-sm font-medium"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 shadow-sm font-medium"
               title="查看操作说明"
             >
               <Bell size={16} />
@@ -659,9 +662,9 @@ export default function AdminClientComponent({
         </div>
 
         {/* Search and Add Button */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="flex-1 search-container">
-            <div className="h-12 flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 border-r-0 text-white rounded-l-2xl select-none min-w-[60px] max-w-[60px] w-[60px]">
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <div className="flex-1 relative group">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
               <Search size={20} />
             </div>
             <input
@@ -669,16 +672,16 @@ export default function AdminClientComponent({
               placeholder="搜索歌曲、专辑等..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
+              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 pl-10 pr-12 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
             />
             {searchTerm && (
               <button
                 type="button"
                 onClick={() => setSearchTerm("")}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full text-gray-300 hover:text-white focus:outline-none bg-transparent active:bg-white/10 transition-all"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
                 aria-label="清空搜索"
               >
-                <XCircle size={24} />
+                <XCircle size={18} />
               </button>
             )}
           </div>
@@ -686,22 +689,21 @@ export default function AdminClientComponent({
           <div className="flex gap-3">
             <button
               onClick={() => setShowIncompleteOnly(!showIncompleteOnly)}
-              className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all duration-200 shadow-sm font-medium whitespace-nowrap ${
-                showIncompleteOnly
-                  ? "bg-linear-to-r from-amber-500/30 to-orange-500/30 border-amber-400/50 text-amber-100"
-                  : "bg-linear-to-r from-amber-500/20 to-orange-500/20 border-amber-400/30 text-amber-200 hover:from-amber-500/30 hover:to-orange-500/30 hover:text-amber-100"
-              }`}
+              className={`flex items-center gap-2 px-5 py-3 rounded-2xl border transition-all duration-200 shadow-sm font-medium whitespace-nowrap ${showIncompleteOnly
+                ? "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20"
+                : "bg-white text-slate-600 border-slate-200 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800 dark:hover:bg-amber-500/10 dark:hover:text-amber-300 dark:hover:border-amber-500/20"
+                }`}
               title={showIncompleteOnly ? "显示全部歌曲" : "只显示待完善歌曲"}
             >
               <div
-                className={`w-2 h-2 rounded-full ${showIncompleteOnly ? "bg-amber-300" : "bg-amber-400"}`}
+                className={`w-2 h-2 rounded-full ${showIncompleteOnly ? "bg-amber-500" : "bg-slate-300 dark:bg-slate-600"}`}
               ></div>
               {showIncompleteOnly ? "仅待完善" : "待完善"}
             </button>
 
             <button
               onClick={() => setShowAdd(true)}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-linear-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 text-green-200 hover:from-green-500/30 hover:to-emerald-500/30 hover:text-green-100 transition-all duration-200 shadow-sm font-medium whitespace-nowrap"
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 shadow-lg shadow-slate-200 dark:shadow-none hover:-translate-y-0.5 transition-all duration-200 font-medium whitespace-nowrap"
             >
               <Plus size={20} />
               新增歌曲
@@ -710,102 +712,78 @@ export default function AdminClientComponent({
         </div>
 
         {/* Stats */}
-        <div className="flex items-center gap-2 sm:gap-4 mb-6 flex-wrap">
-          <div className="flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-white/20 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
-            <div className="w-2 h-2 bg-linear-to-r from-blue-400 to-purple-400 rounded-full animate-pulse shrink-0"></div>
-            <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
-              总计{" "}
-              <span className="text-blue-200 font-semibold">
-                {songs.length}
-              </span>{" "}
-              首
-            </span>
+        <div className="flex items-center gap-3 sm:gap-4 mb-8 flex-wrap">
+          <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full px-4 py-2 shadow-sm text-sm text-slate-600 dark:text-slate-400">
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+            总计 <span className="text-slate-900 dark:text-slate-200 font-bold">{songs.length}</span> 首
           </div>
-          <div className="flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
-            <div className="w-2 h-2 bg-linear-to-r from-amber-400 to-orange-400 rounded-full shrink-0"></div>
-            <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
-              筛选{" "}
-              <span className="text-amber-200 font-semibold">
-                {filteredSongs.length}
-              </span>{" "}
-              首
-            </span>
+          <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full px-4 py-2 shadow-sm text-sm text-slate-600 dark:text-slate-400">
+            <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+            筛选 <span className="text-slate-900 dark:text-slate-200 font-bold">{filteredSongs.length}</span> 首
           </div>
-          <div className="flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm border border-red-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
-            <div className="w-2 h-2 bg-linear-to-r from-red-400 to-pink-400 rounded-full shrink-0"></div>
-            <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
-              待完善{" "}
-              <span className="text-red-200 font-semibold">
-                {songs.filter((song) => isSongIncomplete(song)).length}
-              </span>{" "}
-              首
-            </span>
+          <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full px-4 py-2 shadow-sm text-sm text-slate-600 dark:text-slate-400">
+            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+            待完善 <span className="text-red-600 dark:text-red-400 font-bold">{songs.filter((song) => isSongIncomplete(song)).length}</span> 首
           </div>
           {filteredSongs.length > 25 && (
-            <div className="flex items-center gap-1.5 sm:gap-2 bg-linear-to-r from-emerald-500/20 to-teal-500/20 backdrop-blur-sm border border-emerald-300/30 rounded-full px-3 sm:px-4 py-2 shadow-sm min-w-0">
-              <div className="w-2 h-2 bg-linear-to-r from-emerald-400 to-teal-400 rounded-full shrink-0"></div>
-              <span className="text-white font-medium text-xs sm:text-sm whitespace-nowrap">
-                本页{" "}
-                <span className="text-emerald-200 font-semibold">
-                  {startIndex}-{endIndex}
-                </span>{" "}
-                首
-              </span>
+            <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full px-4 py-2 shadow-sm text-sm text-slate-600 dark:text-slate-400">
+              <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+              本页 <span className="text-slate-900 dark:text-slate-200 font-bold">{startIndex}-{endIndex}</span>
             </div>
           )}
         </div>
 
         {/* Loading and Error States */}
         {loading && (
-          <div className="text-center py-8">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-            <p className="text-white mt-2">加载中...</p>
+          <div className="text-center py-20">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-slate-200 border-t-blue-500"></div>
+            <p className="text-slate-500 mt-4">正在加载数据...</p>
           </div>
         )}
 
         {error && (
-          <div className="bg-red-500/20 border border-red-400/30 rounded-xl p-4 mb-6">
-            <p className="text-red-200">{error}</p>
+          <div className="bg-red-50 border border-red-100 dark:bg-red-500/10 dark:border-red-500/20 rounded-2xl p-6 mb-8 text-center">
+            <p className="text-red-600 dark:text-red-400 mb-2">{error}</p>
             <button
               onClick={() => setError(null)}
-              className="mt-2 text-red-300 hover:text-red-100 text-sm underline"
+              className="text-sm text-red-500 hover:text-red-700 dark:hover:text-red-300 underline"
             >
-              关闭
+              关闭提示
             </button>
           </div>
         )}
 
         {/* Songs Table */}
         {!loading && (
-          <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-3 md:p-6 shadow-2xl border border-white/20 overflow-hidden">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full table-fixed">
                 <thead>
-                  <tr className="border-b border-white/20">
-                    <th className="text-left py-3 px-2 md:py-4 md:px-4 text-white font-semibold w-12 md:w-20">
-                      序号
+                  <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20">
+                    <th className="text-left py-4 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider w-16 md:w-20">
+                      #
                     </th>
-                    <th className="text-left py-3 px-2 md:py-4 md:px-4 text-white font-semibold">
-                      标题
+                    <th className="text-left py-4 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                      Title
                     </th>
-                    <th className="text-left py-3 px-2 md:py-4 md:px-4 text-white font-semibold hidden md:table-cell w-32 lg:w-48">
-                      专辑
+                    <th className="text-left py-4 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider hidden md:table-cell w-32 lg:w-48">
+                      Album
                     </th>
-                    <th className="text-left py-3 px-2 md:py-4 md:px-4 text-white font-semibold hidden md:table-cell w-24 lg:w-32">
-                      作词
+                    <th className="text-left py-4 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider hidden md:table-cell w-24 lg:w-32">
+                      Lyricist
                     </th>
-                    <th className="text-left py-3 px-2 md:py-4 md:px-4 text-white font-semibold hidden md:table-cell w-24 lg:w-32">
-                      作曲
+                    <th className="text-left py-4 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider hidden md:table-cell w-24 lg:w-32">
+                      Composer
                     </th>
-                    <th className="text-left py-3 px-2 md:py-4 md:px-4 text-white font-semibold hidden md:table-cell w-24">
-                      类型
+                    <th className="text-left py-4 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider hidden md:table-cell w-24">
+                      Type
                     </th>
-                    <th className="text-left py-3 px-2 md:py-4 md:px-4 text-white font-semibold w-24 md:w-32">
-                      操作
+                    <th className="text-left py-4 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider w-24 md:w-32">
+                      Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {paginatedSongs.map((song, idx) => (
                     <SongRow
                       key={song.id}
@@ -824,7 +802,7 @@ export default function AdminClientComponent({
 
         {/* 分页组件 */}
         {!loading && filteredSongs.length > 25 && (
-          <div className="mt-8">
+          <div className="mt-12 mb-8 flex justify-center">
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
@@ -835,9 +813,12 @@ export default function AdminClientComponent({
 
         {/* No Results */}
         {!loading && filteredSongs.length === 0 && (
-          <div className="text-center py-16">
-            <div className="text-gray-400 text-lg mb-2">没有找到匹配的歌曲</div>
-            <div className="text-gray-500 text-sm">尝试调整搜索条件</div>
+          <div className="text-center py-20">
+            <div className="bg-slate-50 dark:bg-slate-800/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Search size={32} className="text-slate-300 dark:text-slate-600" />
+            </div>
+            <div className="text-slate-900 dark:text-slate-200 text-lg font-medium mb-1">未找到匹配的歌曲</div>
+            <div className="text-slate-500 dark:text-slate-400 text-sm">请尝试调整搜索关键词或筛选条件</div>
           </div>
         )}
       </div>
@@ -874,10 +855,10 @@ export default function AdminClientComponent({
                     key={field.key}
                     className={
                       (field.type === "textarea" ? "md:col-span-2" : "") +
-                      " flex flex-col gap-2 bg-white/5 rounded-xl p-4 border border-white/10 shadow-sm"
+                      " flex flex-col gap-2 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-800 shadow-sm"
                     }
                   >
-                    <label className="block text-blue-100 font-semibold mb-1 text-sm tracking-wide">
+                    <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1 text-sm tracking-wide">
                       {field.label}:
                     </label>
                     {renderInput(
@@ -901,11 +882,10 @@ export default function AdminClientComponent({
                   type="submit"
                   form={showAdd ? "add-form" : "edit-form"}
                   disabled={isSubmitting}
-                  className={`w-14 h-14 rounded-full border-2 text-white transition-all duration-200 font-semibold shadow-lg backdrop-blur-sm flex items-center justify-center group ${
-                    isSubmitting
-                      ? "bg-gray-500/50 border-gray-400/30 cursor-not-allowed"
-                      : "bg-linear-to-br from-green-500/80 to-emerald-600/80 border-green-400/60 hover:from-green-500 hover:to-emerald-600 hover:border-green-300"
-                  }`}
+                  className={`w-14 h-14 rounded-full border-2 text-white transition-all duration-200 font-semibold shadow-lg backdrop-blur-sm flex items-center justify-center group ${isSubmitting
+                      ? "bg-slate-500/50 border-slate-400/30 cursor-not-allowed"
+                      : "bg-blue-600 border-blue-500 hover:bg-blue-500 hover:border-blue-400 dark:bg-blue-600 dark:border-blue-500"
+                    }`}
                   title={showAdd ? "提交" : "保存"}
                 >
                   {isSubmitting ? (
@@ -926,7 +906,7 @@ export default function AdminClientComponent({
                     setAddResultMessage(null);
                     setEditResultMessage(null);
                   }}
-                  className="w-14 h-14 rounded-full bg-linear-to-br from-gray-500/80 to-gray-600/80 border-2 border-gray-400/60 text-white hover:from-gray-500 hover:to-gray-600 hover:border-gray-300 transition-all duration-200 font-semibold shadow-lg backdrop-blur-sm flex items-center justify-center group"
+                  className="w-14 h-14 rounded-full bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 font-semibold shadow-lg backdrop-blur-sm flex items-center justify-center group"
                   title="取消"
                 >
                   <X
@@ -944,25 +924,20 @@ export default function AdminClientComponent({
       {addResultMessage || editResultMessage ? (
         <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div
-            className={`relative max-w-sm w-full p-6 rounded-2xl shadow-2xl border-2 backdrop-blur-md transform transition-all duration-300 animate-in zoom-in-95 slide-in-from-bottom-2
-            ${
-              addResultMessage === "成功" || editResultMessage === "成功"
-                ? "bg-linear-to-br from-green-500/90 to-emerald-600/90 border-green-400/60 text-white"
-                : "bg-linear-to-br from-red-500/90 to-red-600/90 border-red-400/60 text-white"
-            }
+            className={`relative max-w-sm w-full p-6 rounded-2xl shadow-2xl border backdrop-blur-md transform transition-all duration-300 animate-in zoom-in-95 slide-in-from-bottom-2
+            ${addResultMessage === "成功" || editResultMessage === "成功"
+                ? "bg-emerald-50 border-emerald-200 text-emerald-900 dark:bg-emerald-900/90 dark:border-emerald-700 dark:text-emerald-100"
+                : "bg-red-50 border-red-200 text-red-900 dark:bg-red-900/90 dark:border-red-700 dark:text-red-100"
+              }
           `}
           >
-            {/* 装饰性背景元素 */}
-            <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-white/10 to-transparent opacity-50"></div>
-
             {/* 图标和消息 */}
             <div className="relative flex flex-col items-center text-center space-y-4">
               <div
-                className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                  addResultMessage === "成功" || editResultMessage === "成功"
-                    ? "bg-green-400/30 border-2 border-green-300/50"
-                    : "bg-red-400/30 border-2 border-red-300/50"
-                }`}
+                className={`w-16 h-16 rounded-full flex items-center justify-center ${addResultMessage === "成功" || editResultMessage === "成功"
+                    ? "bg-emerald-100 dark:bg-emerald-800/50 border-2 border-emerald-200 dark:border-emerald-600"
+                    : "bg-red-100 dark:bg-red-800/50 border-2 border-red-200 dark:border-red-600"
+                  }`}
               >
                 {addResultMessage === "成功" || editResultMessage === "成功" ? (
                   <svg
@@ -999,23 +974,13 @@ export default function AdminClientComponent({
 
               <div>
                 <h3
-                  className={`text-xl font-bold mb-2 ${
-                    addResultMessage === "成功" || editResultMessage === "成功"
-                      ? "text-green-100"
-                      : "text-red-100"
-                  }`}
+                  className="text-xl font-bold mb-2"
                 >
                   {addResultMessage === "成功" || editResultMessage === "成功"
                     ? "操作成功"
                     : "操作失败"}
                 </h3>
-                <p
-                  className={`text-sm opacity-90 ${
-                    addResultMessage === "成功" || editResultMessage === "成功"
-                      ? "text-green-200"
-                      : "text-red-200"
-                  }`}
-                >
+                <p className="text-sm opacity-90">
                   {addResultMessage || editResultMessage}
                 </p>
               </div>
@@ -1027,23 +992,18 @@ export default function AdminClientComponent({
                 setAddResultMessage(null);
                 setEditResultMessage(null);
               }}
-              className={`absolute top-3 right-3 p-1 rounded-full hover:bg-white/20 transition-colors duration-200 ${
-                addResultMessage === "成功" || editResultMessage === "成功"
-                  ? "text-green-200"
-                  : "text-red-200"
-              }`}
+              className="absolute top-3 right-3 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors duration-200 opacity-60 hover:opacity-100"
             >
               <X size={16} />
             </button>
 
             {/* 自动关闭倒计时 */}
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 rounded-b-2xl overflow-hidden">
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/5 dark:bg-white/10 rounded-b-2xl overflow-hidden">
               <div
-                className={`h-full transition-all duration-3000 ease-linear ${
-                  addResultMessage === "成功" || editResultMessage === "成功"
-                    ? "bg-green-300"
-                    : "bg-red-300"
-                }`}
+                className={`h-full transition-all duration-3000 ease-linear ${addResultMessage === "成功" || editResultMessage === "成功"
+                    ? "bg-emerald-500"
+                    : "bg-red-500"
+                  }`}
               ></div>
             </div>
           </div>
@@ -1074,7 +1034,7 @@ function renderInput(
 ) {
   const v = state[f.key];
   const baseInputClass =
-    "w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/15 transition-all duration-200 rounded-xl";
+    "w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 rounded-xl";
   const errorMsg = errors[f.key];
 
   const handleChange = (val: unknown) => {
@@ -1103,7 +1063,7 @@ function renderInput(
               <button
                 key={opt}
                 type="button"
-                className={`px-3 py-1 text-xs rounded-full border transition select-none focus:outline-none ${colorMap[opt]} ${selected ? "ring-2 ring-blue-400 border-blue-400/80" : "border-transparent opacity-80"}`}
+                className={`px-3 py-1 text-xs rounded-full border transition select-none focus:outline-none ${colorMap[opt]} ${selected ? "ring-2 ring-blue-500 border-blue-500" : "border-transparent opacity-80"}`}
                 onClick={() => {
                   const next = selected
                     ? arr.filter((x) => x !== opt)
@@ -1117,9 +1077,9 @@ function renderInput(
             );
           })}
         </div>
-        <div className="text-xs text-gray-400 mt-1">可多选，点击标签切换</div>
+        <div className="text-xs text-slate-400 dark:text-slate-500 mt-1">可多选，点击标签切换</div>
         {errorMsg && (
-          <div className="text-red-400 text-xs mt-1">{errorMsg}</div>
+          <div className="text-red-500 text-xs mt-1">{errorMsg}</div>
         )}
       </>
     );
@@ -1137,7 +1097,7 @@ function renderInput(
           maxLength={f.maxLength}
         />
         {errorMsg && (
-          <div className="text-red-400 text-xs mt-1">{errorMsg}</div>
+          <div className="text-red-500 text-xs mt-1">{errorMsg}</div>
         )}
       </>
     );
@@ -1152,7 +1112,7 @@ function renderInput(
       <>
         <div className="space-y-2">
           {arr.length === 0 && (
-            <div className="text-gray-400 text-xs mb-2 pl-1">暂无{f.label}</div>
+            <div className="text-slate-400 dark:text-slate-500 text-xs mb-2 pl-1">暂无{f.label}</div>
           )}
           {arr.map((item, idx) => (
             <div key={idx} className="flex items-center gap-2 mb-1 group">
@@ -1165,7 +1125,7 @@ function renderInput(
                 }}
                 className={
                   baseInputClass +
-                  " flex-1 border-l-4 border-transparent group-hover:border-blue-400 focus:border-blue-400 bg-white/15"
+                  " flex-1 border-l-4 border-transparent group-hover:border-blue-500 focus:border-blue-500"
                 }
                 placeholder={`请输入${f.label}`}
                 maxLength={f.arrayMaxLength}
@@ -1176,7 +1136,7 @@ function renderInput(
                   const newArr = arr.filter((_, i) => i !== idx);
                   handleChange(newArr);
                 }}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-red-500/20 text-red-200 hover:bg-red-500/60 hover:text-white transition-all duration-200 focus:outline-none"
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 text-red-500 hover:bg-red-500 hover:text-white dark:bg-red-500/20 dark:text-red-400 dark:hover:bg-red-500 dark:hover:text-white transition-all duration-200 focus:outline-none"
                 title="删除"
               >
                 <svg width="16" height="16" fill="none" viewBox="0 0 16 16">
@@ -1193,7 +1153,7 @@ function renderInput(
           <button
             type="button"
             onClick={() => handleChange([...arr, ""])}
-            className="mt-1 flex items-center gap-1 px-3 py-1 rounded-lg bg-blue-500/20 text-blue-200 hover:bg-blue-500/40 hover:text-white transition-all duration-200 text-xs font-medium"
+            className="mt-1 flex items-center gap-1 px-3 py-1 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-500/20 dark:text-blue-300 dark:hover:bg-blue-500/30 transition-all duration-200 text-xs font-medium"
           >
             <svg width="14" height="14" fill="none" viewBox="0 0 14 14">
               <path
@@ -1207,7 +1167,7 @@ function renderInput(
           </button>
         </div>
         {errorMsg && (
-          <div className="text-red-400 text-xs mt-1">{errorMsg}</div>
+          <div className="text-red-500 text-xs mt-1">{errorMsg}</div>
         )}
       </>
     );
@@ -1230,20 +1190,20 @@ function renderInput(
             }
             className={baseInputClass}
           >
-            <option value="" className="filter-option">
+            <option value="" className="filter-option text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900">
               白底狐狸（默认）
             </option>
-            <option value="false" className="filter-option">
+            <option value="false" className="filter-option text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900">
               初号机（黑底机器人）
             </option>
-            <option value="true" className="filter-option">
+            <option value="true" className="filter-option text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900">
               定制封面
             </option>
           </select>
 
           {/* 当选择定制封面时显示上传组件 */}
           {v === true && (
-            <div className="mt-4 p-4 bg-white/5 rounded-lg border border-white/10">
+            <div className="mt-4 p-4 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
               <CoverUpload
                 songId={typeof state.id === "number" ? state.id : undefined}
                 csrfToken={csrfToken}
@@ -1259,7 +1219,7 @@ function renderInput(
           )}
 
           {errorMsg && (
-            <div className="text-red-400 text-xs mt-1">{errorMsg}</div>
+            <div className="text-red-500 text-xs mt-1">{errorMsg}</div>
           )}
         </>
       );
@@ -1282,17 +1242,17 @@ function renderInput(
             }
             className={baseInputClass}
           >
-            <option value="false" className="filter-option">
+            <option value="false" className="filter-option text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900">
               无乐谱
             </option>
-            <option value="true" className="filter-option">
+            <option value="true" className="filter-option text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900">
               有乐谱
             </option>
           </select>
 
           {/* 当选择是时显示上传组件 */}
           {v === true && (
-            <div className="mt-4 p-4 bg-white/5 rounded-lg border border-white/10">
+            <div className="mt-4 p-4 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
               <ScoreUpload
                 songId={typeof state.id === "number" ? state.id : undefined}
                 csrfToken={csrfToken}
@@ -1308,7 +1268,7 @@ function renderInput(
           )}
 
           {errorMsg && (
-            <div className="text-red-400 text-xs mt-1">{errorMsg}</div>
+            <div className="text-red-500 text-xs mt-1">{errorMsg}</div>
           )}
         </>
       );
@@ -1330,12 +1290,12 @@ function renderInput(
           }
           className={baseInputClass}
         >
-          <option value="">请选择</option>
-          <option value="true">是</option>
-          <option value="false">否</option>
+          <option value="" className="text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900">请选择</option>
+          <option value="true" className="text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900">是</option>
+          <option value="false" className="text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900">否</option>
         </select>
         {errorMsg && (
-          <div className="text-red-400 text-xs mt-1">{errorMsg}</div>
+          <div className="text-red-500 text-xs mt-1">{errorMsg}</div>
         )}
       </>
     );
@@ -1355,7 +1315,7 @@ function renderInput(
           step={1}
         />
         {errorMsg && (
-          <div className="text-red-400 text-xs mt-1">{errorMsg}</div>
+          <div className="text-red-500 text-xs mt-1">{errorMsg}</div>
         )}
       </>
     );
@@ -1371,7 +1331,7 @@ function renderInput(
           maxLength={f.maxLength}
         />
         {errorMsg && (
-          <div className="text-red-400 text-xs mt-1">{errorMsg}</div>
+          <div className="text-red-500 text-xs mt-1">{errorMsg}</div>
         )}
       </>
     );
@@ -1386,7 +1346,7 @@ function renderInput(
         maxLength={f.maxLength}
         type={f.isUrl ? "url" : "text"}
       />
-      {errorMsg && <div className="text-red-400 text-xs mt-1">{errorMsg}</div>}
+      {errorMsg && <div className="text-red-500 text-xs mt-1">{errorMsg}</div>}
     </>
   );
 }
