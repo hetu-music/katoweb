@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { flushSync } from "react-dom";
-import { Search, LayoutGrid, List, Disc, Calendar, Clock, Moon, Sun, SlidersHorizontal, X, Info } from "lucide-react";
+import { Search, LayoutGrid, List, Disc, Calendar, Clock, Moon, Sun, SlidersHorizontal, X, Info, RotateCcw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useTheme } from "next-themes";
@@ -316,17 +316,52 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
               {/* 左侧：筛选器 */}
               <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0">
-                {availableTypes.map(type => (
-                  <FilterPill
-                    key={type}
-                    label={type}
-                    active={filterType === type}
-                    onClick={() => {
-                      setFilterType(type);
-                      setPaginationPage(1); // 切换类型时重置页码
-                    }}
-                  />
-                ))}
+                {availableTypes.map(type => {
+                  if (type === "全部") {
+                    const isAnyFilterActive =
+                      searchQuery !== "" ||
+                      filterType !== "全部" ||
+                      filterLyricist !== "全部" ||
+                      filterComposer !== "全部" ||
+                      filterArranger !== "全部" ||
+                      (sliderYears.length > 0 && (yearRangeIndices[0] !== 0 || yearRangeIndices[1] !== sliderYears.length - 1));
+
+                    if (isAnyFilterActive) {
+                      return (
+                        <button
+                          key="reset"
+                          onClick={() => {
+                            setSearchQuery("");
+                            setFilterType("全部");
+                            setFilterLyricist("全部");
+                            setFilterComposer("全部");
+                            setFilterArranger("全部");
+                            if (sliderYears.length > 0) {
+                              setYearRangeIndices([0, sliderYears.length - 1]);
+                            }
+                            setPaginationPage(1);
+                          }}
+                          className="px-4 py-1.5 rounded-full text-sm transition-all duration-300 border select-none whitespace-nowrap bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:border-red-300 dark:bg-red-900/10 dark:text-red-400 dark:border-red-900/30 flex items-center gap-1.5"
+                        >
+                          <RotateCcw size={12} />
+                          Reset
+                        </button>
+                      );
+                    }
+                  }
+
+                  return (
+                    <FilterPill
+                      key={type}
+                      label={type}
+                      active={filterType === type}
+                      onClick={() => {
+                        setFilterType(type);
+                        setPaginationPage(1); // 切换类型时重置页码
+                      }}
+                    />
+                  );
+                })}
 
                 {/* 高级筛选按钮 */}
                 <button
