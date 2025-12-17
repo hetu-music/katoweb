@@ -222,7 +222,7 @@ export default function LoginPage() {
 
         <div className="text-center mt-8">
           <p className="text-xs text-slate-400 dark:text-slate-600 font-mono">
-            &copy; {new Date().getFullYear()} Katoweb Admin
+            &copy; {new Date().getFullYear()} 河图作品勘鉴
           </p>
         </div>
       </div>
