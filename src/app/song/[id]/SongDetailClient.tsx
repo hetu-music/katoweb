@@ -175,6 +175,9 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
     [],
   );
 
+  const [isBackActive, setIsBackActive] = useState(false);
+  const [activeLinkId, setActiveLinkId] = useState<string | null>(null);
+
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500 font-sans">
       {/* 顶部导航 - 与 MusicLibraryClient 保持一致 */}
@@ -182,13 +185,26 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => router.back()}
-              className="p-2 -ml-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400 group"
+              onClick={() => {
+                setIsBackActive(true);
+                router.back();
+              }}
+              className={cn(
+                "p-2 -ml-2 rounded-full transition-colors text-slate-600 dark:text-slate-400 group",
+                isBackActive
+                  ? "bg-slate-200/50 dark:bg-slate-800"
+                  : "hover:bg-slate-200/50 dark:hover:bg-slate-800",
+              )}
               title="返回"
             >
               <ArrowLeft
                 size={20}
-                className="group-hover:-translate-x-1 transition-transform"
+                className={cn(
+                  "transition-transform",
+                  isBackActive
+                    ? "-translate-x-1"
+                    : "group-hover:-translate-x-1",
+                )}
               />
             </button>
             <div className="text-xl font-serif font-bold text-slate-900 dark:text-white tracking-tight hidden sm:block">
@@ -298,14 +314,35 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                       href={song.nelink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-red-500/50 hover:shadow-sm transition-all group"
+                      onClick={() => {
+                        setActiveLinkId("nelink");
+                        setTimeout(() => setActiveLinkId(null), 1000);
+                      }}
+                      className={cn(
+                        "flex items-center justify-between px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border transition-all group",
+                        activeLinkId === "nelink"
+                          ? "border-red-500/50 shadow-sm"
+                          : "border-slate-200 dark:border-slate-700 hover:border-red-500/50 hover:shadow-sm",
+                      )}
                     >
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-red-500">
+                      <span
+                        className={cn(
+                          "text-sm font-medium transition-colors",
+                          activeLinkId === "nelink"
+                            ? "text-red-500"
+                            : "text-slate-700 dark:text-slate-200 group-hover:text-red-500",
+                        )}
+                      >
                         网易云音乐
                       </span>
                       <ExternalLink
                         size={14}
-                        className="text-slate-400 group-hover:text-red-400"
+                        className={cn(
+                          "transition-colors",
+                          activeLinkId === "nelink"
+                            ? "text-red-400"
+                            : "text-slate-400 group-hover:text-red-400",
+                        )}
                       />
                     </a>
                   )}
@@ -314,14 +351,35 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                       href={song.qmlink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-green-500/50 hover:shadow-sm transition-all group"
+                      onClick={() => {
+                        setActiveLinkId("qmlink");
+                        setTimeout(() => setActiveLinkId(null), 1000);
+                      }}
+                      className={cn(
+                        "flex items-center justify-between px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border transition-all group",
+                        activeLinkId === "qmlink"
+                          ? "border-green-500/50 shadow-sm"
+                          : "border-slate-200 dark:border-slate-700 hover:border-green-500/50 hover:shadow-sm",
+                      )}
                     >
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-green-500">
+                      <span
+                        className={cn(
+                          "text-sm font-medium transition-colors",
+                          activeLinkId === "qmlink"
+                            ? "text-green-500"
+                            : "text-slate-700 dark:text-slate-200 group-hover:text-green-500",
+                        )}
+                      >
                         QQ音乐
                       </span>
                       <ExternalLink
                         size={14}
-                        className="text-slate-400 group-hover:text-green-400"
+                        className={cn(
+                          "transition-colors",
+                          activeLinkId === "qmlink"
+                            ? "text-green-400"
+                            : "text-slate-400 group-hover:text-green-400",
+                        )}
                       />
                     </a>
                   )}
@@ -330,14 +388,35 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                       href={song.kugolink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-500/50 hover:shadow-sm transition-all group"
+                      onClick={() => {
+                        setActiveLinkId("kugolink");
+                        setTimeout(() => setActiveLinkId(null), 1000);
+                      }}
+                      className={cn(
+                        "flex items-center justify-between px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border transition-all group",
+                        activeLinkId === "kugolink"
+                          ? "border-blue-500/50 shadow-sm"
+                          : "border-slate-200 dark:border-slate-700 hover:border-blue-500/50 hover:shadow-sm",
+                      )}
                     >
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-blue-500">
+                      <span
+                        className={cn(
+                          "text-sm font-medium transition-colors",
+                          activeLinkId === "kugolink"
+                            ? "text-blue-500"
+                            : "text-slate-700 dark:text-slate-200 group-hover:text-blue-500",
+                        )}
+                      >
                         酷狗音乐
                       </span>
                       <ExternalLink
                         size={14}
-                        className="text-slate-400 group-hover:text-blue-400"
+                        className={cn(
+                          "transition-colors",
+                          activeLinkId === "kugolink"
+                            ? "text-blue-400"
+                            : "text-slate-400 group-hover:text-blue-400",
+                        )}
                       />
                     </a>
                   )}
