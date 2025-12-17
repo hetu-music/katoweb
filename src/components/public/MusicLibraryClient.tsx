@@ -7,9 +7,10 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { MusicLibraryClientProps, Song } from "@/lib/types";
-import { getCoverUrl, formatTime, filterSongs, calculateFilterOptions } from "@/lib/utils";
+import { getCoverUrl, formatTime, filterSongs, calculateFilterOptions, createFuseInstance } from "@/lib/utils";
 import { typeColorMap } from "@/lib/constants";
 import { usePagination } from "@/hooks/usePagination";
+import { useDebounce } from "@/hooks/useDebounce";
 import Pagination from "./Pagination";
 import SongFilters from "./SongFilters";
 import About from "./About";
@@ -142,9 +143,13 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
   // 筛选状态
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
   const [filterType, setFilterType] = useState("全部");
   // const [filterYear, setFilterYear] = useState("全部"); // Deprecated
   const [yearRangeIndices, setYearRangeIndices] = useState<[number, number]>([0, 0]); // Indices for year slider
+  const debouncedYearRangeIndices = useDebounce(yearRangeIndices, 300);
+
   const [filterLyricist, setFilterLyricist] = useState("全部");
   const [filterComposer, setFilterComposer] = useState("全部");
   const [filterArranger, setFilterArranger] = useState("全部");
@@ -152,6 +157,11 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   // 计算筛选选项
   const filterOptions = useMemo(() => {
     return calculateFilterOptions(initialSongsData);
+  }, [initialSongsData]);
+
+  // Memoize Fuse instance only when data changes
+  const fuseInstance = useMemo(() => {
+    return createFuseInstance(initialSongsData);
   }, [initialSongsData]);
 
   // Initialize year range when options are ready
@@ -177,10 +187,8 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     // Derive selected years from range
     let selectedYear: string | (string | number)[] = "全部";
     if (sliderYears.length > 0) {
-      const [start, end] = yearRangeIndices;
+      const [start, end] = debouncedYearRangeIndices;
       // If range covers everything, treat as "全部" (or just pass all)
-      // Actually strictly passing subset is better for consistency if user moves sliders
-      // But if start=0 and end=max, it is conceptually "All"
       if (start === 0 && end === sliderYears.length - 1) {
         selectedYear = "全部";
       } else {
@@ -191,14 +199,25 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
     return filterSongs(
       initialSongsData,
-      searchQuery,
+      debouncedSearchQuery,
       filterType,
       selectedYear,
       filterLyricist,
       filterComposer,
-      filterArranger
+      filterArranger,
+      fuseInstance
     );
-  }, [initialSongsData, searchQuery, filterType, yearRangeIndices, sliderYears, filterLyricist, filterComposer, filterArranger]);
+  }, [
+    initialSongsData,
+    debouncedSearchQuery,
+    filterType,
+    debouncedYearRangeIndices,
+    sliderYears,
+    filterLyricist,
+    filterComposer,
+    filterArranger,
+    fuseInstance
+  ]);
 
   // 分页处理
   const {

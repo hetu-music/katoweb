@@ -148,7 +148,8 @@ export function processLyricsForSearch(lrcLyrics: string | null): string {
 }
 
 // 创建 Fuse.js 搜索实例
-function createFuseInstance(songs: Song[]) {
+// 创建 Fuse.js 搜索实例
+export function createFuseInstance(songs: Song[]) {
   // 为每首歌准备搜索数据
   const searchData = songs.map((song) => {
     const songDetail = song as SongDetail;
@@ -194,12 +195,13 @@ export function filterSongs(
   selectedLyricist: string,
   selectedComposer: string,
   selectedArranger: string,
+  fuseInstance?: Fuse<any>
 ): Song[] {
   let filteredBySearch = songsData;
 
   // 如果有搜索词，使用 Fuse.js 进行模糊搜索
   if (searchTerm.trim()) {
-    const fuse = createFuseInstance(songsData);
+    const fuse = fuseInstance || createFuseInstance(songsData);
     const searchResults = fuse.search(searchTerm);
     filteredBySearch = searchResults.map((result) => result.item);
   }
