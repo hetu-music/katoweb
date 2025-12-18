@@ -90,9 +90,9 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         // 计算下拉选项位置
         const dropdownHeight = Math.min(
           options.length * DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.borderAndPadding,
           maxVisibleOptions * DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.borderAndPadding,
         );
 
         // 计算垂直位置 - 优先在下方显示，如果空间不够则在上方显示
@@ -137,9 +137,12 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         }
 
         const viewportWidth = window.innerWidth;
-        let finalLeft = rect.left;
-        if (rect.left + rect.width > viewportWidth - 10) {
-          finalLeft = viewportWidth - rect.width - 10;
+        // 下拉菜单宽度为触发按钮宽度的三分之二
+        const dropdownWidth = rect.width * 0.67;
+        // 保持右侧对齐，从左侧缩短
+        let finalLeft = rect.left + rect.width - dropdownWidth;
+        if (finalLeft + dropdownWidth > viewportWidth - 10) {
+          finalLeft = viewportWidth - dropdownWidth - 10;
         }
         if (finalLeft < 10) {
           finalLeft = 10;
@@ -148,7 +151,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         setDropdownPosition({
           top: finalTop,
           left: finalLeft,
-          width: rect.width,
+          width: dropdownWidth,
           maxHeight: dropdownHeight,
         });
       };
@@ -335,9 +338,9 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         // 计算下拉选项位置
         const dropdownHeight = Math.min(
           options.length * DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.borderAndPadding,
           maxVisibleOptions * DROPDOWN_CONFIG.optionHeight +
-            DROPDOWN_CONFIG.borderAndPadding,
+          DROPDOWN_CONFIG.borderAndPadding,
         );
 
         // 计算垂直位置 - 优先在下方显示，如果空间不够则在上方显示
@@ -383,9 +386,12 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 
         // 计算水平位置
         const viewportWidth = window.innerWidth;
-        let finalLeft = rect.left;
-        if (rect.left + rect.width > viewportWidth - 10) {
-          finalLeft = viewportWidth - rect.width - 10;
+        // 下拉菜单宽度为触发按钮宽度的三分之二
+        const dropdownWidth = rect.width * 0.67;
+        // 保持右侧对齐，从左侧缩短
+        let finalLeft = rect.left + rect.width - dropdownWidth;
+        if (finalLeft + dropdownWidth > viewportWidth - 10) {
+          finalLeft = viewportWidth - dropdownWidth - 10;
         }
         if (finalLeft < 10) {
           finalLeft = 10;
@@ -394,7 +400,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         return {
           top: finalTop,
           left: finalLeft,
-          width: rect.width,
+          width: dropdownWidth,
           maxHeight: dropdownHeight,
         };
       };
@@ -650,22 +656,21 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             style={
               dropdownPosition
                 ? {
-                    position: "fixed",
-                    top: `${dropdownPosition.top}px`,
-                    left: `${dropdownPosition.left}px`,
-                    width: `${dropdownPosition.width}px`,
-                    maxHeight: `${dropdownPosition.maxHeight}px`,
-                    zIndex: 9999,
-                  }
+                  position: "fixed",
+                  top: `${dropdownPosition.top}px`,
+                  left: `${dropdownPosition.left}px`,
+                  width: `${dropdownPosition.width}px`,
+                  maxHeight: `${dropdownPosition.maxHeight}px`,
+                  zIndex: 9999,
+                }
                 : {}
             }
           >
             {options.map((option, index) => (
               <div
                 key={option.value}
-                className={`custom-select-option ${
-                  option.value === value ? "selected" : ""
-                } ${index === focusedIndex ? "focused" : ""}`}
+                className={`custom-select-option ${option.value === value ? "selected" : ""
+                  } ${index === focusedIndex ? "focused" : ""}`}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
