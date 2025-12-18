@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import {
   User,
-  Settings,
   Key,
   Type,
   LogOut,
@@ -210,7 +209,7 @@ const Account: React.FC<AccountProps> = ({
                 </label>
                 <input
                   type="password"
-                  value={(pwdForm as any)[key]}
+                  value={(pwdForm as Record<string, string>)[key]}
                   onChange={e => setPwdForm(p => ({ ...p, [key]: e.target.value }))}
                   className="w-full px-3 py-2 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-blue-500 transition-all text-sm"
                   placeholder="••••••"

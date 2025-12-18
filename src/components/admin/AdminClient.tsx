@@ -14,15 +14,11 @@ import {
   XCircle,
   Moon,
   Sun,
-  LayoutGrid, // Re-using icons for consistency if needed, though we default to List
-  Info,
-  RotateCcw,
   CheckCircle2,
   AlertCircle
 } from "lucide-react";
 import Image from "next/image";
 import { useTheme } from "next-themes";
-import { useRouter } from "next/navigation";
 import type { Song, SongDetail, SongFieldConfig } from "@/lib/types";
 import {
   convertEmptyStringToNull,
@@ -299,12 +295,10 @@ export default function AdminClientComponent({
   initialSongs: SongDetail[];
   initialError: string | null;
 }) {
-  const router = useRouter();
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   // States
-  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
   const [isClient, setIsClient] = useState(false);
   const [showIncompleteOnly, setShowIncompleteOnly] = useState(false);
 
@@ -313,8 +307,6 @@ export default function AdminClientComponent({
     songs,
     setSongs,
     loading,
-    error,
-    setError,
     searchTerm,
     setSearchTerm,
     filteredSongs: baseFilteredSongs,
@@ -351,7 +343,6 @@ export default function AdminClientComponent({
     currentData: paginatedSongs,
     setCurrentPage: setPaginationPage,
     startIndex,
-    endIndex,
   } = usePagination({
     data: sortedSongs,
     itemsPerPage: 24,
@@ -378,7 +369,6 @@ export default function AdminClientComponent({
   useEffect(() => {
     setIsClient(true);
     setMounted(true);
-    setSearchParams(new URLSearchParams(window.location.search));
   }, []);
 
   useEffect(() => {
@@ -462,7 +452,7 @@ export default function AdminClientComponent({
     e.preventDefault();
     const errors: Record<string, string> = {};
     songFields.forEach(f => {
-      errors[f.key] = validateField(f, (newSong as any)[f.key]);
+      errors[f.key] = validateField(f, (newSong as Record<string, unknown>)[f.key]);
     });
     setAddFormErrors(errors);
     if (Object.values(errors).some(Boolean)) return;
@@ -474,8 +464,8 @@ export default function AdminClientComponent({
       setShowAdd(false);
       setNewSong({ title: "", album: "" });
       setOperationMsg({ type: 'success', text: "创建成功" });
-    } catch (err: any) {
-      setOperationMsg({ type: 'error', text: err.message || "创建失败" });
+    } catch (err: unknown) {
+      setOperationMsg({ type: 'error', text: err instanceof Error ? err.message : "创建失败" });
     } finally {
       setIsSubmitting(false);
       setTimeout(() => setOperationMsg(null), 3000);
@@ -487,7 +477,7 @@ export default function AdminClientComponent({
     if (!editSong) return;
     const errors: Record<string, string> = {};
     songFields.forEach(f => {
-      errors[f.key] = validateField(f, (editForm as any)[f.key]);
+      errors[f.key] = validateField(f, (editForm as Record<string, unknown>)[f.key]);
     });
     setEditFormErrors(errors);
     if (Object.values(errors).some(Boolean)) return;
@@ -498,8 +488,8 @@ export default function AdminClientComponent({
       setSongs(prev => prev.map(s => s.id === updated.id ? updated : s));
       setEditSong(null);
       setOperationMsg({ type: 'success', text: "更新成功" });
-    } catch (err: any) {
-      setOperationMsg({ type: 'error', text: err.message || "更新失败" });
+    } catch (err: unknown) {
+      setOperationMsg({ type: 'error', text: err instanceof Error ? err.message : "更新失败" });
     } finally {
       setIsSubmitting(false);
       setTimeout(() => setOperationMsg(null), 3000);
@@ -763,18 +753,18 @@ function RenderInput({
   field, state, setState, errors, setErrors, csrfToken
 }: {
   field: SongFieldConfig;
-  state: any;
-  setState: any;
-  errors: any;
-  setErrors: any;
+  state: Record<string, unknown>;
+  setState: React.Dispatch<React.SetStateAction<Record<string, unknown>>>;
+  errors: Record<string, string>;
+  setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   csrfToken: string;
 }) {
   const value = state[field.key];
   const error = errors[field.key];
 
-  const update = (val: any) => {
-    setState((prev: any) => ({ ...prev, [field.key]: val }));
-    setErrors((prev: any) => ({ ...prev, [field.key]: validateField(field, val) }));
+  const update = (val: unknown) => {
+    setState((prev: Record<string, unknown>) => ({ ...prev, [field.key]: val }));
+    setErrors((prev: Record<string, string>) => ({ ...prev, [field.key]: validateField(field, val) }));
   };
 
   const baseClass = cn(
@@ -829,7 +819,7 @@ function RenderInput({
     return (
       <>
         <textarea
-          value={value ?? ""}
+          value={(value as string | number) ?? ""}
           onChange={e => update(e.target.value)}
           className={baseClass}
           rows={4}
@@ -910,10 +900,10 @@ function RenderInput({
         {isCover && value === true && (
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-100 dark:border-slate-800">
             <CoverUpload
-              songId={state.id}
+              songId={state.id as number}
               csrfToken={csrfToken}
               hasExistingFile={true} // We assume true if state is set, logic handled in component
-              onUploadSuccess={() => { }}
+              onUploadSuccess={() => void 0}
               onUploadError={console.error}
             />
           </div>
@@ -922,10 +912,10 @@ function RenderInput({
         {isScore && value === true && (
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-100 dark:border-slate-800">
             <ScoreUpload
-              songId={state.id}
+              songId={state.id as number}
               csrfToken={csrfToken}
               hasExistingFile={true}
-              onUploadSuccess={() => { }}
+              onUploadSuccess={() => void 0}
               onUploadError={console.error}
             />
           </div>
@@ -939,7 +929,7 @@ function RenderInput({
     <>
       <input
         type={field.type === "number" ? "number" : field.type === "date" ? "date" : "text"}
-        value={value ?? ""}
+        value={(value as string | number) ?? ""}
         onChange={e => update(field.type === "number" ? Number(e.target.value) : e.target.value)}
         className={baseClass}
         placeholder={`请输入${field.label}`}
