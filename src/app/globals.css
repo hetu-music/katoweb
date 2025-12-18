@@ -50,6 +50,15 @@ h6 {
   font-family: var(--font-heading), var(--font-heading-sc), "Playfair Display", "Noto Serif SC", "Times New Roman", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", serif;
 }
 
+/* 微调输入框和按钮文字的垂直对齐（补偿 CJK 字体的垂直度量差异） */
+input[type="text"],
+input[type="search"],
+button {
+  line-height: 1.4;
+}
+
+
+
 /* 触摸动画，仅在触摸设备生效 */
 @media (hover: none) and (pointer: coarse) {
   .touch-active {
