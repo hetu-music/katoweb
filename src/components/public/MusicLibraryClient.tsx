@@ -508,7 +508,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
           <button
             onClick={handleTitleReset}
             className={cn(
-              "text-2xl font-serif font-bold tracking-tight flex items-center gap-1 cursor-pointer transition-colors",
+              "text-2xl font-bold tracking-tight flex items-center gap-1 cursor-pointer transition-colors font-heading",
               isTitleActive
                 ? "text-blue-600 dark:text-blue-400"
                 : "text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400",
@@ -516,7 +516,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
             title="点击刷新页面"
           >
             河图
-            <span className="w-[2px] h-5 bg-blue-600 mx-2 rounded-full" />
+            <span className="inline-block w-[2px] h-5 bg-blue-600 mx-2 rounded-full align-middle" />
             作品勘鉴
           </button>
           <div className="flex items-center gap-2">

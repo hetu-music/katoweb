@@ -45,6 +45,11 @@ h6 {
   font-weight: 700;
 }
 
+/* 通用标题字体类 - 可应用于任何元素 */
+.font-heading {
+  font-family: var(--font-heading), var(--font-heading-sc), "Playfair Display", "Noto Serif SC", "Times New Roman", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", serif;
+}
+
 /* 触摸动画，仅在触摸设备生效 */
 @media (hover: none) and (pointer: coarse) {
   .touch-active {
