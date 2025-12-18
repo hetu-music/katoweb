@@ -509,7 +509,7 @@ export default function AdminClientComponent({
           <div
             className="text-2xl font-bold tracking-tight flex items-center gap-1 font-heading text-slate-900 dark:text-white"
           >
-            河图
+            勘鉴
             <span className="w-[2px] h-5 bg-blue-600 mx-2 rounded-full translate-y-[1.5px]" />
             管理后台
           </div>
