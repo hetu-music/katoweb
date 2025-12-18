@@ -9,12 +9,19 @@
 
 @theme {
   /* 定义字体系列，优先英文，后退中文 */
-  --font-sans: var(--font-body), var(--font-body-sc), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-sans:
+    var(--font-body), var(--font-body-sc), -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 
-  --font-serif: var(--font-heading), var(--font-heading-sc), "Times New Roman", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", serif;
+  --font-serif:
+    var(--font-heading), var(--font-heading-sc), "Times New Roman",
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", serif;
 
   /* 标题专用字体变量 */
-  --font-heading-stack: var(--font-heading), var(--font-heading-sc), "Times New Roman", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", serif;
+  --font-heading-stack:
+    var(--font-heading), var(--font-heading-sc), "Times New Roman",
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", serif;
 }
 
 .dark {
@@ -26,7 +33,19 @@ body {
   background: var(--background);
   color: var(--foreground);
   /* 正文使用无衬线体：英文 Inter，中文 Noto Sans SC */
-  font-family: var(--font-body), var(--font-body-sc), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-family:
+    var(--font-body),
+    var(--font-body-sc),
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "Microsoft YaHei",
+    sans-serif;
   margin: 0;
   padding: 0;
   transition:
@@ -41,13 +60,19 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-heading), var(--font-heading-sc), "Playfair Display", "Noto Serif SC", "Times New Roman", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", serif;
+  font-family:
+    var(--font-heading), var(--font-heading-sc), "Playfair Display",
+    "Noto Serif SC", "Times New Roman", "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", serif;
   font-weight: 700;
 }
 
 /* 通用标题字体类 - 可应用于任何元素 */
 .font-heading {
-  font-family: var(--font-heading), var(--font-heading-sc), "Playfair Display", "Noto Serif SC", "Times New Roman", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", serif;
+  font-family:
+    var(--font-heading), var(--font-heading-sc), "Playfair Display",
+    "Noto Serif SC", "Times New Roman", "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", serif;
 }
 
 /* 微调输入框和按钮文字的垂直对齐（补偿 CJK 字体的垂直度量差异） */
@@ -56,8 +81,6 @@ input[type="search"],
 button {
   line-height: 1.4;
 }
-
-
 
 /* 触摸动画，仅在触摸设备生效 */
 @media (hover: none) and (pointer: coarse) {
@@ -87,8 +110,6 @@ button {
       opacity 0.3s;
   }
 }
-
-
 
 /* 自定义下拉组件样式 */
 .custom-select {
@@ -285,7 +306,6 @@ button {
 
 /* 移动端滚动条特殊处理 - iOS原生行为 */
 @media (max-width: 768px) {
-
   /* 默认状态：隐藏滚动条 */
   .custom-select-options.mobile {
     scrollbar-width: none;
@@ -415,8 +435,6 @@ button {
   }
 }
 
-
-
 /* 移动端下拉框背景遮罩样式已移至React组件中处理 */
 
 @keyframes fadeIn {
@@ -445,14 +463,6 @@ button {
 .animate-fade-in {
   animation: fade-in 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
-
-
-
-
-
-
-
 
 /* View Transitions API Customization */
 ::view-transition-old(root),

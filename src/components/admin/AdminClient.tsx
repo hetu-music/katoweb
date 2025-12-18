@@ -15,7 +15,7 @@ import {
   Moon,
   Sun,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
 } from "lucide-react";
 import Image from "next/image";
 import { useTheme } from "next-themes";
@@ -44,10 +44,21 @@ function cn(...classes: (string | undefined | null | false)[]) {
 }
 
 // Reuse CoverArt logic simply for small thumbs
-const AdminCoverArt = ({ song, className }: { song: Song; className?: string }) => {
+const AdminCoverArt = ({
+  song,
+  className,
+}: {
+  song: Song;
+  className?: string;
+}) => {
   const coverUrl = getCoverUrl(song);
   return (
-    <div className={cn("relative overflow-hidden w-full h-full bg-slate-100 dark:bg-slate-800", className)}>
+    <div
+      className={cn(
+        "relative overflow-hidden w-full h-full bg-slate-100 dark:bg-slate-800",
+        className,
+      )}
+    >
       <Image
         src={coverUrl}
         alt={song.title}
@@ -63,7 +74,12 @@ const AdminCoverArt = ({ song, className }: { song: Song; className?: string }) 
 
 function isSongIncomplete(song: SongDetail): boolean {
   for (const field of songFields) {
-    if (["hascover", "kugolink", "qmlink", "nelink", "comment"].includes(field.key)) continue;
+    if (
+      ["hascover", "kugolink", "qmlink", "nelink", "comment"].includes(
+        field.key,
+      )
+    )
+      continue;
     const value = song[field.key];
     if (field.key === "nmn_status") {
       if (value !== true) return true;
@@ -79,7 +95,12 @@ function isSongIncomplete(song: SongDetail): boolean {
 function getMissingFields(song: SongDetail): string[] {
   const missing: string[] = [];
   for (const field of songFields) {
-    if (["hascover", "kugolink", "qmlink", "nelink", "comment"].includes(field.key)) continue;
+    if (
+      ["hascover", "kugolink", "qmlink", "nelink", "comment"].includes(
+        field.key,
+      )
+    )
+      continue;
     const value = song[field.key];
     let isEmpty = false;
     if (field.key === "nmn_status") {
@@ -118,7 +139,7 @@ const AdminListRow = React.memo(
         <div
           className={cn(
             "flex items-center gap-4 p-4 cursor-pointer transition-colors",
-            isExpanded ? "bg-slate-50 dark:bg-slate-800/80" : ""
+            isExpanded ? "bg-slate-50 dark:bg-slate-800/80" : "",
           )}
           onClick={() => toggleRowExpansion(song.id)}
         >
@@ -147,26 +168,44 @@ const AdminListRow = React.memo(
             <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 truncate">
               <span>{song.album || "未归档"}</span>
               <span className="opacity-40">/</span>
-              <span>{Array.isArray(song.lyricist) ? song.lyricist.join(", ") : (song.lyricist || "-")}</span>
+              <span>
+                {Array.isArray(song.lyricist)
+                  ? song.lyricist.join(", ")
+                  : song.lyricist || "-"}
+              </span>
             </div>
           </div>
 
           {/* Meta Info (Desktop) */}
           <div className="hidden lg:flex items-center gap-6 text-sm text-slate-500 dark:text-slate-400 shrink-0 mr-4">
             <div className="w-32 text-right truncate">
-              {Array.isArray(song.composer) ? song.composer.join(", ") : (song.composer || "-")}
+              {Array.isArray(song.composer)
+                ? song.composer.join(", ")
+                : song.composer || "-"}
             </div>
             <div className="w-24 text-center">
               {Array.isArray(song.type) && song.type[0] ? (
-                <span className={cn("px-2 py-0.5 rounded-full text-xs border", typeColorMap[song.type[0]]?.replace('bg-', 'border-').replace('text-', 'text-') || "border-slate-200")}>
+                <span
+                  className={cn(
+                    "px-2 py-0.5 rounded-full text-xs border",
+                    typeColorMap[song.type[0]]
+                      ?.replace("bg-", "border-")
+                      .replace("text-", "text-") || "border-slate-200",
+                  )}
+                >
                   {song.type[0]}
                 </span>
-              ) : "-"}
+              ) : (
+                "-"
+              )}
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2 shrink-0 ml-2" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="flex items-center gap-2 shrink-0 ml-2"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -186,7 +225,7 @@ const AdminListRow = React.memo(
                 "p-2 rounded-lg transition-colors",
                 isExpanded
                   ? "text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/20"
-                  : "text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  : "text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800",
               )}
             >
               {isExpanded ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -202,7 +241,7 @@ const AdminListRow = React.memo(
         )}
       </div>
     );
-  }
+  },
 );
 AdminListRow.displayName = "AdminListRow";
 
@@ -217,10 +256,15 @@ function ExpandedContent({ song }: { song: SongDetail }) {
         <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
           <div>
-            <h4 className="text-sm font-semibold text-amber-900 dark:text-amber-200 mb-1">信息待完善</h4>
+            <h4 className="text-sm font-semibold text-amber-900 dark:text-amber-200 mb-1">
+              信息待完善
+            </h4>
             <div className="flex flex-wrap gap-2">
-              {missing.map(field => (
-                <span key={field} className="px-2 py-0.5 text-xs bg-white dark:bg-amber-900/30 border border-amber-100 dark:border-amber-800 rounded-md text-amber-800 dark:text-amber-300">
+              {missing.map((field) => (
+                <span
+                  key={field}
+                  className="px-2 py-0.5 text-xs bg-white dark:bg-amber-900/30 border border-amber-100 dark:border-amber-800 rounded-md text-amber-800 dark:text-amber-300"
+                >
                   {field}
                 </span>
               ))}
@@ -230,18 +274,26 @@ function ExpandedContent({ song }: { song: SongDetail }) {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {songFields.map(field => {
+        {songFields.map((field) => {
           const value = song[field.key];
           let isEmpty = false;
           if (field.key === "nmn_status") {
             isEmpty = value !== true;
           } else {
-            isEmpty = value === null || value === undefined ||
+            isEmpty =
+              value === null ||
+              value === undefined ||
               (Array.isArray(value) && value.length === 0) ||
               (typeof value === "string" && value.trim() === "");
           }
 
-          const isCritical = !["hascover", "kugolink", "qmlink", "nelink", "comment"].includes(field.key);
+          const isCritical = ![
+            "hascover",
+            "kugolink",
+            "qmlink",
+            "nelink",
+            "comment",
+          ].includes(field.key);
           const shouldHighlight = isCritical && isEmpty;
 
           return (
@@ -251,29 +303,53 @@ function ExpandedContent({ song }: { song: SongDetail }) {
                 "p-3 rounded-lg border text-sm transition-colors",
                 shouldHighlight
                   ? "bg-red-50 border-red-100 dark:bg-red-900/10 dark:border-red-900/30"
-                  : "bg-white border-slate-100 dark:bg-slate-800 dark:border-slate-700"
+                  : "bg-white border-slate-100 dark:bg-slate-800 dark:border-slate-700",
               )}
             >
               <div className="flex justify-between mb-1">
-                <span className={cn(
-                  "text-xs font-semibold uppercase tracking-wider",
-                  shouldHighlight ? "text-red-600 dark:text-red-400" : "text-slate-400 dark:text-slate-500"
-                )}>
+                <span
+                  className={cn(
+                    "text-xs font-semibold uppercase tracking-wider",
+                    shouldHighlight
+                      ? "text-red-600 dark:text-red-400"
+                      : "text-slate-400 dark:text-slate-500",
+                  )}
+                >
                   {field.label}
                 </span>
-                {shouldHighlight && <span className="w-1.5 h-1.5 rounded-full bg-red-500" />}
+                {shouldHighlight && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                )}
               </div>
 
-              <div className={cn(
-                "font-medium truncate",
-                shouldHighlight ? "text-red-700 dark:text-red-300" : "text-slate-700 dark:text-slate-200"
-              )}>
+              <div
+                className={cn(
+                  "font-medium truncate",
+                  shouldHighlight
+                    ? "text-red-700 dark:text-red-300"
+                    : "text-slate-700 dark:text-slate-200",
+                )}
+              >
                 {field.key === "hascover" ? (
-                  song.hascover === true ? <span className="text-green-600 dark:text-green-400">定制封面</span> :
-                    song.hascover === false ? <span className="text-purple-600 dark:text-purple-400">初号机</span> :
-                      <span className="text-slate-400">默认</span>
+                  song.hascover === true ? (
+                    <span className="text-green-600 dark:text-green-400">
+                      定制封面
+                    </span>
+                  ) : song.hascover === false ? (
+                    <span className="text-purple-600 dark:text-purple-400">
+                      初号机
+                    </span>
+                  ) : (
+                    <span className="text-slate-400">默认</span>
+                  )
                 ) : field.key === "nmn_status" ? (
-                  song.nmn_status === true ? <span className="text-green-600 dark:text-green-400">✓ 有乐谱</span> : <span className="text-slate-400">无乐谱</span>
+                  song.nmn_status === true ? (
+                    <span className="text-green-600 dark:text-green-400">
+                      ✓ 有乐谱
+                    </span>
+                  ) : (
+                    <span className="text-slate-400">无乐谱</span>
+                  )
                 ) : (
                   formatField(song[field.key], field.type) || "-"
                 )}
@@ -314,7 +390,9 @@ export default function AdminClientComponent({
   } = useSongs(
     initialSongs,
     initialError,
-    typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("q") || "" : ""
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("q") || ""
+      : "",
   );
 
   // Filter Logic
@@ -354,17 +432,22 @@ export default function AdminClientComponent({
   const updateUrl = useCallback((page: number, q: string) => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
-    if (q) params.set("q", q); else params.delete("q");
-    if (page > 1) params.set("page", page.toString()); else params.delete("page");
+    if (q) params.set("q", q);
+    else params.delete("q");
+    if (page > 1) params.set("page", page.toString());
+    else params.delete("page");
 
     const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
     window.history.replaceState(null, "", newUrl);
   }, []);
 
-  const handlePageChange = useCallback((page: number) => {
-    setPaginationPage(page);
-    updateUrl(page, searchTerm);
-  }, [searchTerm, updateUrl, setPaginationPage]);
+  const handlePageChange = useCallback(
+    (page: number) => {
+      setPaginationPage(page);
+      updateUrl(page, searchTerm);
+    },
+    [searchTerm, updateUrl, setPaginationPage],
+  );
 
   useEffect(() => {
     setIsClient(true);
@@ -380,15 +463,25 @@ export default function AdminClientComponent({
   // Auth & Actions
   const { csrfToken, handleLogout, logoutLoading } = useAuth();
   const [showAdd, setShowAdd] = useState(false);
-  const [newSong, setNewSong] = useState<Partial<Song>>({ title: "", album: "" });
-  const [addFormErrors, setAddFormErrors] = useState<Record<string, string>>({});
+  const [newSong, setNewSong] = useState<Partial<Song>>({
+    title: "",
+    album: "",
+  });
+  const [addFormErrors, setAddFormErrors] = useState<Record<string, string>>(
+    {},
+  );
 
   const [editSong, setEditSong] = useState<SongDetail | null>(null);
   const [editForm, setEditForm] = useState<Partial<Song>>({});
-  const [editFormErrors, setEditFormErrors] = useState<Record<string, string>>({});
+  const [editFormErrors, setEditFormErrors] = useState<Record<string, string>>(
+    {},
+  );
 
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
-  const [operationMsg, setOperationMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [operationMsg, setOperationMsg] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
   const [showNotification, setShowNotification] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -413,12 +506,16 @@ export default function AdminClientComponent({
     }
   }, []);
 
-  const scrollToTop = useCallback(() => window.scrollTo({ top: 0, behavior: "smooth" }), []);
+  const scrollToTop = useCallback(
+    () => window.scrollTo({ top: 0, behavior: "smooth" }),
+    [],
+  );
 
   const toggleRowExpansion = useCallback((id: number) => {
-    setExpandedRows(prev => {
+    setExpandedRows((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }, []);
@@ -431,18 +528,32 @@ export default function AdminClientComponent({
     }
     const x = e.clientX;
     const y = e.clientY;
-    const endRadius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    const endRadius = Math.hypot(
+      Math.max(x, innerWidth - x),
+      Math.max(y, innerHeight - y),
+    );
     document.documentElement.classList.add("no-transitions");
     const transition = document.startViewTransition(() => {
       flushSync(() => {
         setTheme(resolvedTheme === "dark" ? "light" : "dark");
       });
     });
-    transition.finished.then(() => document.documentElement.classList.remove("no-transitions"));
+    transition.finished.then(() =>
+      document.documentElement.classList.remove("no-transitions"),
+    );
     transition.ready.then(() => {
       document.documentElement.animate(
-        { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`] },
-        { duration: 500, easing: "ease-in-out", pseudoElement: "::view-transition-new(root)" }
+        {
+          clipPath: [
+            `circle(0px at ${x}px ${y}px)`,
+            `circle(${endRadius}px at ${x}px ${y}px)`,
+          ],
+        },
+        {
+          duration: 500,
+          easing: "ease-in-out",
+          pseudoElement: "::view-transition-new(root)",
+        },
       );
     });
   };
@@ -451,21 +562,30 @@ export default function AdminClientComponent({
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errors: Record<string, string> = {};
-    songFields.forEach(f => {
-      errors[f.key] = validateField(f, (newSong as Record<string, unknown>)[f.key]);
+    songFields.forEach((f) => {
+      errors[f.key] = validateField(
+        f,
+        (newSong as Record<string, unknown>)[f.key],
+      );
     });
     setAddFormErrors(errors);
     if (Object.values(errors).some(Boolean)) return;
 
     try {
       setIsSubmitting(true);
-      const created = await apiCreateSong(convertEmptyStringToNull(newSong), csrfToken);
-      setSongs(prev => [...prev, created]);
+      const created = await apiCreateSong(
+        convertEmptyStringToNull(newSong),
+        csrfToken,
+      );
+      setSongs((prev) => [...prev, created]);
       setShowAdd(false);
       setNewSong({ title: "", album: "" });
-      setOperationMsg({ type: 'success', text: "创建成功" });
+      setOperationMsg({ type: "success", text: "创建成功" });
     } catch (err: unknown) {
-      setOperationMsg({ type: 'error', text: err instanceof Error ? err.message : "创建失败" });
+      setOperationMsg({
+        type: "error",
+        text: err instanceof Error ? err.message : "创建失败",
+      });
     } finally {
       setIsSubmitting(false);
       setTimeout(() => setOperationMsg(null), 3000);
@@ -476,20 +596,33 @@ export default function AdminClientComponent({
     e.preventDefault();
     if (!editSong) return;
     const errors: Record<string, string> = {};
-    songFields.forEach(f => {
-      errors[f.key] = validateField(f, (editForm as Record<string, unknown>)[f.key]);
+    songFields.forEach((f) => {
+      errors[f.key] = validateField(
+        f,
+        (editForm as Record<string, unknown>)[f.key],
+      );
     });
     setEditFormErrors(errors);
     if (Object.values(errors).some(Boolean)) return;
 
     try {
       setIsSubmitting(true);
-      const updated = await apiUpdateSong(editSong.id, { ...convertEmptyStringToNull(editForm), updated_at: editSong.updated_at }, csrfToken);
-      setSongs(prev => prev.map(s => s.id === updated.id ? updated : s));
+      const updated = await apiUpdateSong(
+        editSong.id,
+        {
+          ...convertEmptyStringToNull(editForm),
+          updated_at: editSong.updated_at,
+        },
+        csrfToken,
+      );
+      setSongs((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
       setEditSong(null);
-      setOperationMsg({ type: 'success', text: "更新成功" });
+      setOperationMsg({ type: "success", text: "更新成功" });
     } catch (err: unknown) {
-      setOperationMsg({ type: 'error', text: err instanceof Error ? err.message : "更新失败" });
+      setOperationMsg({
+        type: "error",
+        text: err instanceof Error ? err.message : "更新失败",
+      });
     } finally {
       setIsSubmitting(false);
       setTimeout(() => setOperationMsg(null), 3000);
@@ -506,32 +639,50 @@ export default function AdminClientComponent({
       {/* Navbar to match MusicLibraryClient */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div
-            className="text-2xl font-bold tracking-tight flex items-center gap-1 font-heading text-slate-900 dark:text-white"
-          >
+          <div className="text-2xl font-bold tracking-tight flex items-center gap-1 font-heading text-slate-900 dark:text-white">
             勘鉴
             <span className="w-[2px] h-5 bg-blue-600 mx-2 rounded-full translate-y-[1.5px]" />
             管理后台
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={() => setShowNotification(true)} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors" title="使用说明">
+            <button
+              onClick={() => setShowNotification(true)}
+              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
+              title="使用说明"
+            >
               <Bell size={20} />
             </button>
-            <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors">
-              {mounted ? (resolvedTheme === "dark" ? <Moon size={20} /> : <Sun size={20} />) : <div className="w-5 h-5" />}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
+            >
+              {mounted ? (
+                resolvedTheme === "dark" ? (
+                  <Moon size={20} />
+                ) : (
+                  <Sun size={20} />
+                )
+              ) : (
+                <div className="w-5 h-5" />
+              )}
             </button>
             <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1" />
-            <Account csrfToken={csrfToken} handleLogout={handleLogout} logoutLoading={logoutLoading} />
+            <Account
+              csrfToken={csrfToken}
+              handleLogout={handleLogout}
+              logoutLoading={logoutLoading}
+            />
           </div>
         </div>
       </nav>
 
       <main className="pt-32 pb-20 max-w-7xl mx-auto px-6">
-
         {/* Header & Stats */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
-            <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-50 mb-4">Dashboard</h1>
+            <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-50 mb-4">
+              Dashboard
+            </h1>
             <div className="flex flex-wrap gap-3">
               <div className="px-3 py-1 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-sm font-medium border border-blue-100 dark:border-blue-800">
                 总计 {songs.length} 首
@@ -561,23 +712,29 @@ export default function AdminClientComponent({
             {/* Filter Pills */}
             <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto no-scrollbar">
               <button
-                onClick={() => { setShowIncompleteOnly(false); setPaginationPage(1); }}
+                onClick={() => {
+                  setShowIncompleteOnly(false);
+                  setPaginationPage(1);
+                }}
                 className={cn(
                   "px-4 py-1.5 rounded-full text-sm border transition-all whitespace-nowrap",
                   !showIncompleteOnly
                     ? "bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white"
-                    : "bg-transparent text-slate-500 border-slate-200 dark:border-slate-800 hover:border-slate-300"
+                    : "bg-transparent text-slate-500 border-slate-200 dark:border-slate-800 hover:border-slate-300",
                 )}
               >
                 全部歌曲
               </button>
               <button
-                onClick={() => { setShowIncompleteOnly(true); setPaginationPage(1); }}
+                onClick={() => {
+                  setShowIncompleteOnly(true);
+                  setPaginationPage(1);
+                }}
                 className={cn(
                   "px-4 py-1.5 rounded-full text-sm border transition-all whitespace-nowrap flex items-center gap-1.5",
                   showIncompleteOnly
                     ? "bg-amber-100 text-amber-900 border-amber-200 dark:bg-amber-500/20 dark:text-amber-200 dark:border-amber-500/30"
-                    : "bg-transparent text-slate-500 border-slate-200 dark:border-slate-800 hover:border-amber-300 hover:text-amber-600"
+                    : "bg-transparent text-slate-500 border-slate-200 dark:border-slate-800 hover:border-amber-300 hover:text-amber-600",
                 )}
               >
                 <AlertCircle size={14} />
@@ -587,12 +744,18 @@ export default function AdminClientComponent({
 
             {/* Search */}
             <div className="relative group w-full md:w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={16} />
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"
+                size={16}
+              />
               <input
                 type="text"
                 placeholder="搜索标题、专辑、作者..."
                 value={searchTerm}
-                onChange={(e) => { setSearchTerm(e.target.value); setPaginationPage(1); }}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setPaginationPage(1);
+                }}
                 className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full py-2 pl-9 pr-8 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm"
               />
               {searchTerm && (
@@ -657,18 +820,27 @@ export default function AdminClientComponent({
       </main>
 
       {/* Floating Buttons */}
-      <FloatingActionButtons showScrollTop={showScrollTop} onScrollToTop={scrollToTop} />
+      <FloatingActionButtons
+        showScrollTop={showScrollTop}
+        onScrollToTop={scrollToTop}
+      />
 
       {/* Operation Toast */}
       {operationMsg && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4">
-          <div className={cn(
-            "px-6 py-3 rounded-full shadow-xl flex items-center gap-3 border backdrop-blur-md",
-            operationMsg.type === 'success'
-              ? "bg-emerald-50/90 text-emerald-800 border-emerald-200 dark:bg-emerald-900/90 dark:text-emerald-100 dark:border-emerald-800"
-              : "bg-red-50/90 text-red-800 border-red-200 dark:bg-red-900/90 dark:text-red-100 dark:border-red-800"
-          )}>
-            {operationMsg.type === 'success' ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
+          <div
+            className={cn(
+              "px-6 py-3 rounded-full shadow-xl flex items-center gap-3 border backdrop-blur-md",
+              operationMsg.type === "success"
+                ? "bg-emerald-50/90 text-emerald-800 border-emerald-200 dark:bg-emerald-900/90 dark:text-emerald-100 dark:border-emerald-800"
+                : "bg-red-50/90 text-red-800 border-red-200 dark:bg-red-900/90 dark:text-red-100 dark:border-red-800",
+            )}
+          >
+            {operationMsg.type === "success" ? (
+              <CheckCircle2 size={18} />
+            ) : (
+              <XCircle size={18} />
+            )}
             <span className="font-medium">{operationMsg.text}</span>
           </div>
         </div>
@@ -684,7 +856,12 @@ export default function AdminClientComponent({
                 {showAdd ? "添加新歌曲" : "编辑歌曲"}
               </h2>
               <button
-                onClick={() => { setShowAdd(false); setEditSong(null); setAddFormErrors({}); setEditFormErrors({}); }}
+                onClick={() => {
+                  setShowAdd(false);
+                  setEditSong(null);
+                  setAddFormErrors({});
+                  setEditFormErrors({});
+                }}
                 className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors"
               >
                 <X size={20} />
@@ -693,23 +870,34 @@ export default function AdminClientComponent({
 
             {/* Modal Body */}
             <div className="flex-1 overflow-y-auto p-6 md:p-8">
-              <form id="song-form" onSubmit={showAdd ? handleAddSubmit : handleEditSubmit} className="space-y-8">
+              <form
+                id="song-form"
+                onSubmit={showAdd ? handleAddSubmit : handleEditSubmit}
+                className="space-y-8"
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                   {songFields.map((field) => (
                     <div
                       key={field.key}
-                      className={cn("flex flex-col gap-2", field.type === 'textarea' ? "md:col-span-2" : "")}
+                      className={cn(
+                        "flex flex-col gap-2",
+                        field.type === "textarea" ? "md:col-span-2" : "",
+                      )}
                     >
                       <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">
                         {field.label}
-                        {field.key === "title" && <span className="text-red-500 ml-1">*</span>}
+                        {field.key === "title" && (
+                          <span className="text-red-500 ml-1">*</span>
+                        )}
                       </label>
                       <RenderInput
                         field={field}
                         state={showAdd ? newSong : editForm}
                         setState={showAdd ? setNewSong : setEditForm}
                         errors={showAdd ? addFormErrors : editFormErrors}
-                        setErrors={showAdd ? setAddFormErrors : setEditFormErrors}
+                        setErrors={
+                          showAdd ? setAddFormErrors : setEditFormErrors
+                        }
                         csrfToken={csrfToken}
                       />
                     </div>
@@ -722,7 +910,10 @@ export default function AdminClientComponent({
             <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-[#151921] flex justify-end gap-3 sticky bottom-0 z-10">
               <button
                 type="button"
-                onClick={() => { setShowAdd(false); setEditSong(null); }}
+                onClick={() => {
+                  setShowAdd(false);
+                  setEditSong(null);
+                }}
                 className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 取消
@@ -733,7 +924,11 @@ export default function AdminClientComponent({
                 disabled={isSubmitting}
                 className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
               >
-                {isSubmitting ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save size={18} />}
+                {isSubmitting ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Save size={18} />
+                )}
                 {showAdd ? "确认添加" : "保存修改"}
               </button>
             </div>
@@ -741,7 +936,9 @@ export default function AdminClientComponent({
         </div>
       )}
 
-      {showNotification && <Notification onClose={() => setShowNotification(false)} />}
+      {showNotification && (
+        <Notification onClose={() => setShowNotification(false)} />
+      )}
     </div>
   );
 }
@@ -750,7 +947,12 @@ export default function AdminClientComponent({
 // Refactored for cleaner look
 
 function RenderInput({
-  field, state, setState, errors, setErrors, csrfToken
+  field,
+  state,
+  setState,
+  errors,
+  setErrors,
+  csrfToken,
 }: {
   field: SongFieldConfig;
   state: Record<string, unknown>;
@@ -763,56 +965,73 @@ function RenderInput({
   const error = errors[field.key];
 
   const update = (val: unknown) => {
-    setState((prev: Record<string, unknown>) => ({ ...prev, [field.key]: val }));
-    setErrors((prev: Record<string, string>) => ({ ...prev, [field.key]: validateField(field, val) }));
+    setState((prev: Record<string, unknown>) => ({
+      ...prev,
+      [field.key]: val,
+    }));
+    setErrors((prev: Record<string, string>) => ({
+      ...prev,
+      [field.key]: validateField(field, val),
+    }));
   };
 
   const baseClass = cn(
     "w-full px-4 py-2.5 bg-white dark:bg-black/20 border rounded-xl outline-none transition-all",
     error
       ? "border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-500/10"
-      : "border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10"
+      : "border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10",
   );
 
   if (field.key === "genre" || field.key === "type") {
-    const options = field.key === "genre" ? Object.keys(genreColorMap) : Object.keys(typeColorMap);
-    const arr: string[] = Array.isArray(value) ? value : (value ? [value] : []);
+    const options =
+      field.key === "genre"
+        ? Object.keys(genreColorMap)
+        : Object.keys(typeColorMap);
+    const arr: string[] = Array.isArray(value) ? value : value ? [value] : [];
 
     return (
       <div className="space-y-2">
         <div className="flex flex-wrap gap-2">
-          {options.map(opt => {
+          {options.map((opt) => {
             const isActive = arr.includes(opt);
             // Use map to get colors, or default
-            const colorClass = (field.key === "genre" ? genreColorMap : typeColorMap)[opt] || "bg-slate-100 text-slate-600";
+            const colorClass =
+              (field.key === "genre" ? genreColorMap : typeColorMap)[opt] ||
+              "bg-slate-100 text-slate-600";
 
             return (
               <button
                 key={opt}
                 type="button"
                 onClick={() => {
-                  const next = isActive ? arr.filter(x => x !== opt) : [...arr, opt];
+                  const next = isActive
+                    ? arr.filter((x) => x !== opt)
+                    : [...arr, opt];
                   update(next);
                 }}
                 className={cn(
                   "px-3 py-1 rounded-full text-xs font-medium border transition-all",
-                  isActive ? "ring-2 ring-offset-1 ring-blue-500 dark:ring-offset-[#151921]" : "opacity-60 grayscale hover:grayscale-0 hover:opacity-100",
-                  colorClass.replace("bg-", "bg-opacity-20 bg-").replace("text-", "text-") // Rough hack to reuse existing color maps cleanly
+                  isActive
+                    ? "ring-2 ring-offset-1 ring-blue-500 dark:ring-offset-[#151921]"
+                    : "opacity-60 grayscale hover:grayscale-0 hover:opacity-100",
+                  colorClass
+                    .replace("bg-", "bg-opacity-20 bg-")
+                    .replace("text-", "text-"), // Rough hack to reuse existing color maps cleanly
                 )}
                 // Re-do style manually for cleaner look
                 style={{
                   backgroundColor: isActive ? undefined : "transparent",
-                  borderColor: isActive ? "transparent" : "currentColor"
+                  borderColor: isActive ? "transparent" : "currentColor",
                 }}
               >
                 {opt}
               </button>
-            )
+            );
           })}
         </div>
         {error && <p className="text-xs text-red-500">{error}</p>}
       </div>
-    )
+    );
   }
 
   if (field.type === "textarea") {
@@ -820,25 +1039,25 @@ function RenderInput({
       <>
         <textarea
           value={(value as string | number) ?? ""}
-          onChange={e => update(e.target.value)}
+          onChange={(e) => update(e.target.value)}
           className={baseClass}
           rows={4}
           placeholder={`请输入${field.label}`}
         />
         {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
       </>
-    )
+    );
   }
 
   if (field.type === "array") {
-    const arr = Array.isArray(value) ? value : (value ? [value] : []);
+    const arr = Array.isArray(value) ? value : value ? [value] : [];
     return (
       <div className="space-y-2">
         {arr.map((item: string, i: number) => (
           <div key={i} className="flex gap-2">
             <input
               value={item}
-              onChange={e => {
+              onChange={(e) => {
                 const next = [...arr];
                 next[i] = e.target.value;
                 update(next);
@@ -928,9 +1147,19 @@ function RenderInput({
   return (
     <>
       <input
-        type={field.type === "number" ? "number" : field.type === "date" ? "date" : "text"}
+        type={
+          field.type === "number"
+            ? "number"
+            : field.type === "date"
+              ? "date"
+              : "text"
+        }
         value={(value as string | number) ?? ""}
-        onChange={e => update(field.type === "number" ? Number(e.target.value) : e.target.value)}
+        onChange={(e) =>
+          update(
+            field.type === "number" ? Number(e.target.value) : e.target.value,
+          )
+        }
         className={baseClass}
         placeholder={`请输入${field.label}`}
       />

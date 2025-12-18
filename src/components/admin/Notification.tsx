@@ -16,7 +16,9 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
             <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
               <Bell className="w-6 h-6" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">说明与注意</h2>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+              说明与注意
+            </h2>
           </div>
           <button
             className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors"
@@ -46,11 +48,15 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
                 </div>
                 <ul className="text-sm text-red-600 dark:text-red-300/80 leading-relaxed space-y-2 font-medium">
                   <li className="flex items-start gap-2">
-                    <span className="text-red-400 dark:text-red-500 font-bold shrink-0">•</span>
+                    <span className="text-red-400 dark:text-red-500 font-bold shrink-0">
+                      •
+                    </span>
                     <span>数据更改不会立刻同步到主页面 (ISR/CDN缓存)</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-red-400 dark:text-red-500 font-bold shrink-0">•</span>
+                    <span className="text-red-400 dark:text-red-500 font-bold shrink-0">
+                      •
+                    </span>
                     <span>在本页面列表看到修改生效即表示数据库更新成功</span>
                   </li>
                 </ul>
@@ -74,10 +80,12 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
                     "作词、作曲、编曲、演唱、出品发行支持多人，请每个输入框只填写一人",
                     "歌曲时长需要换算成秒",
                     "歌词只需填写LRC内容",
-                    "修改完成务必点击保存按钮保存"
+                    "修改完成务必点击保存按钮保存",
                   ].map((text, i) => (
                     <li key={i} className="flex items-start gap-2">
-                      <span className="text-blue-400/60 dark:text-blue-500/60 font-bold shrink-0">•</span>
+                      <span className="text-blue-400/60 dark:text-blue-500/60 font-bold shrink-0">
+                        •
+                      </span>
                       <span>{text}</span>
                     </li>
                   ))}
@@ -100,10 +108,12 @@ const Notification: React.FC<NotificationProps> = ({ onClose }) => {
                   {[
                     "请妥善保管账号，不要与他人分享",
                     "定期检查数据变更，确保信息准确性",
-                    "如发现异常操作请及时联系管理员"
+                    "如发现异常操作请及时联系管理员",
                   ].map((text, i) => (
                     <li key={i} className="flex items-start gap-2">
-                      <span className="text-emerald-400/60 dark:text-emerald-500/60 font-bold shrink-0">•</span>
+                      <span className="text-emerald-400/60 dark:text-emerald-500/60 font-bold shrink-0">
+                        •
+                      </span>
                       <span>{text}</span>
                     </li>
                   ))}

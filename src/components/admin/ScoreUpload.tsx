@@ -1,6 +1,14 @@
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Upload, X, Check, AlertCircle, FileCheck, FileX, Loader2 } from "lucide-react";
+import {
+  Upload,
+  X,
+  Check,
+  AlertCircle,
+  FileCheck,
+  FileX,
+  Loader2,
+} from "lucide-react";
 import { apiCheckFileExists } from "@/lib/api";
 
 interface ScoreUploadProps {
@@ -19,7 +27,9 @@ export default function ScoreUpload({
   hasExistingFile = false,
 }: ScoreUploadProps) {
   const [uploading, setUploading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState<"idle" | "success" | "error">("idle");
+  const [uploadStatus, setUploadStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
   const [uploadMessage, setUploadMessage] = useState("");
   const [fileExists, setFileExists] = useState(hasExistingFile);
   const [checkingFile, setCheckingFile] = useState(false);
@@ -43,7 +53,7 @@ export default function ScoreUpload({
         setCheckingFile(false);
       }
     },
-    [csrfToken]
+    [csrfToken],
   );
 
   useEffect(() => {
@@ -54,7 +64,9 @@ export default function ScoreUpload({
     }
   }, [songId, checkFileExists]);
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -131,13 +143,18 @@ export default function ScoreUpload({
           disabled={uploading || !songId}
           className={`
             flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all border
-            ${uploading || !songId
-              ? "bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800 dark:border-slate-700 cursor-not-allowed"
-              : "bg-white text-slate-700 hover:bg-slate-50 border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700"
+            ${
+              uploading || !songId
+                ? "bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800 dark:border-slate-700 cursor-not-allowed"
+                : "bg-white text-slate-700 hover:bg-slate-50 border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700"
             }
           `}
         >
-          {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+          {uploading ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : (
+            <Upload size={16} />
+          )}
           {uploading ? "上传中..." : "选择PNG乐谱"}
         </button>
 
@@ -171,15 +188,28 @@ export default function ScoreUpload({
       />
 
       {uploadMessage && (
-        <div className={`
+        <div
+          className={`
           flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border
-          ${uploadStatus === 'success'
-            ? 'bg-green-50 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-900/50 dark:text-green-400'
-            : 'bg-red-50 border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-900/50 dark:text-red-400'}
-        `}>
-          {uploadStatus === 'success' ? <Check size={14} /> : <AlertCircle size={14} />}
+          ${
+            uploadStatus === "success"
+              ? "bg-green-50 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-900/50 dark:text-green-400"
+              : "bg-red-50 border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-900/50 dark:text-red-400"
+          }
+        `}
+        >
+          {uploadStatus === "success" ? (
+            <Check size={14} />
+          ) : (
+            <AlertCircle size={14} />
+          )}
           <span className="flex-1 truncate">{uploadMessage}</span>
-          <button onClick={() => setUploadMessage("")} className="hover:opacity-60"><X size={14} /></button>
+          <button
+            onClick={() => setUploadMessage("")}
+            className="hover:opacity-60"
+          >
+            <X size={14} />
+          </button>
         </div>
       )}
 
