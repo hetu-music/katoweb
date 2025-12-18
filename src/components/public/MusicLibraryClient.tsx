@@ -516,7 +516,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
             title="点击刷新页面"
           >
             河图
-            <span className="inline-block w-[2px] h-5 bg-blue-600 mx-2 rounded-full align-middle" />
+            <span className="w-[2px] h-5 bg-blue-600 mx-2 rounded-full translate-y-[1.5px]" />
             作品勘鉴
           </button>
           <div className="flex items-center gap-2">
