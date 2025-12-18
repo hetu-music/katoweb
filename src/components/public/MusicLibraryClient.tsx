@@ -772,7 +772,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
             // --- 空状态 ---
             <div className="flex flex-col items-center justify-center py-20 text-slate-400">
               <Disc size={48} className="mb-4 opacity-20" />
-              <p className="font-light">No works found.</p>
+              <p className="font-light">没有符合条件的歌曲</p>
             </div>
           )}
         </section>
