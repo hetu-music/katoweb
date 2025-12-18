@@ -92,7 +92,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500 font-sans flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background Decor (Optional subtle gradients) */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-3xl" />
@@ -106,7 +106,7 @@ export default function LoginPage() {
             <div className="mx-auto w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 mb-6 ring-1 ring-blue-100 dark:ring-blue-800">
               <ShieldCheck size={32} strokeWidth={1.5} />
             </div>
-            <h1 className="text-3xl font-serif font-medium text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-3xl font-medium text-slate-900 dark:text-white tracking-tight">
               Admin Portal
             </h1>
             <p className="text-slate-500 dark:text-slate-400 font-light text-sm">

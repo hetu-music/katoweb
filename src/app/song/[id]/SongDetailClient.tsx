@@ -179,7 +179,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const [activeLinkId, setActiveLinkId] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500 font-sans">
+    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500">
       {/* 顶部导航 - 与 MusicLibraryClient 保持一致 */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -440,7 +440,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
           >
             {/* 标题 & 基础信息 */}
             <section className="space-y-6">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 dark:text-slate-50 leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-slate-50 leading-tight">
                 {song.title}
               </h1>
 
@@ -516,7 +516,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-2 text-slate-900 dark:text-white">
                   <Mic2 size={24} />
-                  <h2 className="text-2xl font-serif font-bold">Lyrics</h2>
+                  <h2 className="text-2xl font-bold">Lyrics</h2>
                 </div>
 
                 {/* 歌词切换 */}
@@ -574,7 +574,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
               <section className="border-t border-slate-200 dark:border-slate-800 pt-10 pb-10">
                 <div className="flex items-center gap-2 mb-8 text-slate-900 dark:text-white">
                   <LayoutTemplate size={24} />
-                  <h2 className="text-2xl font-serif font-bold">Score</h2>
+                  <h2 className="text-2xl font-bold">Score</h2>
                 </div>
 
                 <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 overflow-hidden">

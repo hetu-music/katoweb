@@ -129,7 +129,7 @@ const GridCard = ({
       <div className="flex justify-between items-start gap-4">
         <h3
           className={cn(
-            "text-xl font-serif text-slate-900 dark:text-slate-100 leading-tight transition-colors line-clamp-1 flex-1 min-w-0",
+            "text-xl text-slate-900 dark:text-slate-100 leading-tight transition-colors line-clamp-1 flex-1 min-w-0",
             isActive
               ? "text-blue-600 dark:text-blue-400"
               : "group-hover:text-blue-600 dark:group-hover:text-blue-400",
@@ -196,7 +196,7 @@ const ListRow = ({
     <div className="grow min-w-0 flex flex-col justify-center">
       <h3
         className={cn(
-          "text-lg font-serif text-slate-900 dark:text-slate-100 truncate transition-colors",
+          "text-lg text-slate-900 dark:text-slate-100 truncate transition-colors",
           isActive
             ? "text-blue-600 dark:text-blue-400"
             : "group-hover:text-blue-600 dark:group-hover:text-blue-400",
@@ -501,7 +501,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   }, [resetAllFilters, setShowAdvancedFilters]);
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500 font-sans">
+    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500">
       {/* 顶部导航 */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -548,7 +548,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       <main className="pt-32 pb-20 max-w-7xl mx-auto px-6">
         {/* Header */}
         <section className="mb-16 space-y-4">
-          <h1 className="text-5xl md:text-6xl font-serif text-slate-900 dark:text-slate-50">
+          <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50">
             谣歌半首
           </h1>
           <p className="text-slate-500 dark:text-slate-400 font-light max-w-lg">
