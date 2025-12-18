@@ -196,21 +196,15 @@ export function useMusicLibraryState(
     getMaxYearIndex,
   ]);
 
-  // Scroll restoration logic
-  useEffect(() => {
-    if (hasRestoredScroll.current) {
-      if (hasRestoredScroll.current) {
-        setIsRestoringScroll(false);
-      }
-      return;
-    }
-
+  // Core scroll restoration function - reusable for both initial mount and popstate
+  const performScrollRestoration = useCallback(() => {
     const savedScroll = sessionStorage.getItem(STORAGE_KEY);
     if (!savedScroll) {
       setIsRestoringScroll(false);
       return;
     }
 
+    setIsRestoringScroll(true);
     const targetY = parseInt(savedScroll, 10);
     let attempts = 0;
 
@@ -245,12 +239,36 @@ export function useMusicLibraryState(
       } else {
         // Max attempts reached, give up
         sessionStorage.removeItem(STORAGE_KEY);
+        hasRestoredScroll.current = true;
         setIsRestoringScroll(false);
       }
     };
 
     setTimeout(attemptScroll, SCROLL_RESTORE_DELAY_MS);
   }, []);
+
+  // Scroll restoration on initial mount
+  useEffect(() => {
+    if (hasRestoredScroll.current) {
+      setIsRestoringScroll(false);
+      return;
+    }
+
+    performScrollRestoration();
+  }, [performScrollRestoration]);
+
+  // Listen for browser's native back/forward navigation (popstate event)
+  useEffect(() => {
+    const handlePopState = () => {
+      // Reset scroll restoration flag so restoration can run again
+      hasRestoredScroll.current = false;
+      // Perform scroll restoration
+      performScrollRestoration();
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [performScrollRestoration]);
 
   // Save scroll position when navigating to song detail
   const handleSongClick = useCallback(() => {
