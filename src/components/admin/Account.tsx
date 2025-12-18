@@ -1,4 +1,17 @@
+"use client";
 import React, { useState } from "react";
+import {
+  User,
+  Settings,
+  Key,
+  Type,
+  LogOut,
+  X,
+  Loader2,
+  CheckCircle2,
+  AlertCircle
+} from "lucide-react";
+import { createPortal } from "react-dom";
 
 interface AccountProps {
   csrfToken: string;
@@ -17,10 +30,9 @@ const Account: React.FC<AccountProps> = ({
   const [displayName, setDisplayName] = useState("");
   const [displayNameInput, setDisplayNameInput] = useState("");
   const [displayNameError, setDisplayNameError] = useState<string | null>(null);
-  const [displayNameSuccess, setDisplayNameSuccess] = useState<string | null>(
-    null,
-  );
+  const [displayNameSuccess, setDisplayNameSuccess] = useState<string | null>(null);
   const [displayNameLoading, setDisplayNameLoading] = useState(false);
+
   const [pwdForm, setPwdForm] = useState({
     oldPassword: "",
     newPassword: "",
@@ -29,6 +41,7 @@ const Account: React.FC<AccountProps> = ({
   const [pwdFormError, setPwdFormError] = useState<string | null>(null);
   const [pwdFormSuccess, setPwdFormSuccess] = useState<string | null>(null);
   const [pwdFormLoading, setPwdFormLoading] = useState(false);
+
   const [display, setDisplay] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   const [intro, setIntro] = useState<string | null>(null);
@@ -37,28 +50,14 @@ const Account: React.FC<AccountProps> = ({
   const [introSuccess, setIntroSuccess] = useState<string | null>(null);
   const [introLoading, setIntroLoading] = useState(false);
 
-  // 自动加载 display name、display 和 intro
+  // Auto-load info
   React.useEffect(() => {
     (async () => {
       try {
-        const res = await import("@/lib/api").then((m) =>
-          m.apiGetAccountInfo(),
-        );
-        if (res.displayName !== undefined) {
-          setDisplayName(res.displayName);
-        } else {
-          setDisplayName("");
-        }
-        if (typeof res.display === "boolean") {
-          setDisplay(res.display);
-        } else {
-          setDisplay(false);
-        }
-        if (typeof res.intro === "string" || res.intro === null) {
-          setIntro(res.intro);
-        } else {
-          setIntro(null);
-        }
+        const res = await import("@/lib/api").then((m) => m.apiGetAccountInfo());
+        setDisplayName(res.displayName !== undefined ? res.displayName : "");
+        setDisplay(typeof res.display === "boolean" ? res.display : false);
+        setIntro(typeof res.intro === "string" || res.intro === null ? res.intro : null);
       } catch {
         setDisplayName("");
         setDisplay(false);
@@ -67,15 +66,12 @@ const Account: React.FC<AccountProps> = ({
     })();
   }, []);
 
+  // Click Outside to Close
   React.useEffect(() => {
     if (!showAccountMenu) return;
     const onClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      // 检查点击是否在账号按钮或菜单内
-      const accountButton = target.closest("[data-account-button]");
-      const accountMenu = target.closest("[data-account-menu]");
-
-      if (!accountButton && !accountMenu) {
+      if (!target.closest("[data-account-container]")) {
         setShowAccountMenu(false);
       }
     };
@@ -83,25 +79,14 @@ const Account: React.FC<AccountProps> = ({
     return () => window.removeEventListener("mousedown", onClick);
   }, [showAccountMenu]);
 
-  // 获取 display name
+  // Fetch Logic
   const fetchDisplayName = async () => {
-    setDisplayNameError(null);
-    setDisplayNameSuccess(null);
-    setDisplayNameLoading(true);
+    setDisplayNameError(null); setDisplayNameSuccess(null); setDisplayNameLoading(true);
     try {
       const res = await import("@/lib/api").then((m) => m.apiGetDisplayName());
-      if (res.displayName !== undefined) {
-        setDisplayName(res.displayName);
-        setDisplayNameInput(res.displayName);
-      } else {
-        setDisplayName("");
-        setDisplayNameInput("");
-      }
-      if (typeof res.display === "boolean") {
-        setDisplay(res.display);
-      } else {
-        setDisplay(false);
-      }
+      setDisplayName(res.displayName !== undefined ? res.displayName : "");
+      setDisplayNameInput(res.displayName !== undefined ? res.displayName : "");
+      setDisplay(typeof res.display === "boolean" ? res.display : false);
     } catch {
       setDisplayNameError("获取用户名失败");
     } finally {
@@ -109,20 +94,12 @@ const Account: React.FC<AccountProps> = ({
     }
   };
 
-  // 获取 intro
   const fetchIntro = async () => {
-    setIntroError(null);
-    setIntroSuccess(null);
-    setIntroLoading(true);
+    setIntroError(null); setIntroSuccess(null); setIntroLoading(true);
     try {
       const res = await import("@/lib/api").then((m) => m.apiGetAccountInfo());
-      if (typeof res.intro === "string" || res.intro === null) {
-        setIntro(res.intro);
-        setIntroInput(res.intro || "");
-      } else {
-        setIntro(null);
-        setIntroInput("");
-      }
+      setIntro(typeof res.intro === "string" || res.intro === null ? res.intro : null);
+      setIntroInput(typeof res.intro === "string" || res.intro === null ? (res.intro || "") : "");
     } catch {
       setIntroError("获取自我介绍失败");
     } finally {
@@ -130,669 +107,220 @@ const Account: React.FC<AccountProps> = ({
     }
   };
 
+  // Helper for consistent modal
+  const Modal = ({ title, onClose, children }: { title: string, onClose: () => void, children: React.ReactNode }) => {
+    if (typeof window === 'undefined') return null;
+    return createPortal(
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div className="bg-white dark:bg-[#151921] w-full max-w-md rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-[#151921]/50">
+            <h3 className="font-bold text-slate-900 dark:text-white">{title}</h3>
+            <button onClick={onClose} className="p-1 rounded-full text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+              <X size={18} />
+            </button>
+          </div>
+          <div className="p-6">
+            {children}
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
+  };
+
   return (
-    <div className="relative">
+    <div className="relative" data-account-container>
       <button
         onClick={() => setShowAccountMenu((v) => !v)}
-        className="group flex items-center gap-4 h-12 px-8 py-1 rounded-2xl bg-linear-to-r from-blue-500/20 via-indigo-500/20 to-purple-500/20 border border-blue-400/30 text-blue-100 hover:from-blue-500/30 hover:via-indigo-500/30 hover:to-purple-500/30 hover:text-white hover:border-blue-300/50 transition-all duration-300 shadow-lg hover:shadow-xl font-medium whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed backdrop-blur-sm"
-        style={{ minWidth: 0 }}
-        type="button"
-        data-account-button
+        className="flex items-center gap-3 pl-1 pr-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors border border-transparent dark:border-slate-700"
       >
-        <div className="flex items-center gap-4">
-          <div className="w-8 h-8 bg-linear-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-inner">
-            {displayName ? displayName.charAt(0).toUpperCase() : "?"}
-          </div>
-          <span className="inline-block max-w-[120px] truncate align-middle text-lg font-semibold">
-            {displayName}
-          </span>
+        <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm">
+          {displayName ? displayName.charAt(0).toUpperCase() : <User size={16} />}
         </div>
+        <span className="text-sm font-medium text-slate-700 dark:text-slate-200 max-w-[100px] truncate">
+          {displayName || "Admin"}
+        </span>
       </button>
 
       {showAccountMenu && (
-        <div
-          className="absolute right-0 mt-3 w-48 bg-linear-to-br from-purple-800/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-lg border border-white/20 rounded-2xl shadow-2xl z-50 overflow-hidden animate-fade-in"
-          data-account-menu
-        >
-          <div className="p-2">
-            <button
-              className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-blue-500/20 transition-all duration-200 rounded-xl border-b border-white/10 group"
-              onClick={() => {
-                setShowAccountMenu(false);
-                setShowDisplayName(true);
-                setDisplayNameInput(displayName);
-                setDisplayNameError(null);
-                setDisplayNameSuccess(null);
-              }}
-              type="button"
-            >
-              <div className="w-6 h-6 flex items-center justify-center">
-                <svg
-                  className="w-5 h-5 text-blue-300 group-hover:text-white transition-colors"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                  />
-                </svg>
-              </div>
-              <span className="text-sm font-medium">管理用户名</span>
-            </button>
-            <button
-              className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-blue-500/20 transition-all duration-200 rounded-xl border-b border-white/10 group"
-              onClick={() => {
-                setShowAccountMenu(false);
-                setShowChangePwd(true);
-              }}
-              type="button"
-            >
-              <div className="w-6 h-6 flex items-center justify-center">
-                <svg
-                  className="w-5 h-5 text-blue-300 group-hover:text-white transition-colors"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                  />
-                </svg>
-              </div>
-              <span className="text-sm font-medium">修改密码</span>
-            </button>
-            <button
-              className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-blue-500/20 transition-all duration-200 rounded-xl border-b border-white/10 group"
-              onClick={() => {
-                setShowAccountMenu(false);
-                setShowIntro(true);
-                setIntroInput(intro || "");
-                setIntroError(null);
-                setIntroSuccess(null);
-              }}
-              type="button"
-            >
-              <div className="w-6 h-6 flex items-center justify-center">
-                <svg
-                  className="w-5 h-5 text-blue-300 group-hover:text-white transition-colors"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 10h.01M12 10h.01M16 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <span className="text-sm font-medium">自我介绍</span>
-            </button>
-            <button
-              className="w-full flex items-center gap-3 px-4 py-3 text-red-200 hover:bg-red-500/20 transition-all duration-200 rounded-xl group"
-              onClick={() => {
-                setShowAccountMenu(false);
-                handleLogout();
-              }}
-              disabled={logoutLoading}
-              type="button"
-            >
-              <div className="w-6 h-6 flex items-center justify-center">
-                {logoutLoading ? (
-                  <div className="w-5 h-5 animate-spin border-2 border-red-300 border-t-transparent rounded-full"></div>
-                ) : (
-                  <svg
-                    className="w-5 h-5 text-red-300 group-hover:text-red-200 transition-colors"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                    />
-                  </svg>
-                )}
-              </div>
-              <span className="text-sm font-medium">退出登录</span>
-            </button>
+        <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#151921] rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 py-2 z-50 animate-in fade-in zoom-in-95 duration-100">
+          <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 mb-2">
+            <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Account Settings</p>
           </div>
+
+          <button
+            onClick={() => { setShowAccountMenu(false); setShowDisplayName(true); setDisplayNameInput(displayName); setDisplayNameError(null); setDisplayNameSuccess(null); }}
+            className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300 transition-colors"
+          >
+            <User size={16} /> <span>修改用户名</span>
+          </button>
+
+          <button
+            onClick={() => { setShowAccountMenu(false); setShowChangePwd(true); }}
+            className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300 transition-colors"
+          >
+            <Key size={16} /> <span>修改密码</span>
+          </button>
+
+          <button
+            onClick={() => { setShowAccountMenu(false); setShowIntro(true); setIntroInput(intro || ""); setIntroError(null); setIntroSuccess(null); }}
+            className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300 transition-colors"
+          >
+            <Type size={16} /> <span>自我介绍</span>
+          </button>
+
+          <div className="my-2 border-t border-slate-100 dark:border-slate-800" />
+
+          <button
+            onClick={() => { setShowAccountMenu(false); handleLogout(); }}
+            disabled={logoutLoading}
+            className="w-full text-left px-4 py-2 hover:bg-red-50 dark:hover:bg-red-900/10 flex items-center gap-3 text-sm text-red-600 dark:text-red-400 transition-colors"
+          >
+            {logoutLoading ? <Loader2 size={16} className="animate-spin" /> : <LogOut size={16} />}
+            <span>退出登录</span>
+          </button>
         </div>
       )}
 
-      {/* 修改密码弹窗 */}
+      {/* Change Password Modal */}
       {showChangePwd && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-linear-to-br from-purple-800/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl p-8 max-w-md w-full animate-fade-in">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-linear-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                  />
-                </svg>
-              </div>
-              <h2 className="text-xl font-bold text-white">修改密码</h2>
-            </div>
+        <Modal title="修改密码" onClose={() => { setShowChangePwd(false); setPwdFormError(null); setPwdFormSuccess(null); setPwdForm({ oldPassword: "", newPassword: "", confirmPassword: "" }); }}>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            setPwdFormError(null); setPwdFormSuccess(null);
+            if (!pwdForm.oldPassword || !pwdForm.newPassword || !pwdForm.confirmPassword) { setPwdFormError("请填写所有字段"); return; }
+            if (pwdForm.newPassword.length < 6) { setPwdFormError("新密码不能少于6位"); return; }
+            if (pwdForm.newPassword !== pwdForm.confirmPassword) { setPwdFormError("两次密码不一致"); return; }
 
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                setPwdFormError(null);
-                setPwdFormSuccess(null);
-                if (
-                  !pwdForm.oldPassword ||
-                  !pwdForm.newPassword ||
-                  !pwdForm.confirmPassword
-                ) {
-                  setPwdFormError("请填写所有字段");
-                  return;
-                }
-                if (pwdForm.newPassword.length < 6) {
-                  setPwdFormError("新密码长度不能少于6位");
-                  return;
-                }
-                if (pwdForm.newPassword !== pwdForm.confirmPassword) {
-                  setPwdFormError("两次输入的新密码不一致");
-                  return;
-                }
-                setPwdFormLoading(true);
-                try {
-                  const res = await import("@/lib/api").then((m) =>
-                    m.apiChangePassword(
-                      pwdForm.oldPassword,
-                      pwdForm.newPassword,
-                      csrfToken,
-                    ),
-                  );
-                  if (res.success) {
-                    setPwdFormSuccess("密码修改成功");
-                    setPwdForm({
-                      oldPassword: "",
-                      newPassword: "",
-                      confirmPassword: "",
-                    });
-                  } else {
-                    setPwdFormError(res.error || "修改失败");
-                  }
-                } catch {
-                  setPwdFormError("网络错误");
-                } finally {
-                  setPwdFormLoading(false);
-                }
-              }}
-              className="space-y-6"
-            >
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-blue-100 font-semibold mb-2 text-sm">
-                    旧密码
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="password"
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 placeholder-white/50"
-                      placeholder="请输入旧密码"
-                      value={pwdForm.oldPassword}
-                      onChange={(e) =>
-                        setPwdForm((f) => ({
-                          ...f,
-                          oldPassword: e.target.value,
-                        }))
-                      }
-                      autoComplete="current-password"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-blue-100 font-semibold mb-2 text-sm">
-                    新密码
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="password"
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 placeholder-white/50"
-                      placeholder="请输入新密码（至少6位）"
-                      value={pwdForm.newPassword}
-                      onChange={(e) =>
-                        setPwdForm((f) => ({
-                          ...f,
-                          newPassword: e.target.value,
-                        }))
-                      }
-                      autoComplete="new-password"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-blue-100 font-semibold mb-2 text-sm">
-                    确认新密码
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="password"
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 placeholder-white/50"
-                      placeholder="请再次输入新密码"
-                      value={pwdForm.confirmPassword}
-                      onChange={(e) =>
-                        setPwdForm((f) => ({
-                          ...f,
-                          confirmPassword: e.target.value,
-                        }))
-                      }
-                      autoComplete="new-password"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {pwdFormError && (
-                <div className="bg-red-500/10 border border-red-400/30 rounded-xl p-3 text-red-300 text-sm flex items-center gap-2">
-                  <svg
-                    className="w-4 h-4 shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  {pwdFormError}
-                </div>
-              )}
-
-              {pwdFormSuccess && (
-                <div className="bg-green-500/10 border border-green-400/30 rounded-xl p-3 text-green-300 text-sm flex items-center gap-2">
-                  <svg
-                    className="w-4 h-4 shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  {pwdFormSuccess}
-                </div>
-              )}
-
-              <div className="flex items-center justify-end gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowChangePwd(false);
-                    setPwdFormError(null);
-                    setPwdFormSuccess(null);
-                    setPwdForm({
-                      oldPassword: "",
-                      newPassword: "",
-                      confirmPassword: "",
-                    });
-                  }}
-                  className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 font-medium"
-                  disabled={pwdFormLoading}
-                >
-                  关闭
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-3 rounded-xl bg-linear-to-r from-green-500/30 to-emerald-500/30 border border-green-400/30 text-green-100 hover:from-green-500/40 hover:to-emerald-500/40 hover:text-white transition-all duration-200 font-semibold shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
-                  disabled={pwdFormLoading}
-                >
-                  {pwdFormLoading ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></div>
-                      <span>提交中...</span>
-                    </div>
-                  ) : (
-                    "确认修改"
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* 用户名管理弹窗 */}
-      {showDisplayName && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-linear-to-br from-purple-800/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl p-8 max-w-md w-full animate-fade-in">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-linear-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                  />
-                </svg>
-              </div>
-              <h2 className="text-xl font-bold text-white">管理用户名</h2>
-            </div>
-
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                setDisplayNameError(null);
-                setDisplayNameSuccess(null);
-                if (!displayNameInput || displayNameInput.length < 2) {
-                  setDisplayNameError("用户名不能为空且不少于2个字符");
-                  return;
-                }
-                setDisplayNameLoading(true);
-                try {
-                  const res = await import("@/lib/api").then((m) =>
-                    m.apiUpdateDisplayName(
-                      displayNameInput,
-                      csrfToken,
-                      display,
-                    ),
-                  );
-                  if (res.success) {
-                    setDisplayNameSuccess("更新成功");
-                    setDisplayName(displayNameInput);
-                  } else {
-                    setDisplayNameError(res.error || "更新失败");
-                  }
-                } catch {
-                  setDisplayNameError("网络错误");
-                } finally {
-                  setDisplayNameLoading(false);
-                }
-              }}
-              className="space-y-6"
-            >
-              <div>
-                <label className="block text-blue-100 font-semibold mb-2 text-sm">
-                  用户名
+            setPwdFormLoading(true);
+            try {
+              const res = await import("@/lib/api").then(m => m.apiChangePassword(pwdForm.oldPassword, pwdForm.newPassword, csrfToken));
+              if (res.success) {
+                setPwdFormSuccess("密码修改成功");
+                setPwdForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
+              } else {
+                setPwdFormError(res.error || "修改失败");
+              }
+            } catch { setPwdFormError("网络错误"); } finally { setPwdFormLoading(false); }
+          }} className="space-y-4">
+            {["oldPassword", "newPassword", "confirmPassword"].map((key) => (
+              <div key={key}>
+                <label className="block text-xs font-medium text-slate-500 mb-1">
+                  {key === "oldPassword" ? "旧密码" : key === "newPassword" ? "新密码" : "确认新密码"}
                 </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 placeholder-white/50"
-                    placeholder="请输入用户名"
-                    value={displayNameInput}
-                    onChange={(e) => setDisplayNameInput(e.target.value)}
-                    autoComplete="off"
-                    maxLength={32}
-                    disabled={displayNameLoading}
-                  />
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-white/50">
-                    {displayNameInput.length}/32
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center mt-2">
-                <label
-                  htmlFor="display-contributor"
-                  className="flex items-center gap-3 cursor-pointer select-none py-2 px-3 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-200 w-full"
-                >
-                  <span className="text-blue-100 text-sm font-medium">
-                    展示我到 关于-维护者 中
-                  </span>
-                  <span className="flex-1"></span>
-                  <span className="relative inline-block w-11 h-6 align-middle select-none">
-                    <input
-                      id="display-contributor"
-                      type="checkbox"
-                      className="sr-only peer"
-                      checked={display}
-                      onChange={(e) => setDisplay(e.target.checked)}
-                      disabled={displayNameLoading}
-                    />
-                    <span className="block w-11 h-6 bg-gray-400 rounded-full peer-checked:bg-blue-500 transition-colors duration-200"></span>
-                    <span className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-200 peer-checked:translate-x-5"></span>
-                  </span>
-                </label>
-              </div>
-
-              {displayNameError && (
-                <div className="bg-red-500/10 border border-red-400/30 rounded-xl p-3 text-red-300 text-sm flex items-center gap-2">
-                  <svg
-                    className="w-4 h-4 shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  {displayNameError}
-                </div>
-              )}
-
-              {displayNameSuccess && (
-                <div className="bg-green-500/10 border border-green-400/30 rounded-xl p-3 text-green-300 text-sm flex items-center gap-2">
-                  <svg
-                    className="w-4 h-4 shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  {displayNameSuccess}
-                </div>
-              )}
-
-              <div className="flex items-center justify-end gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowDisplayName(false);
-                    setDisplayNameInput(displayName);
-                    setDisplayNameError(null);
-                    setDisplayNameSuccess(null);
-                    // 关闭时同步当前 display
-                    fetchDisplayName();
-                  }}
-                  className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 font-medium"
-                  disabled={displayNameLoading}
-                >
-                  关闭
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-3 rounded-xl bg-linear-to-r from-green-500/30 to-emerald-500/30 border border-green-400/30 text-green-100 hover:from-green-500/40 hover:to-emerald-500/40 hover:text-white transition-all duration-200 font-semibold shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
-                  disabled={displayNameLoading}
-                >
-                  {displayNameLoading ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></div>
-                      <span>保存中...</span>
-                    </div>
-                  ) : (
-                    "保存更改"
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* intro（自我介绍）管理弹窗 */}
-      {showIntro && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-linear-to-br from-purple-800/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-lg border border-white/20 rounded-3xl shadow-2xl p-8 max-w-md w-full animate-fade-in">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-linear-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 10h.01M12 10h.01M16 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <h2 className="text-xl font-bold text-white">自我介绍</h2>
-            </div>
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                setIntroError(null);
-                setIntroSuccess(null);
-                if (introInput.length > 512) {
-                  setIntroError("自我介绍不能超过512个字符");
-                  return;
-                }
-                setIntroLoading(true);
-                try {
-                  const res = await import("@/lib/api").then((m) =>
-                    m.apiUpdateAccountInfo(
-                      displayName,
-                      csrfToken,
-                      display,
-                      introInput || null,
-                    ),
-                  );
-                  if (res.success) {
-                    setIntroSuccess("更新成功");
-                    setIntro(introInput || null);
-                  } else {
-                    setIntroError(res.error || "更新失败");
-                  }
-                } catch {
-                  setIntroError("网络错误");
-                } finally {
-                  setIntroLoading(false);
-                }
-              }}
-              className="space-y-6"
-            >
-              <div>
-                <label className="block text-blue-100 font-semibold mb-2 text-sm">
-                  自我介绍
-                </label>
-                <textarea
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 placeholder-white/50 min-h-20"
-                  placeholder="请输入自我介绍（可选，最多512字）"
-                  value={introInput}
-                  onChange={(e) => setIntroInput(e.target.value)}
-                  maxLength={512}
-                  disabled={introLoading}
+                <input
+                  type="password"
+                  value={(pwdForm as any)[key]}
+                  onChange={e => setPwdForm(p => ({ ...p, [key]: e.target.value }))}
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-blue-500 transition-all text-sm"
+                  placeholder="••••••"
                 />
-                <div className="text-xs text-white/50 mt-1 text-right">
-                  {introInput.length}/512
-                </div>
               </div>
-              {introError && (
-                <div className="bg-red-500/10 border border-red-400/30 rounded-xl p-3 text-red-300 text-sm flex items-center gap-2">
-                  <svg
-                    className="w-4 h-4 shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  {introError}
-                </div>
-              )}
-              {introSuccess && (
-                <div className="bg-green-500/10 border border-green-400/30 rounded-xl p-3 text-green-300 text-sm flex items-center gap-2">
-                  <svg
-                    className="w-4 h-4 shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  {introSuccess}
-                </div>
-              )}
-              <div className="flex items-center justify-end gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowIntro(false);
-                    setIntroInput(intro || "");
-                    setIntroError(null);
-                    setIntroSuccess(null);
-                    fetchIntro();
-                  }}
-                  className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-200 font-medium"
-                  disabled={introLoading}
-                >
-                  关闭
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-3 rounded-xl bg-linear-to-r from-green-500/30 to-emerald-500/30 border border-green-400/30 text-green-100 hover:from-green-500/40 hover:to-emerald-500/40 hover:text-white transition-all duration-200 font-semibold shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
-                  disabled={introLoading}
-                >
-                  {introLoading ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></div>
-                      <span>保存中...</span>
-                    </div>
-                  ) : (
-                    "保存更改"
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+            ))}
+
+            {pwdFormError && <div className="p-3 rounded-lg bg-red-50 text-red-600 text-xs flex items-center gap-2"><AlertCircle size={14} /> {pwdFormError}</div>}
+            {pwdFormSuccess && <div className="p-3 rounded-lg bg-green-50 text-green-600 text-xs flex items-center gap-2"><CheckCircle2 size={14} /> {pwdFormSuccess}</div>}
+
+            <div className="pt-2 flex justify-end gap-2">
+              <button type="button" onClick={() => setShowChangePwd(false)} className="px-4 py-2 text-sm text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">取消</button>
+              <button type="submit" disabled={pwdFormLoading} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors disabled:opacity-50">
+                {pwdFormLoading ? "提交中..." : "确认修改"}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* Username Modal */}
+      {showDisplayName && (
+        <Modal title="修改用户名" onClose={() => { setShowDisplayName(false); fetchDisplayName(); }}>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            setDisplayNameError(null); setDisplayNameSuccess(null);
+            if (!displayNameInput || displayNameInput.length < 2) { setDisplayNameError("至少2个字符"); return; }
+
+            setDisplayNameLoading(true);
+            try {
+              const res = await import("@/lib/api").then(m => m.apiUpdateDisplayName(displayNameInput, csrfToken, display));
+              if (res.success) {
+                setDisplayNameSuccess("更新成功");
+                setDisplayName(displayNameInput);
+              } else {
+                setDisplayNameError(res.error || "更新失败");
+              }
+            } catch { setDisplayNameError("网络错误"); } finally { setDisplayNameLoading(false); }
+          }} className="space-y-4">
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">用户名</label>
+              <input
+                type="text"
+                value={displayNameInput}
+                onChange={e => setDisplayNameInput(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-blue-500 transition-all text-sm"
+                maxLength={32}
+              />
+            </div>
+
+            <label className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer">
+              <input type="checkbox" checked={display} onChange={e => setDisplay(e.target.checked)} className="accent-blue-500 w-4 h-4" />
+              <span className="text-sm text-slate-600 dark:text-slate-300">展示在「关于 (About)」页面</span>
+            </label>
+
+            {displayNameError && <div className="p-3 rounded-lg bg-red-50 text-red-600 text-xs flex items-center gap-2"><AlertCircle size={14} /> {displayNameError}</div>}
+            {displayNameSuccess && <div className="p-3 rounded-lg bg-green-50 text-green-600 text-xs flex items-center gap-2"><CheckCircle2 size={14} /> {displayNameSuccess}</div>}
+
+            <div className="pt-2 flex justify-end gap-2">
+              <button type="button" onClick={() => setShowDisplayName(false)} className="px-4 py-2 text-sm text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">取消</button>
+              <button type="submit" disabled={displayNameLoading} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors disabled:opacity-50">
+                {displayNameLoading ? "保存中..." : "保存更改"}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* Intro Modal */}
+      {showIntro && (
+        <Modal title="自我介绍" onClose={() => { setShowIntro(false); fetchIntro(); }}>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            setIntroError(null); setIntroSuccess(null);
+            if (introInput.length > 512) { setIntroError("不能超过512字"); return; }
+
+            setIntroLoading(true);
+            try {
+              const res = await import("@/lib/api").then(m => m.apiUpdateAccountInfo(displayName, csrfToken, display, introInput || null));
+              if (res.success) {
+                setIntroSuccess("更新成功");
+                setIntro(introInput);
+              } else {
+                setIntroError(res.error || "更新失败");
+              }
+            } catch { setIntroError("网络错误"); } finally { setIntroLoading(false); }
+          }} className="space-y-4">
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">简介</label>
+              <textarea
+                value={introInput}
+                onChange={e => setIntroInput(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-blue-500 transition-all text-sm min-h-[120px]"
+                placeholder="介绍一下你自己..."
+                maxLength={512}
+              />
+              <div className="text-right text-xs text-slate-400 mt-1">{introInput.length}/512</div>
+            </div>
+
+            {introError && <div className="p-3 rounded-lg bg-red-50 text-red-600 text-xs flex items-center gap-2"><AlertCircle size={14} /> {introError}</div>}
+            {introSuccess && <div className="p-3 rounded-lg bg-green-50 text-green-600 text-xs flex items-center gap-2"><CheckCircle2 size={14} /> {introSuccess}</div>}
+
+            <div className="pt-2 flex justify-end gap-2">
+              <button type="button" onClick={() => setShowIntro(false)} className="px-4 py-2 text-sm text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">取消</button>
+              <button type="submit" disabled={introLoading} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors disabled:opacity-50">
+                {introLoading ? "保存中..." : "保存更改"}
+              </button>
+            </div>
+          </form>
+        </Modal>
       )}
     </div>
   );
