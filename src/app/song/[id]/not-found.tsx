@@ -7,7 +7,7 @@ export default function NotFound() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500 font-sans flex items-center justify-center p-6">
+    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500 flex items-center justify-center p-6">
       <div className="text-center space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
         <div className="relative inline-block">
           <Disc
@@ -22,7 +22,7 @@ export default function NotFound() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl md:text-4xl font-serif text-slate-900 dark:text-slate-50">
+          <h1 className="text-3xl md:text-4xl text-slate-900 dark:text-slate-50">
             歌曲未找到
           </h1>
           <p className="text-slate-500 dark:text-slate-400 font-light max-w-sm mx-auto">

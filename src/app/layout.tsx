@@ -6,8 +6,6 @@ import {
   Noto_Sans_SC,
 } from "next/font/google";
 import "./globals.css";
-import { WallpaperProvider } from "@/context/WallpaperContext";
-import GlobalWallpaperBackground from "@/components/public/GlobalWallpaperBackground";
 
 // 标题字体 - 衬线体
 const playfairDisplay = Playfair_Display({
@@ -56,10 +54,7 @@ export default function RootLayout({
         className={`${playfairDisplay.variable} ${notoSerifSC.variable} ${inter.variable} ${notoSansSC.variable} antialiased bg-linear-to-br from-purple-900 via-blue-900 to-indigo-900`}
       >
         <Providers>
-          <WallpaperProvider>
-            <GlobalWallpaperBackground />
-            <div className="relative z-10 min-h-screen">{children}</div>
-          </WallpaperProvider>
+          <div className="relative z-10 min-h-screen">{children}</div>
         </Providers>
       </body>
     </html>

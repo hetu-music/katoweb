@@ -1,5 +1,7 @@
 "use client";
+
 import React, { useState, useCallback, useEffect, useMemo } from "react";
+import { flushSync } from "react-dom";
 import {
   Search,
   Plus,
@@ -10,12 +12,19 @@ import {
   EyeOff,
   Bell,
   XCircle,
+  Moon,
+  Sun,
+  CheckCircle2,
+  AlertCircle
 } from "lucide-react";
+import Image from "next/image";
+import { useTheme } from "next-themes";
 import type { Song, SongDetail, SongFieldConfig } from "@/lib/types";
 import {
   convertEmptyStringToNull,
   formatField,
   validateField,
+  getCoverUrl,
 } from "@/lib/utils";
 import { songFields, genreColorMap, typeColorMap } from "@/lib/constants";
 import FloatingActionButtons from "@/components/public/FloatingActionButtons";
@@ -29,62 +38,50 @@ import Notification from "./Notification";
 import CoverUpload from "./CoverUpload";
 import ScoreUpload from "./ScoreUpload";
 
-// 判断歌曲信息是否完整的函数
+// Force simpler classNames utility
+function cn(...classes: (string | undefined | null | false)[]) {
+  return classes.filter(Boolean).join(" ");
+}
+
+// Reuse CoverArt logic simply for small thumbs
+const AdminCoverArt = ({ song, className }: { song: Song; className?: string }) => {
+  const coverUrl = getCoverUrl(song);
+  return (
+    <div className={cn("relative overflow-hidden w-full h-full bg-slate-100 dark:bg-slate-800", className)}>
+      <Image
+        src={coverUrl}
+        alt={song.title}
+        width={100}
+        height={100}
+        className="w-full h-full object-cover"
+      />
+    </div>
+  );
+};
+
+// --- Logic Helpers ---
+
 function isSongIncomplete(song: SongDetail): boolean {
-  // 检查所有配置字段
   for (const field of songFields) {
-    // 封面、外链不用检测，视作已经填写
-    if (
-      ["hascover", "kugolink", "qmlink", "nelink", "comment"].includes(
-        field.key,
-      )
-    )
-      continue;
-
+    if (["hascover", "kugolink", "qmlink", "nelink", "comment"].includes(field.key)) continue;
     const value = song[field.key];
-
-    // 特殊处理乐谱状态：只有 true 算完整，false/null/undefined 算缺失
     if (field.key === "nmn_status") {
       if (value !== true) return true;
       continue;
     }
-
-    // 检查 null 或 undefined
-    if (value === null || value === undefined) {
-      return true;
-    }
-
-    // 检查空数组
-    if (Array.isArray(value) && value.length === 0) {
-      return true;
-    }
-
-    // 检查空字符串
-    if (typeof value === "string" && value.trim() === "") {
-      return true;
-    }
+    if (value === null || value === undefined) return true;
+    if (Array.isArray(value) && value.length === 0) return true;
+    if (typeof value === "string" && value.trim() === "") return true;
   }
-
   return false;
 }
 
-// 获取缺失的字段信息
 function getMissingFields(song: SongDetail): string[] {
   const missing: string[] = [];
-
   for (const field of songFields) {
-    // 封面、外链不用检测
-    if (
-      ["hascover", "kugolink", "qmlink", "nelink", "comment"].includes(
-        field.key,
-      )
-    )
-      continue;
-
+    if (["hascover", "kugolink", "qmlink", "nelink", "comment"].includes(field.key)) continue;
     const value = song[field.key];
     let isEmpty = false;
-
-    // 特殊处理乐谱状态
     if (field.key === "nmn_status") {
       if (value !== true) isEmpty = true;
     } else if (value === null || value === undefined) {
@@ -94,251 +91,202 @@ function getMissingFields(song: SongDetail): string[] {
     } else if (typeof value === "string" && value.trim() === "") {
       isEmpty = true;
     }
-
-    if (isEmpty) {
-      missing.push(field.label);
-    }
+    if (isEmpty) missing.push(field.label);
   }
-
   return missing;
 }
 
-// Memoized SongRow component
-const SongRow = React.memo(
+// --- Component: AdminListRow ---
+
+const AdminListRow = React.memo(
   ({
     song,
     idx,
-    expandedRows,
+    isExpanded,
     toggleRowExpansion,
     handleEdit,
   }: {
     song: SongDetail;
     idx: number;
-    expandedRows: Set<number>;
+    isExpanded: boolean;
     toggleRowExpansion: (id: number) => void;
-    handleEdit: (song: Song) => void;
+    handleEdit: (song: SongDetail) => void;
   }) => {
-    const isExpanded = expandedRows.has(song.id);
-
     return (
-      <>
-        <tr
-          className={`border-b border-slate-200 dark:border-slate-800 transition-colors ${
-            isExpanded
-              ? "bg-blue-50/50 dark:bg-blue-900/10"
-              : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
-          }`}
+      <div className="flex flex-col bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden transition-all hover:shadow-md hover:border-blue-200 dark:hover:border-blue-900/30">
+        {/* Main Row Content */}
+        <div
+          className={cn(
+            "flex items-center gap-4 p-4 cursor-pointer transition-colors",
+            isExpanded ? "bg-slate-50 dark:bg-slate-800/80" : ""
+          )}
+          onClick={() => toggleRowExpansion(song.id)}
         >
-          <td className="py-3 px-2 md:py-4 md:px-4 text-slate-500 dark:text-slate-400 font-mono text-sm">
-            {idx + 1}
-          </td>
-          <td className="py-3 px-2 md:py-4 md:px-4 text-slate-900 dark:text-slate-100 font-medium">
-            <div className="flex flex-col items-start gap-1 md:flex-row md:items-center md:gap-2">
-              <span className="break-words line-clamp-2 md:line-clamp-none font-serif">
+          {/* Index */}
+          <div className="w-8 shrink-0 text-center font-mono text-sm text-slate-400">
+            {idx}
+          </div>
+
+          {/* Cover */}
+          <div className="w-12 h-12 shrink-0 rounded-md overflow-hidden border border-slate-100 dark:border-slate-700">
+            <AdminCoverArt song={song} />
+          </div>
+
+          {/* Title & Status */}
+          <div className="flex-1 min-w-0 flex flex-col justify-center">
+            <div className="flex items-center gap-2">
+              <h3 className="font-medium text-slate-900 dark:text-slate-100 truncate">
                 {song.title}
-              </span>
+              </h3>
               {isSongIncomplete(song) && (
-                <span className="inline-flex items-center px-1.5 py-0.5 md:px-2 md:py-1 rounded-full text-[10px] md:text-xs font-medium bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300 border border-amber-200 dark:border-amber-400/30 whitespace-nowrap">
+                <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-200 dark:border-amber-700/50">
                   待完善
                 </span>
               )}
             </div>
-          </td>
-          <td className="py-3 px-2 md:py-4 md:px-4 text-slate-600 dark:text-slate-300 hidden md:table-cell text-sm">
-            {song.album || "-"}
-          </td>
-          <td className="py-3 px-2 md:py-4 md:px-4 text-slate-500 dark:text-slate-400 hidden md:table-cell text-sm">
-            {Array.isArray(song.lyricist)
-              ? song.lyricist.join(", ")
-              : song.lyricist || "-"}
-          </td>
-          <td className="py-3 px-2 md:py-4 md:px-4 text-slate-500 dark:text-slate-400 hidden md:table-cell text-sm">
-            {Array.isArray(song.composer)
-              ? song.composer.join(", ")
-              : song.composer || "-"}
-          </td>
-          <td className="py-3 px-2 md:py-4 md:px-4 text-slate-500 dark:text-slate-400 hidden md:table-cell text-sm">
-            {Array.isArray(song.type) ? song.type.join(", ") : song.type || "-"}
-          </td>
-          <td className="py-3 px-2 md:py-4 md:px-4">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => toggleRowExpansion(song.id)}
-                className={`p-2 rounded-lg transition-all duration-200 ${
-                  isExpanded
-                    ? "bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-300"
-                    : "text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-300"
-                }`}
-                title={isExpanded ? "收起详情" : "查看详情"}
-              >
-                {isExpanded ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-              <button
-                onClick={() => handleEdit(song)}
-                className="p-2 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-500/10 transition-all duration-200"
-                title="编辑"
-              >
-                <Edit size={16} />
-              </button>
-            </div>
-          </td>
-        </tr>
-        {isExpanded && (
-          <>
-            {/* Mobile Expanded Row */}
-            <tr className="md:hidden">
-              <td
-                colSpan={3}
-                className="p-0 border-b border-slate-200 dark:border-slate-800"
-              >
-                <ExpandedContent song={song} />
-              </td>
-            </tr>
-            {/* Desktop Expanded Row */}
-            <tr className="hidden md:table-row">
-              <td
-                colSpan={7}
-                className="p-0 border-b border-slate-200 dark:border-slate-800"
-              >
-                <ExpandedContent song={song} />
-              </td>
-            </tr>
-          </>
-        )}
-      </>
-    );
-  },
-);
-SongRow.displayName = "SongRow";
-
-function ExpandedContent({ song }: { song: SongDetail }) {
-  return (
-    <div className="bg-slate-50 dark:bg-slate-800/50 shadow-inner relative overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-      <div className="p-4 md:p-6">
-        {/* 如果歌曲信息不完整，显示缺失字段提示 */}
-        {isSongIncomplete(song) && (
-          <div className="mb-6 p-4 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-100 dark:border-amber-500/20 shadow-sm flex items-start gap-4">
-            <div className="p-2 bg-amber-100 dark:bg-amber-500/20 rounded-lg text-amber-600 dark:text-amber-300 shrink-0 mt-0.5">
-              <XCircle size={18} />
-            </div>
-            <div>
-              <h4 className="font-semibold mb-1">信息待完善</h4>
-              <p className="text-sm opacity-80 mb-2">
-                以下字段内容缺失，请及时补充：
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {getMissingFields(song).map((field) => (
-                  <span
-                    key={field}
-                    className="px-2 py-1 bg-amber-100 border border-amber-200 rounded text-xs text-amber-700 dark:bg-amber-900/40 dark:border-amber-500/20 dark:text-amber-200"
-                  >
-                    {field}
-                  </span>
-                ))}
-              </div>
+            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 truncate">
+              <span>{song.album || "未归档"}</span>
+              <span className="opacity-40">/</span>
+              <span>{Array.isArray(song.lyricist) ? song.lyricist.join(", ") : (song.lyricist || "-")}</span>
             </div>
           </div>
-        )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {songFields.map((field) => {
-            const value = song[field.key];
-            // 使用更严格的空值检查
-            // 对于乐谱(nmn_status)，只有 true 算完整
-            // 对于其他 boolean (除了hascover) 或 number 0，算完整
-            let isEmpty = false;
+          {/* Meta Info (Desktop) */}
+          <div className="hidden lg:flex items-center gap-6 text-sm text-slate-500 dark:text-slate-400 shrink-0 mr-4">
+            <div className="w-32 text-right truncate">
+              {Array.isArray(song.composer) ? song.composer.join(", ") : (song.composer || "-")}
+            </div>
+            <div className="w-24 text-center">
+              {Array.isArray(song.type) && song.type[0] ? (
+                <span className={cn("px-2 py-0.5 rounded-full text-xs border", typeColorMap[song.type[0]]?.replace('bg-', 'border-').replace('text-', 'text-') || "border-slate-200")}>
+                  {song.type[0]}
+                </span>
+              ) : "-"}
+            </div>
+          </div>
 
-            if (field.key === "nmn_status") {
-              isEmpty = value !== true;
-            } else {
-              isEmpty =
-                value === null ||
-                value === undefined ||
-                (Array.isArray(value) && value.length === 0) ||
-                (typeof value === "string" && value.trim() === "");
-            }
-
-            // 封面和外链视为已填写，不需要高亮
-            const shouldHighlight =
-              !["hascover", "kugolink", "qmlink", "nelink", "comment"].includes(
-                field.key,
-              ) && isEmpty;
-
-            return (
-              <div
-                key={field.key}
-                className={`
-                  relative overflow-hidden rounded-xl border p-4 transition-all duration-200
-                  ${
-                    shouldHighlight
-                      ? "bg-red-50 border-red-200 hover:bg-red-100/50 dark:bg-red-500/5 dark:border-red-500/30 dark:hover:bg-red-500/10"
-                      : "bg-white border-slate-200 hover:border-slate-300 dark:bg-slate-900/50 dark:border-slate-700 dark:hover:border-slate-600"
-                  }
-                `}
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <span
-                    className={`text-xs font-semibold tracking-wider uppercase ${
-                      shouldHighlight
-                        ? "text-red-500 dark:text-red-400"
-                        : "text-slate-400 dark:text-slate-500"
-                    }`}
-                  >
-                    {field.label}
-                  </span>
-                  {shouldHighlight && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400">
-                      required
-                    </span>
-                  )}
-                </div>
-
-                <div
-                  className={`text-sm break-words leading-relaxed font-medium ${
-                    shouldHighlight
-                      ? "text-red-700 dark:text-red-200/90"
-                      : "text-slate-700 dark:text-slate-200"
-                  }`}
-                >
-                  {field.key === "hascover" ? (
-                    song.hascover === true ? (
-                      <span className="text-green-600 dark:text-green-400">
-                        定制封面
-                      </span>
-                    ) : song.hascover === false ? (
-                      <span className="text-purple-600 dark:text-purple-400">
-                        初号机
-                      </span>
-                    ) : (
-                      <span className="text-slate-400">白底狐狸 (默认)</span>
-                    )
-                  ) : field.key === "nmn_status" ? (
-                    song.nmn_status === true ? (
-                      <span className="text-green-600 dark:text-green-400 flex items-center gap-1">
-                        ✓ 有乐谱
-                      </span>
-                    ) : (
-                      <span className="text-slate-400">无乐谱</span>
-                    )
-                  ) : (
-                    formatField(song[field.key], field.type) ||
-                    (shouldHighlight ? (
-                      "未填写"
-                    ) : (
-                      <span className="text-slate-300 dark:text-slate-600">
-                        -
-                      </span>
-                    ))
-                  )}
-                </div>
-              </div>
-            );
-          })}
+          {/* Actions */}
+          <div className="flex items-center gap-2 shrink-0 ml-2" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEdit(song);
+              }}
+              className="p-2 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20 transition-colors"
+              title="编辑"
+            >
+              <Edit size={18} />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleRowExpansion(song.id);
+              }}
+              className={cn(
+                "p-2 rounded-lg transition-colors",
+                isExpanded
+                  ? "text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/20"
+                  : "text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+              )}
+            >
+              {isExpanded ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
         </div>
+
+        {/* Expanded Content */}
+        {isExpanded && (
+          <div className="border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-black/20 p-6 animate-in slide-in-from-top-2 duration-200">
+            <ExpandedContent song={song} />
+          </div>
+        )}
+      </div>
+    );
+  }
+);
+AdminListRow.displayName = "AdminListRow";
+
+// --- Component: ExpandedContent ---
+
+function ExpandedContent({ song }: { song: SongDetail }) {
+  const missing = getMissingFields(song);
+
+  return (
+    <div className="space-y-6">
+      {missing.length > 0 && (
+        <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          <div>
+            <h4 className="text-sm font-semibold text-amber-900 dark:text-amber-200 mb-1">信息待完善</h4>
+            <div className="flex flex-wrap gap-2">
+              {missing.map(field => (
+                <span key={field} className="px-2 py-0.5 text-xs bg-white dark:bg-amber-900/30 border border-amber-100 dark:border-amber-800 rounded-md text-amber-800 dark:text-amber-300">
+                  {field}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {songFields.map(field => {
+          const value = song[field.key];
+          let isEmpty = false;
+          if (field.key === "nmn_status") {
+            isEmpty = value !== true;
+          } else {
+            isEmpty = value === null || value === undefined ||
+              (Array.isArray(value) && value.length === 0) ||
+              (typeof value === "string" && value.trim() === "");
+          }
+
+          const isCritical = !["hascover", "kugolink", "qmlink", "nelink", "comment"].includes(field.key);
+          const shouldHighlight = isCritical && isEmpty;
+
+          return (
+            <div
+              key={field.key}
+              className={cn(
+                "p-3 rounded-lg border text-sm transition-colors",
+                shouldHighlight
+                  ? "bg-red-50 border-red-100 dark:bg-red-900/10 dark:border-red-900/30"
+                  : "bg-white border-slate-100 dark:bg-slate-800 dark:border-slate-700"
+              )}
+            >
+              <div className="flex justify-between mb-1">
+                <span className={cn(
+                  "text-xs font-semibold uppercase tracking-wider",
+                  shouldHighlight ? "text-red-600 dark:text-red-400" : "text-slate-400 dark:text-slate-500"
+                )}>
+                  {field.label}
+                </span>
+                {shouldHighlight && <span className="w-1.5 h-1.5 rounded-full bg-red-500" />}
+              </div>
+
+              <div className={cn(
+                "font-medium truncate",
+                shouldHighlight ? "text-red-700 dark:text-red-300" : "text-slate-700 dark:text-slate-200"
+              )}>
+                {field.key === "hascover" ? (
+                  song.hascover === true ? <span className="text-green-600 dark:text-green-400">定制封面</span> :
+                    song.hascover === false ? <span className="text-purple-600 dark:text-purple-400">初号机</span> :
+                      <span className="text-slate-400">默认</span>
+                ) : field.key === "nmn_status" ? (
+                  song.nmn_status === true ? <span className="text-green-600 dark:text-green-400">✓ 有乐谱</span> : <span className="text-slate-400">无乐谱</span>
+                ) : (
+                  formatField(song[field.key], field.type) || "-"
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
+
+// --- Main Component ---
 
 export default function AdminClientComponent({
   initialSongs,
@@ -347,29 +295,18 @@ export default function AdminClientComponent({
   initialSongs: SongDetail[];
   initialError: string | null;
 }) {
-  // 使用 useState 来管理 URL 参数，避免 hydration 错误
-  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(
-    null,
-  );
+  const { setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // States
   const [isClient, setIsClient] = useState(false);
-
-  // 在客户端挂载后初始化 URL 参数
-  useEffect(() => {
-    setIsClient(true);
-    if (typeof window !== "undefined") {
-      setSearchParams(new URLSearchParams(window.location.search));
-    }
-  }, []);
-
   const [showIncompleteOnly, setShowIncompleteOnly] = useState(false);
 
+  // Data Hooks
   const {
     songs,
     setSongs,
     loading,
-
-    error,
-    setError,
     searchTerm,
     setSearchTerm,
     filteredSongs: baseFilteredSongs,
@@ -377,1052 +314,627 @@ export default function AdminClientComponent({
   } = useSongs(
     initialSongs,
     initialError,
-    isClient ? searchParams?.get("q") || "" : "",
+    typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("q") || "" : ""
   );
 
-  // 在基础筛选结果上再应用待完善筛选
+  // Filter Logic
   const filteredSongs = useMemo(() => {
-    if (showIncompleteOnly) {
-      return baseFilteredSongs.filter((song) => isSongIncomplete(song));
-    }
-    return baseFilteredSongs;
+    return showIncompleteOnly
+      ? baseFilteredSongs.filter(isSongIncomplete)
+      : baseFilteredSongs;
   }, [baseFilteredSongs, showIncompleteOnly]);
 
   const sortedSongs = useMemo(() => {
-    // 使用基础排序结果，再次过滤（保持原有排序逻辑）
-    if (showIncompleteOnly) {
-      return baseSortedSongs.filter((song) => isSongIncomplete(song));
-    }
-    return baseSortedSongs;
+    return showIncompleteOnly
+      ? baseSortedSongs.filter(isSongIncomplete)
+      : baseSortedSongs;
   }, [baseSortedSongs, showIncompleteOnly]);
 
-  // 直接从 URL 获取初始页面，避免额外的状态
+  // Pagination
   const getInitialPage = () => {
-    if (!isClient || !searchParams) return 1;
-    return parseInt(searchParams.get("page") || "1", 10);
+    if (typeof window === "undefined") return 1;
+    const p = new URLSearchParams(window.location.search).get("page");
+    return p ? parseInt(p, 10) : 1;
   };
 
-  // 分页功能
   const {
     currentPage,
     totalPages,
     currentData: paginatedSongs,
     setCurrentPage: setPaginationPage,
     startIndex,
-    endIndex,
   } = usePagination({
     data: sortedSongs,
-    itemsPerPage: 25,
+    itemsPerPage: 24,
     initialPage: getInitialPage(),
-    resetOnDataChange: false, // 由 URL 同步逻辑处理重置
+    resetOnDataChange: false,
   });
 
-  // 包装分页函数以同步URL
-  const setCurrentPage = useCallback(
-    (page: number) => {
-      setPaginationPage(page);
+  // Sync URL
+  const updateUrl = useCallback((page: number, q: string) => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (q) params.set("q", q); else params.delete("q");
+    if (page > 1) params.set("page", page.toString()); else params.delete("page");
 
-      // 同步更新 URL
-      if (isClient && typeof window !== "undefined") {
-        const params = new URLSearchParams(window.location.search);
-        if (page !== 1) {
-          params.set("page", page.toString());
-        } else {
-          params.delete("page");
-        }
-        const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
-        window.history.replaceState(null, "", newUrl);
-        setSearchParams(new URLSearchParams(params.toString()));
-      }
-    },
-    [setPaginationPage, isClient, setSearchParams],
-  );
+    const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
+    window.history.replaceState(null, "", newUrl);
+  }, []);
+
+  const handlePageChange = useCallback((page: number) => {
+    setPaginationPage(page);
+    updateUrl(page, searchTerm);
+  }, [searchTerm, updateUrl, setPaginationPage]);
+
+  useEffect(() => {
+    setIsClient(true);
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
+    // Debounce basic URL update if needed, but here we just rely on explicit actions or debounced search
+    updateUrl(currentPage, searchTerm);
+  }, [searchTerm, currentPage, isClient, updateUrl]);
+
+  // Auth & Actions
   const { csrfToken, handleLogout, logoutLoading } = useAuth();
   const [showAdd, setShowAdd] = useState(false);
-  const [newSong, setNewSong] = useState<Partial<Song>>({
-    title: "",
-    album: "",
-  });
-  const [addFormErrors, setAddFormErrors] = useState<Record<string, string>>(
-    {},
-  );
+  const [newSong, setNewSong] = useState<Partial<Song>>({ title: "", album: "" });
+  const [addFormErrors, setAddFormErrors] = useState<Record<string, string>>({});
+
   const [editSong, setEditSong] = useState<SongDetail | null>(null);
   const [editForm, setEditForm] = useState<Partial<Song>>({});
-  const [editFormErrors, setEditFormErrors] = useState<Record<string, string>>(
-    {},
-  );
-  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [editFormErrors, setEditFormErrors] = useState<Record<string, string>>({});
+
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
-  const [addResultMessage, setAddResultMessage] = useState<string | null>(null);
-  const [editResultMessage, setEditResultMessage] = useState<string | null>(
-    null,
-  );
+  const [operationMsg, setOperationMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [showNotification, setShowNotification] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   // Scroll listener
-  React.useEffect(() => {
-    const onScroll = () => {
-      setShowScrollTop(window.scrollY > 200);
-    };
+  useEffect(() => {
+    const onScroll = () => setShowScrollTop(window.scrollY > 200);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // URL同步逻辑 - 只处理搜索词，页面由 setCurrentPage 处理
+  // Notification Auto-Show
   useEffect(() => {
-    if (!isClient || typeof window === "undefined") return;
-
-    const params = new URLSearchParams(window.location.search);
-    const currentQ = params.get("q") || "";
-
-    // 只有当搜索词发生变化时才更新URL
-    if (searchTerm !== currentQ) {
-      if (searchTerm) {
-        params.set("q", searchTerm);
-      } else {
-        params.delete("q");
-      }
-      // 搜索时重置到第一页
-      params.delete("page");
-
-      const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
-      window.history.replaceState(null, "", newUrl);
-      setSearchParams(new URLSearchParams(params.toString()));
-
-      // 重置分页到第一页
-      setPaginationPage(1);
-    }
-  }, [searchTerm, isClient, setSearchParams, setPaginationPage]);
-
-  // 自动弹出通知逻辑
-  useEffect(() => {
-    // 检查是否是新的登录会话
-    const lastNotificationTime = localStorage.getItem("lastNotificationTime");
-    const currentTime = new Date().getTime();
-    const oneHour = 60 * 60 * 1000; // 1小时的毫秒数
-
-    // 如果没有记录或者距离上次显示超过1小时，则显示通知
-    if (
-      !lastNotificationTime ||
-      currentTime - parseInt(lastNotificationTime) > oneHour
-    ) {
-      // 延迟1秒显示，让页面先加载完成
-      const timer = setTimeout(() => {
+    const lastTime = localStorage.getItem("lastNotificationTime");
+    const now = Date.now();
+    if (!lastTime || now - parseInt(lastTime) > 3600000) {
+      const t = setTimeout(() => {
         setShowNotification(true);
-        localStorage.setItem("lastNotificationTime", currentTime.toString());
+        localStorage.setItem("lastNotificationTime", now.toString());
       }, 1000);
-
-      return () => clearTimeout(timer);
+      return () => clearTimeout(t);
     }
   }, []);
 
-  const scrollToTop = useCallback(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
+  const scrollToTop = useCallback(() => window.scrollTo({ top: 0, behavior: "smooth" }), []);
 
   const toggleRowExpansion = useCallback((id: number) => {
-    setExpandedRows((prev) => {
-      const newExpanded = new Set(prev);
-      if (newExpanded.has(id)) {
-        newExpanded.delete(id);
-      } else {
-        newExpanded.add(id);
-      }
-      return newExpanded;
+    setExpandedRows(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
     });
   }, []);
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleAdd = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      // 校验所有字段
-      const errors: Record<string, string> = {};
-      songFields.forEach((f) => {
-        errors[f.key] = validateField(
-          f,
-          (newSong as Partial<SongDetail>)[f.key],
-        );
+  // Theme Toggle (Copied from MusicLibraryClient)
+  const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!document.startViewTransition) {
+      setTheme(resolvedTheme === "dark" ? "light" : "dark");
+      return;
+    }
+    const x = e.clientX;
+    const y = e.clientY;
+    const endRadius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    document.documentElement.classList.add("no-transitions");
+    const transition = document.startViewTransition(() => {
+      flushSync(() => {
+        setTheme(resolvedTheme === "dark" ? "light" : "dark");
       });
-      setAddFormErrors(errors);
-      const firstErrorKey = Object.keys(errors).find((k) => errors[k]);
-      if (firstErrorKey) {
-        // 尝试聚焦第一个有错的字段
-        const el = document.querySelector(`[name='${firstErrorKey}']`);
-        if (el && "focus" in el) (el as HTMLElement).focus();
-        return;
-      }
-      try {
-        setIsSubmitting(true);
-        setAddResultMessage(null);
-        const { /* year, */ ...songWithoutYear } = newSong;
-        // 处理空字符串为 null
-        const songToSubmit = convertEmptyStringToNull(songWithoutYear);
-        const created = await apiCreateSong(songToSubmit, csrfToken);
-        setSongs((prev) => [...prev, created]);
-        setShowAdd(false);
-        setNewSong({ title: "", album: "" });
-        setAddFormErrors({});
-        setAddResultMessage("成功");
-        setTimeout(() => {
-          setAddResultMessage(null);
-        }, 2000);
-      } catch (e: unknown) {
-        if (e instanceof Error) {
-          setAddResultMessage(e.message || "失败");
-        } else {
-          setAddResultMessage("失败");
-        }
-      } finally {
-        setIsSubmitting(false);
-      }
-    },
-    [newSong, csrfToken, setSongs],
-  );
+    });
+    transition.finished.then(() => document.documentElement.classList.remove("no-transitions"));
+    transition.ready.then(() => {
+      document.documentElement.animate(
+        { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`] },
+        { duration: 500, easing: "ease-in-out", pseudoElement: "::view-transition-new(root)" }
+      );
+    });
+  };
 
-  const handleEdit = useCallback((song: SongDetail) => {
+  // Handlers
+  const handleAddSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const errors: Record<string, string> = {};
+    songFields.forEach(f => {
+      errors[f.key] = validateField(f, (newSong as Record<string, unknown>)[f.key]);
+    });
+    setAddFormErrors(errors);
+    if (Object.values(errors).some(Boolean)) return;
+
+    try {
+      setIsSubmitting(true);
+      const created = await apiCreateSong(convertEmptyStringToNull(newSong), csrfToken);
+      setSongs(prev => [...prev, created]);
+      setShowAdd(false);
+      setNewSong({ title: "", album: "" });
+      setOperationMsg({ type: 'success', text: "创建成功" });
+    } catch (err: unknown) {
+      setOperationMsg({ type: 'error', text: err instanceof Error ? err.message : "创建失败" });
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setOperationMsg(null), 3000);
+    }
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editSong) return;
+    const errors: Record<string, string> = {};
+    songFields.forEach(f => {
+      errors[f.key] = validateField(f, (editForm as Record<string, unknown>)[f.key]);
+    });
+    setEditFormErrors(errors);
+    if (Object.values(errors).some(Boolean)) return;
+
+    try {
+      setIsSubmitting(true);
+      const updated = await apiUpdateSong(editSong.id, { ...convertEmptyStringToNull(editForm), updated_at: editSong.updated_at }, csrfToken);
+      setSongs(prev => prev.map(s => s.id === updated.id ? updated : s));
+      setEditSong(null);
+      setOperationMsg({ type: 'success', text: "更新成功" });
+    } catch (err: unknown) {
+      setOperationMsg({ type: 'error', text: err instanceof Error ? err.message : "更新失败" });
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setOperationMsg(null), 3000);
+    }
+  };
+
+  const startEdit = (song: SongDetail) => {
     setEditSong(song);
     setEditForm({ ...song });
-  }, []);
-
-  const handleEditSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!editSong) return;
-      // 校验所有字段
-      const errors: Record<string, string> = {};
-      songFields.forEach((f) => {
-        errors[f.key] = validateField(
-          f,
-          (editForm as Partial<SongDetail>)[f.key],
-        );
-      });
-      setEditFormErrors(errors);
-      const firstErrorKey = Object.keys(errors).find((k) => errors[k]);
-      if (firstErrorKey) {
-        const el = document.querySelector(`[name='${firstErrorKey}']`);
-        if (el && "focus" in el) (el as HTMLElement).focus();
-        return;
-      }
-      try {
-        setIsSubmitting(true);
-        setEditResultMessage(null);
-        const formWithoutYear = editForm;
-        // 处理空字符串为 null
-        const formToSubmit = convertEmptyStringToNull(formWithoutYear);
-        // 一并传递 updated_at
-        const updated = await apiUpdateSong(
-          editSong.id,
-          { ...formToSubmit, updated_at: editSong.updated_at },
-          csrfToken,
-        );
-        setSongs((prev) =>
-          prev.map((s) => (s.id === updated.id ? updated : s)),
-        );
-        setEditFormErrors({});
-        setEditResultMessage("成功");
-        setTimeout(() => {
-          setEditSong(null);
-          setEditResultMessage(null);
-        }, 2000);
-      } catch (e: unknown) {
-        if (e instanceof Error) {
-          if (e.message.includes("数据已被他人修改")) {
-            setEditResultMessage("数据已被他人修改，请刷新页面后重试");
-          } else {
-            setEditResultMessage(e.message || "失败");
-          }
-        } else {
-          setEditResultMessage("失败");
-        }
-      } finally {
-        setIsSubmitting(false);
-      }
-    },
-    [editSong, editForm, csrfToken, setSongs],
-  );
+  };
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500 font-sans">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Header Section */}
-        <div className="mb-8 flex flex-row items-center justify-between gap-4 pt-4">
-          <div className="flex items-center gap-4">
-            <h1
-              className="text-4xl font-serif font-bold text-slate-900 dark:text-white mb-0 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300 select-none tracking-tight"
-              onClick={() => {
-                // 重置搜索条件和页面
-                setSearchTerm("");
-                setShowIncompleteOnly(false);
-                setPaginationPage(1);
-              }}
-              title="点击重置搜索条件"
-            >
-              Admin Dashboard
-            </h1>
-            {/* 通知按钮 */}
-            <button
-              onClick={() => setShowNotification(true)}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 shadow-sm font-medium"
-              title="查看操作说明"
-            >
-              <Bell size={16} />
-              <span className="hidden sm:inline text-sm">说明</span>
-            </button>
+      {/* Navbar to match MusicLibraryClient */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div
+            className="text-2xl font-bold tracking-tight flex items-center gap-1 font-heading text-slate-900 dark:text-white"
+          >
+            勘鉴
+            <span className="w-[2px] h-5 bg-blue-600 mx-2 rounded-full translate-y-[1.5px]" />
+            管理后台
           </div>
-          <Account
-            csrfToken={csrfToken}
-            handleLogout={handleLogout}
-            logoutLoading={logoutLoading}
-          />
+          <div className="flex items-center gap-3">
+            <button onClick={() => setShowNotification(true)} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors" title="使用说明">
+              <Bell size={20} />
+            </button>
+            <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors">
+              {mounted ? (resolvedTheme === "dark" ? <Moon size={20} /> : <Sun size={20} />) : <div className="w-5 h-5" />}
+            </button>
+            <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1" />
+            <Account csrfToken={csrfToken} handleLogout={handleLogout} logoutLoading={logoutLoading} />
+          </div>
         </div>
+      </nav>
 
-        {/* Search and Add Button */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="flex-1 relative group">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
-              <Search size={20} />
+      <main className="pt-32 pb-20 max-w-7xl mx-auto px-6">
+
+        {/* Header & Stats */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div>
+            <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-50 mb-4">Dashboard</h1>
+            <div className="flex flex-wrap gap-3">
+              <div className="px-3 py-1 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-sm font-medium border border-blue-100 dark:border-blue-800">
+                总计 {songs.length} 首
+              </div>
+              {showIncompleteOnly && (
+                <div className="px-3 py-1 bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 rounded-full text-sm font-medium border border-amber-100 dark:border-amber-800">
+                  待完善 {filteredSongs.length} 首
+                </div>
+              )}
             </div>
-            <input
-              type="text"
-              placeholder="搜索歌曲、专辑等..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 pl-10 pr-12 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
-            />
-            {searchTerm && (
-              <button
-                type="button"
-                onClick={() => setSearchTerm("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
-                aria-label="清空搜索"
-              >
-                <XCircle size={18} />
-              </button>
-            )}
           </div>
 
-          <div className="flex gap-3">
-            <button
-              onClick={() => setShowIncompleteOnly(!showIncompleteOnly)}
-              className={`flex items-center gap-2 px-5 py-3 rounded-2xl border transition-all duration-200 shadow-sm font-medium whitespace-nowrap ${
-                showIncompleteOnly
-                  ? "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20"
-                  : "bg-white text-slate-600 border-slate-200 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800 dark:hover:bg-amber-500/10 dark:hover:text-amber-300 dark:hover:border-amber-500/20"
-              }`}
-              title={showIncompleteOnly ? "显示全部歌曲" : "只显示待完善歌曲"}
-            >
-              <div
-                className={`w-2 h-2 rounded-full ${showIncompleteOnly ? "bg-amber-500" : "bg-slate-300 dark:bg-slate-600"}`}
-              ></div>
-              {showIncompleteOnly ? "仅待完善" : "待完善"}
-            </button>
-
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setShowAdd(true)}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 shadow-lg shadow-slate-200 dark:shadow-none hover:-translate-y-0.5 transition-all duration-200 font-medium whitespace-nowrap"
+              className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-full font-medium shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
             >
               <Plus size={20} />
-              新增歌曲
+              <span>新增歌曲</span>
             </button>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="flex items-center gap-3 sm:gap-4 mb-8 flex-wrap">
-          <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full px-4 py-2 shadow-sm text-sm text-slate-600 dark:text-slate-400">
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-            总计{" "}
-            <span className="text-slate-900 dark:text-slate-200 font-bold">
-              {songs.length}
-            </span>{" "}
-            首
+        {/* Controls Bar */}
+        <div className="sticky top-20 z-40 bg-[#FAFAFA]/95 dark:bg-[#0B0F19]/95 backdrop-blur-sm py-4 mb-8 -mx-6 px-6 border-y border-transparent data-[scrolled=true]:border-slate-100">
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+            {/* Filter Pills */}
+            <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto no-scrollbar">
+              <button
+                onClick={() => { setShowIncompleteOnly(false); setPaginationPage(1); }}
+                className={cn(
+                  "px-4 py-1.5 rounded-full text-sm border transition-all whitespace-nowrap",
+                  !showIncompleteOnly
+                    ? "bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white"
+                    : "bg-transparent text-slate-500 border-slate-200 dark:border-slate-800 hover:border-slate-300"
+                )}
+              >
+                全部歌曲
+              </button>
+              <button
+                onClick={() => { setShowIncompleteOnly(true); setPaginationPage(1); }}
+                className={cn(
+                  "px-4 py-1.5 rounded-full text-sm border transition-all whitespace-nowrap flex items-center gap-1.5",
+                  showIncompleteOnly
+                    ? "bg-amber-100 text-amber-900 border-amber-200 dark:bg-amber-500/20 dark:text-amber-200 dark:border-amber-500/30"
+                    : "bg-transparent text-slate-500 border-slate-200 dark:border-slate-800 hover:border-amber-300 hover:text-amber-600"
+                )}
+              >
+                <AlertCircle size={14} />
+                待完善
+              </button>
+            </div>
+
+            {/* Search */}
+            <div className="relative group w-full md:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={16} />
+              <input
+                type="text"
+                placeholder="搜索标题、专辑、作者..."
+                value={searchTerm}
+                onChange={(e) => { setSearchTerm(e.target.value); setPaginationPage(1); }}
+                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full py-2 pl-9 pr-8 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-300 hover:text-slate-500"
+                >
+                  <XCircle size={14} />
+                </button>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full px-4 py-2 shadow-sm text-sm text-slate-600 dark:text-slate-400">
-            <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-            筛选{" "}
-            <span className="text-slate-900 dark:text-slate-200 font-bold">
-              {filteredSongs.length}
-            </span>{" "}
-            首
-          </div>
-          <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full px-4 py-2 shadow-sm text-sm text-slate-600 dark:text-slate-400">
-            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-            待完善{" "}
-            <span className="text-red-600 dark:text-red-400 font-bold">
-              {songs.filter((song) => isSongIncomplete(song)).length}
-            </span>{" "}
-            首
-          </div>
-          {filteredSongs.length > 25 && (
-            <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full px-4 py-2 shadow-sm text-sm text-slate-600 dark:text-slate-400">
-              <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-              本页{" "}
-              <span className="text-slate-900 dark:text-slate-200 font-bold">
-                {startIndex}-{endIndex}
-              </span>
+        </div>
+
+        {/* List Content */}
+        <div className="space-y-4 min-h-[50vh]">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+              <div className="w-8 h-8 border-2 border-slate-200 border-t-blue-500 rounded-full animate-spin mb-4" />
+              <p className="font-light">Loading...</p>
+            </div>
+          ) : filteredSongs.length > 0 ? (
+            <>
+              {/* List Header (Desktop) */}
+              <div className="hidden lg:flex px-4 py-2 text-xs font-bold tracking-wider text-slate-400 uppercase border-b border-slate-100 dark:border-slate-800 mb-2">
+                <div className="w-8 shrink-0 text-center">#</div>
+                <div className="w-12 shrink-0 ml-4 mr-0">Cover</div>
+                <div className="flex-1 ml-4">Basic Info</div>
+                <div className="w-32 mr-6 text-right">Composer</div>
+                <div className="w-24 text-center mr-6">Type</div>
+                <div className="w-20 ml-2">Actions</div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                {paginatedSongs.map((song, i) => (
+                  <AdminListRow
+                    key={song.id}
+                    song={song}
+                    idx={startIndex + i}
+                    isExpanded={expandedRows.has(song.id)}
+                    toggleRowExpansion={toggleRowExpansion}
+                    handleEdit={() => startEdit(song)}
+                  />
+                ))}
+              </div>
+
+              <div className="mt-12 flex justify-center">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+              <Search size={48} className="mb-4 opacity-20" />
+              <p className="font-light">没有找到符合条件的歌曲</p>
             </div>
           )}
         </div>
+      </main>
 
-        {/* Loading and Error States */}
-        {loading && (
-          <div className="text-center py-20">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-slate-200 border-t-blue-500"></div>
-            <p className="text-slate-500 mt-4">正在加载数据...</p>
+      {/* Floating Buttons */}
+      <FloatingActionButtons showScrollTop={showScrollTop} onScrollToTop={scrollToTop} />
+
+      {/* Operation Toast */}
+      {operationMsg && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4">
+          <div className={cn(
+            "px-6 py-3 rounded-full shadow-xl flex items-center gap-3 border backdrop-blur-md",
+            operationMsg.type === 'success'
+              ? "bg-emerald-50/90 text-emerald-800 border-emerald-200 dark:bg-emerald-900/90 dark:text-emerald-100 dark:border-emerald-800"
+              : "bg-red-50/90 text-red-800 border-red-200 dark:bg-red-900/90 dark:text-red-100 dark:border-red-800"
+          )}>
+            {operationMsg.type === 'success' ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
+            <span className="font-medium">{operationMsg.text}</span>
           </div>
-        )}
+        </div>
+      )}
 
-        {error && (
-          <div className="bg-red-50 border border-red-100 dark:bg-red-500/10 dark:border-red-500/20 rounded-2xl p-6 mb-8 text-center">
-            <p className="text-red-600 dark:text-red-400 mb-2">{error}</p>
-            <button
-              onClick={() => setError(null)}
-              className="text-sm text-red-500 hover:text-red-700 dark:hover:text-red-300 underline"
-            >
-              关闭提示
-            </button>
-          </div>
-        )}
-
-        {/* Songs Table */}
-        {!loading && (
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full table-fixed">
-                <thead>
-                  <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20">
-                    <th className="text-left py-4 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider w-16 md:w-20">
-                      #
-                    </th>
-                    <th className="text-left py-4 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                      Title
-                    </th>
-                    <th className="text-left py-4 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider hidden md:table-cell w-32 lg:w-48">
-                      Album
-                    </th>
-                    <th className="text-left py-4 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider hidden md:table-cell w-24 lg:w-32">
-                      Lyricist
-                    </th>
-                    <th className="text-left py-4 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider hidden md:table-cell w-24 lg:w-32">
-                      Composer
-                    </th>
-                    <th className="text-left py-4 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider hidden md:table-cell w-24">
-                      Type
-                    </th>
-                    <th className="text-left py-4 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider w-24 md:w-32">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {paginatedSongs.map((song, idx) => (
-                    <SongRow
-                      key={song.id}
-                      song={song}
-                      idx={startIndex + idx - 1}
-                      expandedRows={expandedRows}
-                      toggleRowExpansion={toggleRowExpansion}
-                      handleEdit={handleEdit}
-                    />
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* 分页组件 */}
-        {!loading && filteredSongs.length > 25 && (
-          <div className="mt-12 mb-8 flex justify-center">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
-          </div>
-        )}
-
-        {/* No Results */}
-        {!loading && filteredSongs.length === 0 && (
-          <div className="text-center py-20">
-            <div className="bg-slate-50 dark:bg-slate-800/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search
-                size={32}
-                className="text-slate-300 dark:text-slate-600"
-              />
-            </div>
-            <div className="text-slate-900 dark:text-slate-200 text-lg font-medium mb-1">
-              未找到匹配的歌曲
-            </div>
-            <div className="text-slate-500 dark:text-slate-400 text-sm">
-              请尝试调整搜索关键词或筛选条件
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Add/Edit Form Modal */}
+      {/* Logic for Modal: Reuse similar markup for both Add/Edit */}
       {(showAdd || editSong) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-linear-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-2xl shadow-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">
-                {showAdd ? "新增" : "编辑"}歌曲
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#151921] w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col pt-0 animate-in zoom-in-95 duration-200 border border-slate-200/50 dark:border-slate-800">
+            {/* Modal Header */}
+            <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white/50 dark:bg-[#151921]/50 backdrop-blur-md sticky top-0 z-10">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                {showAdd ? "添加新歌曲" : "编辑歌曲"}
               </h2>
               <button
-                onClick={() => {
-                  setShowAdd(false);
-                  setEditSong(null);
-                  setAddResultMessage(null);
-                  setEditResultMessage(null);
-                }}
-                className="p-2 rounded-lg bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-all duration-200"
+                onClick={() => { setShowAdd(false); setEditSong(null); setAddFormErrors({}); setEditFormErrors({}); }}
+                className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors"
               >
                 <X size={20} />
               </button>
             </div>
 
-            <form
-              onSubmit={showAdd ? handleAdd : handleEditSubmit}
-              className="space-y-8"
-              id={showAdd ? "add-form" : "edit-form"}
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {songFields.map((field) => (
-                  <div
-                    key={field.key}
-                    className={
-                      (field.type === "textarea" ? "md:col-span-2" : "") +
-                      " flex flex-col gap-2 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-800 shadow-sm"
-                    }
-                  >
-                    <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1 text-sm tracking-wide">
-                      {field.label}:
-                    </label>
-                    {renderInput(
-                      field,
-                      showAdd ? newSong : editForm,
-                      showAdd ? setNewSong : setEditForm,
-                      showAdd ? addFormErrors : editFormErrors,
-                      showAdd ? setAddFormErrors : setEditFormErrors,
-                      csrfToken,
-                    )}
-                  </div>
-                ))}
-              </div>
-            </form>
-
-            {/* 悬浮在右下角的操作按钮和提示信息 */}
-            <div className="fixed bottom-8 right-8 z-60 flex flex-col items-end gap-4">
-              {/* 操作按钮 - 竖向排列，圆形设计 */}
-              <div className="flex flex-col items-center gap-3">
-                <button
-                  type="submit"
-                  form={showAdd ? "add-form" : "edit-form"}
-                  disabled={isSubmitting}
-                  className={`w-14 h-14 rounded-full border-2 text-white transition-all duration-200 font-semibold shadow-lg backdrop-blur-sm flex items-center justify-center group ${
-                    isSubmitting
-                      ? "bg-slate-500/50 border-slate-400/30 cursor-not-allowed"
-                      : "bg-blue-600 border-blue-500 hover:bg-blue-500 hover:border-blue-400 dark:bg-blue-600 dark:border-blue-500"
-                  }`}
-                  title={showAdd ? "提交" : "保存"}
-                >
-                  {isSubmitting ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <Save
-                      size={20}
-                      className="group-hover:scale-110 transition-transform duration-200"
-                    />
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowAdd(false);
-                    setEditSong(null);
-                    setAddResultMessage(null);
-                    setEditResultMessage(null);
-                  }}
-                  className="w-14 h-14 rounded-full bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 font-semibold shadow-lg backdrop-blur-sm flex items-center justify-center group"
-                  title="取消"
-                >
-                  <X
-                    size={20}
-                    className="group-hover:scale-110 transition-transform duration-200"
-                  />
-                </button>
-              </div>
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto p-6 md:p-8">
+              <form id="song-form" onSubmit={showAdd ? handleAddSubmit : handleEditSubmit} className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                  {songFields.map((field) => (
+                    <div
+                      key={field.key}
+                      className={cn("flex flex-col gap-2", field.type === 'textarea' ? "md:col-span-2" : "")}
+                    >
+                      <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">
+                        {field.label}
+                        {field.key === "title" && <span className="text-red-500 ml-1">*</span>}
+                      </label>
+                      <RenderInput
+                        field={field}
+                        state={showAdd ? newSong : editForm}
+                        setState={showAdd ? setNewSong : setEditForm}
+                        errors={showAdd ? addFormErrors : editFormErrors}
+                        setErrors={showAdd ? setAddFormErrors : setEditFormErrors}
+                        csrfToken={csrfToken}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </form>
             </div>
-          </div>
-        </div>
-      )}
 
-      {/* 中央提示消息 - 移到模态框外部 */}
-      {addResultMessage || editResultMessage ? (
-        <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div
-            className={`relative max-w-sm w-full p-6 rounded-2xl shadow-2xl border backdrop-blur-md transform transition-all duration-300 animate-in zoom-in-95 slide-in-from-bottom-2
-            ${
-              addResultMessage === "成功" || editResultMessage === "成功"
-                ? "bg-emerald-50 border-emerald-200 text-emerald-900 dark:bg-emerald-900/90 dark:border-emerald-700 dark:text-emerald-100"
-                : "bg-red-50 border-red-200 text-red-900 dark:bg-red-900/90 dark:border-red-700 dark:text-red-100"
-            }
-          `}
-          >
-            {/* 图标和消息 */}
-            <div className="relative flex flex-col items-center text-center space-y-4">
-              <div
-                className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                  addResultMessage === "成功" || editResultMessage === "成功"
-                    ? "bg-emerald-100 dark:bg-emerald-800/50 border-2 border-emerald-200 dark:border-emerald-600"
-                    : "bg-red-100 dark:bg-red-800/50 border-2 border-red-200 dark:border-red-600"
-                }`}
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-[#151921] flex justify-end gap-3 sticky bottom-0 z-10">
+              <button
+                type="button"
+                onClick={() => { setShowAdd(false); setEditSong(null); }}
+                className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
-                {addResultMessage === "成功" || editResultMessage === "成功" ? (
-                  <svg
-                    width="32"
-                    height="32"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    width="32"
-                    height="32"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                )}
-              </div>
-
-              <div>
-                <h3 className="text-xl font-bold mb-2">
-                  {addResultMessage === "成功" || editResultMessage === "成功"
-                    ? "操作成功"
-                    : "操作失败"}
-                </h3>
-                <p className="text-sm opacity-90">
-                  {addResultMessage || editResultMessage}
-                </p>
-              </div>
-            </div>
-
-            {/* 关闭按钮 */}
-            <button
-              onClick={() => {
-                setAddResultMessage(null);
-                setEditResultMessage(null);
-              }}
-              className="absolute top-3 right-3 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors duration-200 opacity-60 hover:opacity-100"
-            >
-              <X size={16} />
-            </button>
-
-            {/* 自动关闭倒计时 */}
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/5 dark:bg-white/10 rounded-b-2xl overflow-hidden">
-              <div
-                className={`h-full transition-all duration-3000 ease-linear ${
-                  addResultMessage === "成功" || editResultMessage === "成功"
-                    ? "bg-emerald-500"
-                    : "bg-red-500"
-                }`}
-              ></div>
+                取消
+              </button>
+              <button
+                type="submit"
+                form="song-form"
+                disabled={isSubmitting}
+                className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+              >
+                {isSubmitting ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save size={18} />}
+                {showAdd ? "确认添加" : "保存修改"}
+              </button>
             </div>
           </div>
         </div>
-      ) : null}
-
-      {/* 浮动操作按钮组 - 仅返回顶部 */}
-      <FloatingActionButtons
-        showScrollTop={showScrollTop}
-        onScrollToTop={scrollToTop}
-      />
-
-      {/* 通知模态框 */}
-      {showNotification && (
-        <Notification onClose={() => setShowNotification(false)} />
       )}
+
+      {showNotification && <Notification onClose={() => setShowNotification(false)} />}
     </div>
   );
 }
 
-function renderInput(
-  f: SongFieldConfig,
-  state: Partial<SongDetail>,
-  setState: React.Dispatch<React.SetStateAction<Partial<SongDetail>>>,
-  errors: Record<string, string>,
-  setErrors: (e: Record<string, string>) => void,
-  csrfToken: string,
-) {
-  const v = state[f.key];
-  const baseInputClass =
-    "w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 rounded-xl";
-  const errorMsg = errors[f.key];
+// --- Component: RenderInput ---
+// Refactored for cleaner look
 
-  const handleChange = (val: unknown) => {
-    setState((s) => ({ ...s, [f.key]: val }));
-    const err = validateField(f, val);
-    setErrors({ ...errors, [f.key]: err });
+function RenderInput({
+  field, state, setState, errors, setErrors, csrfToken
+}: {
+  field: SongFieldConfig;
+  state: Record<string, unknown>;
+  setState: React.Dispatch<React.SetStateAction<Record<string, unknown>>>;
+  errors: Record<string, string>;
+  setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  csrfToken: string;
+}) {
+  const value = state[field.key];
+  const error = errors[field.key];
+
+  const update = (val: unknown) => {
+    setState((prev: Record<string, unknown>) => ({ ...prev, [field.key]: val }));
+    setErrors((prev: Record<string, string>) => ({ ...prev, [field.key]: validateField(field, val) }));
   };
 
-  if (f.key === "genre" || f.key === "type") {
-    const options =
-      f.key === "genre"
-        ? Object.keys(genreColorMap)
-        : Object.keys(typeColorMap);
-    const colorMap = f.key === "genre" ? genreColorMap : typeColorMap;
-    const arr: string[] = Array.isArray(v)
-      ? v.filter((item): item is string => typeof item === "string")
-      : typeof v === "string"
-        ? [v]
-        : [];
+  const baseClass = cn(
+    "w-full px-4 py-2.5 bg-white dark:bg-black/20 border rounded-xl outline-none transition-all",
+    error
+      ? "border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-500/10"
+      : "border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10"
+  );
+
+  if (field.key === "genre" || field.key === "type") {
+    const options = field.key === "genre" ? Object.keys(genreColorMap) : Object.keys(typeColorMap);
+    const arr: string[] = Array.isArray(value) ? value : (value ? [value] : []);
+
     return (
-      <>
+      <div className="space-y-2">
         <div className="flex flex-wrap gap-2">
-          {options.map((opt) => {
-            const selected = arr.includes(opt);
+          {options.map(opt => {
+            const isActive = arr.includes(opt);
+            // Use map to get colors, or default
+            const colorClass = (field.key === "genre" ? genreColorMap : typeColorMap)[opt] || "bg-slate-100 text-slate-600";
+
             return (
               <button
                 key={opt}
                 type="button"
-                className={`px-3 py-1 text-xs rounded-full border transition select-none focus:outline-none ${colorMap[opt]} ${selected ? "ring-2 ring-blue-500 border-blue-500" : "border-transparent opacity-80"}`}
                 onClick={() => {
-                  const next = selected
-                    ? arr.filter((x) => x !== opt)
-                    : [...arr, opt];
-                  handleChange(next);
+                  const next = isActive ? arr.filter(x => x !== opt) : [...arr, opt];
+                  update(next);
+                }}
+                className={cn(
+                  "px-3 py-1 rounded-full text-xs font-medium border transition-all",
+                  isActive ? "ring-2 ring-offset-1 ring-blue-500 dark:ring-offset-[#151921]" : "opacity-60 grayscale hover:grayscale-0 hover:opacity-100",
+                  colorClass.replace("bg-", "bg-opacity-20 bg-").replace("text-", "text-") // Rough hack to reuse existing color maps cleanly
+                )}
+                // Re-do style manually for cleaner look
+                style={{
+                  backgroundColor: isActive ? undefined : "transparent",
+                  borderColor: isActive ? "transparent" : "currentColor"
                 }}
               >
                 {opt}
-                {selected && <span className="ml-1">✔</span>}
               </button>
-            );
+            )
           })}
         </div>
-        <div className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-          可多选，点击标签切换
-        </div>
-        {errorMsg && (
-          <div className="text-red-500 text-xs mt-1">{errorMsg}</div>
-        )}
-      </>
-    );
+        {error && <p className="text-xs text-red-500">{error}</p>}
+      </div>
+    )
   }
 
-  if (f.type === "textarea") {
+  if (field.type === "textarea") {
     return (
       <>
         <textarea
-          value={typeof v === "string" ? v : ""}
-          onChange={(e) => handleChange(e.target.value)}
+          value={(value as string | number) ?? ""}
+          onChange={e => update(e.target.value)}
+          className={baseClass}
           rows={4}
-          className={baseInputClass + " resize-vertical"}
-          placeholder={`请输入${f.label}`}
-          maxLength={f.maxLength}
+          placeholder={`请输入${field.label}`}
         />
-        {errorMsg && (
-          <div className="text-red-500 text-xs mt-1">{errorMsg}</div>
-        )}
+        {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
       </>
-    );
+    )
   }
-  if (f.type === "array") {
-    const arr: string[] = Array.isArray(v)
-      ? v.filter((item): item is string => typeof item === "string")
-      : typeof v === "string"
-        ? [v]
-        : [];
+
+  if (field.type === "array") {
+    const arr = Array.isArray(value) ? value : (value ? [value] : []);
     return (
-      <>
-        <div className="space-y-2">
-          {arr.length === 0 && (
-            <div className="text-slate-400 dark:text-slate-500 text-xs mb-2 pl-1">
-              暂无{f.label}
-            </div>
-          )}
-          {arr.map((item, idx) => (
-            <div key={idx} className="flex items-center gap-2 mb-1 group">
-              <input
-                value={typeof item === "string" ? item : ""}
-                onChange={(e) => {
-                  const newArr = [...arr];
-                  newArr[idx] = e.target.value;
-                  handleChange(newArr);
-                }}
-                className={
-                  baseInputClass +
-                  " flex-1 border-l-4 border-transparent group-hover:border-blue-500 focus:border-blue-500"
-                }
-                placeholder={`请输入${f.label}`}
-                maxLength={f.arrayMaxLength}
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  const newArr = arr.filter((_, i) => i !== idx);
-                  handleChange(newArr);
-                }}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 text-red-500 hover:bg-red-500 hover:text-white dark:bg-red-500/20 dark:text-red-400 dark:hover:bg-red-500 dark:hover:text-white transition-all duration-200 focus:outline-none"
-                title="删除"
-              >
-                <svg width="16" height="16" fill="none" viewBox="0 0 16 16">
-                  <path
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    d="M4 4l8 8M12 4l-8 8"
-                  />
-                </svg>
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={() => handleChange([...arr, ""])}
-            className="mt-1 flex items-center gap-1 px-3 py-1 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-500/20 dark:text-blue-300 dark:hover:bg-blue-500/30 transition-all duration-200 text-xs font-medium"
-          >
-            <svg width="14" height="14" fill="none" viewBox="0 0 14 14">
-              <path
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                d="M7 2v10M2 7h10"
-              />
-            </svg>
-            添加{f.label}
-          </button>
-        </div>
-        {errorMsg && (
-          <div className="text-red-500 text-xs mt-1">{errorMsg}</div>
-        )}
-      </>
-    );
-  }
-  if (f.type === "boolean") {
-    // 特殊处理封面字段
-    if (f.key === "hascover") {
-      return (
-        <>
-          <select
-            value={v === true ? "true" : v === false ? "false" : ""}
-            onChange={(e) =>
-              handleChange(
-                e.target.value === "true"
-                  ? true
-                  : e.target.value === "false"
-                    ? false
-                    : null,
-              )
-            }
-            className={baseInputClass}
-          >
-            <option
-              value=""
-              className="filter-option text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900"
+      <div className="space-y-2">
+        {arr.map((item: string, i: number) => (
+          <div key={i} className="flex gap-2">
+            <input
+              value={item}
+              onChange={e => {
+                const next = [...arr];
+                next[i] = e.target.value;
+                update(next);
+              }}
+              className={baseClass}
+            />
+            <button
+              type="button"
+              onClick={() => update(arr.filter((_, idx) => idx !== i))}
+              className="p-2 text-red-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
             >
-              白底狐狸（默认）
-            </option>
-            <option
-              value="false"
-              className="filter-option text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900"
-            >
-              初号机（黑底机器人）
-            </option>
-            <option
-              value="true"
-              className="filter-option text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900"
-            >
-              定制封面
-            </option>
-          </select>
-
-          {/* 当选择定制封面时显示上传组件 */}
-          {v === true && (
-            <div className="mt-4 p-4 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-              <CoverUpload
-                songId={typeof state.id === "number" ? state.id : undefined}
-                csrfToken={csrfToken}
-                hasExistingFile={state.hascover === true}
-                onUploadSuccess={() => {
-                  // Cover upload success handled by component
-                }}
-                onUploadError={(error) => {
-                  console.error("Cover upload error:", error);
-                }}
-              />
-            </div>
-          )}
-
-          {errorMsg && (
-            <div className="text-red-500 text-xs mt-1">{errorMsg}</div>
-          )}
-        </>
-      );
-    }
-
-    // 特殊处理乐谱字段
-    if (f.key === "nmn_status") {
-      return (
-        <>
-          <select
-            value={v === true ? "true" : v === false ? "false" : ""}
-            onChange={(e) =>
-              handleChange(
-                e.target.value === "true"
-                  ? true
-                  : e.target.value === "false"
-                    ? false
-                    : null,
-              )
-            }
-            className={baseInputClass}
-          >
-            <option
-              value="false"
-              className="filter-option text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900"
-            >
-              无乐谱
-            </option>
-            <option
-              value="true"
-              className="filter-option text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900"
-            >
-              有乐谱
-            </option>
-          </select>
-
-          {/* 当选择是时显示上传组件 */}
-          {v === true && (
-            <div className="mt-4 p-4 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-              <ScoreUpload
-                songId={typeof state.id === "number" ? state.id : undefined}
-                csrfToken={csrfToken}
-                hasExistingFile={state.nmn_status === true}
-                onUploadSuccess={() => {
-                  // Score upload success handled by component
-                }}
-                onUploadError={(error) => {
-                  console.error("Score upload error:", error);
-                }}
-              />
-            </div>
-          )}
-
-          {errorMsg && (
-            <div className="text-red-500 text-xs mt-1">{errorMsg}</div>
-          )}
-        </>
-      );
-    }
-
-    // 其他boolean字段的默认处理
-    return (
-      <>
-        <select
-          value={v === true ? "true" : v === false ? "false" : ""}
-          onChange={(e) =>
-            handleChange(
-              e.target.value === "true"
-                ? true
-                : e.target.value === "false"
-                  ? false
-                  : null,
-            )
-          }
-          className={baseInputClass}
+              <X size={18} />
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => update([...arr, ""])}
+          className="text-xs font-medium text-blue-600 hover:text-blue-500 flex items-center gap-1"
         >
-          <option
-            value=""
-            className="text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900"
-          >
-            请选择
-          </option>
-          <option
-            value="true"
-            className="text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900"
-          >
-            是
-          </option>
-          <option
-            value="false"
-            className="text-slate-900 dark:text-slate-200 bg-white dark:bg-slate-900"
-          >
-            否
-          </option>
-        </select>
-        {errorMsg && (
-          <div className="text-red-500 text-xs mt-1">{errorMsg}</div>
-        )}
-      </>
+          <Plus size={14} /> 添加一项
+        </button>
+        {error && <p className="text-xs text-red-500">{error}</p>}
+      </div>
     );
   }
-  if (f.type === "number") {
+
+  if (field.type === "boolean") {
+    // Logic for cover/score upload
+    const isCover = field.key === "hascover";
+    const isScore = field.key === "nmn_status";
+
     return (
-      <>
-        <input
-          type="number"
-          value={typeof v === "number" && !isNaN(v) ? v : ""}
-          onChange={(e) =>
-            handleChange(e.target.value === "" ? null : Number(e.target.value))
-          }
-          className={baseInputClass}
-          placeholder={`请输入${f.label}`}
-          min={f.min}
-          step={1}
-        />
-        {errorMsg && (
-          <div className="text-red-500 text-xs mt-1">{errorMsg}</div>
+      <div className="space-y-3">
+        <div className="flex gap-4">
+          <select
+            value={value === true ? "true" : value === false ? "false" : ""}
+            onChange={(e) => {
+              const v = e.target.value;
+              update(v === "true" ? true : v === "false" ? false : null);
+            }}
+            className={baseClass}
+          >
+            {isCover ? (
+              <>
+                <option value="">白底狐狸 (默认)</option>
+                <option value="false">初号机 (黑底)</option>
+                <option value="true">定制封面</option>
+              </>
+            ) : (
+              <>
+                <option value="false">否 / 无</option>
+                <option value="true">是 / 有</option>
+              </>
+            )}
+          </select>
+        </div>
+
+        {isCover && value === true && (
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-100 dark:border-slate-800">
+            <CoverUpload
+              songId={state.id as number}
+              csrfToken={csrfToken}
+              hasExistingFile={true} // We assume true if state is set, logic handled in component
+              onUploadSuccess={() => void 0}
+              onUploadError={console.error}
+            />
+          </div>
         )}
-      </>
+
+        {isScore && value === true && (
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-100 dark:border-slate-800">
+            <ScoreUpload
+              songId={state.id as number}
+              csrfToken={csrfToken}
+              hasExistingFile={true}
+              onUploadSuccess={() => void 0}
+              onUploadError={console.error}
+            />
+          </div>
+        )}
+      </div>
     );
   }
-  if (f.type === "date") {
-    return (
-      <>
-        <input
-          type="date"
-          value={typeof v === "string" ? v.slice(0, 10) : ""}
-          onChange={(e) => handleChange(e.target.value)}
-          className={baseInputClass}
-          maxLength={f.maxLength}
-        />
-        {errorMsg && (
-          <div className="text-red-500 text-xs mt-1">{errorMsg}</div>
-        )}
-      </>
-    );
-  }
+
+  // Default text/number/date
   return (
     <>
       <input
-        value={typeof v === "string" ? v : ""}
-        onChange={(e) => handleChange(e.target.value)}
-        className={baseInputClass}
-        placeholder={`请输入${f.label}`}
-        maxLength={f.maxLength}
-        type={f.isUrl ? "url" : "text"}
+        type={field.type === "number" ? "number" : field.type === "date" ? "date" : "text"}
+        value={(value as string | number) ?? ""}
+        onChange={e => update(field.type === "number" ? Number(e.target.value) : e.target.value)}
+        className={baseClass}
+        placeholder={`请输入${field.label}`}
       />
-      {errorMsg && <div className="text-red-500 text-xs mt-1">{errorMsg}</div>}
+      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
     </>
   );
 }

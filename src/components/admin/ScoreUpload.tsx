@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Upload, X, Check, AlertCircle, FileCheck, FileX } from "lucide-react";
+import { Upload, X, Check, AlertCircle, FileCheck, FileX, Loader2 } from "lucide-react";
 import { apiCheckFileExists } from "@/lib/api";
 
 interface ScoreUploadProps {
@@ -8,7 +8,7 @@ interface ScoreUploadProps {
   csrfToken: string;
   onUploadSuccess?: () => void;
   onUploadError?: (error: string) => void;
-  hasExistingFile?: boolean; // 是否已有文件
+  hasExistingFile?: boolean;
 }
 
 export default function ScoreUpload({
@@ -19,19 +19,15 @@ export default function ScoreUpload({
   hasExistingFile = false,
 }: ScoreUploadProps) {
   const [uploading, setUploading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState<
-    "idle" | "success" | "error"
-  >("idle");
+  const [uploadStatus, setUploadStatus] = useState<"idle" | "success" | "error">("idle");
   const [uploadMessage, setUploadMessage] = useState("");
   const [fileExists, setFileExists] = useState(hasExistingFile);
   const [checkingFile, setCheckingFile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 检查文件是否存在
   const checkFileExists = useCallback(
     async (id: number) => {
       if (!id) return false;
-
       setCheckingFile(true);
       try {
         const result = await apiCheckFileExists(id, "score", csrfToken);
@@ -40,17 +36,16 @@ export default function ScoreUpload({
         setFileExists(exists);
         return exists;
       } catch (error) {
-        console.error("检查乐谱文件存在性失败:", error);
+        console.error("Check score failed:", error);
         setFileExists(false);
         return false;
       } finally {
         setCheckingFile(false);
       }
     },
-    [csrfToken],
+    [csrfToken]
   );
 
-  // 当songId变化时检查文件
   useEffect(() => {
     if (songId) {
       checkFileExists(songId);
@@ -59,36 +54,32 @@ export default function ScoreUpload({
     }
   }, [songId, checkFileExists]);
 
-  const handleFileSelect = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // 验证文件类型
     if (!file.type.includes("png")) {
-      setUploadStatus("error");
-      setUploadMessage("只允许上传PNG格式的乐谱文件");
-      onUploadError?.("只允许上传PNG格式的乐谱文件");
+      setErrorState("只允许上传PNG格式");
       return;
     }
 
-    // 验证文件大小 (50MB)
     if (file.size > 100 * 1024 * 1024) {
-      setUploadStatus("error");
-      setUploadMessage("文件大小不能超过100MB");
-      onUploadError?.("文件大小不能超过100MB");
+      setErrorState("文件大小不能超过100MB");
       return;
     }
 
     if (!songId) {
-      setUploadStatus("error");
-      setUploadMessage("请先保存歌曲后再上传乐谱");
-      onUploadError?.("请先保存歌曲后再上传乐谱");
+      setErrorState("请先保存歌曲");
       return;
     }
 
     await uploadFile(file);
+  };
+
+  const setErrorState = (msg: string) => {
+    setUploadStatus("error");
+    setUploadMessage(msg);
+    onUploadError?.(msg);
   };
 
   const uploadFile = async (file: File) => {
@@ -99,14 +90,11 @@ export default function ScoreUpload({
     try {
       const formData = new FormData();
       formData.append("file", file);
-      if (!songId) return;
-      formData.append("songId", songId.toString());
+      if (songId) formData.append("songId", songId.toString());
 
       const response = await fetch("/api/admin/upload-score", {
         method: "POST",
-        headers: {
-          "X-CSRF-Token": csrfToken,
-        },
+        headers: { "X-CSRF-Token": csrfToken },
         body: formData,
       });
 
@@ -116,90 +104,64 @@ export default function ScoreUpload({
       }
 
       const result = await response.json();
-
       setUploadStatus("success");
-      setUploadMessage(result.message || "乐谱上传成功");
-      setFileExists(true); // 上传成功后更新文件存在状态
+      setUploadMessage(result.message || "上传成功");
+      setFileExists(true);
       onUploadSuccess?.();
 
-      // 3秒后清除状态
       setTimeout(() => {
         setUploadStatus("idle");
         setUploadMessage("");
       }, 3000);
     } catch (error) {
-      console.error("Upload error:", error);
-      const errorMessage = error instanceof Error ? error.message : "上传失败";
-      setUploadStatus("error");
-      setUploadMessage(errorMessage);
-      onUploadError?.(errorMessage);
+      const msg = error instanceof Error ? error.message : "上传失败";
+      setErrorState(msg);
     } finally {
       setUploading(false);
-      // 清空文件输入
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const clearStatus = () => {
-    setUploadStatus("idle");
-    setUploadMessage("");
-  };
-
   return (
-    <div className="space-y-3">
-      {/* 上传按钮和状态提示 */}
+    <div className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
         <button
           type="button"
-          onClick={handleUploadClick}
+          onClick={() => fileInputRef.current?.click()}
           disabled={uploading || !songId}
           className={`
-            flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200
-            ${
-              uploading || !songId
-                ? "bg-gray-500/20 text-gray-400 cursor-not-allowed"
-                : "bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200 border border-blue-400/30"
+            flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all border
+            ${uploading || !songId
+              ? "bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800 dark:border-slate-700 cursor-not-allowed"
+              : "bg-white text-slate-700 hover:bg-slate-50 border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700"
             }
           `}
         >
-          <Upload size={16} />
-          {uploading ? "上传中..." : "选择PNG文件"}
+          {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+          {uploading ? "上传中..." : "选择PNG乐谱"}
         </button>
 
-        {/* 文件状态提示 */}
-        {songId && (
+        {songId ? (
           <div className="flex items-center gap-2">
             {checkingFile ? (
-              <span className="text-gray-400 text-xs flex items-center gap-1">
-                <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                检查中...
+              <span className="text-slate-400 text-xs flex items-center gap-1">
+                <Loader2 size={12} className="animate-spin" /> 检查中...
               </span>
             ) : fileExists ? (
-              <span className="text-green-400 text-xs flex items-center gap-1">
-                <FileCheck size={14} />
-                已有乐谱
+              <span className="px-2 py-0.5 rounded-md bg-green-50 text-green-600 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900/50 text-xs flex items-center gap-1 font-medium">
+                <FileCheck size={12} /> 已上传
               </span>
             ) : (
-              <span className="text-orange-400 text-xs flex items-center gap-1">
-                <FileX size={14} />
-                未上传
+              <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 text-xs flex items-center gap-1 font-medium">
+                <FileX size={12} /> 未上传
               </span>
             )}
           </div>
-        )}
-
-        {!songId && (
-          <span className="text-yellow-400 text-xs">请先保存歌曲</span>
+        ) : (
+          <span className="text-amber-500 text-xs">需先保存歌曲</span>
         )}
       </div>
 
-      {/* 隐藏的文件输入 */}
       <input
         ref={fileInputRef}
         type="file"
@@ -208,37 +170,22 @@ export default function ScoreUpload({
         className="hidden"
       />
 
-      {/* 状态消息 */}
       {uploadMessage && (
-        <div
-          className={`
-            flex items-center gap-2 p-3 rounded-lg text-sm
-            ${
-              uploadStatus === "success"
-                ? "bg-green-500/20 text-green-300 border border-green-400/30"
-                : uploadStatus === "error"
-                  ? "bg-red-500/20 text-red-300 border border-red-400/30"
-                  : "bg-blue-500/20 text-blue-300 border border-blue-400/30"
-            }
-          `}
-        >
-          {uploadStatus === "success" && <Check size={16} />}
-          {uploadStatus === "error" && <AlertCircle size={16} />}
-          <span className="flex-1">{uploadMessage}</span>
-          <button
-            type="button"
-            onClick={clearStatus}
-            className="p-1 rounded hover:bg-white/10 transition-colors"
-          >
-            <X size={14} />
-          </button>
+        <div className={`
+          flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border
+          ${uploadStatus === 'success'
+            ? 'bg-green-50 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-900/50 dark:text-green-400'
+            : 'bg-red-50 border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-900/50 dark:text-red-400'}
+        `}>
+          {uploadStatus === 'success' ? <Check size={14} /> : <AlertCircle size={14} />}
+          <span className="flex-1 truncate">{uploadMessage}</span>
+          <button onClick={() => setUploadMessage("")} className="hover:opacity-60"><X size={14} /></button>
         </div>
       )}
 
-      {/* 说明文字 */}
-      <div className="text-xs text-gray-400 space-y-1">
-        <div>• 只支持PNG格式的乐谱文件</div>
-        <div>• 文件大小不超过100MB</div>
+      <div className="text-[10px] text-slate-400 dark:text-slate-500 flex gap-3">
+        <span>PNG 格式</span>
+        <span>Max 100MB</span>
       </div>
     </div>
   );

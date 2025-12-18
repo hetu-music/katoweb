@@ -8,153 +8,117 @@ interface NotificationProps {
 
 const Notification: React.FC<NotificationProps> = ({ onClose }) => {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-linear-to-br from-purple-800 via-blue-900 to-indigo-900 border border-white/20 rounded-2xl shadow-2xl p-8 w-full max-w-4xl relative text-white max-h-[90vh] overflow-hidden">
-        <button
-          className="absolute top-4 right-4 text-gray-300 hover:text-white text-xl font-bold transition-colors"
-          onClick={onClose}
-          aria-label="关闭"
-        >
-          <X className="w-6 h-6" />
-        </button>
-
-        {/* 标题 */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 rounded-lg bg-blue-500/20 text-blue-300">
-            <Bell className="w-6 h-6" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-[#151921] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-8 w-full max-w-4xl relative max-h-[90vh] overflow-hidden flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
+              <Bell className="w-6 h-6" />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">说明与注意</h2>
           </div>
-          <h2 className="text-2xl font-bold text-white">说明与注意</h2>
+          <button
+            className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors"
+            onClick={onClose}
+            aria-label="关闭"
+          >
+            <X className="w-6 h-6" />
+          </button>
         </div>
 
-        {/* 内容区域 */}
-        <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
-          {/* 重要提示 */}
-          <div className="relative p-5 rounded-xl bg-linear-to-r from-red-500/25 to-orange-500/25 border-2 border-red-400/50 shadow-lg">
-            {/* 装饰性背景 */}
-            <div className="absolute inset-0 rounded-xl bg-linear-to-br from-red-400/10 to-orange-400/10 opacity-50"></div>
-
-            {/* 闪烁动画的边框 */}
-            <div className="absolute inset-0 rounded-xl border-2 border-red-400/30 animate-pulse"></div>
-
-            <div className="relative flex items-start gap-4">
-              <div className="shrink-0 mt-0.5 p-2 rounded-full bg-red-500/30 border border-red-400/50">
-                <AlertTriangle className="w-6 h-6 text-red-200" />
+        {/* Content */}
+        <div className="space-y-6 overflow-y-auto pr-2 flex-1">
+          {/* Important Alert */}
+          <div className="relative p-5 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30">
+            <div className="flex items-start gap-4">
+              <div className="shrink-0 mt-0.5 p-2 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
+                <AlertTriangle className="w-5 h-5" />
               </div>
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-3">
-                  <h4 className="font-bold text-red-100 text-lg">
-                    ⚠️ 重要提示
+                <div className="flex items-center gap-2 mb-2">
+                  <h4 className="font-bold text-red-700 dark:text-red-300 text-lg">
+                    重要提示
                   </h4>
-                  <span className="px-2 py-1 bg-red-500/40 border border-red-400/60 rounded-full text-xs text-red-100 font-medium animate-pulse">
+                  <span className="px-2 py-0.5 bg-red-100 dark:bg-red-500/20 rounded-full text-xs text-red-700 dark:text-red-300 font-medium">
                     必读
                   </span>
                 </div>
-                <ul className="text-sm text-red-100/90 leading-relaxed space-y-2 font-medium">
+                <ul className="text-sm text-red-600 dark:text-red-300/80 leading-relaxed space-y-2 font-medium">
                   <li className="flex items-start gap-2">
-                    <span className="text-red-300 font-bold shrink-0 leading-relaxed">
-                      •
-                    </span>
-                    <span>数据更改不会立刻同步到主页面</span>
+                    <span className="text-red-400 dark:text-red-500 font-bold shrink-0">•</span>
+                    <span>数据更改不会立刻同步到主页面 (ISR/CDN缓存)</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-red-300 font-bold shrink-0 leading-relaxed">
-                      •
-                    </span>
-                    <span>在本页面修改完成就是变更成功</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          {/* 数据管理规则 */}
-          <div className="p-5 rounded-xl bg-blue-500/20 border border-blue-400/30">
-            <div className="flex items-start gap-4">
-              <div className="shrink-0 mt-1">
-                <Database className="w-6 h-6 text-blue-300" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-white mb-3 text-lg">
-                  数据编辑
-                </h4>
-                <ul className="text-sm text-white/80 leading-relaxed space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-300 font-bold shrink-0 leading-relaxed">
-                      •
-                    </span>
-                    <span>新增歌曲时请确保标题和专辑信息准确无误</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-300 font-bold shrink-0 leading-relaxed">
-                      •
-                    </span>
-                    <span>
-                      作词、作曲、编曲、演唱、出品发行支持多人，请每个输入框只填写一人
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-300 font-bold shrink-0 leading-relaxed">
-                      •
-                    </span>
-                    <span>歌曲时长需要换算成秒</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-300 font-bold shrink-0 leading-relaxed">
-                      •
-                    </span>
-                    <span>歌词只需填写LRC歌词</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-300 font-bold shrink-0 leading-relaxed">
-                      •
-                    </span>
-                    <span>修改完成务必点击保存按钮保存</span>
+                    <span className="text-red-400 dark:text-red-500 font-bold shrink-0">•</span>
+                    <span>在本页面列表看到修改生效即表示数据库更新成功</span>
                   </li>
                 </ul>
               </div>
             </div>
           </div>
 
-          {/* 权限管理规则 */}
-          <div className="p-5 rounded-xl bg-green-500/20 border border-green-400/30">
+          {/* Data Rules */}
+          <div className="p-5 rounded-xl bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30">
             <div className="flex items-start gap-4">
-              <div className="shrink-0 mt-1">
-                <Shield className="w-6 h-6 text-green-300" />
+              <div className="shrink-0 mt-1 text-blue-500 dark:text-blue-400">
+                <Database className="w-6 h-6" />
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-white mb-3 text-lg">
+                <h4 className="font-semibold text-slate-800 dark:text-slate-200 mb-3 text-lg">
+                  数据编辑
+                </h4>
+                <ul className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed space-y-2">
+                  {[
+                    "新增歌曲时请确保标题和专辑信息准确无误",
+                    "作词、作曲、编曲、演唱、出品发行支持多人，请每个输入框只填写一人",
+                    "歌曲时长需要换算成秒",
+                    "歌词只需填写LRC内容",
+                    "修改完成务必点击保存按钮保存"
+                  ].map((text, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="text-blue-400/60 dark:text-blue-500/60 font-bold shrink-0">•</span>
+                      <span>{text}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Security Rules */}
+          <div className="p-5 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30">
+            <div className="flex items-start gap-4">
+              <div className="shrink-0 mt-1 text-emerald-500 dark:text-emerald-400">
+                <Shield className="w-6 h-6" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-slate-800 dark:text-slate-200 mb-3 text-lg">
                   权限安全
                 </h4>
-                <ul className="text-sm text-white/80 leading-relaxed space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-300 font-bold shrink-0 leading-relaxed">
-                      •
-                    </span>
-                    <span>请妥善保管账号，不要与他人分享</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-300 font-bold shrink-0 leading-relaxed">
-                      •
-                    </span>
-                    <span>定期检查数据变更，确保信息准确性</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-300 font-bold shrink-0 leading-relaxed">
-                      •
-                    </span>
-                    <span>如发现异常操作请及时联系管理员</span>
-                  </li>
+                <ul className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed space-y-2">
+                  {[
+                    "请妥善保管账号，不要与他人分享",
+                    "定期检查数据变更，确保信息准确性",
+                    "如发现异常操作请及时联系管理员"
+                  ].map((text, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="text-emerald-400/60 dark:text-emerald-500/60 font-bold shrink-0">•</span>
+                      <span>{text}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
           </div>
         </div>
 
-        {/* 底部操作区域 */}
-        <div className="mt-6 pt-4 border-t border-white/20 flex justify-between items-center">
-          <div className="text-sm text-white/60">注意事项 · 请仔细阅读</div>
+        {/* Footer */}
+        <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center shrink-0">
+          <div className="text-sm text-slate-400">注意事项 · 请仔细阅读</div>
           <button
             onClick={onClose}
-            className="px-6 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white font-medium hover:bg-white/20 transition-all"
+            className="px-6 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-medium hover:opacity-90 transition-all shadow-lg shadow-slate-500/10"
           >
             我知道了
           </button>
