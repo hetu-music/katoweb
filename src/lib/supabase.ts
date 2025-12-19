@@ -84,7 +84,8 @@ export async function getSongs(
 
   // 列表视图需要的字段（排除 lyrics, comment, updated_at, kugolink, qmlink, nelink 等详情页字段）
   // 注意：year 不是数据库字段，而是从 date 计算得出的，所以这里不包含 year
-  const listViewFields = "id,title,album,genre,lyricist,composer,artist,length,hascover,date,type";
+  const listViewFields =
+    "id,title,album,genre,lyricist,composer,artist,length,hascover,date,type";
 
   const { data, error } = await supabase
     .from(table)

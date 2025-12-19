@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import { flushSync } from "react-dom";
 import {
   Search,
@@ -505,29 +511,32 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
     setScrollLeft(scrollContainerRef.current.scrollLeft);
     hasDragged.current = false; // 重置拖动标记
-    scrollContainerRef.current.style.cursor = 'grabbing';
-    scrollContainerRef.current.style.userSelect = 'none';
+    scrollContainerRef.current.style.cursor = "grabbing";
+    scrollContainerRef.current.style.userSelect = "none";
   }, []);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDragging || !scrollContainerRef.current) return;
-    e.preventDefault();
-    const x = e.pageX - scrollContainerRef.current.offsetLeft;
-    const walk = (x - startX) * 2; // 乘以2让滚动更灵敏
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isDragging || !scrollContainerRef.current) return;
+      e.preventDefault();
+      const x = e.pageX - scrollContainerRef.current.offsetLeft;
+      const walk = (x - startX) * 2; // 乘以2让滚动更灵敏
 
-    // 如果移动距离超过5px，标记为已拖动
-    if (Math.abs(walk) > 5) {
-      hasDragged.current = true;
-    }
+      // 如果移动距离超过5px，标记为已拖动
+      if (Math.abs(walk) > 5) {
+        hasDragged.current = true;
+      }
 
-    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
-  }, [isDragging, startX, scrollLeft]);
+      scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+    },
+    [isDragging, startX, scrollLeft],
+  );
 
   const handleMouseUpOrLeave = useCallback(() => {
     setIsDragging(false);
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.style.cursor = 'grab';
-      scrollContainerRef.current.style.userSelect = 'auto';
+      scrollContainerRef.current.style.cursor = "grab";
+      scrollContainerRef.current.style.userSelect = "auto";
     }
     // 延迟重置拖动标记，确保 onClick 事件能够检测到
     setTimeout(() => {
@@ -579,7 +588,10 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
         {/* Header */}
         <section className="mb-16 space-y-4">
           <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50 italic">
-            谣歌 <span className="text-[1.3em] font-semibold">{filteredWorks.length}</span>
+            谣歌{" "}
+            <span className="text-[1.3em] font-semibold">
+              {filteredWorks.length}
+            </span>
           </h1>
           <p className="text-slate-500 dark:text-slate-400 font-light max-w-lg">
             你一定想知道，戏里讲了什么故事。

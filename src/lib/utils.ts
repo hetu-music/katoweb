@@ -261,7 +261,7 @@ export function filterSongs(
       (selectedArranger === "未知"
         ? !songDetail.arranger || songDetail.arranger.length === 0
         : songDetail.arranger &&
-        songDetail.arranger.includes(selectedArranger));
+          songDetail.arranger.includes(selectedArranger));
 
     return (
       matchesType &&
@@ -332,8 +332,7 @@ export function calculateSongInfo(song: SongDetail): SongInfo {
       },
       {
         label: "类型",
-        value:
-          song.type && song.type.length > 0 ? song.type.join(" ") : "原创",
+        value: song.type && song.type.length > 0 ? song.type.join(" ") : "原创",
       },
     ],
   };

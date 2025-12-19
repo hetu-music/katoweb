@@ -6,9 +6,16 @@
   --background: #ffffff;
   --foreground: #171717;
   /* 定义字体系列，优先英文，后退中文 */
-  --font-sans: var(--font-body), var(--font-body-sc), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  --font-serif: var(--font-heading), var(--font-heading-sc), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", var(--font-mono-cjk), monospace;
+  --font-sans:
+    var(--font-body), var(--font-body-sc), ui-sans-serif, system-ui,
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial,
+    sans-serif;
+  --font-serif:
+    var(--font-heading), var(--font-heading-sc), ui-serif, Georgia, Cambria,
+    "Times New Roman", Times, serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", var(--font-mono-cjk), monospace;
 }
 
 .dark {
@@ -37,7 +44,7 @@ h6 {
   font-weight: 700;
 
   /* 调整标题中数字的垂直对齐，使其与中文字符更好地对齐 */
-  &>span {
+  & > span {
     position: relative;
     top: 0.05em;
   }
@@ -245,7 +252,6 @@ button {
 
 /* 移动端滚动条特殊处理 - iOS原生行为 */
 @media (max-width: 768px) {
-
   /* 默认状态：隐藏滚动条 */
   .custom-select-options.mobile {
     scrollbar-width: none;
