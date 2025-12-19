@@ -27,8 +27,8 @@ import {
   getCoverUrl,
 } from "@/lib/utils";
 import { songFields, genreColorMap, typeColorMap } from "@/lib/constants";
-import FloatingActionButtons from "@/components/public/FloatingActionButtons";
-import Pagination from "@/components/public/Pagination";
+import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
+import Pagination from "@/components/shared/Pagination";
 import { usePagination } from "@/hooks/usePagination";
 import { apiCreateSong, apiUpdateSong } from "@/lib/api";
 import { useSongs } from "@/hooks/useSongs";

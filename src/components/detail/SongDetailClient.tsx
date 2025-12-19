@@ -21,8 +21,8 @@ import { useTheme } from "next-themes";
 import { SongDetailClientProps } from "@/lib/types";
 import { getCoverUrl, calculateSongInfo, getNmnUrl } from "@/lib/utils";
 import { getTypeTagStyle, getGenreTagStyle } from "@/lib/constants";
-import ImageModal from "@/components/public/ImageModal";
-import FloatingActionButtons from "@/components/public/FloatingActionButtons";
+import ImageModal from "@/components/shared/ImageModal";
+import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 
 // 简易 classNames 工具
 function cn(...classes: (string | undefined | null | false)[]) {

@@ -1,6 +1,6 @@
 import React from "react";
 import { notFound } from "next/navigation";
-import SongDetailClient from "./SongDetailClient";
+import SongDetailClient from "@/components/detail/SongDetailClient";
 import { getSongById } from "@/lib/supabase";
 
 // 服务端组件

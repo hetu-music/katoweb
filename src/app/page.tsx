@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import MusicLibraryClient from "@/components/public/MusicLibraryClient";
+import MusicLibraryClient from "@/components/library/MusicLibraryClient";
 import { getSongs } from "@/lib/supabase";
 import { Song } from "@/lib/types";
 import Loading from "@/components/shared/Loading";

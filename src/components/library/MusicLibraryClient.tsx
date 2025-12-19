@@ -31,10 +31,10 @@ import { getTypeTagStyle, getGenreTagStyle } from "@/lib/constants";
 import { usePagination } from "@/hooks/usePagination";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useMusicLibraryState } from "@/hooks/useMusicLibraryState";
-import Pagination from "./Pagination";
+import Pagination from "../shared/Pagination";
 import SongFilters from "./SongFilters";
 import About from "./About";
-import FloatingActionButtons from "./FloatingActionButtons";
+import FloatingActionButtons from "../shared/FloatingActionButtons";
 
 // 简易 classNames 工具 (替代 clsx/tailwind-merge)
 function cn(...classes: (string | undefined | null | false)[]) {
