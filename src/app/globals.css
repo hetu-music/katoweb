@@ -35,6 +35,12 @@ h5,
 h6 {
   font-family: var(--font-serif);
   font-weight: 700;
+
+  /* 调整标题中数字的垂直对齐，使其与中文字符更好地对齐 */
+  &>span {
+    position: relative;
+    top: -0.15em;
+  }
 }
 
 /* 微调输入框和按钮文字的垂直对齐（补偿 CJK 字体的垂直度量差异） */
