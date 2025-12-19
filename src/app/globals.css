@@ -39,7 +39,7 @@ h6 {
   /* 调整标题中数字的垂直对齐，使其与中文字符更好地对齐 */
   &>span {
     position: relative;
-    top: -0.1em;
+    top: 0.05em;
   }
 }
 
