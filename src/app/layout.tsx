@@ -11,13 +11,13 @@ import "./globals.css";
 const playfairDisplay = Playfair_Display({
   variable: "--font-heading",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
 const notoSerifSC = Noto_Serif_SC({
   variable: "--font-heading-sc",
-  weight: ["400", "500", "600", "700", "900"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
