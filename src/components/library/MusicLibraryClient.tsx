@@ -487,18 +487,12 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   const [isTitleActive, setIsTitleActive] = useState(false);
 
   const handleTitleReset = useCallback(() => {
-    setIsTitleActive(true);
-    setTimeout(() => setIsTitleActive(false), 1000);
+    // Clear sessionStorage (scroll position)
+    sessionStorage.removeItem("music_library_scrollY");
 
-    // Close advanced filters panel
-    setShowAdvancedFilters(false);
-
-    // Reset all filters and pagination
-    resetAllFilters();
-
-    // Scroll to top of page
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [resetAllFilters, setShowAdvancedFilters]);
+    // Navigate to clean URL without any parameters, then reload
+    window.location.href = window.location.pathname;
+  }, []);
 
   // Mouse drag to scroll functionality
   const scrollContainerRef = useRef<HTMLDivElement>(null);
