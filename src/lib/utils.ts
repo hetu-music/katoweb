@@ -147,8 +147,7 @@ export function processLyricsForSearch(lrcLyrics: string | null): string {
   return lines.join(" ");
 }
 
-// 创建 Fuse.js 搜索实例
-// 创建 Fuse.js 搜索实例
+// 创建 Fuse.js 搜索实例（不包含歌词搜索）
 export function createFuseInstance(songs: Song[]) {
   // 为每首歌准备搜索数据
   const searchData = songs.map((song) => {
@@ -161,7 +160,6 @@ export function createFuseInstance(songs: Song[]) {
         (song.lyricist || []).join(" "),
         (song.composer || []).join(" "),
         (songDetail.arranger || []).join(" "),
-        processLyricsForSearch(songDetail.lyrics || null), // 使用 LRC 歌词
       ]
         .filter(Boolean)
         .join(" "),
@@ -170,12 +168,11 @@ export function createFuseInstance(songs: Song[]) {
 
   return new Fuse(searchData, {
     keys: [
-      { name: "title", weight: 0.25 },
-      { name: "album", weight: 0.2 },
+      { name: "title", weight: 0.35 }, // 提高标题权重
+      { name: "album", weight: 0.25 }, // 提高专辑权重
       { name: "lyricist", weight: 0.2 },
       { name: "composer", weight: 0.1 },
       { name: "arranger", weight: 0.1 },
-      { name: "searchableContent", weight: 0.15 }, // 提高歌词权重
     ],
     threshold: 0.4, // 放宽阈值，对中文更友好
     includeScore: true,
@@ -250,7 +247,7 @@ export function filterSongs(
       (selectedArranger === "未知"
         ? !songDetail.arranger || songDetail.arranger.length === 0
         : songDetail.arranger &&
-          songDetail.arranger.includes(selectedArranger));
+        songDetail.arranger.includes(selectedArranger));
 
     return (
       matchesType &&

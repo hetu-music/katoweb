@@ -36,7 +36,8 @@ export default async function MusicLibraryPage() {
   let error: Error | null = null;
 
   try {
-    songsData = await getSongs();
+    // forListView = true 只获取列表展示需要的字段，排除歌词等大字段
+    songsData = await getSongs(undefined, undefined, true);
   } catch (err) {
     console.error("Error fetching songs:", err);
     error = err instanceof Error ? err : new Error("未知错误");
