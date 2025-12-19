@@ -548,8 +548,8 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       <main className="pt-32 pb-20 max-w-7xl mx-auto px-6">
         {/* Header */}
         <section className="mb-16 space-y-4">
-          <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50">
-            谣歌 <span>{filteredWorks.length}</span>
+          <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50 italic">
+            谣歌 <span className="text-[1.3em] font-semibold">{filteredWorks.length}</span>
           </h1>
           <p className="text-slate-500 dark:text-slate-400 font-light max-w-lg">
             你一定想知道，戏里讲了什么故事。
