@@ -548,17 +548,32 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
               <div className="bg-white dark:bg-slate-900/50 rounded-3xl p-8 md:p-12 border border-slate-100 dark:border-slate-800 shadow-sm min-h-[400px]">
                 {song.lyrics ? (
-                  <div
-                    className={cn(
-                      "whitespace-pre-line leading-loose text-lg text-slate-700 dark:text-slate-300 font-light",
-                      lyricsType === "normal"
-                        ? "text-center"
-                        : "text-left font-mono text-base",
-                    )}
-                  >
-                    {lyricsType === "normal"
-                      ? song.normalLyrics || song.lyrics
-                      : song.lyrics}
+                  <div className="relative">
+                    {/* 普通歌词 */}
+                    <div
+                      className={cn(
+                        "whitespace-pre-line leading-loose text-lg text-slate-700 dark:text-slate-300 font-light text-center",
+                        "transition-all duration-500 ease-in-out",
+                        lyricsType === "normal"
+                          ? "opacity-100 translate-y-0 relative"
+                          : "opacity-0 translate-y-4 absolute inset-0 pointer-events-none",
+                      )}
+                    >
+                      {song.normalLyrics || song.lyrics}
+                    </div>
+
+                    {/* LRC 歌词 */}
+                    <div
+                      className={cn(
+                        "whitespace-pre-line leading-loose text-lg text-slate-700 dark:text-slate-300 font-light text-left font-mono",
+                        "transition-all duration-500 ease-in-out",
+                        lyricsType === "lrc"
+                          ? "opacity-100 translate-y-0 relative"
+                          : "opacity-0 translate-y-4 absolute inset-0 pointer-events-none",
+                      )}
+                    >
+                      {song.lyrics}
+                    </div>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full text-slate-400 opacity-50">
