@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { flushSync } from "react-dom";
 import {
   Search,
@@ -500,6 +500,49 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [resetAllFilters, setShowAdvancedFilters]);
 
+  // Mouse drag to scroll functionality
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const hasDragged = useRef(false); // 跟踪是否发生了实际拖动
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (!scrollContainerRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
+    setScrollLeft(scrollContainerRef.current.scrollLeft);
+    hasDragged.current = false; // 重置拖动标记
+    scrollContainerRef.current.style.cursor = 'grabbing';
+    scrollContainerRef.current.style.userSelect = 'none';
+  }, []);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDragging || !scrollContainerRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollContainerRef.current.offsetLeft;
+    const walk = (x - startX) * 2; // 乘以2让滚动更灵敏
+
+    // 如果移动距离超过5px，标记为已拖动
+    if (Math.abs(walk) > 5) {
+      hasDragged.current = true;
+    }
+
+    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+  }, [isDragging, startX, scrollLeft]);
+
+  const handleMouseUpOrLeave = useCallback(() => {
+    setIsDragging(false);
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.style.cursor = 'grab';
+      scrollContainerRef.current.style.userSelect = 'auto';
+    }
+    // 延迟重置拖动标记，确保 onClick 事件能够检测到
+    setTimeout(() => {
+      hasDragged.current = false;
+    }, 50);
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500">
       {/* 顶部导航 */}
@@ -561,7 +604,14 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
           <div className="flex flex-col gap-4">
             <div className="flex flex-col-reverse md:flex-row justify-between gap-4 md:items-center">
               {/* Left Group (Desktop) / Bottom Group (Mobile): Type Filters */}
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0 w-full md:w-auto">
+              <div
+                ref={scrollContainerRef}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUpOrLeave}
+                onMouseLeave={handleMouseUpOrLeave}
+                className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0 w-full md:w-auto cursor-grab active:cursor-grabbing"
+              >
                 {availableTypes.map((type) => {
                   if (type === "全部") {
                     const isAnyFilterActive =
@@ -578,7 +628,13 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       return (
                         <button
                           key="reset"
-                          onClick={resetAllFilters}
+                          onClick={(e) => {
+                            if (hasDragged.current) {
+                              e.preventDefault();
+                              return;
+                            }
+                            resetAllFilters();
+                          }}
                           className="px-4 py-1.5 rounded-full text-sm transition-all duration-300 border select-none whitespace-nowrap bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:border-red-300 dark:bg-red-900/10 dark:text-red-400 dark:border-red-900/30 flex items-center gap-1.5"
                         >
                           <RotateCcw size={12} />
@@ -594,6 +650,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       label={type}
                       active={filterType === type}
                       onClick={() => {
+                        if (hasDragged.current) return; // 如果刚拖动过，忽略点击
                         setFilterType(type);
                         setPaginationPage(1); // 切换类型时重置页码
                       }}
