@@ -6,8 +6,9 @@
   --background: #ffffff;
   --foreground: #171717;
   /* 定义字体系列，优先英文，后退中文 */
-  --font-sans: var(--font-body), var(--font-body-sc), sans-serif;
-  --font-serif: var(--font-heading), var(--font-heading-sc), serif;
+  --font-sans: var(--font-body), var(--font-body-sc), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+
+  --font-serif: var(--font-heading), var(--font-heading-sc), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 }
 
 .dark {
