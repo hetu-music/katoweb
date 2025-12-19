@@ -5,6 +5,7 @@ import {
   Noto_Serif_SC,
   Noto_Sans_SC,
 } from "next/font/google";
+import localFont from 'next/font/local'
 import "./globals.css";
 
 // 标题字体 - 衬线体
@@ -34,6 +35,13 @@ const notoSansSC = Noto_Sans_SC({
   display: "swap",
 });
 
+const lxgwMono = localFont({
+  src: '../../public/fonts/LXGWMono.woff2',
+  variable: "--font-mono-cjk",
+  weight: "400",
+  display: "swap",
+})
+
 export const metadata: Metadata = {
   title: "河图作品勘鉴",
   description: "河图音乐作品收录与筛选",
@@ -50,7 +58,7 @@ export default function RootLayout({
     <html
       lang="zh-CN"
       suppressHydrationWarning
-      className={`${playfairDisplay.variable} ${notoSerifSC.variable} ${inter.variable} ${notoSansSC.variable}`}
+      className={`${playfairDisplay.variable} ${notoSerifSC.variable} ${inter.variable} ${notoSansSC.variable} ${lxgwMono.variable}`}
     >
       <body className="antialiased">
         <Providers>
