@@ -457,12 +457,12 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                     {songInfo?.creativeInfo.map((item, index) => (
                       <div
                         key={index}
-                        className="flex justify-between text-sm border-b border-slate-50 dark:border-slate-800/50 last:border-0 pb-2 last:pb-0"
+                        className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm border-b border-slate-50 dark:border-slate-800/50 last:border-0 pb-2 last:pb-0"
                       >
-                        <span className="text-slate-500 dark:text-slate-400">
+                        <span className="text-slate-500 dark:text-slate-400 whitespace-nowrap">
                           {item.label}
                         </span>
-                        <span className="font-medium text-slate-900 dark:text-slate-200 text-right">
+                        <span className="font-medium text-slate-900 dark:text-slate-200 text-right [word-break:keep-all] [overflow-wrap:break-word]">
                           {item.value}
                         </span>
                       </div>
@@ -481,12 +481,12 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                     {songInfo?.basicInfo.map((item, index) => (
                       <div
                         key={index}
-                        className="flex justify-between text-sm border-b border-slate-50 dark:border-slate-800/50 last:border-0 pb-2 last:pb-0"
+                        className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm border-b border-slate-50 dark:border-slate-800/50 last:border-0 pb-2 last:pb-0"
                       >
-                        <span className="text-slate-500 dark:text-slate-400">
+                        <span className="text-slate-500 dark:text-slate-400 whitespace-nowrap">
                           {item.label}
                         </span>
-                        <span className="font-medium text-slate-900 dark:text-slate-200 text-right">
+                        <span className="font-medium text-slate-900 dark:text-slate-200 text-right [word-break:keep-all] [overflow-wrap:break-word]">
                           {item.value}
                         </span>
                       </div>

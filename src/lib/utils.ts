@@ -10,6 +10,20 @@ export function formatTime(seconds: number | null): string {
   return `${min}:${sec}`;
 }
 
+// 格式化日期为"年月日"格式
+export function formatDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return "未知";
+  try {
+    const date = new Date(dateStr);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${year}年${month}月${day}日`;
+  } catch {
+    return dateStr;
+  }
+}
+
 // 判断字符串首字母是否为英文
 function startsWithEnglish(str: string): boolean {
   return /^[a-zA-Z]/.test(str);
@@ -267,28 +281,28 @@ export function calculateSongInfo(song: SongDetail): SongInfo {
         label: "作词",
         value:
           song.lyricist && song.lyricist.length > 0
-            ? song.lyricist.join(", ")
+            ? song.lyricist.join(" ")
             : "未知",
       },
       {
         label: "作曲",
         value:
           song.composer && song.composer.length > 0
-            ? song.composer.join(", ")
+            ? song.composer.join(" ")
             : "未知",
       },
       {
         label: "编曲",
         value:
           song.arranger && song.arranger.length > 0
-            ? song.arranger.join(", ")
+            ? song.arranger.join(" ")
             : "未知",
       },
       {
         label: "演唱",
         value:
           song.artist && song.artist.length > 0
-            ? song.artist.join(", ")
+            ? song.artist.join(" ")
             : "未知",
       },
     ],
@@ -298,10 +312,10 @@ export function calculateSongInfo(song: SongDetail): SongInfo {
         label: "出品发行",
         value:
           song.albumartist && song.albumartist.length > 0
-            ? song.albumartist.join(", ")
+            ? song.albumartist.join(" ")
             : "未知",
       },
-      { label: "发行日期", value: song.date || "未知" },
+      { label: "发行日期", value: formatDate(song.date) },
       { label: "时长", value: formatTime(song.length) },
       {
         label: "曲号",
@@ -314,12 +328,12 @@ export function calculateSongInfo(song: SongDetail): SongInfo {
       {
         label: "流派",
         value:
-          song.genre && song.genre.length > 0 ? song.genre.join(", ") : "未知",
+          song.genre && song.genre.length > 0 ? song.genre.join(" ") : "未知",
       },
       {
         label: "类型",
         value:
-          song.type && song.type.length > 0 ? song.type.join(", ") : "原创",
+          song.type && song.type.length > 0 ? song.type.join(" ") : "原创",
       },
     ],
   };
