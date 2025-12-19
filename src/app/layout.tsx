@@ -40,6 +40,7 @@ const lxgwMono = localFont({
   variable: "--font-mono-cjk",
   weight: "400",
   display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
