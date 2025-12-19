@@ -553,7 +553,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                     <div
                       className={cn(
                         "whitespace-pre-line leading-loose text-lg text-slate-700 dark:text-slate-300 font-light text-center",
-                        "transition-all duration-400 ease-in-out",
+                        "transition-all duration-500 ease-in-out",
                         lyricsType === "normal"
                           ? "opacity-100 translate-y-0 relative"
                           : "opacity-0 translate-y-4 absolute inset-0 pointer-events-none",
@@ -566,7 +566,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                     <div
                       className={cn(
                         "whitespace-pre-line leading-loose text-lg text-slate-700 dark:text-slate-300 font-light text-left font-mono",
-                        "transition-all duration-400 ease-in-out",
+                        "transition-all duration-500 ease-in-out",
                         lyricsType === "lrc"
                           ? "opacity-100 translate-y-0 relative"
                           : "opacity-0 translate-y-4 absolute inset-0 pointer-events-none",
