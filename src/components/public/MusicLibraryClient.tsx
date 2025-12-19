@@ -611,7 +611,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   />
                   <input
                     type="text"
-                    placeholder="搜索歌曲、歌词等..."
+                    placeholder="搜索..."
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
