@@ -10,6 +10,20 @@ export function formatTime(seconds: number | null): string {
   return `${min}:${sec}`;
 }
 
+// 格式化日期为"年月日"格式
+export function formatDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return "未知";
+  try {
+    const date = new Date(dateStr);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${year}年${month}月${day}日`;
+  } catch {
+    return dateStr;
+  }
+}
+
 // 判断字符串首字母是否为英文
 function startsWithEnglish(str: string): boolean {
   return /^[a-zA-Z]/.test(str);
@@ -147,8 +161,7 @@ export function processLyricsForSearch(lrcLyrics: string | null): string {
   return lines.join(" ");
 }
 
-// 创建 Fuse.js 搜索实例
-// 创建 Fuse.js 搜索实例
+// 创建 Fuse.js 搜索实例（不包含歌词搜索）
 export function createFuseInstance(songs: Song[]) {
   // 为每首歌准备搜索数据
   const searchData = songs.map((song) => {
@@ -161,7 +174,6 @@ export function createFuseInstance(songs: Song[]) {
         (song.lyricist || []).join(" "),
         (song.composer || []).join(" "),
         (songDetail.arranger || []).join(" "),
-        processLyricsForSearch(songDetail.lyrics || null), // 使用 LRC 歌词
       ]
         .filter(Boolean)
         .join(" "),
@@ -170,12 +182,11 @@ export function createFuseInstance(songs: Song[]) {
 
   return new Fuse(searchData, {
     keys: [
-      { name: "title", weight: 0.25 },
-      { name: "album", weight: 0.2 },
+      { name: "title", weight: 0.35 }, // 提高标题权重
+      { name: "album", weight: 0.25 }, // 提高专辑权重
       { name: "lyricist", weight: 0.2 },
       { name: "composer", weight: 0.1 },
       { name: "arranger", weight: 0.1 },
-      { name: "searchableContent", weight: 0.15 }, // 提高歌词权重
     ],
     threshold: 0.4, // 放宽阈值，对中文更友好
     includeScore: true,
@@ -250,7 +261,7 @@ export function filterSongs(
       (selectedArranger === "未知"
         ? !songDetail.arranger || songDetail.arranger.length === 0
         : songDetail.arranger &&
-          songDetail.arranger.includes(selectedArranger));
+        songDetail.arranger.includes(selectedArranger));
 
     return (
       matchesType &&
@@ -270,28 +281,28 @@ export function calculateSongInfo(song: SongDetail): SongInfo {
         label: "作词",
         value:
           song.lyricist && song.lyricist.length > 0
-            ? song.lyricist.join(", ")
+            ? song.lyricist.join(" ")
             : "未知",
       },
       {
         label: "作曲",
         value:
           song.composer && song.composer.length > 0
-            ? song.composer.join(", ")
+            ? song.composer.join(" ")
             : "未知",
       },
       {
         label: "编曲",
         value:
           song.arranger && song.arranger.length > 0
-            ? song.arranger.join(", ")
+            ? song.arranger.join(" ")
             : "未知",
       },
       {
         label: "演唱",
         value:
           song.artist && song.artist.length > 0
-            ? song.artist.join(", ")
+            ? song.artist.join(" ")
             : "未知",
       },
     ],
@@ -301,10 +312,10 @@ export function calculateSongInfo(song: SongDetail): SongInfo {
         label: "出品发行",
         value:
           song.albumartist && song.albumartist.length > 0
-            ? song.albumartist.join(", ")
+            ? song.albumartist.join(" ")
             : "未知",
       },
-      { label: "发行日期", value: song.date || "未知" },
+      { label: "发行日期", value: formatDate(song.date) },
       { label: "时长", value: formatTime(song.length) },
       {
         label: "曲号",
@@ -317,12 +328,12 @@ export function calculateSongInfo(song: SongDetail): SongInfo {
       {
         label: "流派",
         value:
-          song.genre && song.genre.length > 0 ? song.genre.join(", ") : "未知",
+          song.genre && song.genre.length > 0 ? song.genre.join(" ") : "未知",
       },
       {
         label: "类型",
         value:
-          song.type && song.type.length > 0 ? song.type.join(", ") : "原创",
+          song.type && song.type.length > 0 ? song.type.join(" ") : "原创",
       },
     ],
   };

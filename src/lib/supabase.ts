@@ -70,18 +70,25 @@ export function createSupabaseClient(table?: string, accessToken?: string) {
 }
 
 // 获取所有歌曲数据
+// forListView: 为 true 时只获取列表展示需要的字段，排除歌词等大字段
 export async function getSongs(
   table: string = MAIN_TABLE,
   accessToken?: string,
+  forListView: boolean = false,
 ): Promise<Song[]> {
   const supabase = createSupabaseClient(table, accessToken);
   if (!supabase) {
     console.warn("Supabase client not available, returning empty data");
     return [];
   }
+
+  // 列表视图需要的字段（排除 lyrics, comment, updated_at, kugolink, qmlink, nelink 等详情页字段）
+  // 注意：year 不是数据库字段，而是从 date 计算得出的，所以这里不包含 year
+  const listViewFields = "id,title,album,genre,lyricist,composer,artist,length,hascover,date,type";
+
   const { data, error } = await supabase
     .from(table)
-    .select("*")
+    .select(forListView ? listViewFields : "*")
     .order("id", { ascending: true });
   if (error) {
     console.error("Supabase error:", error);
@@ -89,7 +96,8 @@ export async function getSongs(
   }
 
   // 直接返回数据，不需要处理歌词转换（搜索时直接使用 LRC 歌词）
-  return mapAndSortSongs(data);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return mapAndSortSongs(data as any);
 }
 
 // 根据ID获取歌曲详情
