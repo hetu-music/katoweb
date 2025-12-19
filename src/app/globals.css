@@ -48,35 +48,6 @@ button {
   line-height: 1.4;
 }
 
-/* 触摸动画，仅在触摸设备生效 */
-@media (hover: none) and (pointer: coarse) {
-  .touch-active {
-    transition:
-      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-      box-shadow 0.3s;
-  }
-
-  /* 点击时的放大效果 */
-  .touch-active.touch-active-pressed {
-    transform: scale(1.05);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
-    transition:
-      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-      box-shadow 0.3s;
-  }
-
-  /* 导航时保持放大状态 */
-  .touch-active.touch-navigating {
-    transform: scale(1.05);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
-    opacity: 0.8;
-    transition:
-      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-      box-shadow 0.3s,
-      opacity 0.3s;
-  }
-}
-
 /* 自定义下拉组件样式 */
 .custom-select {
   @apply relative w-full h-12 focus:outline-none;
