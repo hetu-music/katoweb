@@ -1,4 +1,3 @@
-import React from "react";
 import { notFound } from "next/navigation";
 import SongDetailClient from "@/components/detail/SongDetailClient";
 import { getSongById } from "@/lib/supabase";
