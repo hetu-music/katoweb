@@ -207,7 +207,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 )}
               />
             </button>
-            <div className="text-xl font-bold text-slate-900 dark:text-white tracking-tight hidden sm:block font-heading">
+            <div className="text-xl font-bold text-slate-900 dark:text-white tracking-tight hidden sm:block font-serif">
               {song.title}
             </div>
           </div>

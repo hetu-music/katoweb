@@ -508,7 +508,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
           <button
             onClick={handleTitleReset}
             className={cn(
-              "text-2xl font-bold tracking-tight flex items-center gap-1 cursor-pointer transition-colors font-heading",
+              "text-2xl font-bold tracking-tight flex items-center gap-1 cursor-pointer transition-colors font-serif",
               isTitleActive
                 ? "text-blue-600 dark:text-blue-400"
                 : "text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400",

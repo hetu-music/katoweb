@@ -639,7 +639,7 @@ export default function AdminClientComponent({
       {/* Navbar to match MusicLibraryClient */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="text-2xl font-bold tracking-tight flex items-center gap-1 font-heading text-slate-900 dark:text-white">
+          <div className="text-2xl font-bold tracking-tight flex items-center gap-1 font-serif text-slate-900 dark:text-white">
             勘鉴
             <span className="w-[2px] h-5 bg-blue-600 mx-2 rounded-full translate-y-[1.5px]" />
             管理后台

@@ -17,7 +17,6 @@ const playfairDisplay = Playfair_Display({
 
 const notoSerifSC = Noto_Serif_SC({
   variable: "--font-heading-sc",
-  subsets: ["latin"],
   weight: ["400", "500", "600", "700", "900"],
   display: "swap",
 });
@@ -31,7 +30,6 @@ const inter = Inter({
 
 const notoSansSC = Noto_Sans_SC({
   variable: "--font-body-sc",
-  subsets: ["latin"],
   weight: ["400", "500", "700"],
   display: "swap",
 });
@@ -49,10 +47,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN" suppressHydrationWarning>
-      <body
-        className={`${playfairDisplay.variable} ${notoSerifSC.variable} ${inter.variable} ${notoSansSC.variable} antialiased bg-linear-to-br from-purple-900 via-blue-900 to-indigo-900`}
-      >
+    <html
+      lang="zh-CN"
+      suppressHydrationWarning
+      className={`${playfairDisplay.variable} ${notoSerifSC.variable} ${inter.variable} ${notoSansSC.variable}`}
+    >
+      <body className="antialiased">
         <Providers>
           <div className="relative z-10 min-h-screen">{children}</div>
         </Providers>
