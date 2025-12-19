@@ -205,9 +205,9 @@ const ListRow = ({
         {song.title}
       </h3>
       <p className="text-sm text-slate-500 dark:text-slate-400 font-light truncate">
-        {song.lyricist?.join(", ") || "-"}{" "}
+        {song.lyricist?.join(" ") || "-"}{" "}
         <span className="opacity-50 mx-1">/</span>{" "}
-        {song.composer?.join(", ") || "-"}
+        {song.composer?.join(" ") || "-"}
       </p>
     </div>
 
