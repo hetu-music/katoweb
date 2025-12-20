@@ -358,8 +358,17 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   }, []);
 
   // Debounced values for expensive filtering operations
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const debouncedYearRangeIndices = useDebounce(yearRangeIndices, 300);
+  // Debounced values for expensive filtering operations
+  const debouncedSearchQuery = useDebounce(
+    searchQuery,
+    300,
+    (val) => val === "",
+  );
+  const debouncedYearRangeIndices = useDebounce(
+    yearRangeIndices,
+    300,
+    (val) => val[0] === 0 && val[1] === sliderYears.length - 1,
+  );
 
   // Memoize Fuse instance only when data changes
   const fuseInstance = useMemo(() => {
@@ -669,6 +678,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                               return;
                             }
                             resetAllFilters();
+                            scrollToTop();
                           }}
                           className="px-4 py-1.5 rounded-full text-sm transition-all duration-300 border select-none whitespace-nowrap bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:border-red-300 dark:bg-red-900/10 dark:text-red-400 dark:border-red-900/30 flex items-center gap-1.5"
                         >
