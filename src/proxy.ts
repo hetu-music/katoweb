@@ -11,12 +11,10 @@ export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Determine the route type based on the new structure
-  // (admin) group: Starts with /admin, /api, or is /login -> Strict CSP
+  // (admin) group: Starts with /admin or is /login -> Strict CSP
   // (public) group: /, /song/*, etc. -> Relaxed CSP (Static/ISR)
-  const isStrictRoute =
-    pathname.startsWith("/admin") ||
-    pathname.startsWith("/api") ||
-    pathname === "/login";
+  // Note: /api is excluded by the matcher below, so we don't need to check for it here.
+  const isStrictRoute = pathname.startsWith("/admin") || pathname === "/login";
 
   // Only use Nonce in Production on Strict routes
   // We disable Nonce in Development to avoid HMR/Hydration errors
@@ -25,9 +23,9 @@ export async function proxy(request: NextRequest) {
   let cspHeader = "";
 
   if (useNonce) {
-    // [STRICT POLICY] For Admin & Dynamic API Routes
+    // [STRICT POLICY] For Admin Routes
     // - Requires 'nonce' for all scripts
-    // - valid for: /admin/*, /api/*
+    // - valid for: /admin/*, /login
     cspHeader = `
       default-src 'self';
       script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'sha256-n46vPwSWuMC0W703pBofImv82Z26xo4LXymv0E9caPk=' https://challenges.cloudflare.com;
@@ -89,11 +87,6 @@ export async function proxy(request: NextRequest) {
 
   // Auth Logic for Admin Routes
   if (request.nextUrl.pathname.startsWith("/admin")) {
-    // Login page does not need auth
-    if (request.nextUrl.pathname === "/login") {
-      return response;
-    }
-
     try {
       const supabase = createSupabaseMiddlewareClient(request, response);
 
