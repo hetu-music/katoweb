@@ -7,14 +7,6 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "cover.hetu-music.com",
       },
-      {
-        protocol: "https",
-        hostname: "www.bing.com",
-      },
-      {
-        protocol: "https",
-        hostname: "picsum.photos",
-      },
     ],
     minimumCacheTTL: 3600,
     // 优化图片处理以减少内存占用
