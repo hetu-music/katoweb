@@ -10,35 +10,21 @@ export async function proxy(request: NextRequest) {
   const isDev = process.env.NODE_ENV === "development";
   const pathname = request.nextUrl.pathname;
 
-  // Determine if the page is ISR (Static/SSG)
-  // Main page "/" and Song Detail pages "/song/*" are ISR
-  const isISR = pathname === "/" || pathname.startsWith("/song/");
+  // Determine the route type based on the new structure
+  // (admin) group: Starts with /admin or /api -> Strict CSP
+  // (public) group: /, /song/*, etc. -> Relaxed CSP (Static/ISR)
+  const isStrictRoute = pathname.startsWith("/admin") || pathname.startsWith("/api");
+
+  // Only use Nonce in Production on Strict routes
+  // We disable Nonce in Development to avoid HMR/Hydration errors
+  const useNonce = isStrictRoute && !isDev;
 
   let cspHeader = "";
-  const useNonce = !isISR && !isDev; // Only use Nonce in Production and Non-ISR pages
 
-  if (!useNonce) {
-    // Relaxed CSP for ISR/Static pages OR Development
-    // Removes 'nonce' and 'strict-dynamic' to allow static scripts and HMR
-    cspHeader = `
-      default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com;
-      style-src 'self' 'unsafe-inline';
-      img-src 'self' blob: data: https://cover.hetu-music.com;
-      font-src 'self';
-      object-src 'none';
-      base-uri 'self';
-      form-action 'self';
-      frame-ancestors 'none';
-      frame-src 'self' https://challenges.cloudflare.com;
-      block-all-mixed-content;
-      upgrade-insecure-requests;
-    `
-      .replace(/\s{2,}/g, " ")
-      .trim();
-  } else {
-    // Strict CSP for Admin and Dynamic pages in Production
-    // Uses Nonce and strict-dynamic for maximum security
+  if (useNonce) {
+    // [STRICT POLICY] For Admin & Dynamic API Routes
+    // - Requires 'nonce' for all scripts
+    // - valid for: /admin/*, /api/*
     cspHeader = `
       default-src 'self';
       script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'sha256-n46vPwSWuMC0W703pBofImv82Z26xo4LXymv0E9caPk=' https://challenges.cloudflare.com;
@@ -53,6 +39,26 @@ export async function proxy(request: NextRequest) {
       block-all-mixed-content;
       upgrade-insecure-requests;
       require-trusted-types-for 'script';
+    `
+      .replace(/\s{2,}/g, " ")
+      .trim();
+  } else {
+    // [RELAXED POLICY] For Public Static/ISR Pages & Development
+    // - Allows unsafe-inline/eval for broad compatibility with static hydration
+    // - valid for: /, /song/*, and all routes in 'pnpm dev'
+    cspHeader = `
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com;
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' blob: data: https://cover.hetu-music.com;
+      font-src 'self';
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      frame-ancestors 'none';
+      frame-src 'self' https://challenges.cloudflare.com;
+      block-all-mixed-content;
+      upgrade-insecure-requests;
     `
       .replace(/\s{2,}/g, " ")
       .trim();
