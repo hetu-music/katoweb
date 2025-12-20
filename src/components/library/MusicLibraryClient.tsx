@@ -130,7 +130,7 @@ const GridCard = ({
     {/* 信息区 */}
     <div className="space-y-1">
       <div className="flex justify-between items-start gap-4">
-        <h3
+        <h2
           className={cn(
             "text-xl text-slate-900 dark:text-slate-100 leading-tight transition-colors line-clamp-1 flex-1 min-w-0",
             isActive
@@ -140,7 +140,7 @@ const GridCard = ({
           title={song.title}
         >
           {song.title}
-        </h3>
+        </h2>
         <span className="text-xs font-mono text-slate-400 shrink-0">
           {song.year || "未知"}
         </span>
@@ -197,7 +197,7 @@ const ListRow = ({
 
     {/* 主要信息 */}
     <div className="grow min-w-0 flex flex-col justify-center">
-      <h3
+      <h2
         className={cn(
           "text-lg text-slate-900 dark:text-slate-100 truncate transition-colors",
           isActive
@@ -206,7 +206,7 @@ const ListRow = ({
         )}
       >
         {song.title}
-      </h3>
+      </h2>
       <p className="text-sm text-slate-500 dark:text-slate-400 font-light truncate">
         {song.lyricist?.join(" ") || "-"}{" "}
         <span className="opacity-50 mx-1">/</span>{" "}
