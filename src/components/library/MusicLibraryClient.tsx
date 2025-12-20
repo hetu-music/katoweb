@@ -331,6 +331,29 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   const [showAbout, setShowAbout] = useState(false);
   const [activeSongId, setActiveSongId] = useState<number | null>(null);
 
+  /* 
+   * Force re-render key for list/grid content.
+   * Incremented on pageshow (back navigation/bfcache) to replay entrance animations.
+   */
+  const [mountKey, setMountKey] = useState(0);
+
+  // Reset active state activeSongId and trigger animation replay when returning to the page
+  useEffect(() => {
+    const handlePageShow = () => {
+      setActiveSongId(null);
+      setMountKey((prev) => prev + 1);
+    };
+
+    window.addEventListener("pageshow", handlePageShow);
+
+    // Also reset on mount immediately
+    setActiveSongId(null);
+
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, []);
+
   // Debounced values for expensive filtering operations
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const debouncedYearRangeIndices = useDebounce(yearRangeIndices, 300);
@@ -759,7 +782,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
               {viewMode === "grid" ? (
                 // --- 网格模式 ---
                 <div
-                  key={`grid-page-${currentPage}`}
+                  key={`grid-page-${currentPage}-${mountKey}`}
                   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12"
                 >
                   {paginatedSongs.map((work, i) => (
@@ -783,7 +806,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
               ) : (
                 // --- 列表模式 ---
                 <div
-                  key={`list-page-${currentPage}`}
+                  key={`list-page-${currentPage}-${mountKey}`}
                   className="flex flex-col gap-2"
                 >
                   {/* 列表表头 */}
