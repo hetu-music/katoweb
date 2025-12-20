@@ -349,8 +349,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
     window.addEventListener("pageshow", handlePageShow);
 
-    // Also reset on mount immediately
-    setActiveSongId(null);
+
 
     return () => {
       window.removeEventListener("pageshow", handlePageShow);

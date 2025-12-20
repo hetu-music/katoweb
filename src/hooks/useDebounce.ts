@@ -13,10 +13,17 @@ export function useDebounce<T>(
 ): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
+  // Check if we should update immediately
+  const shouldUpdateImmediately = immediatePredicate && immediatePredicate(value);
+
+  // Update logic pattern for derived state during render
+  if (shouldUpdateImmediately && value !== debouncedValue) {
+    setDebouncedValue(value);
+  }
+
   useEffect(() => {
-    // If the predicate returns true, update immediately and skip the timer
-    if (immediatePredicate && immediatePredicate(value)) {
-      setDebouncedValue(value);
+    // If we've already updated immediately, we don't need the timer
+    if (shouldUpdateImmediately) {
       return;
     }
 
@@ -27,7 +34,7 @@ export function useDebounce<T>(
     return () => {
       clearTimeout(handler);
     };
-  }, [value, delay, immediatePredicate]);
+  }, [value, delay, shouldUpdateImmediately]);
 
   return debouncedValue;
 }

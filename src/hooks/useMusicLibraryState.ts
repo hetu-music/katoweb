@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
 export interface MusicLibraryState {
@@ -28,21 +28,11 @@ export interface MusicLibraryState {
   notifyDataReady: () => void;
 }
 
-interface FilterState {
-  searchQuery: string;
-  filterType: string;
-  filterLyricist: string;
-  filterComposer: string;
-  filterArranger: string;
-  yearRangeIndices: [number, number];
-}
+
 
 const STORAGE_KEY = "music_library_scrollY";
 const URL_DEBOUNCE_MS = 300;
-const SCROLL_RESTORE_DELAY_MS = 50; // Reduced from 200ms for faster restoration
-const SCROLL_RESTORE_INTERVAL_MS = 30; // Reduced from 50ms for faster retry
-const MAX_SCROLL_ATTEMPTS = 20;
-const SCROLL_TOLERANCE_PX = 100;
+
 
 export function useMusicLibraryState(
   initialSliderYearsLength: number,
@@ -108,51 +98,7 @@ export function useMusicLibraryState(
     if (typeof window === "undefined") return false;
     return sessionStorage.getItem(STORAGE_KEY) !== null;
   });
-  const hasRestoredScroll = useRef(false);
-
-  // Track previous filters to detect actual changes - Initialize with current values
-  const previousFilters = useRef<FilterState>({
-    searchQuery: searchParams.get("q") ?? "",
-    filterType: searchParams.get("type") ?? "全部",
-    filterLyricist: searchParams.get("lyricist") ?? "全部",
-    filterComposer: searchParams.get("composer") ?? "全部",
-    filterArranger: searchParams.get("arranger") ?? "全部",
-    yearRangeIndices: parseYearRange,
-  });
-
-  // Reset page to 1 when filters change
-  useEffect(() => {
-    const prev = previousFilters.current;
-    const filtersChanged =
-      prev.searchQuery !== searchQuery ||
-      prev.filterType !== filterType ||
-      prev.filterLyricist !== filterLyricist ||
-      prev.filterComposer !== filterComposer ||
-      prev.filterArranger !== filterArranger ||
-      prev.yearRangeIndices[0] !== yearRangeIndices[0] ||
-      prev.yearRangeIndices[1] !== yearRangeIndices[1];
-
-    if (filtersChanged) {
-      setCurrentPage(1);
-
-      // Update tracked filters
-      previousFilters.current = {
-        searchQuery,
-        filterType,
-        filterLyricist,
-        filterComposer,
-        filterArranger,
-        yearRangeIndices: [...yearRangeIndices],
-      };
-    }
-  }, [
-    searchQuery,
-    filterType,
-    filterLyricist,
-    filterComposer,
-    filterArranger,
-    yearRangeIndices,
-  ]);
+  // Removed unused hasRestoredScroll ref
 
   // Sync state to URL (debounced)
   useEffect(() => {
@@ -248,6 +194,37 @@ export function useMusicLibraryState(
     }
   }, []);
 
+  // State setters wrappers that also reset pagination
+  const setSearchQueryWrapped = useCallback((val: string) => {
+    setSearchQuery(val);
+    setCurrentPage(1);
+  }, []);
+
+  const setFilterTypeWrapped = useCallback((val: string) => {
+    setFilterType(val);
+    setCurrentPage(1);
+  }, []);
+
+  const setFilterLyricistWrapped = useCallback((val: string) => {
+    setFilterLyricist(val);
+    setCurrentPage(1);
+  }, []);
+
+  const setFilterComposerWrapped = useCallback((val: string) => {
+    setFilterComposer(val);
+    setCurrentPage(1);
+  }, []);
+
+  const setFilterArrangerWrapped = useCallback((val: string) => {
+    setFilterArranger(val);
+    setCurrentPage(1);
+  }, []);
+
+  const setYearRangeIndicesWrapped = useCallback((val: [number, number]) => {
+    setYearRangeIndices(val);
+    setCurrentPage(1);
+  }, []);
+
   // Reset all filters to default
   const resetAllFilters = useCallback(() => {
     setSearchQuery("");
@@ -261,17 +238,17 @@ export function useMusicLibraryState(
 
   return {
     searchQuery,
-    setSearchQuery,
+    setSearchQuery: setSearchQueryWrapped,
     filterType,
-    setFilterType,
+    setFilterType: setFilterTypeWrapped,
     yearRangeIndices,
-    setYearRangeIndices,
+    setYearRangeIndices: setYearRangeIndicesWrapped,
     filterLyricist,
-    setFilterLyricist,
+    setFilterLyricist: setFilterLyricistWrapped,
     filterComposer,
-    setFilterComposer,
+    setFilterComposer: setFilterComposerWrapped,
     filterArranger,
-    setFilterArranger,
+    setFilterArranger: setFilterArrangerWrapped,
     viewMode,
     setViewMode,
     currentPage,
