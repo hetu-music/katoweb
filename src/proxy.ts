@@ -87,7 +87,7 @@ export async function proxy(request: NextRequest) {
   // Auth Logic for Admin Routes
   if (request.nextUrl.pathname.startsWith("/admin")) {
     // Login page does not need auth
-    if (request.nextUrl.pathname === "/admin/login") {
+    if (request.nextUrl.pathname === "/login") {
       return response;
     }
 
@@ -105,7 +105,7 @@ export async function proxy(request: NextRequest) {
         console.warn("Auth middleware: User not authenticated", error?.message);
 
         // Ensure redirect response also has security headers
-        const redirectUrl = new URL("/admin/login", request.url);
+        const redirectUrl = new URL("/login", request.url);
         const redirectResponse = NextResponse.redirect(redirectUrl);
         // Copy security headers to redirect response
         redirectResponse.headers.set("Content-Security-Policy", cspHeader);
@@ -115,7 +115,7 @@ export async function proxy(request: NextRequest) {
     } catch (error) {
       console.error("Auth middleware error:", error);
       const redirectResponse = NextResponse.redirect(
-        new URL("/admin/login", request.url)
+        new URL("/login", request.url)
       );
       // Copy security headers to redirect response
       redirectResponse.headers.set("Content-Security-Policy", cspHeader);

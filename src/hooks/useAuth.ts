@@ -30,7 +30,7 @@ export function useAuth() {
       if (res.ok) {
         // 清空当前的 CSRF token
         setCsrfToken("");
-        router.push("/admin/login");
+        router.push("/login");
         router.refresh();
         // 只有在需要时才获取新的 CSRF token（比如用户重新访问登录页面）
       }
