@@ -350,43 +350,6 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                       />
                     </a>
                   )}
-                  {song.qmlink && (
-                    <a
-                      href={song.qmlink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => {
-                        setActiveLinkId("qmlink");
-                        setTimeout(() => setActiveLinkId(null), 1000);
-                      }}
-                      className={cn(
-                        "flex items-center justify-between px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border transition-all group",
-                        activeLinkId === "qmlink"
-                          ? "border-green-500/50 shadow-sm"
-                          : "border-slate-200 dark:border-slate-700 hover:border-green-500/50 hover:shadow-sm",
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "text-sm font-medium transition-colors",
-                          activeLinkId === "qmlink"
-                            ? "text-green-500"
-                            : "text-slate-700 dark:text-slate-200 group-hover:text-green-500",
-                        )}
-                      >
-                        QQ音乐
-                      </span>
-                      <ExternalLink
-                        size={14}
-                        className={cn(
-                          "transition-colors",
-                          activeLinkId === "qmlink"
-                            ? "text-green-400"
-                            : "text-slate-400 group-hover:text-green-400",
-                        )}
-                      />
-                    </a>
-                  )}
                   {song.kugolink && (
                     <a
                       href={song.kugolink}
@@ -420,6 +383,43 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                           activeLinkId === "kugolink"
                             ? "text-blue-400"
                             : "text-slate-400 group-hover:text-blue-400",
+                        )}
+                      />
+                    </a>
+                  )}
+                  {song.qmlink && (
+                    <a
+                      href={song.qmlink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => {
+                        setActiveLinkId("qmlink");
+                        setTimeout(() => setActiveLinkId(null), 1000);
+                      }}
+                      className={cn(
+                        "flex items-center justify-between px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border transition-all group",
+                        activeLinkId === "qmlink"
+                          ? "border-green-500/50 shadow-sm"
+                          : "border-slate-200 dark:border-slate-700 hover:border-green-500/50 hover:shadow-sm",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "text-sm font-medium transition-colors",
+                          activeLinkId === "qmlink"
+                            ? "text-green-500"
+                            : "text-slate-700 dark:text-slate-200 group-hover:text-green-500",
+                        )}
+                      >
+                        QQ音乐
+                      </span>
+                      <ExternalLink
+                        size={14}
+                        className={cn(
+                          "transition-colors",
+                          activeLinkId === "qmlink"
+                            ? "text-green-400"
+                            : "text-slate-400 group-hover:text-green-400",
                         )}
                       />
                     </a>
@@ -497,7 +497,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
               {/* 备注 */}
               {song.comment && (
-                <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800">
+                <div className="p-6 rounded-2xl bg-slate-100/70 dark:bg-slate-800/30 border border-slate-200/60 dark:border-slate-800">
                   <div className="flex items-center gap-2 mb-3 text-slate-400">
                     <PenTool size={16} />
                     <h3 className="text-xs font-bold uppercase tracking-wider">

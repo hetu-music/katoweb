@@ -325,15 +325,49 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     resetAllFilters,
     handleSongClick,
     isRestoringScroll,
+    notifyDataReady,
   } = useMusicLibraryState(sliderYears.length);
+
+
 
   // 关于弹窗状态 (Local UI state)
   const [showAbout, setShowAbout] = useState(false);
   const [activeSongId, setActiveSongId] = useState<number | null>(null);
 
+  /* 
+   * Force re-render key for list/grid content.
+   * Incremented on pageshow (back navigation/bfcache) to replay entrance animations.
+   */
+  const [mountKey, setMountKey] = useState(0);
+
+  // Reset active state activeSongId and trigger animation replay when returning to the page
+  useEffect(() => {
+    const handlePageShow = () => {
+      setActiveSongId(null);
+      setMountKey((prev) => prev + 1);
+    };
+
+    window.addEventListener("pageshow", handlePageShow);
+
+
+
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, []);
+
   // Debounced values for expensive filtering operations
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const debouncedYearRangeIndices = useDebounce(yearRangeIndices, 300);
+  // Debounced values for expensive filtering operations
+  const debouncedSearchQuery = useDebounce(
+    searchQuery,
+    300,
+    (val) => val === "",
+  );
+  const debouncedYearRangeIndices = useDebounce(
+    yearRangeIndices,
+    300,
+    (val) => val[0] === 0 && val[1] === sliderYears.length - 1,
+  );
 
   // Memoize Fuse instance only when data changes
   const fuseInstance = useMemo(() => {
@@ -375,6 +409,16 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     filterArranger,
     fuseInstance,
   ]);
+
+  // Notify hook when data is ready for scroll restoration
+  useEffect(() => {
+    // We only notify when we are mounted and have data
+    if (mounted) {
+      // Small timeout to ensure layout has time to settle (especially animations)
+      const t = setTimeout(notifyDataReady, 0);
+      return () => clearTimeout(t);
+    }
+  }, [mounted, filteredWorks, viewMode, mountKey, notifyDataReady]);
 
   // 分页处理
   const {
@@ -633,6 +677,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                               return;
                             }
                             resetAllFilters();
+                            scrollToTop();
                           }}
                           className="px-4 py-1.5 rounded-full text-sm transition-all duration-300 border select-none whitespace-nowrap bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:border-red-300 dark:bg-red-900/10 dark:text-red-400 dark:border-red-900/30 flex items-center gap-1.5"
                         >
@@ -667,7 +712,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   />
                   <input
                     type="text"
-                    placeholder="搜索..."
+                    placeholder="搜索歌曲、创作者..."
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
@@ -759,7 +804,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
               {viewMode === "grid" ? (
                 // --- 网格模式 ---
                 <div
-                  key={`grid-page-${currentPage}`}
+                  key={`grid-page-${currentPage}-${mountKey}`}
                   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12"
                 >
                   {paginatedSongs.map((work, i) => (
@@ -783,7 +828,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
               ) : (
                 // --- 列表模式 ---
                 <div
-                  key={`list-page-${currentPage}`}
+                  key={`list-page-${currentPage}-${mountKey}`}
                   className="flex flex-col gap-2"
                 >
                   {/* 列表表头 */}
