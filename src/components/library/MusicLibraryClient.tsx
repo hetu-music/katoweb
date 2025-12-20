@@ -328,13 +328,11 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     notifyDataReady,
   } = useMusicLibraryState(sliderYears.length);
 
-
-
   // 关于弹窗状态 (Local UI state)
   const [showAbout, setShowAbout] = useState(false);
   const [activeSongId, setActiveSongId] = useState<number | null>(null);
 
-  /* 
+  /*
    * Force re-render key for list/grid content.
    * Incremented on pageshow (back navigation/bfcache) to replay entrance animations.
    */
@@ -348,8 +346,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     };
 
     window.addEventListener("pageshow", handlePageShow);
-
-
 
     return () => {
       window.removeEventListener("pageshow", handlePageShow);

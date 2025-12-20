@@ -14,7 +14,8 @@ export function useDebounce<T>(
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
   // Check if we should update immediately
-  const shouldUpdateImmediately = immediatePredicate && immediatePredicate(value);
+  const shouldUpdateImmediately =
+    immediatePredicate && immediatePredicate(value);
 
   // Update logic pattern for derived state during render
   if (shouldUpdateImmediately && value !== debouncedValue) {

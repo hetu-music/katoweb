@@ -28,11 +28,8 @@ export interface MusicLibraryState {
   notifyDataReady: () => void;
 }
 
-
-
 const STORAGE_KEY = "music_library_scrollY";
 const URL_DEBOUNCE_MS = 300;
-
 
 export function useMusicLibraryState(
   initialSliderYearsLength: number,
