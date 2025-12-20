@@ -325,7 +325,10 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     resetAllFilters,
     handleSongClick,
     isRestoringScroll,
+    notifyDataReady,
   } = useMusicLibraryState(sliderYears.length);
+
+
 
   // 关于弹窗状态 (Local UI state)
   const [showAbout, setShowAbout] = useState(false);
@@ -398,6 +401,16 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     filterArranger,
     fuseInstance,
   ]);
+
+  // Notify hook when data is ready for scroll restoration
+  useEffect(() => {
+    // We only notify when we are mounted and have data
+    if (mounted) {
+      // Small timeout to ensure layout has time to settle (especially animations)
+      const t = setTimeout(notifyDataReady, 0);
+      return () => clearTimeout(t);
+    }
+  }, [mounted, filteredWorks, viewMode, mountKey, notifyDataReady]);
 
   // 分页处理
   const {

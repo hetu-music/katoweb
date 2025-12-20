@@ -25,6 +25,7 @@ export interface MusicLibraryState {
   resetAllFilters: () => void;
   handleSongClick: () => void;
   isRestoringScroll: boolean;
+  notifyDataReady: () => void;
 }
 
 interface FilterState {
@@ -196,79 +197,49 @@ export function useMusicLibraryState(
     getMaxYearIndex,
   ]);
 
-  // Core scroll restoration function - reusable for both initial mount and popstate
-  const performScrollRestoration = useCallback(() => {
+  // Explicit scroll restoration - only called when data is signaled as ready
+  const restoreScroll = useCallback(() => {
     const savedScroll = sessionStorage.getItem(STORAGE_KEY);
     if (!savedScroll) {
       setIsRestoringScroll(false);
       return;
     }
 
-    setIsRestoringScroll(true);
     const targetY = parseInt(savedScroll, 10);
-    let attempts = 0;
 
-    const attemptScroll = () => {
-      attempts++;
-      const docHeight = Math.max(
-        document.body.scrollHeight,
-        document.documentElement.scrollHeight,
-      );
+    // Explicitly scroll without checking height loops - trusting the signal
+    window.scrollTo(0, targetY);
 
-      // Check if document is tall enough for target scroll position
-      if (docHeight >= targetY + window.innerHeight * 0.5) {
-        window.scrollTo(0, targetY);
+    // Clean up and update state
+    sessionStorage.removeItem(STORAGE_KEY);
 
-        requestAnimationFrame(() => {
-          const currentY = window.scrollY;
-          const diff = Math.abs(currentY - targetY);
-
-          if (diff < SCROLL_TOLERANCE_PX || attempts >= MAX_SCROLL_ATTEMPTS) {
-            // Success or max attempts - clean up
-            sessionStorage.removeItem(STORAGE_KEY);
-            hasRestoredScroll.current = true;
-            requestAnimationFrame(() => setIsRestoringScroll(false));
-          } else {
-            // Try again
-            setTimeout(attemptScroll, SCROLL_RESTORE_INTERVAL_MS);
-          }
-        });
-      } else if (attempts < MAX_SCROLL_ATTEMPTS) {
-        // Document not ready yet, try again
-        setTimeout(attemptScroll, SCROLL_RESTORE_INTERVAL_MS);
-      } else {
-        // Max attempts reached, give up
-        sessionStorage.removeItem(STORAGE_KEY);
-        hasRestoredScroll.current = true;
-        setIsRestoringScroll(false);
-      }
-    };
-
-    setTimeout(attemptScroll, SCROLL_RESTORE_DELAY_MS);
+    // Use RAF to ensure visual update happens after scroll
+    requestAnimationFrame(() => {
+      setIsRestoringScroll(false);
+    });
   }, []);
 
-  // Scroll restoration on initial mount
-  useEffect(() => {
-    if (hasRestoredScroll.current) {
-      setIsRestoringScroll(false);
-      return;
-    }
-
-    performScrollRestoration();
-  }, [performScrollRestoration]);
+  // Signal from the consumer that data/layout is ready
+  const notifyDataReady = useCallback(() => {
+    restoreScroll();
+  }, [restoreScroll]);
 
   // Listen for browser's native back/forward navigation (popstate event)
+  // When popstate occurs, we trust the component to re-render and call notifyDataReady again
+  // OR we can optimistically try to restore if we still believe data is ready.
+  // Given the structure, relying on the component lifecycle (useEffect -> notifyDataReady) is safer.
+  // We keep a simple listener to ensure state consistency if needed, but primary driver is notifyDataReady.
   useEffect(() => {
     const handlePopState = () => {
-      // Reset scroll restoration flag so restoration can run again
-      hasRestoredScroll.current = false;
-      // Perform scroll restoration
-      performScrollRestoration();
+      // If we have a saved key, ensure we flag as restoring
+      if (sessionStorage.getItem(STORAGE_KEY)) {
+        setIsRestoringScroll(true);
+      }
     };
 
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [performScrollRestoration]);
+  }, []);
 
   // Save scroll position when navigating to song detail
   const handleSongClick = useCallback(() => {
@@ -310,5 +281,6 @@ export function useMusicLibraryState(
     resetAllFilters,
     handleSongClick,
     isRestoringScroll,
+    notifyDataReady,
   };
 }
