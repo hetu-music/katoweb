@@ -8,30 +8,64 @@ export async function proxy(request: NextRequest) {
 
   // Development environment check
   const isDev = process.env.NODE_ENV === "development";
+  const pathname = request.nextUrl.pathname;
 
-  // Construct CSP header
-  // Note: 'strict-dynamic' allows scripts with the correct nonce to execute
-  // 'unsafe-inline' for styles is often needed for Next.js/Tailwind
-  const cspHeader = `
-    default-src 'self';
-    script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
-    style-src 'self' 'unsafe-inline';
-    img-src 'self' blob: data: https://cover.hetu-music.com;
-    font-src 'self';
-    object-src 'none';
-    base-uri 'self';
-    form-action 'self';
-    frame-ancestors 'none';
-    block-all-mixed-content;
-    upgrade-insecure-requests;
-    ${isDev ? "" : "require-trusted-types-for 'script';"}
-  `
-    .replace(/\s{2,}/g, " ")
-    .trim();
+  // Determine if the page is ISR (Static/SSG)
+  // Main page "/" and Song Detail pages "/song/*" are ISR
+  const isISR = pathname === "/" || pathname.startsWith("/song/");
 
-  // Create request headers with nonce (Next.js needs this for scripting)
+  let cspHeader = "";
+  const useNonce = !isISR && !isDev; // Only use Nonce in Production and Non-ISR pages
+
+  if (!useNonce) {
+    // Relaxed CSP for ISR/Static pages OR Development
+    // Removes 'nonce' and 'strict-dynamic' to allow static scripts and HMR
+    cspHeader = `
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com;
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' blob: data: https://cover.hetu-music.com;
+      font-src 'self';
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      frame-ancestors 'none';
+      frame-src 'self' https://challenges.cloudflare.com;
+      block-all-mixed-content;
+      upgrade-insecure-requests;
+    `
+      .replace(/\s{2,}/g, " ")
+      .trim();
+  } else {
+    // Strict CSP for Admin and Dynamic pages in Production
+    // Uses Nonce and strict-dynamic for maximum security
+    cspHeader = `
+      default-src 'self';
+      script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'sha256-n46vPwSWuMC0W703pBofImv82Z26xo4LXymv0E9caPk=' https://challenges.cloudflare.com;
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' blob: data: https://cover.hetu-music.com;
+      font-src 'self';
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      frame-ancestors 'none';
+      frame-src 'self' https://challenges.cloudflare.com;
+      block-all-mixed-content;
+      upgrade-insecure-requests;
+      require-trusted-types-for 'script';
+    `
+      .replace(/\s{2,}/g, " ")
+      .trim();
+  }
+
+  // Create request headers
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-nonce", nonce);
+
+  // Only set x-nonce if we are using it
+  if (useNonce) {
+    requestHeaders.set("x-nonce", nonce);
+  }
+
   requestHeaders.set("Content-Security-Policy", cspHeader);
 
   // Initialize response with new headers

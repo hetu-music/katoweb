@@ -15,7 +15,11 @@ import {
 import { Turnstile } from "@marsidev/react-turnstile";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 
-export default function LoginClient() {
+interface LoginClientProps {
+  nonce?: string;
+}
+
+export default function LoginClient({ nonce }: LoginClientProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -176,6 +180,7 @@ export default function LoginClient() {
                 onSuccess={(token) => setTurnstileToken(token)}
                 onError={() => setError("Captcha failed to load")}
                 onExpire={() => setTurnstileToken("")}
+                scriptOptions={{ nonce }}
                 options={{
                   theme: "auto",
                   size: "flexible",

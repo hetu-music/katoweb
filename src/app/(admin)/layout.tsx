@@ -6,7 +6,8 @@ import {
   Noto_Sans_SC,
 } from "next/font/google";
 import localFont from "next/font/local";
-import "./globals.css";
+import { headers } from "next/headers";
+import "../globals.css";
 
 // 标题字体 - 衬线体
 const playfairDisplay = Playfair_Display({
@@ -36,7 +37,7 @@ const notoSansSC = Noto_Sans_SC({
 });
 
 const lxgwMono = localFont({
-  src: "../../public/fonts/LXGWMono.woff2",
+  src: "../../../public/fonts/LXGWMono.woff2",
   variable: "--font-mono-cjk",
   weight: "400",
   display: "swap",
@@ -44,23 +45,48 @@ const lxgwMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "河图作品勘鉴",
-  description: "河图音乐作品收录与筛选",
+  title: "Admin - 河图作品勘鉴",
+  description: "Administrative Interface",
 };
 
 import { Providers } from "@/context/providers";
 
-export default function RootLayout({
+export default async function AdminRootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = await headers();
+  const nonce = headersList.get("x-nonce") || "";
+
   return (
     <html
       lang="zh-CN"
       suppressHydrationWarning
       className={`${playfairDisplay.variable} ${notoSerifSC.variable} ${inter.variable} ${notoSansSC.variable} ${lxgwMono.variable}`}
     >
+      <head>
+        <script
+          id="trusted-types-policy"
+          nonce={nonce}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{
+            __html: `
+            if (window.trustedTypes && window.trustedTypes.createPolicy) {
+              try {
+                window.trustedTypes.createPolicy('default', {
+                  createHTML: function(string) { return string; },
+                  createScript: function(string) { return string; },
+                  createScriptURL: function(string) { return string; }
+                });
+              } catch (e) {
+                console.warn('Trusted Types policy creation failed:', e);
+              }
+            }
+          `,
+          }}
+        />
+      </head>
       <body className="antialiased">
         <Providers>
           <div className="relative z-10 min-h-screen">{children}</div>
