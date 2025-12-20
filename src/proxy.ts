@@ -11,9 +11,12 @@ export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Determine the route type based on the new structure
-  // (admin) group: Starts with /admin or /api -> Strict CSP
+  // (admin) group: Starts with /admin, /api, or is /login -> Strict CSP
   // (public) group: /, /song/*, etc. -> Relaxed CSP (Static/ISR)
-  const isStrictRoute = pathname.startsWith("/admin") || pathname.startsWith("/api");
+  const isStrictRoute =
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/api") ||
+    pathname === "/login";
 
   // Only use Nonce in Production on Strict routes
   // We disable Nonce in Development to avoid HMR/Hydration errors
