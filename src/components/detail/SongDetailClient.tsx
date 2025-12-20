@@ -2,11 +2,8 @@
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { flushSync } from "react-dom";
 import {
   ArrowLeft,
-  Moon,
-  Sun,
   FileText,
   Info,
   Disc,
@@ -17,12 +14,12 @@ import {
   ExternalLink,
 } from "lucide-react";
 import Image from "next/image";
-import { useTheme } from "next-themes";
 import { SongDetailClientProps } from "@/lib/types";
 import { getCoverUrl, calculateSongInfo, getNmnUrl } from "@/lib/utils";
 import { getTypeTagStyle, getGenreTagStyle } from "@/lib/constants";
 import ImageModal from "@/components/shared/ImageModal";
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
+import ThemeToggle from "@/components/shared/ThemeToggle";
 
 // 简易 classNames 工具
 function cn(...classes: (string | undefined | null | false)[]) {
@@ -31,15 +28,6 @@ function cn(...classes: (string | undefined | null | false)[]) {
 
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const router = useRouter();
-  const { setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    // Use requestAnimationFrame to avoid synchronous setState in effect
-    requestAnimationFrame(() => {
-      setMounted(true);
-    });
-  }, []);
 
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [lyricsType, setLyricsType] = useState<"normal" | "lrc">("normal");
@@ -79,51 +67,6 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  // 切换主题动画
-  const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (!document.startViewTransition) {
-      setTheme(resolvedTheme === "dark" ? "light" : "dark");
-      return;
-    }
-
-    const x = e.clientX;
-    const y = e.clientY;
-    const endRadius = Math.hypot(
-      Math.max(x, innerWidth - x),
-      Math.max(y, innerHeight - y),
-    );
-
-    document.documentElement.classList.add("no-transitions");
-
-    const transition = document.startViewTransition(() => {
-      flushSync(() => {
-        setTheme(resolvedTheme === "dark" ? "light" : "dark");
-      });
-    });
-
-    transition.finished.then(() => {
-      document.documentElement.classList.remove("no-transitions");
-    });
-
-    transition.ready.then(() => {
-      const clipPath = [
-        `circle(0px at ${x}px ${y}px)`,
-        `circle(${endRadius}px at ${x}px ${y}px)`,
-      ];
-
-      document.documentElement.animate(
-        {
-          clipPath: clipPath,
-        },
-        {
-          duration: 500,
-          easing: "ease-in-out",
-          pseudoElement: "::view-transition-new(root)",
-        },
-      );
-    });
-  };
 
   // scrollToTop 函数
   const scrollToTop = useCallback(() => {
@@ -212,20 +155,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
             </div>
           </div>
 
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
-          >
-            {mounted ? (
-              resolvedTheme === "dark" ? (
-                <Moon size={20} className="animate-in fade-in duration-200" />
-              ) : (
-                <Sun size={20} className="animate-in fade-in duration-200" />
-              )
-            ) : (
-              <div className="w-5 h-5" />
-            )}
-          </button>
+          <ThemeToggle />
         </div>
       </nav>
 

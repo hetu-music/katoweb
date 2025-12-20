@@ -13,6 +13,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { Turnstile } from "@marsidev/react-turnstile";
+import ThemeToggle from "@/components/shared/ThemeToggle";
 
 export default function LoginClient() {
   const [email, setEmail] = useState("");
@@ -97,6 +98,11 @@ export default function LoginClient() {
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-3xl" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/5 rounded-full blur-3xl" />
+      </div>
+
+      {/* Theme Toggle - Fixed Top Right */}
+      <div className="fixed top-7 right-8 z-20">
+        <ThemeToggle />
       </div>
 
       <div className="w-full max-w-md relative z-10">

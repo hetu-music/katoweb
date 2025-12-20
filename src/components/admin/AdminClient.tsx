@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useCallback, useEffect, useMemo } from "react";
-import { flushSync } from "react-dom";
 import {
   Search,
   Plus,
@@ -12,13 +11,10 @@ import {
   EyeOff,
   Bell,
   XCircle,
-  Moon,
-  Sun,
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
 import Image from "next/image";
-import { useTheme } from "next-themes";
 import type { Song, SongDetail, SongFieldConfig } from "@/lib/types";
 import {
   convertEmptyStringToNull,
@@ -28,6 +24,7 @@ import {
 } from "@/lib/utils";
 import { songFields, genreColorMap, typeColorMap } from "@/lib/constants";
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
+import ThemeToggle from "@/components/shared/ThemeToggle";
 import Pagination from "@/components/shared/Pagination";
 import { usePagination } from "@/hooks/usePagination";
 import { apiCreateSong, apiUpdateSong } from "@/lib/api";
@@ -371,9 +368,6 @@ export default function AdminClientComponent({
   initialSongs: SongDetail[];
   initialError: string | null;
 }) {
-  const { setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
   // States
   const [isClient, setIsClient] = useState(false);
   const [showIncompleteOnly, setShowIncompleteOnly] = useState(false);
@@ -451,7 +445,6 @@ export default function AdminClientComponent({
 
   useEffect(() => {
     setIsClient(true);
-    setMounted(true);
   }, []);
 
   useEffect(() => {
@@ -519,44 +512,6 @@ export default function AdminClientComponent({
       return next;
     });
   }, []);
-
-  // Theme Toggle (Copied from MusicLibraryClient)
-  const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (!document.startViewTransition) {
-      setTheme(resolvedTheme === "dark" ? "light" : "dark");
-      return;
-    }
-    const x = e.clientX;
-    const y = e.clientY;
-    const endRadius = Math.hypot(
-      Math.max(x, innerWidth - x),
-      Math.max(y, innerHeight - y),
-    );
-    document.documentElement.classList.add("no-transitions");
-    const transition = document.startViewTransition(() => {
-      flushSync(() => {
-        setTheme(resolvedTheme === "dark" ? "light" : "dark");
-      });
-    });
-    transition.finished.then(() =>
-      document.documentElement.classList.remove("no-transitions"),
-    );
-    transition.ready.then(() => {
-      document.documentElement.animate(
-        {
-          clipPath: [
-            `circle(0px at ${x}px ${y}px)`,
-            `circle(${endRadius}px at ${x}px ${y}px)`,
-          ],
-        },
-        {
-          duration: 500,
-          easing: "ease-in-out",
-          pseudoElement: "::view-transition-new(root)",
-        },
-      );
-    });
-  };
 
   // Handlers
   const handleAddSubmit = async (e: React.FormEvent) => {
@@ -652,20 +607,7 @@ export default function AdminClientComponent({
             >
               <Bell size={20} />
             </button>
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
-            >
-              {mounted ? (
-                resolvedTheme === "dark" ? (
-                  <Moon size={20} />
-                ) : (
-                  <Sun size={20} />
-                )
-              ) : (
-                <div className="w-5 h-5" />
-              )}
-            </button>
+            <ThemeToggle className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors" />
             <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1" />
             <Account
               csrfToken={csrfToken}
