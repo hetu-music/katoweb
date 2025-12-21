@@ -7,7 +7,6 @@ import React, {
   useCallback,
   useRef,
 } from "react";
-import { flushSync } from "react-dom";
 import {
   Search,
   LayoutGrid,
@@ -15,8 +14,6 @@ import {
   Disc,
   Calendar,
   Clock,
-  Moon,
-  Sun,
   SlidersHorizontal,
   X,
   Info,
@@ -24,7 +21,6 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useTheme } from "next-themes";
 import { MusicLibraryClientProps, Song } from "@/lib/types";
 import {
   getCoverUrl,
@@ -41,6 +37,7 @@ import Pagination from "../shared/Pagination";
 import SongFilters from "./SongFilters";
 import About from "./About";
 import FloatingActionButtons from "../shared/FloatingActionButtons";
+import ThemeToggle from "../shared/ThemeToggle";
 
 // 简易 classNames 工具 (替代 clsx/tailwind-merge)
 function cn(...classes: (string | undefined | null | false)[]) {
@@ -133,7 +130,7 @@ const GridCard = ({
     {/* 信息区 */}
     <div className="space-y-1">
       <div className="flex justify-between items-start gap-4">
-        <h3
+        <h2
           className={cn(
             "text-xl text-slate-900 dark:text-slate-100 leading-tight transition-colors line-clamp-1 flex-1 min-w-0",
             isActive
@@ -143,7 +140,7 @@ const GridCard = ({
           title={song.title}
         >
           {song.title}
-        </h3>
+        </h2>
         <span className="text-xs font-mono text-slate-400 shrink-0">
           {song.year || "未知"}
         </span>
@@ -200,7 +197,7 @@ const ListRow = ({
 
     {/* 主要信息 */}
     <div className="grow min-w-0 flex flex-col justify-center">
-      <h3
+      <h2
         className={cn(
           "text-lg text-slate-900 dark:text-slate-100 truncate transition-colors",
           isActive
@@ -209,7 +206,7 @@ const ListRow = ({
         )}
       >
         {song.title}
-      </h3>
+      </h2>
       <p className="text-sm text-slate-500 dark:text-slate-400 font-light truncate">
         {song.lyricist?.join(" ") || "-"}{" "}
         <span className="opacity-50 mx-1">/</span>{" "}
@@ -282,7 +279,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   initialSongsData,
 }) => {
   const router = useRouter();
-  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -447,50 +443,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     return filterOptions.allTypes;
   }, [filterOptions]);
 
-  const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (!document.startViewTransition) {
-      setTheme(resolvedTheme === "dark" ? "light" : "dark");
-      return;
-    }
-
-    const x = e.clientX;
-    const y = e.clientY;
-    const endRadius = Math.hypot(
-      Math.max(x, innerWidth - x),
-      Math.max(y, innerHeight - y),
-    );
-
-    document.documentElement.classList.add("no-transitions");
-
-    const transition = document.startViewTransition(() => {
-      flushSync(() => {
-        setTheme(resolvedTheme === "dark" ? "light" : "dark");
-      });
-    });
-
-    transition.finished.then(() => {
-      document.documentElement.classList.remove("no-transitions");
-    });
-
-    transition.ready.then(() => {
-      const clipPath = [
-        `circle(0px at ${x}px ${y}px)`,
-        `circle(${endRadius}px at ${x}px ${y}px)`,
-      ];
-
-      document.documentElement.animate(
-        {
-          clipPath: clipPath,
-        },
-        {
-          duration: 500,
-          easing: "ease-in-out",
-          pseudoElement: "::view-transition-new(root)",
-        },
-      );
-    });
-  };
-
   // Scroll to top logic
   const [showScrollTop, setShowScrollTop] = useState(false);
 
@@ -602,24 +554,11 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
             <button
               onClick={() => setShowAbout(true)}
               className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
-              title="About"
+              title="关于"
             >
               <Info size={20} />
             </button>
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
-            >
-              {mounted ? (
-                resolvedTheme === "dark" ? (
-                  <Moon size={20} className="animate-in fade-in duration-200" />
-                ) : (
-                  <Sun size={20} className="animate-in fade-in duration-200" />
-                )
-              ) : (
-                <div className="w-5 h-5" />
-              )}
-            </button>
+            <ThemeToggle />
           </div>
         </div>
       </nav>
@@ -748,7 +687,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                         ? "bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400"
                         : "text-slate-400 hover:text-slate-600",
                     )}
-                    title="Grid View"
+                    title="网格视图"
                   >
                     <LayoutGrid size={18} />
                   </button>
@@ -760,7 +699,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                         ? "bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400"
                         : "text-slate-400 hover:text-slate-600",
                     )}
-                    title="List View"
+                    title="列表视图"
                   >
                     <List size={18} />
                   </button>

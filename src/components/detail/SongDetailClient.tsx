@@ -2,11 +2,8 @@
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { flushSync } from "react-dom";
 import {
   ArrowLeft,
-  Moon,
-  Sun,
   FileText,
   Info,
   Disc,
@@ -17,12 +14,12 @@ import {
   ExternalLink,
 } from "lucide-react";
 import Image from "next/image";
-import { useTheme } from "next-themes";
 import { SongDetailClientProps } from "@/lib/types";
 import { getCoverUrl, calculateSongInfo, getNmnUrl } from "@/lib/utils";
 import { getTypeTagStyle, getGenreTagStyle } from "@/lib/constants";
 import ImageModal from "@/components/shared/ImageModal";
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
+import ThemeToggle from "@/components/shared/ThemeToggle";
 
 // 简易 classNames 工具
 function cn(...classes: (string | undefined | null | false)[]) {
@@ -31,15 +28,6 @@ function cn(...classes: (string | undefined | null | false)[]) {
 
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const router = useRouter();
-  const { setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    // Use requestAnimationFrame to avoid synchronous setState in effect
-    requestAnimationFrame(() => {
-      setMounted(true);
-    });
-  }, []);
 
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [lyricsType, setLyricsType] = useState<"normal" | "lrc">("normal");
@@ -79,51 +67,6 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  // 切换主题动画
-  const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (!document.startViewTransition) {
-      setTheme(resolvedTheme === "dark" ? "light" : "dark");
-      return;
-    }
-
-    const x = e.clientX;
-    const y = e.clientY;
-    const endRadius = Math.hypot(
-      Math.max(x, innerWidth - x),
-      Math.max(y, innerHeight - y),
-    );
-
-    document.documentElement.classList.add("no-transitions");
-
-    const transition = document.startViewTransition(() => {
-      flushSync(() => {
-        setTheme(resolvedTheme === "dark" ? "light" : "dark");
-      });
-    });
-
-    transition.finished.then(() => {
-      document.documentElement.classList.remove("no-transitions");
-    });
-
-    transition.ready.then(() => {
-      const clipPath = [
-        `circle(0px at ${x}px ${y}px)`,
-        `circle(${endRadius}px at ${x}px ${y}px)`,
-      ];
-
-      document.documentElement.animate(
-        {
-          clipPath: clipPath,
-        },
-        {
-          duration: 500,
-          easing: "ease-in-out",
-          pseudoElement: "::view-transition-new(root)",
-        },
-      );
-    });
-  };
 
   // scrollToTop 函数
   const scrollToTop = useCallback(() => {
@@ -212,20 +155,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
             </div>
           </div>
 
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
-          >
-            {mounted ? (
-              resolvedTheme === "dark" ? (
-                <Moon size={20} className="animate-in fade-in duration-200" />
-              ) : (
-                <Sun size={20} className="animate-in fade-in duration-200" />
-              )
-            ) : (
-              <div className="w-5 h-5" />
-            )}
-          </button>
+          <ThemeToggle />
         </div>
       </nav>
 
@@ -309,9 +239,9 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
             {/* 外部链接 */}
             {(song.kugolink || song.qmlink || song.nelink) && (
               <div className="flex flex-col gap-3">
-                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">
+                <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">
                   Listen On
-                </h3>
+                </h2>
                 <div className="grid grid-cols-1 gap-2">
                   {song.nelink && (
                     <a
@@ -449,9 +379,9 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm">
                   <div className="flex items-center gap-2 mb-4 text-blue-600 dark:text-blue-400">
                     <User size={18} />
-                    <h3 className="text-sm font-bold uppercase tracking-wider">
+                    <h2 className="text-sm font-bold uppercase tracking-wider">
                       Creative Info
-                    </h3>
+                    </h2>
                   </div>
                   <div className="space-y-3">
                     {songInfo?.creativeInfo.map((item, index) => (
@@ -473,9 +403,9 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm">
                   <div className="flex items-center gap-2 mb-4 text-purple-600 dark:text-purple-400">
                     <Info size={18} />
-                    <h3 className="text-sm font-bold uppercase tracking-wider">
+                    <h2 className="text-sm font-bold uppercase tracking-wider">
                       Basic Info
-                    </h3>
+                    </h2>
                   </div>
                   <div className="space-y-3">
                     {songInfo?.basicInfo.map((item, index) => (
@@ -500,9 +430,9 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 <div className="p-6 rounded-2xl bg-slate-100/70 dark:bg-slate-800/30 border border-slate-200/60 dark:border-slate-800">
                   <div className="flex items-center gap-2 mb-3 text-slate-400">
                     <PenTool size={16} />
-                    <h3 className="text-xs font-bold uppercase tracking-wider">
+                    <h2 className="text-xs font-bold uppercase tracking-wider">
                       Remarks
-                    </h3>
+                    </h2>
                   </div>
                   <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm whitespace-pre-line">
                     {song.comment}

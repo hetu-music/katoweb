@@ -13,8 +13,13 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { Turnstile } from "@marsidev/react-turnstile";
+import ThemeToggle from "@/components/shared/ThemeToggle";
 
-export default function LoginClient() {
+interface LoginClientProps {
+  nonce?: string;
+}
+
+export default function LoginClient({ nonce }: LoginClientProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -99,6 +104,11 @@ export default function LoginClient() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/5 rounded-full blur-3xl" />
       </div>
 
+      {/* Theme Toggle - Fixed Top Right */}
+      <div className="fixed top-7 right-8 z-20">
+        <ThemeToggle />
+      </div>
+
       <div className="w-full max-w-md relative z-10">
         <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-slate-800 overflow-hidden">
           {/* Header Section */}
@@ -170,6 +180,7 @@ export default function LoginClient() {
                 onSuccess={(token) => setTurnstileToken(token)}
                 onError={() => setError("Captcha failed to load")}
                 onExpire={() => setTurnstileToken("")}
+                scriptOptions={{ nonce }}
                 options={{
                   theme: "auto",
                   size: "flexible",

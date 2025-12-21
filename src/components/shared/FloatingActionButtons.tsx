@@ -28,8 +28,8 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
         <button
           onClick={onShare}
           className={`${buttonClass} animate-in fade-in slide-in-from-bottom-4 duration-500`}
-          title="Share"
-          aria-label="Share"
+          title="分享"
+          aria-label="分享"
         >
           <Share2 size={20} />
         </button>
@@ -38,13 +38,12 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
       {/* 返回顶部按钮 */}
       <button
         onClick={onScrollToTop}
-        className={`${buttonClass} ${
-          showScrollTop
+        className={`${buttonClass} ${showScrollTop
             ? "translate-y-0 opacity-100"
             : "translate-y-8 opacity-0 pointer-events-none"
-        }`}
-        title="Scroll to Top"
-        aria-label="Scroll to Top"
+          }`}
+        title="返回顶部"
+        aria-label="返回顶部"
       >
         <ArrowUp size={20} />
       </button>

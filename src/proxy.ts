@@ -3,33 +3,118 @@ import type { NextRequest } from "next/server";
 import { createSupabaseMiddlewareClient } from "./lib/supabase-server";
 
 export async function proxy(request: NextRequest) {
-  const response = NextResponse.next();
+  // Generate a random nonce for CSP
+  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
 
-  // 只对 admin 路由进行验证
+  // Development environment check
+  const isDev = process.env.NODE_ENV === "development";
+  const pathname = request.nextUrl.pathname;
+
+  // Determine the route type based on the new structure
+  // (admin) group: Starts with /admin or is /login -> Strict CSP
+  // (public) group: /, /song/*, etc. -> Relaxed CSP (Static/ISR)
+  // Note: /api is excluded by the matcher below, so we don't need to check for it here.
+  const isStrictRoute = pathname.startsWith("/admin") || pathname === "/login";
+
+  // Only use Nonce in Production on Strict routes
+  // We disable Nonce in Development to avoid HMR/Hydration errors
+  const useNonce = isStrictRoute && !isDev;
+
+  let cspHeader = "";
+
+  if (useNonce) {
+    // [STRICT POLICY] For Admin Routes
+    // - Requires 'nonce' for all scripts
+    // - valid for: /admin/*, /login
+    cspHeader = `
+      default-src 'self';
+      script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'sha256-n46vPwSWuMC0W703pBofImv82Z26xo4LXymv0E9caPk=' https://challenges.cloudflare.com;
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' blob: data: https://cover.hetu-music.com;
+      font-src 'self';
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      frame-ancestors 'none';
+      frame-src 'self' https://challenges.cloudflare.com;
+      block-all-mixed-content;
+      upgrade-insecure-requests;
+    `
+      .replace(/\s{2,}/g, " ")
+      .trim();
+  } else {
+    // [RELAXED POLICY] For Public Static/ISR Pages & Development
+    // - Allows unsafe-inline/eval for broad compatibility with static hydration
+    // - valid for: /, /song/*, and all routes in 'pnpm dev'
+    cspHeader = `
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com;
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' blob: data: https://cover.hetu-music.com;
+      font-src 'self';
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      frame-ancestors 'none';
+      frame-src 'self' https://challenges.cloudflare.com;
+      block-all-mixed-content;
+      upgrade-insecure-requests;
+    `
+      .replace(/\s{2,}/g, " ")
+      .trim();
+  }
+
+  // Create request headers
+  const requestHeaders = new Headers(request.headers);
+
+  // Only set x-nonce if we are using it
+  if (useNonce) {
+    requestHeaders.set("x-nonce", nonce);
+  }
+
+  requestHeaders.set("Content-Security-Policy", cspHeader);
+
+  // Initialize response with new headers
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
+
+  // Apply Security Headers to Response
+  response.headers.set("Content-Security-Policy", cspHeader);
+
+  // Auth Logic for Admin Routes
   if (request.nextUrl.pathname.startsWith("/admin")) {
-    // 登录页面不需要验证
-    if (request.nextUrl.pathname === "/admin/login") {
-      return response;
-    }
-
     try {
       const supabase = createSupabaseMiddlewareClient(request, response);
 
-      // 用 getUser 校验 session 的有效性和过期
+      // Verify session via getUser
       const {
         data: { user },
         error,
       } = await supabase.auth.getUser();
 
-      // 如果有错误或没有用户，重定向到登录页
+      // Redirect to login if error or no user
       if (error || !user) {
         console.warn("Auth middleware: User not authenticated", error?.message);
-        return NextResponse.redirect(new URL("/admin/login", request.url));
+
+        // Ensure redirect response also has security headers
+        const redirectUrl = new URL("/login", request.url);
+        const redirectResponse = NextResponse.redirect(redirectUrl);
+        // Copy security headers to redirect response
+        redirectResponse.headers.set("Content-Security-Policy", cspHeader);
+
+        return redirectResponse;
       }
     } catch (error) {
       console.error("Auth middleware error:", error);
-      // 发生异常时也重定向到登录页，避免 500 错误
-      return NextResponse.redirect(new URL("/admin/login", request.url));
+      const redirectResponse = NextResponse.redirect(
+        new URL("/login", request.url)
+      );
+      // Copy security headers to redirect response
+      redirectResponse.headers.set("Content-Security-Policy", cspHeader);
+      return redirectResponse;
     }
   }
 
@@ -37,5 +122,14 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+  ],
 };

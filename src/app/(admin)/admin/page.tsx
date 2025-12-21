@@ -20,7 +20,7 @@ export default async function AdminPage() {
       "Session error:",
       sessionError?.message || "No session found",
     );
-    redirect("/admin/login");
+    redirect("/login");
   }
 
   let songs: Song[] = [];
