@@ -11,35 +11,13 @@ export default async function AdminLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const headersList = await headers();
-  const nonce = headersList.get("x-nonce") || "";
+  // We need to read headers to force dynamic rendering for admin pages
+  // preventing them from being statically optimized which would break auth
+  await headers();
 
   return (
     <>
-      <head>
-        <script
-          id="trusted-types-policy"
-          nonce={nonce}
-          suppressHydrationWarning
-          dangerouslySetInnerHTML={{
-            __html: `
-            if (window.trustedTypes && window.trustedTypes.createPolicy) {
-              try {
-                window.trustedTypes.createPolicy('default', {
-                  createHTML: function(string) { return string; },
-                  createScript: function(string) { return string; },
-                  createScriptURL: function(string) { return string; }
-                });
-              } catch (e) {
-                console.warn('Trusted Types policy creation failed:', e);
-              }
-            }
-          `,
-          }}
-        />
-      </head>
       {children}
     </>
   );
 }
-

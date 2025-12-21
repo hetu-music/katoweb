@@ -39,7 +39,6 @@ export async function proxy(request: NextRequest) {
       frame-src 'self' https://challenges.cloudflare.com;
       block-all-mixed-content;
       upgrade-insecure-requests;
-      require-trusted-types-for 'script';
     `
       .replace(/\s{2,}/g, " ")
       .trim();
