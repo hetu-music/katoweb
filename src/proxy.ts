@@ -48,7 +48,7 @@ export async function proxy(request: NextRequest) {
     // - valid for: /, /song/*, and all routes in 'pnpm dev'
     cspHeader = `
       default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com;
+      script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com;
       style-src 'self' 'unsafe-inline';
       img-src 'self' blob: data: https://cover.hetu-music.com;
       font-src 'self';
