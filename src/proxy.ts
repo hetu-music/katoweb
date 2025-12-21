@@ -110,7 +110,7 @@ export async function proxy(request: NextRequest) {
     } catch (error) {
       console.error("Auth middleware error:", error);
       const redirectResponse = NextResponse.redirect(
-        new URL("/login", request.url)
+        new URL("/login", request.url),
       );
       // Copy security headers to redirect response
       redirectResponse.headers.set("Content-Security-Policy", cspHeader);

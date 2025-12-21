@@ -15,9 +15,5 @@ export default async function AdminLayout({
   // preventing them from being statically optimized which would break auth
   await headers();
 
-  return (
-    <>
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }
