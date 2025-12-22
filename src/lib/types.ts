@@ -18,19 +18,7 @@ export type Song = {
 // Song 类型的数据库字段列表（用于 Supabase 查询）
 // 注意：year 不是数据库字段，而是从 date 计算得出的，所以不包含在内
 export const SONG_LIST_VIEW_FIELDS = [
-  "id",
-  "title",
-  "album",
-  "genre",
-  "lyricist",
-  "composer",
-  "arranger",
-  "artist",
-  "length",
-  "hascover",
-  "date",
-  "type",
-  "updated_at",
+  "id,title,album,genre,lyricist,composer,arranger,artist,length,hascover,date,type"
 ] as const;
 
 // 详细歌曲类型（包含更多字段）
