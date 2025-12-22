@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createSupabaseClient } from "@/lib/supabase";
+import { createSupabaseClient } from "@/lib/client-supabase";
 
 export async function GET() {
   const supabase = createSupabaseClient("music");

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth, type AuthenticatedUser } from "@/lib/auth-middleware";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
+import { createSupabaseServerClient } from "@/lib/server-supabase";
 
 export const POST = withAuth(
   async (request: NextRequest, user: AuthenticatedUser) => {

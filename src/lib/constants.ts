@@ -184,3 +184,13 @@ export function getGenreTagStyle(
 
 export const typeColorMap = typeTagSubtleStyleMap;
 export const genreColorMap = genreTagStyleMap;
+
+// 环境变量定义的表名 (为了解决循环依赖，建议将常量移入 constants)
+const MAIN_TABLE = process.env.MAIN_TABLE || "music";
+const ADMIN_TABLE = process.env.ADMIN_TABLE || "temp";
+
+// 导出表名常量
+export const TABLE_NAMES = {
+  MAIN: MAIN_TABLE,
+  ADMIN: ADMIN_TABLE,
+} as const;

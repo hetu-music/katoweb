@@ -19,15 +19,14 @@ import type { Song, SongDetail, SongFieldConfig } from "@/lib/types";
 import {
   convertEmptyStringToNull,
   formatField,
-  validateField,
-  getCoverUrl,
-} from "@/lib/utils";
+} from "@/lib/utils-common";
+import { validateField, getCoverUrl } from "@/lib/utils-song";
 import { songFields, genreColorMap, typeColorMap } from "@/lib/constants";
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import Pagination from "@/components/shared/Pagination";
 import { usePagination } from "@/hooks/usePagination";
-import { apiCreateSong, apiUpdateSong } from "@/lib/api";
+import { apiCreateSong, apiUpdateSong } from "@/lib/client-api";
 import { useSongs } from "@/hooks/useSongs";
 import { useAuth } from "@/hooks/useAuth";
 import Account from "./Account";

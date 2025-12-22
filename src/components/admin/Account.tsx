@@ -55,7 +55,7 @@ const Account: React.FC<AccountProps> = ({
   React.useEffect(() => {
     (async () => {
       try {
-        const res = await import("@/lib/api").then((m) =>
+        const res = await import("@/lib/client-api").then((m) =>
           m.apiGetAccountInfo(),
         );
         setDisplayName(res.displayName !== undefined ? res.displayName : "");
@@ -92,7 +92,7 @@ const Account: React.FC<AccountProps> = ({
     setDisplayNameSuccess(null);
     setDisplayNameLoading(true);
     try {
-      const res = await import("@/lib/api").then((m) => m.apiGetDisplayName());
+      const res = await import("@/lib/client-api").then((m) => m.apiGetDisplayName());
       setDisplayName(res.displayName !== undefined ? res.displayName : "");
       setDisplayNameInput(res.displayName !== undefined ? res.displayName : "");
       setDisplay(typeof res.display === "boolean" ? res.display : false);
@@ -108,7 +108,7 @@ const Account: React.FC<AccountProps> = ({
     setIntroSuccess(null);
     setIntroLoading(true);
     try {
-      const res = await import("@/lib/api").then((m) => m.apiGetAccountInfo());
+      const res = await import("@/lib/client-api").then((m) => m.apiGetAccountInfo());
       setIntro(
         typeof res.intro === "string" || res.intro === null ? res.intro : null,
       );
@@ -277,7 +277,7 @@ const Account: React.FC<AccountProps> = ({
 
               setPwdFormLoading(true);
               try {
-                const res = await import("@/lib/api").then((m) =>
+                const res = await import("@/lib/client-api").then((m) =>
                   m.apiChangePassword(
                     pwdForm.oldPassword,
                     pwdForm.newPassword,
@@ -375,7 +375,7 @@ const Account: React.FC<AccountProps> = ({
 
               setDisplayNameLoading(true);
               try {
-                const res = await import("@/lib/api").then((m) =>
+                const res = await import("@/lib/client-api").then((m) =>
                   m.apiUpdateDisplayName(displayNameInput, csrfToken, display),
                 );
                 if (res.success) {
@@ -469,7 +469,7 @@ const Account: React.FC<AccountProps> = ({
 
               setIntroLoading(true);
               try {
-                const res = await import("@/lib/api").then((m) =>
+                const res = await import("@/lib/client-api").then((m) =>
                   m.apiUpdateAccountInfo(
                     displayName,
                     csrfToken,

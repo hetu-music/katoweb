@@ -24,11 +24,11 @@ import Image from "next/image";
 import { MusicLibraryClientProps, Song } from "@/lib/types";
 import {
   getCoverUrl,
-  formatTime,
   filterSongs,
   calculateFilterOptions,
   createFuseInstance,
-} from "@/lib/utils";
+} from "@/lib/utils-song";
+import { formatTime } from "@/lib/utils-common";
 import { getTypeTagStyle, getGenreTagStyle } from "@/lib/constants";
 import { usePagination } from "@/hooks/usePagination";
 import { useDebounce } from "@/hooks/useDebounce";

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import SongDetailClient from "@/components/detail/SongDetailClient";
-import { getSongById } from "@/lib/supabase";
+import { getSongById } from "@/lib/service-songs";
 
 // 服务端组件
 export default async function SongDetailPage({

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { uploadScoreFile, validateScoreFile } from "@/lib/upload";
-import { withAuth, type AuthenticatedUser } from "@/lib/auth-middleware";
+import { uploadScoreFile, validateScoreFile } from "@/lib/service-upload";
+import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
 
 export const POST = withAuth(
   async (request: NextRequest, _user: AuthenticatedUser) => {
