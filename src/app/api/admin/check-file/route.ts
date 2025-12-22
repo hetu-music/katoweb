@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth, type AuthenticatedUser } from "@/lib/auth-middleware";
+import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
 
 export const GET = withAuth(
   async (request: NextRequest, _user: AuthenticatedUser) => {

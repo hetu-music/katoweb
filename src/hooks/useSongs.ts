@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import type { SongDetail } from "@/lib/types";
-import { mapAndSortSongs, filterSongs } from "@/lib/utils";
+import { mapAndSortSongs, filterSongs } from "@/lib/utils-song";
 
 export function useSongs(
   initialSongs: SongDetail[],

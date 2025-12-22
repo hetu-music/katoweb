@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { SongDetailClientProps } from "@/lib/types";
-import { getCoverUrl, calculateSongInfo, getNmnUrl } from "@/lib/utils";
+import { getCoverUrl, calculateSongInfo, getNmnUrl } from "@/lib/utils-song";
 import { getTypeTagStyle, getGenreTagStyle } from "@/lib/constants";
 import ImageModal from "@/components/shared/ImageModal";
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";

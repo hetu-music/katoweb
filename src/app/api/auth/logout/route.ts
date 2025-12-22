@@ -1,30 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyCSRFToken, clearAuthCookies } from "@/lib/utils.server";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { clearAuthCookies } from "@/lib/server-utils";
+import { createSupabaseServerClient } from "@/lib/supabase-auth";
+import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
 
-export async function POST(request: NextRequest) {
-  if (!(await verifyCSRFToken(request))) {
-    return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
-  }
+export const POST = withAuth(
+  async (_request: NextRequest, _user: AuthenticatedUser) => {
+    try {
+      const supabase = await createSupabaseServerClient();
 
-  try {
-    const supabase = await createSupabaseServerClient();
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Supabase signOut error:", error);
+        return NextResponse.json({ error: "Logout failed" }, { status: 500 });
+      }
 
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error("Supabase signOut error:", error);
-      return NextResponse.json({ error: "Logout failed" }, { status: 500 });
+      // 清理认证相关的 cookies
+      await clearAuthCookies();
+
+      return NextResponse.json({ success: true });
+    } catch (error) {
+      console.error("Logout error:", error);
+      return NextResponse.json(
+        { error: "Server configuration error" },
+        { status: 500 },
+      );
     }
-
-    // 清理认证相关的 cookies
-    await clearAuthCookies();
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Logout error:", error);
-    return NextResponse.json(
-      { error: "Server configuration error" },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { requireCSRF: true },
+);

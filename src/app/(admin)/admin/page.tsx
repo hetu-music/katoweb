@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import AdminClientComponent from "@/components/admin/AdminClient";
-import { getSongs, TABLE_NAMES } from "@/lib/supabase";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { getSongs } from "@/lib/service-songs";
+import { TABLE_NAMES } from "@/lib/constants";
+import { createSupabaseServerClient } from "@/lib/supabase-auth";
 import type { Song } from "@/lib/types";
 
 // 强制动态渲染，不在构建时预渲染

@@ -12,7 +12,7 @@ sleep 10
 # 执行 revalidate 请求
 echo "执行 revalidate 请求..."
 if [ -n "$REVALIDATE_SECRET" ]; then
-    if curl -X POST "127.0.0.1:3000/api/revalidate?secret=$REVALIDATE_SECRET" > /dev/null 2>&1; then
+    if curl -X POST "127.0.0.1:3000/api/public/revalidate?secret=$REVALIDATE_SECRET" > /dev/null 2>&1; then
         echo "✅ Revalidate 请求执行成功"
     else
         echo "Revalidate 请求失败，应用可能还在启动中"
