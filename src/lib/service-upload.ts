@@ -61,9 +61,10 @@ function verifyMagicNumber(buffer: Buffer, mimeType: string): boolean {
 function sanitizeFileName(fileName: string): string {
     // 1. 移除所有路径分隔符和特殊字符
     let sanitized = fileName
-        .replace(/[\/\\]/g, "") // 移除路径分隔符
+        .replace(/[/\\]/g, "") // 移除路径分隔符
         .replace(/\.\./g, "") // 移除上级目录引用
-        .replace(/[<>:"|?*\x00-\x1f]/g, "") // 移除非法字符
+        // eslint-disable-next-line no-control-regex
+        .replace(/[<>:"|?*\u0000-\u001f]/g, "") // 移除非法字符（包括控制字符）
         .trim();
 
     // 2. 限制长度（保留扩展名）
