@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "./auth-supabase";
+import { createSupabaseServerClient } from "./supabase-auth";
 import { verifyCSRFToken } from "./server-utils";
 
 export interface AuthenticatedUser {

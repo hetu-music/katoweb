@@ -1,4 +1,4 @@
-import { createSupabaseDataClient } from "./server-supabase";
+import { createSupabaseDataClient } from "./supabase-server";
 import { Song, SongDetail } from "./types";
 import { mapAndSortSongs } from "./utils-song";
 import { processLyrics } from "./utils-lyrics";

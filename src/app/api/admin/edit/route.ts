@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSongs, createSong, updateSong } from "@/lib/service-songs";
 import { TABLE_NAMES } from "@/lib/constants";
-import { createSupabaseServerClient } from "@/lib/auth-supabase";
+import { createSupabaseServerClient } from "@/lib/supabase-auth";
 import { z } from "zod";
 import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
 

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import AdminClientComponent from "@/components/admin/AdminClient";
 import { getSongs } from "@/lib/service-songs";
 import { TABLE_NAMES } from "@/lib/constants";
-import { createSupabaseServerClient } from "@/lib/auth-supabase";
+import { createSupabaseServerClient } from "@/lib/supabase-auth";
 import type { Song } from "@/lib/types";
 
 // 强制动态渲染，不在构建时预渲染
