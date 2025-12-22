@@ -16,10 +16,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import type { Song, SongDetail, SongFieldConfig } from "@/lib/types";
-import {
-  convertEmptyStringToNull,
-  formatField,
-} from "@/lib/utils-common";
+import { convertEmptyStringToNull, formatField } from "@/lib/utils-common";
 import { validateField, getCoverUrl } from "@/lib/utils-song";
 import { songFields, genreColorMap, typeColorMap } from "@/lib/constants";
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";

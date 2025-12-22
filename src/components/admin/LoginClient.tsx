@@ -62,7 +62,10 @@ export default function LoginClient({ nonce }: LoginClientProps) {
       const result = await res.json();
       if (!res.ok) {
         if (res.status === 403) {
-          if (result.error?.includes("验证") || result.error?.includes("人机")) {
+          if (
+            result.error?.includes("验证") ||
+            result.error?.includes("人机")
+          ) {
             setError(result.error || "人机验证失败，请刷新页面重试");
           } else {
             setError("安全验证失败，请刷新页面后重试");

@@ -143,9 +143,10 @@ export default function ScoreUpload({
           disabled={uploading || !songId}
           className={`
             flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all border
-            ${uploading || !songId
-              ? "bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800 dark:border-slate-700 cursor-not-allowed"
-              : "bg-white text-slate-700 hover:bg-slate-50 border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700"
+            ${
+              uploading || !songId
+                ? "bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800 dark:border-slate-700 cursor-not-allowed"
+                : "bg-white text-slate-700 hover:bg-slate-50 border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700"
             }
           `}
         >
@@ -190,10 +191,11 @@ export default function ScoreUpload({
         <div
           className={`
           flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border
-          ${uploadStatus === "success"
+          ${
+            uploadStatus === "success"
               ? "bg-green-50 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-900/50 dark:text-green-400"
               : "bg-red-50 border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-900/50 dark:text-red-400"
-            }
+          }
         `}
         >
           {uploadStatus === "success" ? (

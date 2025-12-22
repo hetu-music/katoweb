@@ -1,4 +1,10 @@
-import { Song, SongDetail, FilterOptions, SongInfo, SongFieldConfig } from "./types";
+import {
+  Song,
+  SongDetail,
+  FilterOptions,
+  SongInfo,
+  SongFieldConfig,
+} from "./types";
 import { TYPE_ORDER } from "./constants";
 import Fuse from "fuse.js";
 import { formatDate, formatTime } from "./utils-common";
