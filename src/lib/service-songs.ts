@@ -1,5 +1,5 @@
 import { createSupabaseDataClient } from "./supabase-server";
-import { Song, SongDetail } from "./types";
+import { Song, SongDetail, SONG_LIST_VIEW_FIELDS } from "./types";
 import { mapAndSortSongs } from "./utils-song";
 import { processLyrics } from "./utils-lyrics";
 import { TABLE_NAMES } from "./constants";
@@ -7,7 +7,7 @@ import { TABLE_NAMES } from "./constants";
 const { MAIN: MAIN_TABLE } = TABLE_NAMES;
 
 // 获取所有歌曲数据
-// forListView: 为 true 时只获取列表展示需要的字段，排除歌词等大字段
+// forListView: 为 true 时只获取列表展示需要的字段，排除歌词等详情页字段
 export async function getSongs(
     table: string = MAIN_TABLE,
     accessToken?: string,
@@ -19,10 +19,9 @@ export async function getSongs(
         return [];
     }
 
-    // 列表视图需要的字段（排除 lyrics, comment, updated_at, kugolink, qmlink, nelink 等详情页字段）
-    // 注意：year 不是数据库字段，而是从 date 计算得出的，所以这里不包含 year
-    const listViewFields =
-        "id,title,album,genre,lyricist,composer,arranger,artist,length,hascover,date,type";
+    // 列表视图需要的字段（排除 lyrics, comment 等详情页字段）
+    const listViewFields = SONG_LIST_VIEW_FIELDS.join(",");
+
 
     const { data, error } = await supabase
         .from(table)
