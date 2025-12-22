@@ -7,7 +7,7 @@ export function useAuth() {
   const router = useRouter();
 
   const fetchCsrfToken = async () => {
-    const res = await fetch("/api/auth/csrf-token");
+    const res = await fetch("/api/public/csrf-token");
     const data = await res.json();
     setCsrfToken(data.csrfToken || "");
   };

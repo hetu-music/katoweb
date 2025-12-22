@@ -40,7 +40,7 @@ export default function LoginClient({ nonce }: LoginClientProps) {
       }
 
       // 获取 CSRF token
-      const csrfRes = await fetch("/api/auth/csrf-token", {
+      const csrfRes = await fetch("/api/public/csrf-token", {
         cache: "no-store",
       });
       if (!csrfRes.ok) throw new Error("无法获取安全令牌");
