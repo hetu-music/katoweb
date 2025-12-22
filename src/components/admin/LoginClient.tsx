@@ -39,19 +39,7 @@ export default function LoginClient({ nonce }: LoginClientProps) {
         return;
       }
 
-      const turnstileRes = await fetch("/api/auth/verify-turnstile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: turnstileToken }),
-      });
-
-      const turnstileData = await turnstileRes.json();
-      if (!turnstileData.success) {
-        setError("人机验证失败，请重试");
-        setLoading(false);
-        return;
-      }
-
+      // 获取 CSRF token
       const csrfRes = await fetch("/api/auth/csrf-token", {
         cache: "no-store",
       });
@@ -67,14 +55,18 @@ export default function LoginClient({ nonce }: LoginClientProps) {
           "Content-Type": "application/json",
           "x-csrf-token": latestCsrfToken,
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, turnstileToken }),
         cache: "no-store",
       });
 
       const result = await res.json();
       if (!res.ok) {
         if (res.status === 403) {
-          setError("安全验证失败，请刷新页面后重试");
+          if (result.error?.includes("验证") || result.error?.includes("人机")) {
+            setError(result.error || "人机验证失败，请刷新页面重试");
+          } else {
+            setError("安全验证失败，请刷新页面后重试");
+          }
         } else {
           setError(result.error || "登录失败");
         }

@@ -86,3 +86,74 @@ export async function clearAuthCookies() {
         });
     });
 }
+
+/**
+ * Turnstile 验证结果接口
+ */
+export interface TurnstileVerifyResult {
+    success: boolean;
+    error?: string;
+    errorCodes?: string[];
+}
+
+/**
+ * 验证 Cloudflare Turnstile token
+ * @param token - Turnstile token (从客户端获取)
+ * @returns 验证结果
+ */
+export async function verifyTurnstileToken(
+    token: string | null | undefined,
+): Promise<TurnstileVerifyResult> {
+    // 检查 token 是否存在
+    if (!token || typeof token !== "string" || token.trim().length === 0) {
+        return {
+            success: false,
+            error: "缺少验证令牌",
+        };
+    }
+
+    // 检查环境变量
+    const secretKey = process.env.TURNSTILE_SECRET_KEY;
+    if (!secretKey) {
+        console.error("TURNSTILE_SECRET_KEY 未配置");
+        return {
+            success: false,
+            error: "服务器配置错误",
+        };
+    }
+
+    try {
+        // 调用 Cloudflare Turnstile API 验证
+        const verifyResponse = await fetch(
+            "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    secret: secretKey,
+                    response: token,
+                }),
+            },
+        );
+
+        const verifyData = await verifyResponse.json();
+
+        if (verifyData.success) {
+            return { success: true };
+        } else {
+            return {
+                success: false,
+                error: "验证失败",
+                errorCodes: verifyData["error-codes"],
+            };
+        }
+    } catch (error) {
+        console.error("Turnstile 验证错误:", error);
+        return {
+            success: false,
+            error: "验证服务异常",
+        };
+    }
+}

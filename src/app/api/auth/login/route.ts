@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyCSRFToken } from "@/lib/server-utils";
+import {
+  verifyCSRFToken,
+  verifyTurnstileToken,
+} from "@/lib/server-utils";
 import { createSupabaseServerClient } from "@/lib/supabase-auth";
 
 export async function POST(request: NextRequest) {
   try {
+    // 1. 验证 CSRF token
     if (!(await verifyCSRFToken(request))) {
       return NextResponse.json(
         { error: "Invalid CSRF token" },
@@ -11,8 +15,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { email, password } = await request.json();
+    const body = await request.json();
+    const { email, password, turnstileToken } = body;
 
+    // 2. 验证 Turnstile token
+    const turnstileResult = await verifyTurnstileToken(turnstileToken);
+    if (!turnstileResult.success) {
+      console.warn("Turnstile verification failed:", turnstileResult.error);
+      return NextResponse.json(
+        {
+          error: turnstileResult.error || "人机验证失败",
+          errorCodes: turnstileResult.errorCodes,
+        },
+        { status: 403 },
+      );
+    }
+
+    // 3. 验证邮箱和密码
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email and password are required" },
@@ -20,6 +39,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 4. 执行登录
     const supabase = await createSupabaseServerClient();
 
     const { data, error } = await supabase.auth.signInWithPassword({
