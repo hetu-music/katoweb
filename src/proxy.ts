@@ -29,7 +29,7 @@ export async function proxy(request: NextRequest) {
     cspHeader = `
       default-src 'self';
       script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'sha256-n46vPwSWuMC0W703pBofImv82Z26xo4LXymv0E9caPk=' https://challenges.cloudflare.com https://static.cloudflareinsights.com;
-      style-src 'self' 'unsafe-inline';
+      style-src 'self';
       img-src 'self' blob: data: https://cover.hetu-music.com;
       font-src 'self';
       object-src 'none';
@@ -49,7 +49,7 @@ export async function proxy(request: NextRequest) {
     cspHeader = `
       default-src 'self';
       script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://static.cloudflareinsights.com;
-      style-src 'self' 'unsafe-inline';
+      style-src 'self';
       img-src 'self' blob: data: https://cover.hetu-music.com;
       font-src 'self';
       object-src 'none';
