@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyCSRFToken, clearAuthCookies } from "@/lib/server-utils";
-import { createSupabaseServerClient } from "@/lib/server-supabase";
+import { createSupabaseServerClient } from "@/lib/auth-supabase";
 
 export async function POST(request: NextRequest) {
   if (!(await verifyCSRFToken(request))) {

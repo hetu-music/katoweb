@@ -1,4 +1,4 @@
-import { createSupabaseClient } from "./client-supabase";
+import { createSupabaseDataClient } from "./server-supabase";
 import { Song, SongDetail } from "./types";
 import { mapAndSortSongs } from "./utils-song";
 import { processLyrics } from "./utils-lyrics";
@@ -13,7 +13,7 @@ export async function getSongs(
     accessToken?: string,
     forListView: boolean = false,
 ): Promise<Song[]> {
-    const supabase = createSupabaseClient(table, accessToken);
+    const supabase = createSupabaseDataClient(table, accessToken);
     if (!supabase) {
         console.warn("Supabase client not available, returning empty data");
         return [];
@@ -44,7 +44,7 @@ export async function getSongById(
     table: string = MAIN_TABLE,
     accessToken?: string,
 ): Promise<SongDetail | null> {
-    const supabase = createSupabaseClient(table, accessToken);
+    const supabase = createSupabaseDataClient(table, accessToken);
     if (!supabase) {
         console.warn("Supabase client not available");
         return null;
@@ -89,7 +89,7 @@ export async function createSong(
     table: string = MAIN_TABLE,
     accessToken?: string,
 ): Promise<Song> {
-    const supabase = createSupabaseClient(table, accessToken);
+    const supabase = createSupabaseDataClient(table, accessToken);
     if (!supabase) throw new Error("Supabase client not available");
     const { data, error } = await supabase
         .from(table)
@@ -107,7 +107,7 @@ export async function updateSong(
     table: string = MAIN_TABLE,
     accessToken?: string,
 ): Promise<Song> {
-    const supabase = createSupabaseClient(table, accessToken);
+    const supabase = createSupabaseDataClient(table, accessToken);
     if (!supabase) throw new Error("Supabase client not available");
     let query = supabase.from(table).update(song).eq("id", id);
     if (song.updated_at) {
