@@ -101,7 +101,7 @@ export function ChunkErrorHandler() {
          */
         const handleError = (event: ErrorEvent): void => {
             if (isChunkLoadError(event.error || event.message)) {
-                console.log("[ChunkErrorHandler] 检测到 ChunkLoadError，正在刷新页面...");
+                console.warn("[ChunkErrorHandler] 检测到 ChunkLoadError，正在刷新页面...");
                 event.preventDefault();
                 silentRefresh();
             }
@@ -118,13 +118,13 @@ export function ChunkErrorHandler() {
                 reason instanceof Error &&
                 isChunkLoadError(reason)
             ) {
-                console.log(
+                console.warn(
                     "[ChunkErrorHandler] 检测到 ChunkLoadError (Promise rejection)，正在刷新页面..."
                 );
                 event.preventDefault();
                 silentRefresh();
             } else if (typeof reason === "string" && isChunkLoadError(reason)) {
-                console.log(
+                console.warn(
                     "[ChunkErrorHandler] 检测到 ChunkLoadError (String rejection)，正在刷新页面..."
                 );
                 event.preventDefault();

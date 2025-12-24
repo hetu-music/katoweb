@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 /**
  * Custom hook to debounce a value.
@@ -12,34 +12,17 @@ export function useDebounce<T>(
   delay: number,
   immediatePredicate?: (value: T) => boolean,
 ): T {
-  // Use a ref to track the "expected" value for immediate updates
-  // This avoids setState during render which causes double renders
-  const immediateValueRef = useRef<T>(value);
-
   // Check if we should update immediately
   const shouldUpdateImmediately =
     immediatePredicate && immediatePredicate(value);
 
-  // Update ref synchronously (no re-render)
-  if (shouldUpdateImmediately) {
-    immediateValueRef.current = value;
-  }
-
-  // Initialize state with the correct value based on predicate
-  const [debouncedValue, setDebouncedValue] = useState<T>(() => {
-    if (immediatePredicate && immediatePredicate(value)) {
-      return value;
-    }
-    return value;
-  });
+  // Initialize state with the initial value
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
   useEffect(() => {
-    // If predicate says update immediately, do it via effect (not during render)
+    // If predicate says update immediately, skip debounce
+    // We return the value directly at the end, so no need to update state here
     if (shouldUpdateImmediately) {
-      // Only update if actually different to avoid unnecessary renders
-      if (debouncedValue !== value) {
-        setDebouncedValue(value);
-      }
       return;
     }
 
@@ -50,7 +33,7 @@ export function useDebounce<T>(
     return () => {
       clearTimeout(handler);
     };
-  }, [value, delay, shouldUpdateImmediately, debouncedValue]);
+  }, [value, delay, shouldUpdateImmediately]);
 
   // Return the immediate value if predicate matches, otherwise the debounced state
   // This ensures synchronous reads get the correct value even before effect runs
