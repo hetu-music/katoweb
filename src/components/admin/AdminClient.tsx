@@ -951,7 +951,7 @@ function RenderInput({
                   "px-3 py-1 rounded-full text-xs font-medium border transition-all",
                   isActive
                     ? "ring-2 ring-offset-1 ring-blue-500 dark:ring-offset-[#151921]"
-                    : "opacity-60 grayscale hover:grayscale-0 hover:opacity-100",
+                    : "opacity-80 grayscale-[0.3] hover:grayscale-0 hover:opacity-100",
                   colorClass
                     .replace("bg-", "bg-opacity-20 bg-")
                     .replace("text-", "text-"), // Rough hack to reuse existing color maps cleanly
@@ -1037,7 +1037,11 @@ function RenderInput({
               const v = e.target.value;
               update(v === "true" ? true : v === "false" ? false : null);
             }}
-            className={baseClass}
+            className={cn(
+              baseClass,
+              "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100",
+              "[&>option]:bg-white [&>option]:dark:bg-slate-800 [&>option]:text-slate-900 [&>option]:dark:text-slate-100"
+            )}
           >
             {isCover ? (
               <>
