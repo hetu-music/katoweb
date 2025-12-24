@@ -16,6 +16,7 @@ import {
   Clock,
   SlidersHorizontal,
   X,
+  XCircle,
   Info,
   RotateCcw,
 } from "lucide-react";
@@ -653,8 +654,19 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       setSearchQuery(e.target.value);
                       setPaginationPage(1); // 搜索时重置页码
                     }}
-                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full py-2 pl-9 pr-4 text-sm outline-none focus:border-blue-500 transition-colors"
+                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full py-2 pl-9 pr-8 text-sm outline-none focus:border-blue-500 transition-colors"
                   />
+                  {searchQuery && (
+                    <button
+                      onClick={() => {
+                        setSearchQuery("");
+                        setPaginationPage(1);
+                      }}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-300 hover:text-slate-500"
+                    >
+                      <XCircle size={14} />
+                    </button>
+                  )}
                 </div>
 
                 {/* Advanced Filter Button */}

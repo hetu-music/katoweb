@@ -681,9 +681,9 @@ export default function AdminClientComponent({
             </div>
 
             {/* Search */}
-            <div className="relative group w-full md:w-72">
+            <div className="relative group w-full md:w-64">
               <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
                 size={16}
               />
               <input
@@ -694,7 +694,7 @@ export default function AdminClientComponent({
                   setSearchTerm(e.target.value);
                   setPaginationPage(1);
                 }}
-                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full py-2 pl-9 pr-8 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm"
+                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full py-2 pl-9 pr-8 text-sm outline-none focus:border-blue-500 transition-colors"
               />
               {searchTerm && (
                 <button
