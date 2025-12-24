@@ -1,6 +1,10 @@
 import { useState, useMemo } from "react";
 import type { SongDetail } from "@/lib/types";
-import { mapAndSortSongs, filterSongs, createFuseInstance } from "@/lib/utils-song";
+import {
+  mapAndSortSongs,
+  filterSongs,
+  createFuseInstance,
+} from "@/lib/utils-song";
 import { useDebounce } from "./useDebounce";
 
 export function useSongs(
@@ -14,11 +18,7 @@ export function useSongs(
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
 
   // 防抖处理搜索词，300ms 延迟，空字符串立即生效
-  const debouncedSearchTerm = useDebounce(
-    searchTerm,
-    300,
-    (val) => val === "",
-  );
+  const debouncedSearchTerm = useDebounce(searchTerm, 300, (val) => val === "");
 
   // 缓存 Fuse 实例，只在歌曲数据变化时重新创建
   const fuseInstance = useMemo(() => {

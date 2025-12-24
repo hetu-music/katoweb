@@ -1040,7 +1040,7 @@ function RenderInput({
             className={cn(
               baseClass,
               "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100",
-              "[&>option]:bg-white [&>option]:dark:bg-slate-800 [&>option]:text-slate-900 [&>option]:dark:text-slate-100"
+              "[&>option]:bg-white [&>option]:dark:bg-slate-800 [&>option]:text-slate-900 [&>option]:dark:text-slate-100",
             )}
           >
             {isCover ? (

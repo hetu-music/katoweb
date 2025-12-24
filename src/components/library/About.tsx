@@ -101,10 +101,11 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         <div className="flex px-6 border-b border-slate-100 dark:border-slate-800 shrink-0">
           <button
             onClick={() => setActiveTab("about")}
-            className={`flex-1 pb-3 pt-4 text-sm font-medium transition-colors relative ${activeTab === "about"
-              ? "text-blue-600 dark:text-blue-400"
-              : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-              }`}
+            className={`flex-1 pb-3 pt-4 text-sm font-medium transition-colors relative ${
+              activeTab === "about"
+                ? "text-blue-600 dark:text-blue-400"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+            }`}
           >
             项目介绍
             {activeTab === "about" && (
@@ -113,10 +114,11 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </button>
           <button
             onClick={() => setActiveTab("types")}
-            className={`flex-1 pb-3 pt-4 text-sm font-medium transition-colors relative ${activeTab === "types"
-              ? "text-blue-600 dark:text-blue-400"
-              : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-              }`}
+            className={`flex-1 pb-3 pt-4 text-sm font-medium transition-colors relative ${
+              activeTab === "types"
+                ? "text-blue-600 dark:text-blue-400"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+            }`}
           >
             类型说明
             {activeTab === "types" && (
@@ -125,10 +127,11 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </button>
           <button
             onClick={() => setActiveTab("maintainer")}
-            className={`flex-1 pb-3 pt-4 text-sm font-medium transition-colors relative ${activeTab === "maintainer"
-              ? "text-blue-600 dark:text-blue-400"
-              : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-              }`}
+            className={`flex-1 pb-3 pt-4 text-sm font-medium transition-colors relative ${
+              activeTab === "maintainer"
+                ? "text-blue-600 dark:text-blue-400"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+            }`}
           >
             维护团队
             {activeTab === "maintainer" && (
@@ -190,16 +193,72 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <div className="space-y-3">
               {TYPE_ORDER.filter((t) => typeDescriptions[t]).map((type) => {
                 // 获取每个类型对应的颜色
-                const colorClasses: Record<string, { border: string; hoverBorder: string; bg: string; text: string }> = {
-                  原创: { border: "border-l-purple-500 dark:border-l-purple-400", hoverBorder: "hover:border-purple-300 dark:hover:border-purple-500/50", bg: "from-purple-50/50 dark:from-purple-500/5", text: "text-purple-600 dark:text-purple-400" },
-                  合作: { border: "border-l-amber-500 dark:border-l-amber-400", hoverBorder: "hover:border-amber-300 dark:hover:border-amber-500/50", bg: "from-amber-50/50 dark:from-amber-500/5", text: "text-amber-600 dark:text-amber-400" },
-                  文宣: { border: "border-l-emerald-500 dark:border-l-emerald-400", hoverBorder: "hover:border-emerald-300 dark:hover:border-emerald-500/50", bg: "from-emerald-50/50 dark:from-emerald-500/5", text: "text-emerald-600 dark:text-emerald-400" },
-                  商业: { border: "border-l-orange-500 dark:border-l-orange-400", hoverBorder: "hover:border-orange-300 dark:hover:border-orange-500/50", bg: "from-orange-50/50 dark:from-orange-500/5", text: "text-orange-600 dark:text-orange-400" },
-                  墨宝: { border: "border-l-rose-500 dark:border-l-rose-400", hoverBorder: "hover:border-rose-300 dark:hover:border-rose-500/50", bg: "from-rose-50/50 dark:from-rose-500/5", text: "text-rose-600 dark:text-rose-400" },
-                  翻唱: { border: "border-l-blue-500 dark:border-l-blue-400", hoverBorder: "hover:border-blue-300 dark:hover:border-blue-500/50", bg: "from-blue-50/50 dark:from-blue-500/5", text: "text-blue-600 dark:text-blue-400" },
-                  参与: { border: "border-l-fuchsia-500 dark:border-l-fuchsia-400", hoverBorder: "hover:border-fuchsia-300 dark:hover:border-fuchsia-500/50", bg: "from-fuchsia-50/50 dark:from-fuchsia-500/5", text: "text-fuchsia-600 dark:text-fuchsia-400" },
+                const colorClasses: Record<
+                  string,
+                  {
+                    border: string;
+                    hoverBorder: string;
+                    bg: string;
+                    text: string;
+                  }
+                > = {
+                  原创: {
+                    border: "border-l-purple-500 dark:border-l-purple-400",
+                    hoverBorder:
+                      "hover:border-purple-300 dark:hover:border-purple-500/50",
+                    bg: "from-purple-50/50 dark:from-purple-500/5",
+                    text: "text-purple-600 dark:text-purple-400",
+                  },
+                  合作: {
+                    border: "border-l-amber-500 dark:border-l-amber-400",
+                    hoverBorder:
+                      "hover:border-amber-300 dark:hover:border-amber-500/50",
+                    bg: "from-amber-50/50 dark:from-amber-500/5",
+                    text: "text-amber-600 dark:text-amber-400",
+                  },
+                  文宣: {
+                    border: "border-l-emerald-500 dark:border-l-emerald-400",
+                    hoverBorder:
+                      "hover:border-emerald-300 dark:hover:border-emerald-500/50",
+                    bg: "from-emerald-50/50 dark:from-emerald-500/5",
+                    text: "text-emerald-600 dark:text-emerald-400",
+                  },
+                  商业: {
+                    border: "border-l-orange-500 dark:border-l-orange-400",
+                    hoverBorder:
+                      "hover:border-orange-300 dark:hover:border-orange-500/50",
+                    bg: "from-orange-50/50 dark:from-orange-500/5",
+                    text: "text-orange-600 dark:text-orange-400",
+                  },
+                  墨宝: {
+                    border: "border-l-rose-500 dark:border-l-rose-400",
+                    hoverBorder:
+                      "hover:border-rose-300 dark:hover:border-rose-500/50",
+                    bg: "from-rose-50/50 dark:from-rose-500/5",
+                    text: "text-rose-600 dark:text-rose-400",
+                  },
+                  翻唱: {
+                    border: "border-l-blue-500 dark:border-l-blue-400",
+                    hoverBorder:
+                      "hover:border-blue-300 dark:hover:border-blue-500/50",
+                    bg: "from-blue-50/50 dark:from-blue-500/5",
+                    text: "text-blue-600 dark:text-blue-400",
+                  },
+                  参与: {
+                    border: "border-l-fuchsia-500 dark:border-l-fuchsia-400",
+                    hoverBorder:
+                      "hover:border-fuchsia-300 dark:hover:border-fuchsia-500/50",
+                    bg: "from-fuchsia-50/50 dark:from-fuchsia-500/5",
+                    text: "text-fuchsia-600 dark:text-fuchsia-400",
+                  },
                 };
-                const colors = colorClasses[type] || { border: "border-l-slate-500 dark:border-l-slate-400", hoverBorder: "hover:border-slate-300 dark:hover:border-slate-500/50", bg: "from-slate-50/50 dark:from-slate-500/5", text: "text-slate-600 dark:text-slate-400" };
+                const colors = colorClasses[type] || {
+                  border: "border-l-slate-500 dark:border-l-slate-400",
+                  hoverBorder:
+                    "hover:border-slate-300 dark:hover:border-slate-500/50",
+                  bg: "from-slate-50/50 dark:from-slate-500/5",
+                  text: "text-slate-600 dark:text-slate-400",
+                };
 
                 return (
                   <div
@@ -214,7 +273,9 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     `}
                   >
                     <div className="px-4 py-3">
-                      <div className={`text-sm font-semibold ${colors.text} mb-1`}>
+                      <div
+                        className={`text-sm font-semibold ${colors.text} mb-1`}
+                      >
                         {type}
                       </div>
                       <div className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
