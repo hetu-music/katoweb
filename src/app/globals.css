@@ -14,8 +14,7 @@
     var(--font-heading), var(--font-heading-sc), ui-serif, Georgia, Cambria,
     "Times New Roman", Times, serif;
   --font-mono:
-    ui-monospace, SFMono-Regular, Consolas, "Liberation Mono",
-    var(--font-mono-cjk), Menlo, Monaco, "Courier New", monospace;
+    ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, Monaco, "Courier New", var(--font-mono-cjk), monospace;
 }
 
 .dark {
@@ -44,7 +43,7 @@ h6 {
   font-weight: 700;
 
   /* 调整标题中数字的垂直对齐，使其与中文字符更好地对齐 */
-  & > span {
+  &>span {
     position: relative;
     top: 0.05em;
   }
@@ -252,6 +251,7 @@ button {
 
 /* 移动端滚动条特殊处理 - iOS原生行为 */
 @media (max-width: 768px) {
+
   /* 默认状态：隐藏滚动条 */
   .custom-select-options.mobile {
     scrollbar-width: none;
