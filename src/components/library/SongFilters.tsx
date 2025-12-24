@@ -222,7 +222,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
       {/* Top Row: Year Slider */}
       <div className="w-full bg-white/30 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800/50 rounded-xl p-3">
         <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">
-          Realease Year Range
+          发行年份
         </div>
         <YearRangeSlider
           range={yearRangeIndices}
@@ -236,7 +236,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
         {/* Lyricist Filter */}
         <div className="flex flex-col gap-1">
           <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 ml-1 uppercase tracking-widest">
-            Lyricist
+            作词
           </label>
           <CustomSelect
             value={selectedLyricist}
@@ -255,7 +255,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
         {/* Composer Filter */}
         <div className="flex flex-col gap-1">
           <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 ml-1 uppercase tracking-widest">
-            Composer
+            作曲
           </label>
           <CustomSelect
             value={selectedComposer}
@@ -274,7 +274,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
         {/* Arranger Filter */}
         <div className="flex flex-col gap-1">
           <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 ml-1 uppercase tracking-widest">
-            Arranger
+            编曲
           </label>
           <CustomSelect
             value={selectedArranger}
