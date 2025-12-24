@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
  * Custom hook to debounce a value.
  * @param value The value to debounce.
  * @param delay The delay in milliseconds.
+ * @param immediatePredicate Optional predicate - if returns true, value updates immediately without debounce.
  * @returns The debounced value.
  */
 export function useDebounce<T>(
@@ -11,19 +12,16 @@ export function useDebounce<T>(
   delay: number,
   immediatePredicate?: (value: T) => boolean,
 ): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
   // Check if we should update immediately
   const shouldUpdateImmediately =
     immediatePredicate && immediatePredicate(value);
 
-  // Update logic pattern for derived state during render
-  if (shouldUpdateImmediately && value !== debouncedValue) {
-    setDebouncedValue(value);
-  }
+  // Initialize state with the initial value
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
   useEffect(() => {
-    // If we've already updated immediately, we don't need the timer
+    // If predicate says update immediately, skip debounce
+    // We return the value directly at the end, so no need to update state here
     if (shouldUpdateImmediately) {
       return;
     }
@@ -36,6 +34,12 @@ export function useDebounce<T>(
       clearTimeout(handler);
     };
   }, [value, delay, shouldUpdateImmediately]);
+
+  // Return the immediate value if predicate matches, otherwise the debounced state
+  // This ensures synchronous reads get the correct value even before effect runs
+  if (shouldUpdateImmediately) {
+    return value;
+  }
 
   return debouncedValue;
 }

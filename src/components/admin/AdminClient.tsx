@@ -681,9 +681,9 @@ export default function AdminClientComponent({
             </div>
 
             {/* Search */}
-            <div className="relative group w-full md:w-72">
+            <div className="relative group w-full md:w-64">
               <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
                 size={16}
               />
               <input
@@ -694,7 +694,7 @@ export default function AdminClientComponent({
                   setSearchTerm(e.target.value);
                   setPaginationPage(1);
                 }}
-                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full py-2 pl-9 pr-8 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm"
+                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full py-2 pl-9 pr-8 text-sm outline-none focus:border-blue-500 transition-colors"
               />
               {searchTerm && (
                 <button
@@ -951,7 +951,7 @@ function RenderInput({
                   "px-3 py-1 rounded-full text-xs font-medium border transition-all",
                   isActive
                     ? "ring-2 ring-offset-1 ring-blue-500 dark:ring-offset-[#151921]"
-                    : "opacity-60 grayscale hover:grayscale-0 hover:opacity-100",
+                    : "opacity-80 grayscale-[0.3] hover:grayscale-0 hover:opacity-100",
                   colorClass
                     .replace("bg-", "bg-opacity-20 bg-")
                     .replace("text-", "text-"), // Rough hack to reuse existing color maps cleanly
@@ -1037,7 +1037,11 @@ function RenderInput({
               const v = e.target.value;
               update(v === "true" ? true : v === "false" ? false : null);
             }}
-            className={baseClass}
+            className={cn(
+              baseClass,
+              "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100",
+              "[&>option]:bg-white [&>option]:dark:bg-slate-800 [&>option]:text-slate-900 [&>option]:dark:text-slate-100"
+            )}
           >
             {isCover ? (
               <>

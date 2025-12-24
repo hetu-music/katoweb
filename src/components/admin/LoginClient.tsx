@@ -99,13 +99,12 @@ export default function LoginClient({ nonce }: LoginClientProps) {
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/5 rounded-full blur-3xl" />
       </div>
 
-      {/* Theme Toggle - Fixed Top Right */}
-      <div className="fixed top-7 right-8 z-20">
-        <ThemeToggle />
-      </div>
-
       <div className="w-full max-w-md relative z-10">
-        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-slate-800 overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-slate-800 overflow-hidden relative">
+          {/* Theme Toggle - Card Top Right */}
+          <div className="absolute top-4 right-4 z-10">
+            <ThemeToggle />
+          </div>
           {/* Header Section */}
           <div className="px-8 pt-12 pb-8 text-center space-y-4">
             <div className="mx-auto w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 mb-6 ring-1 ring-blue-100 dark:ring-blue-800">
