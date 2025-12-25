@@ -478,7 +478,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
               <div className="bg-white dark:bg-slate-900/50 rounded-3xl p-8 md:p-12 border border-slate-100 dark:border-slate-800 shadow-sm min-h-[400px]">
                 {song.lyrics ? (
-                  <div className="relative">
+                  <div className="relative overflow-hidden">
                     {/* 普通歌词 */}
                     <div
                       className={cn(
