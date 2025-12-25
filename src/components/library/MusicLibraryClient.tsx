@@ -337,9 +337,12 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
   // Reset active state activeSongId and trigger animation replay when returning to the page
   useEffect(() => {
-    const handlePageShow = () => {
-      setActiveSongId(null);
-      setMountKey((prev) => prev + 1);
+    const handlePageShow = (event: PageTransitionEvent) => {
+      // Only replay animation if the page is being restored from the bfcache
+      if (event.persisted) {
+        setActiveSongId(null);
+        setMountKey((prev) => prev + 1);
+      }
     };
 
     window.addEventListener("pageshow", handlePageShow);
