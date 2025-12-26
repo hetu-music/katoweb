@@ -208,7 +208,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
 }) => {
   // 共享样式常量
   const labelStyle =
-    "text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest";
+    "text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider";
 
   const triggerStyle =
     "!bg-white/50 dark:!bg-slate-900/50 hover:!bg-white dark:hover:!bg-slate-900 !border !border-slate-200 dark:!border-slate-800 !rounded-lg !text-slate-600 dark:!text-slate-300 !h-10 !px-3 !mx-0 transition-all duration-200 focus:!ring-1 focus:!ring-blue-500/20";
