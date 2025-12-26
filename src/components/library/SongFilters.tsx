@@ -206,7 +206,10 @@ const SongFilters: React.FC<SongFiltersProps> = ({
   setSelectedArranger,
   filterOptions,
 }) => {
-  // Flatter design: removed shadow, transparent background in inactive state (or minimal white), clean borders
+  // 共享样式常量
+  const labelStyle =
+    "text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest";
+
   const triggerStyle =
     "!bg-white/50 dark:!bg-slate-900/50 hover:!bg-white dark:hover:!bg-slate-900 !border !border-slate-200 dark:!border-slate-800 !rounded-lg !text-slate-600 dark:!text-slate-300 !h-10 !px-3 !mx-0 transition-all duration-200 focus:!ring-1 focus:!ring-blue-500/20";
 
@@ -221,9 +224,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
     <div className="w-full flex flex-col gap-4 p-1">
       {/* Top Row: Year Slider */}
       <div className="w-full bg-white/30 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800/50 rounded-xl p-3">
-        <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">
-          发行年份
-        </div>
+        <div className={`${labelStyle} mb-1`}>发行年份</div>
         <YearRangeSlider
           range={yearRangeIndices}
           setRange={setYearRangeIndices}
@@ -235,9 +236,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
       <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-3">
         {/* Lyricist Filter */}
         <div className="flex flex-col gap-1">
-          <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 ml-1 uppercase tracking-widest">
-            作词
-          </label>
+          <label className={`${labelStyle} ml-1`}>作词</label>
           <CustomSelect
             value={selectedLyricist}
             onChange={setSelectedLyricist}
@@ -254,9 +253,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
 
         {/* Composer Filter */}
         <div className="flex flex-col gap-1">
-          <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 ml-1 uppercase tracking-widest">
-            作曲
-          </label>
+          <label className={`${labelStyle} ml-1`}>作曲</label>
           <CustomSelect
             value={selectedComposer}
             onChange={setSelectedComposer}
@@ -273,9 +270,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
 
         {/* Arranger Filter */}
         <div className="flex flex-col gap-1">
-          <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 ml-1 uppercase tracking-widest">
-            编曲
-          </label>
+          <label className={`${labelStyle} ml-1`}>编曲</label>
           <CustomSelect
             value={selectedArranger}
             onChange={setSelectedArranger}
