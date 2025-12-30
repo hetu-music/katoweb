@@ -184,7 +184,7 @@ const ListRow = ({
   <div
     onClick={onClick}
     className={cn(
-      "group flex items-center gap-6 p-4 rounded-xl transition-colors cursor-pointer",
+      "group flex items-center gap-6 p-4 rounded-xl transition-colors cursor-pointer relative z-20 hover:z-30",
       isActive
         ? "bg-slate-100 dark:bg-slate-800/50"
         : "hover:bg-slate-100 dark:hover:bg-slate-800/50",
