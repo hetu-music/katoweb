@@ -40,8 +40,6 @@ const MultiTagDisplay = ({
         );
     }
 
-    const [isHovered, setIsHovered] = useState(false);
-
     const checkPosition = () => {
         if (!containerRef.current || !tags) return;
         const rect = containerRef.current.getBoundingClientRect();
@@ -56,22 +54,12 @@ const MultiTagDisplay = ({
         }
     };
 
-    const handleMouseEnter = () => {
-        checkPosition();
-        setIsHovered(true);
-    };
-
-    const handleMouseLeave = () => {
-        setIsHovered(false);
-    };
-
     // Multiple tags
     return (
         <div
             ref={containerRef}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            className="relative flex items-center justify-center gap-2 w-24"
+            onMouseEnter={checkPosition}
+            className="group/tags relative flex items-center justify-center gap-2 w-24"
         >
             {/* Small circles */}
             {tags.slice(0, 3).map((t) => (
@@ -111,9 +99,8 @@ const MultiTagDisplay = ({
                             type === "type"
                                 ? getTypeTagStyle(t, "glass")
                                 : getGenreTagStyle(t, "glass"),
-                            isHovered
-                                ? "opacity-100 scale-100 blur-0"
-                                : "opacity-0 scale-50 blur-md"
+                            "opacity-0 scale-50 group-hover/tags:opacity-100 group-hover/tags:translate-y-0 group-hover/tags:scale-100",
+                            placement === "top" ? "translate-y-8" : "-translate-y-8"
                         )}
                     >
                         {t}
