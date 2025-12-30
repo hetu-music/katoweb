@@ -84,7 +84,7 @@ const MultiTagDisplay = ({
             {/* Expanded List */}
             <div
                 className={cn(
-                    "absolute left-0 w-24 flex gap-2 pointer-events-none z-50",
+                    "absolute left-0 w-24 flex gap-3 pointer-events-none z-50",
                     placement === "top"
                         ? "bottom-full mb-4 flex-col-reverse"
                         : "top-full mt-4 flex-col"
