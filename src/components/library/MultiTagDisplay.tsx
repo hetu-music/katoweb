@@ -45,7 +45,7 @@ const MultiTagDisplay = ({
                 <div
                     key={t}
                     className={cn(
-                        "w-7 h-7 rounded-full flex items-center justify-center text-xs border shadow-sm shrink-0 bg-white dark:bg-slate-800/50",
+                        "w-7 h-7 rounded-full flex items-center justify-center text-xs border shrink-0",
                         type === "type"
                             ? getTypeTagStyle(t, "subtle")
                             : getGenreTagStyle(t),
