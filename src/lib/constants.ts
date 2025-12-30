@@ -152,7 +152,7 @@ const defaultTagStyle =
  */
 export function getTypeTagStyle(
   type: string,
-  variant: "tag" | "card" | "emphasized" | "subtle" = "tag",
+  variant: "tag" | "card" | "emphasized" | "subtle" | "glass" = "tag",
 ): string {
   if (variant === "card") {
     return typeCardStyleMap[type] || defaultTagStyle;
@@ -162,6 +162,13 @@ export function getTypeTagStyle(
   }
   if (variant === "subtle") {
     return typeTagSubtleStyleMap[type] || defaultTagStyle;
+  }
+  if (variant === "glass") {
+    const base = typeTagSubtleStyleMap[type] || defaultTagStyle;
+    return base.replace(
+      "bg-transparent",
+      "bg-[#FAFAFA]/95 dark:bg-[#0B0F19]/95 backdrop-blur-md",
+    );
   }
   return typeTagStyleMap[type] || defaultTagStyle;
 }
@@ -174,10 +181,17 @@ export function getTypeTagStyle(
  */
 export function getGenreTagStyle(
   genre: string,
-  variant: "tag" | "emphasized" = "tag",
+  variant: "tag" | "emphasized" | "glass" = "tag",
 ): string {
   if (variant === "emphasized") {
     return genreTagEmphasizedStyleMap[genre] || defaultTagStyle;
+  }
+  if (variant === "glass") {
+    const base = genreTagStyleMap[genre] || defaultTagStyle;
+    return base.replace(
+      "bg-transparent",
+      "bg-[#FAFAFA]/95 dark:bg-[#0B0F19]/95 backdrop-blur-md",
+    );
   }
   return genreTagStyleMap[genre] || defaultTagStyle;
 }
