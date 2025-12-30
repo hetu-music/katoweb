@@ -67,10 +67,10 @@ const MultiTagDisplay = ({
                         key={t}
                         style={{ transitionDelay: `${i * 40}ms` }}
                         className={cn(
-                            "px-3 py-1 text-xs font-medium text-center border rounded-full w-24 truncate !bg-[#FAFAFA]/95 dark:!bg-[#0B0F19]/95 backdrop-blur-md transition-all duration-300 ease-out",
+                            "px-3 py-1 text-xs font-medium text-center border rounded-full w-24 truncate transition-all duration-300 ease-out",
                             type === "type"
-                                ? getTypeTagStyle(t, "subtle")
-                                : getGenreTagStyle(t),
+                                ? getTypeTagStyle(t, "glass")
+                                : getGenreTagStyle(t, "glass"),
                             "opacity-0 translate-y-8 scale-50 group-hover/tags:opacity-100 group-hover/tags:translate-y-0 group-hover/tags:scale-100"
                         )}
                     >
