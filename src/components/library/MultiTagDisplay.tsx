@@ -39,7 +39,7 @@ const MultiTagDisplay = ({
 
     // Multiple tags
     return (
-        <div className="group relative flex items-center justify-center gap-1 w-24">
+        <div className="group relative flex items-center justify-center gap-2 w-24">
             {/* Small circles */}
             {tags.slice(0, 3).map((t) => (
                 <div
