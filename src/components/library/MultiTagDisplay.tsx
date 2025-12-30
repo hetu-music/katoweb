@@ -39,7 +39,7 @@ const MultiTagDisplay = ({
 
     // Multiple tags
     return (
-        <div className="group relative flex items-center justify-center gap-2 w-24">
+        <div className="group/tags relative flex items-center justify-center gap-2 w-24">
             {/* Small circles */}
             {tags.slice(0, 3).map((t) => (
                 <div
@@ -60,25 +60,23 @@ const MultiTagDisplay = ({
                 </div>
             )}
 
-            {/* Tooltip */}
-            <div className="absolute opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none bottom-full mb-3 left-1/2 -translate-x-1/2 z-50 w-max max-w-[240px] translate-y-2 group-hover:translate-y-0">
-                <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-xl rounded-xl p-3 border border-slate-100 dark:border-slate-700 flex flex-wrap gap-2 justify-center">
-                    {tags.map((t) => (
-                        <span
-                            key={t}
-                            className={cn(
-                                "px-3 py-1 rounded-full text-xs font-medium border text-center shadow-sm",
-                                type === "type"
-                                    ? getTypeTagStyle(t, "emphasized")
-                                    : getGenreTagStyle(t, "emphasized"),
-                            )}
-                        >
-                            {t}
-                        </span>
-                    ))}
-                </div>
-                {/* Arrow */}
-                <div className="w-2 h-2 bg-white dark:bg-slate-800 rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2 border-b border-r border-slate-100 dark:border-slate-700"></div>
+            {/* Expanded List */}
+            <div className="absolute bottom-0 left-0 w-24 flex flex-col-reverse gap-1 pointer-events-none z-50">
+                {tags.map((t, i) => (
+                    <span
+                        key={t}
+                        style={{ transitionDelay: `${i * 50}ms` }}
+                        className={cn(
+                            "px-3 py-1 text-xs font-medium text-center border rounded-full w-24 truncate bg-white dark:bg-slate-900 shadow-sm transition-all duration-300 ease-out origin-bottom",
+                            type === "type"
+                                ? getTypeTagStyle(t, "subtle")
+                                : getGenreTagStyle(t),
+                            "opacity-0 translate-y-4 scale-95 group-hover/tags:opacity-100 group-hover/tags:translate-y-0 group-hover/tags:scale-100"
+                        )}
+                    >
+                        {t}
+                    </span>
+                ))}
             </div>
         </div>
     );
