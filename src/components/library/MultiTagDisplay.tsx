@@ -61,13 +61,13 @@ const MultiTagDisplay = ({
             )}
 
             {/* Expanded List */}
-            <div className="absolute bottom-full mb-4 left-0 w-24 flex flex-col-reverse gap-1 pointer-events-none z-99">
+            <div className="absolute bottom-full mb-4 left-0 w-24 flex flex-col-reverse gap-3 pointer-events-none z-50">
                 {tags.map((t, i) => (
                     <span
                         key={t}
                         style={{ transitionDelay: `${i * 40}ms` }}
                         className={cn(
-                            "px-3 py-1 text-xs font-medium text-center border rounded-full w-24 truncate bg-white dark:bg-slate-900 shadow-sm transition-all duration-300 ease-out",
+                            "px-3 py-1 text-xs font-medium text-center border rounded-full w-24 truncate bg-white/80 dark:bg-slate-900/80 backdrop-blur-md transition-all duration-300 ease-out",
                             type === "type"
                                 ? getTypeTagStyle(t, "subtle")
                                 : getGenreTagStyle(t),
