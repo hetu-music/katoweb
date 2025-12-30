@@ -105,15 +105,18 @@ const MultiTagDisplay = ({
                 {tags.map((t, i) => (
                     <span
                         key={t}
-                        style={{ transitionDelay: `${i * 40}ms` }}
+                        style={{ transitionDelay: `${i * 50}ms` }}
                         className={cn(
                             "px-3 py-1 text-xs font-medium text-center border rounded-full w-24 truncate transition-all duration-300 ease-out",
                             type === "type"
                                 ? getTypeTagStyle(t, "glass")
                                 : getGenreTagStyle(t, "glass"),
                             isHovered
-                                ? "opacity-100 scale-100 blur-0"
-                                : "opacity-0 scale-50 blur-md"
+                                ? "opacity-100 scale-100 translate-y-0 blur-0"
+                                : cn(
+                                    "opacity-0 scale-90 blur-sm",
+                                    placement === "top" ? "translate-y-2" : "-translate-y-2"
+                                )
                         )}
                     >
                         {t}
