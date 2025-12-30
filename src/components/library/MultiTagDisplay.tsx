@@ -67,7 +67,7 @@ const MultiTagDisplay = ({
                         key={t}
                         style={{ transitionDelay: `${i * 40}ms` }}
                         className={cn(
-                            "px-3 py-1 text-xs font-medium text-center border rounded-full w-24 truncate bg-white/80 dark:bg-slate-900/80 backdrop-blur-md transition-all duration-300 ease-out",
+                            "px-3 py-1 text-xs font-medium text-center border rounded-full w-24 truncate !bg-[#FAFAFA]/95 dark:!bg-[#0B0F19]/95 backdrop-blur-md transition-all duration-300 ease-out",
                             type === "type"
                                 ? getTypeTagStyle(t, "subtle")
                                 : getGenreTagStyle(t),
