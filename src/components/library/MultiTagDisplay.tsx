@@ -61,7 +61,7 @@ const MultiTagDisplay = ({
             )}
 
             {/* Expanded List */}
-            <div className="absolute bottom-full mb-3 left-0 w-24 flex flex-col-reverse gap-1 pointer-events-none z-50">
+            <div className="absolute bottom-full mb-4 left-0 w-24 flex flex-col-reverse gap-1 pointer-events-none z-99">
                 {tags.map((t, i) => (
                     <span
                         key={t}
