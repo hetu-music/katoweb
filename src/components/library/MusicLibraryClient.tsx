@@ -39,6 +39,7 @@ import SongFilters from "./SongFilters";
 import About from "./About";
 import FloatingActionButtons from "../shared/FloatingActionButtons";
 import ThemeToggle from "../shared/ThemeToggle";
+import MultiTagDisplay from "./MultiTagDisplay";
 
 // 简易 classNames 工具 (替代 clsx/tailwind-merge)
 function cn(...classes: (string | undefined | null | false)[]) {
@@ -217,38 +218,8 @@ const ListRow = ({
 
     {/* 辅助信息 (在大屏幕显示) */}
     <div className="hidden md:flex items-center gap-8 text-sm text-slate-500 dark:text-slate-400 shrink-0">
-      <div className="flex flex-col gap-1 w-24 items-center justify-center shrink-0">
-        {song.type?.map((t) => (
-          <span
-            key={t}
-            className={cn(
-              "px-3 py-1 rounded-full text-xs font-medium w-full text-center truncate border",
-              getTypeTagStyle(t, "subtle"),
-            )}
-          >
-            {t}
-          </span>
-        ))}
-      </div>
-      <div className="flex flex-col gap-1 w-24 items-center justify-center shrink-0">
-        {song.genre && song.genre.length > 0 ? (
-          song.genre.map((g) => (
-            <span
-              key={g}
-              className={cn(
-                "px-3 py-1 rounded-full text-xs font-medium w-full text-center truncate border",
-                getGenreTagStyle(g),
-              )}
-            >
-              {g}
-            </span>
-          ))
-        ) : (
-          <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-medium w-full text-center truncate">
-            未知流派
-          </span>
-        )}
-      </div>
+      <MultiTagDisplay tags={song.type} type="type" />
+      <MultiTagDisplay tags={song.genre} type="genre" />
       <div className="flex items-center gap-2 w-16 font-mono text-xs opacity-70">
         <Calendar size={14} />
         {song.year || "-"}
