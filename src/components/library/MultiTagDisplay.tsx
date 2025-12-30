@@ -61,17 +61,17 @@ const MultiTagDisplay = ({
             )}
 
             {/* Expanded List */}
-            <div className="absolute bottom-0 left-0 w-24 flex flex-col-reverse gap-1 pointer-events-none z-50">
+            <div className="absolute bottom-full mb-3 left-0 w-24 flex flex-col-reverse gap-1 pointer-events-none z-50">
                 {tags.map((t, i) => (
                     <span
                         key={t}
-                        style={{ transitionDelay: `${i * 50}ms` }}
+                        style={{ transitionDelay: `${i * 40}ms` }}
                         className={cn(
-                            "px-3 py-1 text-xs font-medium text-center border rounded-full w-24 truncate bg-white dark:bg-slate-900 shadow-sm transition-all duration-300 ease-out origin-bottom",
+                            "px-3 py-1 text-xs font-medium text-center border rounded-full w-24 truncate bg-white dark:bg-slate-900 shadow-sm transition-all duration-300 ease-out",
                             type === "type"
                                 ? getTypeTagStyle(t, "subtle")
                                 : getGenreTagStyle(t),
-                            "opacity-0 translate-y-4 scale-95 group-hover/tags:opacity-100 group-hover/tags:translate-y-0 group-hover/tags:scale-100"
+                            "opacity-0 translate-y-8 scale-50 group-hover/tags:opacity-100 group-hover/tags:translate-y-0 group-hover/tags:scale-100"
                         )}
                     >
                         {t}
