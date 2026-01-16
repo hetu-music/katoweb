@@ -56,7 +56,10 @@ export function PWARegistration() {
     window.addEventListener("appinstalled", handleAppInstalled);
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt,
+      );
       window.removeEventListener("appinstalled", handleAppInstalled);
     };
   }, []);
@@ -72,7 +75,6 @@ export function usePWAInstall() {
   const [isInstallable, setIsInstallable] = useState(() => !!deferredPrompt);
 
   useEffect(() => {
-
     const handleInstallable = () => setIsInstallable(true);
     const handleInstalled = () => setIsInstallable(false);
 

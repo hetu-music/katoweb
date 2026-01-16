@@ -53,10 +53,11 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
       {/* 返回顶部按钮 */}
       <button
         onClick={onScrollToTop}
-        className={`${buttonClass} ${showScrollTop
-          ? "translate-y-0 opacity-100"
-          : "translate-y-8 opacity-0 pointer-events-none"
-          }`}
+        className={`${buttonClass} ${
+          showScrollTop
+            ? "translate-y-0 opacity-100"
+            : "translate-y-8 opacity-0 pointer-events-none"
+        }`}
         title="返回顶部"
         aria-label="返回顶部"
       >
