@@ -9,6 +9,14 @@ interface ServiceWorkerRegistrationInfo {
     registration: ServiceWorkerRegistration | null;
 }
 
+// 存储 beforeinstallprompt 事件
+let deferredPrompt: BeforeInstallPromptEvent | null = null;
+
+interface BeforeInstallPromptEvent extends Event {
+    prompt(): Promise<void>;
+    userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
+
 /**
  * PWA Service Worker 注册组件
  * 在客户端自动注册和更新 Service Worker
@@ -39,6 +47,9 @@ export function PWARegistration(): null {
                 registration,
             }));
 
+            // eslint-disable-next-line no-console
+            console.log("✅ Service Worker 注册成功:", registration.scope);
+
             // 检查更新
             registration.addEventListener("updatefound", () => {
                 const newWorker = registration.installing;
@@ -54,7 +65,6 @@ export function PWARegistration(): null {
                             }));
 
                             // 自动更新：可以选择提示用户或自动刷新
-                            // 这里选择自动刷新以获取最新版本
                             if (
                                 window.confirm(
                                     "检测到新版本，是否刷新页面以更新？\nA new version is available. Refresh to update?"
@@ -76,21 +86,48 @@ export function PWARegistration(): null {
                 60 * 60 * 1000
             );
         } catch (error) {
-            // Service Worker 注册失败时静默处理
-            // 在开发环境下可以打印日志
-            if (process.env.NODE_ENV === "development") {
-                // eslint-disable-next-line no-console
-                console.warn("Service Worker registration failed:", error);
-            }
+            // eslint-disable-next-line no-console
+            console.warn("❌ Service Worker 注册失败:", error);
         }
     }, []);
 
     useEffect(() => {
-        // 仅在生产环境或明确启用 PWA 时注册 Service Worker
-        if (process.env.NODE_ENV === "production") {
-            registerServiceWorker();
-        }
+        // 注册 Service Worker（开发和生产环境都注册）
+        registerServiceWorker();
     }, [registerServiceWorker]);
+
+    // 监听 beforeinstallprompt 事件
+    useEffect(() => {
+        if (typeof window === "undefined") {
+            return;
+        }
+
+        const handleBeforeInstallPrompt = (e: Event): void => {
+            // 阻止默认的安装提示
+            e.preventDefault();
+            // 保存事件以便稍后使用
+            deferredPrompt = e as BeforeInstallPromptEvent;
+            // eslint-disable-next-line no-console
+            console.log("📱 PWA 可安装，可调用 promptPWAInstall() 触发安装提示");
+        };
+
+        const handleAppInstalled = (): void => {
+            // eslint-disable-next-line no-console
+            console.log("✅ PWA 已安装");
+            deferredPrompt = null;
+        };
+
+        window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+        window.addEventListener("appinstalled", handleAppInstalled);
+
+        return () => {
+            window.removeEventListener(
+                "beforeinstallprompt",
+                handleBeforeInstallPrompt
+            );
+            window.removeEventListener("appinstalled", handleAppInstalled);
+        };
+    }, []);
 
     // 监听 Service Worker 控制器变化
     useEffect(() => {
@@ -118,6 +155,58 @@ export function PWARegistration(): null {
 
     // 此组件不渲染任何内容
     return null;
+}
+
+/**
+ * 触发 PWA 安装提示
+ * @returns 是否成功触发安装提示
+ */
+export async function promptPWAInstall(): Promise<boolean> {
+    if (!deferredPrompt) {
+        // eslint-disable-next-line no-console
+        console.log("⚠️ PWA 安装提示不可用");
+        return false;
+    }
+
+    try {
+        // 显示安装提示
+        await deferredPrompt.prompt();
+        // 等待用户响应
+        const { outcome } = await deferredPrompt.userChoice;
+        // eslint-disable-next-line no-console
+        console.log(`用户选择: ${outcome}`);
+
+        // 清除保存的事件
+        deferredPrompt = null;
+
+        return outcome === "accepted";
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error("PWA 安装失败:", error);
+        return false;
+    }
+}
+
+/**
+ * 检查 PWA 是否可安装
+ */
+export function isPWAInstallable(): boolean {
+    return deferredPrompt !== null;
+}
+
+/**
+ * 检查是否以 PWA 模式运行
+ */
+export function isRunningAsPWA(): boolean {
+    if (typeof window === "undefined") {
+        return false;
+    }
+
+    return (
+        window.matchMedia("(display-mode: standalone)").matches ||
+        // @ts-expect-error - Safari 特有属性
+        window.navigator.standalone === true
+    );
 }
 
 /**
