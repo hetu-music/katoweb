@@ -82,9 +82,7 @@ export function PWARegistration(): null {
     }
 
     const handleBeforeInstallPrompt = (e: Event): void => {
-      // 阻止默认的安装提示
-      e.preventDefault();
-      // 保存事件以便稍后使用
+      // 保存事件以便稍后使用（如果需要手动触发）
       deferredPrompt = e as BeforeInstallPromptEvent;
     };
 
