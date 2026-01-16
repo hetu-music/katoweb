@@ -70,9 +70,30 @@ export function PWARegistration() {
 /**
  * Hook: 供你的“安装按钮”组件使用
  */
+// 扩展 Navigator 类型以支持 iOS Safari 的 standalone 属性
+interface NavigatorStandalone extends Navigator {
+  standalone?: boolean;
+}
+
 export function usePWAInstall() {
   // 使用函数初始化以避免在 useEffect 中同步调用 setState
   const [isInstallable, setIsInstallable] = useState(() => !!deferredPrompt);
+
+  // 在初始化时检测 iOS，避免在 useEffect 中同步调用 setState
+  const [isIOS] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const ua = window.navigator.userAgent.toLowerCase();
+    return /iphone|ipad|ipod/.test(ua);
+  });
+
+  // 在初始化时检测 Standalone 模式
+  const [isStandalone] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return (
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as NavigatorStandalone).standalone === true
+    );
+  });
 
   useEffect(() => {
     const handleInstallable = () => setIsInstallable(true);
@@ -100,5 +121,5 @@ export function usePWAInstall() {
     }
   }, []);
 
-  return { isInstallable, install };
+  return { isInstallable, install, isIOS, isStandalone };
 }

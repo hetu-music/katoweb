@@ -3,6 +3,7 @@
 import React from "react";
 import { ArrowUp, Download, Share2 } from "lucide-react";
 import { usePWAInstall } from "@/components/pwa/PWARegistration";
+import IOSInstallPrompt from "@/components/pwa/IOSInstallPrompt";
 
 interface FloatingActionButtonsProps {
   showScrollTop: boolean;
@@ -17,53 +18,69 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
   onShare,
   className,
 }) => {
-  const { isInstallable, install } = usePWAInstall();
+  const { isInstallable, install, isIOS, isStandalone } = usePWAInstall();
+  const [showIOSPrompt, setShowIOSPrompt] = React.useState(false);
+
+  const showInstallButton = isInstallable || (isIOS && !isStandalone);
+
+  const handleInstallClick = () => {
+    if (isIOS) {
+      setShowIOSPrompt(true);
+    } else {
+      install();
+    }
+  };
 
   const buttonClass =
     "p-3 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 shadow-lg shadow-slate-200/50 dark:shadow-black/50 ring-1 ring-slate-900/5 dark:ring-white/10 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center";
 
   return (
-    <div
-      className={`fixed bottom-8 right-8 z-50 flex flex-col gap-4 ${className || ""}`}
-    >
-      {/* PWA 安装按钮 */}
-      {isInstallable && (
-        <button
-          onClick={install}
-          className={`${buttonClass} animate-in fade-in slide-in-from-bottom-4 duration-500`}
-          title="安装为PWA应用"
-          aria-label="安装为PWA应用"
-        >
-          <Download size={20} />
-        </button>
-      )}
+    <>
+      <IOSInstallPrompt
+        isOpen={showIOSPrompt}
+        onClose={() => setShowIOSPrompt(false)}
+      />
+      <div
+        className={`fixed bottom-8 right-8 z-50 flex flex-col gap-4 ${className || ""}`}
+      >
+        {/* PWA 安装按钮 */}
+        {showInstallButton && (
+          <button
+            onClick={handleInstallClick}
+            className={`${buttonClass} animate-in fade-in slide-in-from-bottom-4 duration-500`}
+            title="安装为PWA应用"
+            aria-label="安装为PWA应用"
+          >
+            <Download size={20} />
+          </button>
+        )}
 
-      {/* 分享按钮 */}
-      {onShare && (
-        <button
-          onClick={onShare}
-          className={`${buttonClass} animate-in fade-in slide-in-from-bottom-4 duration-500`}
-          title="分享"
-          aria-label="分享"
-        >
-          <Share2 size={20} />
-        </button>
-      )}
+        {/* 分享按钮 */}
+        {onShare && (
+          <button
+            onClick={onShare}
+            className={`${buttonClass} animate-in fade-in slide-in-from-bottom-4 duration-500`}
+            title="分享"
+            aria-label="分享"
+          >
+            <Share2 size={20} />
+          </button>
+        )}
 
-      {/* 返回顶部按钮 */}
-      <button
-        onClick={onScrollToTop}
-        className={`${buttonClass} ${
-          showScrollTop
+        {/* 返回顶部按钮 */}
+        <button
+          onClick={onScrollToTop}
+          className={`${buttonClass} ${showScrollTop
             ? "translate-y-0 opacity-100"
             : "translate-y-8 opacity-0 pointer-events-none"
-        }`}
-        title="返回顶部"
-        aria-label="返回顶部"
-      >
-        <ArrowUp size={20} />
-      </button>
-    </div>
+            }`}
+          title="返回顶部"
+          aria-label="返回顶部"
+        >
+          <ArrowUp size={20} />
+        </button>
+      </div>
+    </>
   );
 };
 
