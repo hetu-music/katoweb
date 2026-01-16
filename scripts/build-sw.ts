@@ -12,7 +12,6 @@ import * as path from "path";
 const rootDir = process.cwd();
 const publicDir = path.join(rootDir, "public");
 const nextDir = path.join(rootDir, ".next");
-const staticDir = path.join(nextDir, "static");
 
 async function buildServiceWorker(): Promise<void> {
     console.log("🔧 开始构建 Service Worker...");
@@ -25,7 +24,7 @@ async function buildServiceWorker(): Promise<void> {
     }
 
     try {
-        // 收集需要预缓存的文件
+        // 收集需要预缓存的文件（只预缓存 public 目录下的静态资源）
         const additionalManifestEntries: Array<{ url: string; revision: string }> =
             [];
 
@@ -47,22 +46,24 @@ async function buildServiceWorker(): Promise<void> {
 
         const swDest = path.join(publicDir, "sw.js");
 
-        // 确定 glob 目录
-        const globDirectory = fs.existsSync(staticDir) ? nextDir : publicDir;
-        const globPatterns = fs.existsSync(staticDir)
-            ? ["static/**/*.{js,css,woff,woff2}"]
-            : ["**/*.{ico,png,svg,woff,woff2}"];
-
+        // 只预缓存 public 目录下的资源，不预缓存 .next/static 目录
+        // Next.js 的静态资源通过运行时缓存策略处理更合适
         const { count, size, warnings } = await generateSW({
             swDest,
-            globDirectory,
-            globPatterns,
+            globDirectory: publicDir,
+            globPatterns: [
+                // 只预缓存 public 目录下的图标和字体
+                "icons/*.png",
+                "fonts/*.woff2",
+                "*.ico",
+            ],
             // 忽略某些文件
             globIgnores: [
                 "**/node_modules/**/*",
                 "**/*.map",
                 "**/sw.js",
                 "**/workbox-*.js",
+                "**/source.png", // 忽略源图片（太大）
             ],
             // 额外的预缓存条目
             additionalManifestEntries,
@@ -95,7 +96,7 @@ async function buildServiceWorker(): Promise<void> {
                         },
                     },
                 },
-                // Next.js 静态资源
+                // Next.js 静态资源（运行时缓存，不预缓存）
                 {
                     urlPattern: /\/_next\/static\/.*/i,
                     handler: "CacheFirst",
