@@ -73,6 +73,8 @@ export function PWARegistration() {
 export function usePWAInstall() {
   // 使用函数初始化以避免在 useEffect 中同步调用 setState
   const [isInstallable, setIsInstallable] = useState(() => !!deferredPrompt);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
     const handleInstallable = () => setIsInstallable(true);
@@ -80,6 +82,17 @@ export function usePWAInstall() {
 
     window.addEventListener("pwa-installable", handleInstallable);
     window.addEventListener("pwa-installed", handleInstalled);
+
+    // Check for iOS
+    const ua = window.navigator.userAgent.toLowerCase();
+    const ios = /iphone|ipad|ipod/.test(ua);
+    setIsIOS(ios);
+
+    // Check for Standalone mode
+    const isStandaloneMode =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as any).standalone === true;
+    setIsStandalone(isStandaloneMode);
 
     return () => {
       window.removeEventListener("pwa-installable", handleInstallable);
@@ -100,5 +113,5 @@ export function usePWAInstall() {
     }
   }, []);
 
-  return { isInstallable, install };
+  return { isInstallable, install, isIOS, isStandalone };
 }
