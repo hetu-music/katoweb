@@ -30,7 +30,6 @@ export function PWARegistration() {
           scope: "/",
           updateViaCache: "none", // 每次都检查 sw.js 是否有变化
         });
-        console.log("Service Worker registered silently.");
       } catch (error) {
         console.error("Service Worker registration failed:", error);
       }
@@ -51,7 +50,6 @@ export function PWARegistration() {
     const handleAppInstalled = () => {
       deferredPrompt = null;
       window.dispatchEvent(new Event("pwa-installed"));
-      console.log("App installed successfully");
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
@@ -70,10 +68,10 @@ export function PWARegistration() {
  * Hook: 供你的“安装按钮”组件使用
  */
 export function usePWAInstall() {
-  const [isInstallable, setIsInstallable] = useState(false);
+  // 使用函数初始化以避免在 useEffect 中同步调用 setState
+  const [isInstallable, setIsInstallable] = useState(() => !!deferredPrompt);
 
   useEffect(() => {
-    setIsInstallable(!!deferredPrompt);
 
     const handleInstallable = () => setIsInstallable(true);
     const handleInstalled = () => setIsInstallable(false);
