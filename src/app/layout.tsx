@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   Playfair_Display,
   Inter,
@@ -7,6 +7,7 @@ import {
 } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
+import { PWARegistration } from "@/components/pwa/PWARegistration";
 
 // 标题字体 - 衬线体
 const playfairDisplay = Playfair_Display({
@@ -43,9 +44,41 @@ const lxgwMono = localFont({
   preload: false,
 });
 
+// PWA Viewport 配置
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f5f5dc" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f0f0f" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: "cover",
+};
+
 export const metadata: Metadata = {
   title: "河图作品勘鉴",
   description: "河图音乐作品收录与筛选",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "河图勘鉴",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  icons: {
+    icon: [
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icons/icon-152x152.png", sizes: "152x152", type: "image/png" },
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+    ],
+  },
 };
 
 import { Providers } from "@/context/providers";
@@ -62,6 +95,7 @@ export default function RootLayout({
       className={`${playfairDisplay.variable} ${notoSerifSC.variable} ${inter.variable} ${notoSansSC.variable} ${lxgwMono.variable}`}
     >
       <body className="antialiased">
+        <PWARegistration />
         <Providers>
           <div className="relative z-10 min-h-screen">{children}</div>
         </Providers>

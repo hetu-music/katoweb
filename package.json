@@ -4,7 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && pnpm build:sw",
+    "build:next": "next build",
+    "build:sw": "npx tsx scripts/build-sw.ts",
+    "build:icons": "npx tsx scripts/generate-icons.ts",
+    "build:pwa": "pnpm build:icons && pnpm build:next && pnpm build:sw",
     "start": "next start",
     "lint": "eslint .",
     "format": "prettier --write src/**/*.{js,ts,jsx,tsx,json,css,scss}",
@@ -34,12 +38,16 @@
     "@types/node": "^25.0.3",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@types/sharp": "^0.32.0",
     "eslint": "^9.39.2",
     "eslint-config-next": "16.1.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react-hooks": "^7.0.1",
     "prettier": "^3.7.4",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4.1.18",
-    "typescript": "^5.9.3"
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "workbox-build": "^7.4.0"
   }
 }
