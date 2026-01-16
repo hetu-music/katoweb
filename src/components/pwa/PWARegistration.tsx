@@ -37,9 +37,6 @@ export function PWARegistration(): null {
                     updateViaCache: "none",
                 });
 
-                // eslint-disable-next-line no-console
-                console.log("✅ Service Worker 注册成功:", registration.scope);
-
                 // 检查更新
                 registration.addEventListener("updatefound", () => {
                     const newWorker = registration.installing;
@@ -49,7 +46,7 @@ export function PWARegistration(): null {
                                 newWorker.state === "installed" &&
                                 navigator.serviceWorker.controller
                             ) {
-                                // 自动更新：可以选择提示用户或自动刷新
+                                // 自动更新：提示用户刷新
                                 if (
                                     window.confirm(
                                         "检测到新版本，是否刷新页面以更新？\nA new version is available. Refresh to update?"
@@ -70,8 +67,8 @@ export function PWARegistration(): null {
                     },
                     60 * 60 * 1000
                 );
-            } catch (error) {
-                console.warn("❌ Service Worker 注册失败:", error);
+            } catch {
+                // Service Worker 注册失败，静默处理
             }
         };
 
@@ -89,13 +86,9 @@ export function PWARegistration(): null {
             e.preventDefault();
             // 保存事件以便稍后使用
             deferredPrompt = e as BeforeInstallPromptEvent;
-            // eslint-disable-next-line no-console
-            console.log("📱 PWA 可安装，可调用 promptPWAInstall() 触发安装提示");
         };
 
         const handleAppInstalled = (): void => {
-            // eslint-disable-next-line no-console
-            console.log("✅ PWA 已安装");
             deferredPrompt = null;
         };
 
@@ -145,8 +138,6 @@ export function PWARegistration(): null {
  */
 export async function promptPWAInstall(): Promise<boolean> {
     if (!deferredPrompt) {
-        // eslint-disable-next-line no-console
-        console.log("⚠️ PWA 安装提示不可用");
         return false;
     }
 
@@ -155,15 +146,12 @@ export async function promptPWAInstall(): Promise<boolean> {
         await deferredPrompt.prompt();
         // 等待用户响应
         const { outcome } = await deferredPrompt.userChoice;
-        // eslint-disable-next-line no-console
-        console.log(`用户选择: ${outcome}`);
 
         // 清除保存的事件
         deferredPrompt = null;
 
         return outcome === "accepted";
-    } catch (error) {
-        console.error("PWA 安装失败:", error);
+    } catch {
         return false;
     }
 }
