@@ -31,8 +31,8 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
         <button
           onClick={install}
           className={`${buttonClass} animate-in fade-in slide-in-from-bottom-4 duration-500`}
-          title="安装应用"
-          aria-label="安装应用"
+          title="安装为PWA应用"
+          aria-label="安装为PWA应用"
         >
           <Download size={20} />
         </button>
@@ -54,8 +54,8 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
       <button
         onClick={onScrollToTop}
         className={`${buttonClass} ${showScrollTop
-            ? "translate-y-0 opacity-100"
-            : "translate-y-8 opacity-0 pointer-events-none"
+          ? "translate-y-0 opacity-100"
+          : "translate-y-8 opacity-0 pointer-events-none"
           }`}
         title="返回顶部"
         aria-label="返回顶部"
