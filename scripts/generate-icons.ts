@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * PWA 图标生成脚本
  * 使用 sharp 从源图片生成各尺寸 PWA 图标

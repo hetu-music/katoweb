@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Workbox Service Worker 构建脚本
  * 使用 workbox-build 的 generateSW 模式生成 Service Worker
@@ -152,8 +153,7 @@ async function buildServiceWorker(): Promise<void> {
                 // 页面导航
                 {
                     urlPattern: ({ request }) =>
-                        request.mode === "navigate" ||
-                        request.destination === "document",
+                        request.mode === "navigate" || request.destination === "document",
                     handler: "NetworkFirst",
                     options: {
                         cacheName: "pages-cache",

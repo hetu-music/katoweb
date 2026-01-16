@@ -1,13 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-
-interface ServiceWorkerRegistrationInfo {
-    isSupported: boolean;
-    isRegistered: boolean;
-    isUpdateAvailable: boolean;
-    registration: ServiceWorkerRegistration | null;
-}
+import { useEffect, useRef } from "react";
 
 // 存储 beforeinstallprompt 事件
 let deferredPrompt: BeforeInstallPromptEvent | null = null;
@@ -22,79 +15,68 @@ interface BeforeInstallPromptEvent extends Event {
  * 在客户端自动注册和更新 Service Worker
  */
 export function PWARegistration(): null {
-    const [, setSwInfo] = useState<ServiceWorkerRegistrationInfo>({
-        isSupported: false,
-        isRegistered: false,
-        isUpdateAvailable: false,
-        registration: null,
-    });
+    const hasRegistered = useRef(false);
 
-    const registerServiceWorker = useCallback(async (): Promise<void> => {
+    useEffect(() => {
+        // 防止重复注册
+        if (hasRegistered.current) {
+            return;
+        }
+
         if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
             return;
         }
 
-        try {
-            const registration = await navigator.serviceWorker.register("/sw.js", {
-                scope: "/",
-                updateViaCache: "none",
-            });
+        hasRegistered.current = true;
 
-            setSwInfo((prev) => ({
-                ...prev,
-                isSupported: true,
-                isRegistered: true,
-                registration,
-            }));
+        // 注册 Service Worker
+        const registerSW = async (): Promise<void> => {
+            try {
+                const registration = await navigator.serviceWorker.register("/sw.js", {
+                    scope: "/",
+                    updateViaCache: "none",
+                });
 
-            // eslint-disable-next-line no-console
-            console.log("✅ Service Worker 注册成功:", registration.scope);
+                // eslint-disable-next-line no-console
+                console.log("✅ Service Worker 注册成功:", registration.scope);
 
-            // 检查更新
-            registration.addEventListener("updatefound", () => {
-                const newWorker = registration.installing;
-                if (newWorker) {
-                    newWorker.addEventListener("statechange", () => {
-                        if (
-                            newWorker.state === "installed" &&
-                            navigator.serviceWorker.controller
-                        ) {
-                            setSwInfo((prev) => ({
-                                ...prev,
-                                isUpdateAvailable: true,
-                            }));
-
-                            // 自动更新：可以选择提示用户或自动刷新
+                // 检查更新
+                registration.addEventListener("updatefound", () => {
+                    const newWorker = registration.installing;
+                    if (newWorker) {
+                        newWorker.addEventListener("statechange", () => {
                             if (
-                                window.confirm(
-                                    "检测到新版本，是否刷新页面以更新？\nA new version is available. Refresh to update?"
-                                )
+                                newWorker.state === "installed" &&
+                                navigator.serviceWorker.controller
                             ) {
-                                newWorker.postMessage({ type: "SKIP_WAITING" });
-                                window.location.reload();
+                                // 自动更新：可以选择提示用户或自动刷新
+                                if (
+                                    window.confirm(
+                                        "检测到新版本，是否刷新页面以更新？\nA new version is available. Refresh to update?"
+                                    )
+                                ) {
+                                    newWorker.postMessage({ type: "SKIP_WAITING" });
+                                    window.location.reload();
+                                }
                             }
-                        }
-                    });
-                }
-            });
+                        });
+                    }
+                });
 
-            // 定期检查更新（每小时）
-            setInterval(
-                () => {
-                    registration.update();
-                },
-                60 * 60 * 1000
-            );
-        } catch (error) {
-            // eslint-disable-next-line no-console
-            console.warn("❌ Service Worker 注册失败:", error);
-        }
+                // 定期检查更新（每小时）
+                setInterval(
+                    () => {
+                        registration.update();
+                    },
+                    60 * 60 * 1000
+                );
+            } catch (error) {
+                console.warn("❌ Service Worker 注册失败:", error);
+            }
+        };
+
+        registerSW();
     }, []);
-
-    useEffect(() => {
-        // 注册 Service Worker（开发和生产环境都注册）
-        registerServiceWorker();
-    }, [registerServiceWorker]);
 
     // 监听 beforeinstallprompt 事件
     useEffect(() => {
@@ -181,7 +163,6 @@ export async function promptPWAInstall(): Promise<boolean> {
 
         return outcome === "accepted";
     } catch (error) {
-        // eslint-disable-next-line no-console
         console.error("PWA 安装失败:", error);
         return false;
     }
