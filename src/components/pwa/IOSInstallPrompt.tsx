@@ -23,7 +23,7 @@ const IOSInstallPrompt: React.FC<IOSInstallPromptProps> = ({ isOpen, onClose }) 
                 {/* Header */}
                 <div className="flex justify-between items-start">
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                        安装到主屏幕
+                        如何安装 PWA 应用
                     </h3>
                     <button
                         onClick={onClose}
@@ -34,32 +34,24 @@ const IOSInstallPrompt: React.FC<IOSInstallPromptProps> = ({ isOpen, onClose }) 
                 </div>
 
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                    在 iOS 上安装应用以获得更好的体验：
+                    由于 iOS 系统的限制，需要您手动安装：
                 </p>
 
                 {/* Steps */}
                 <div className="flex flex-col gap-4 mt-2">
                     {/* Step 1 */}
-                    <div className="flex items-center gap-4 text-slate-700 dark:text-slate-300">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-blue-500 shrink-0">
-                            <Share size={20} />
-                        </div>
-                        <div className="flex-1">
-                            <span className="text-sm font-medium">1. 点击底部的能够找到的</span>
-                            <span className="font-bold mx-1">分享</span>
-                            <span className="text-sm font-medium">按钮</span>
-                        </div>
+                    <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                        <span className="text-sm font-medium">1. 点击浏览器底部的</span>
+                        <Share size={18} className="text-blue-500" />
+                        <span className="text-sm font-bold">分享</span>
+                        <span className="text-sm font-medium">按钮</span>
                     </div>
 
                     {/* Step 2 */}
-                    <div className="flex items-center gap-4 text-slate-700 dark:text-slate-300">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-blue-500 shrink-0">
-                            <PlusSquare size={20} />
-                        </div>
-                        <div className="flex-1">
-                            <span className="text-sm font-medium">2. 向下滚动并选择</span>
-                            <span className="font-bold mx-1">添加到主屏幕</span>
-                        </div>
+                    <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                        <span className="text-sm font-medium">2. 向下滚动并选择</span>
+                        <PlusSquare size={18} className="text-slate-500 dark:text-slate-400" />
+                        <span className="text-sm font-bold">添加到主屏幕</span>
                     </div>
                 </div>
 
