@@ -1,6 +1,6 @@
 {
   "name": "katoweb",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -11,8 +11,8 @@
     "build:pwa": "pnpm build:icons && pnpm build:next && pnpm build:sw",
     "start": "next start",
     "lint": "eslint .",
-    "format": "prettier --write src/**/*.{js,ts,jsx,tsx,json,css,scss}",
-    "format:check": "prettier --check src/**/*.{js,ts,jsx,tsx,json,css,scss}"
+    "format": "prettier --write \"src/**/*.{js,ts,jsx,tsx,json,css,scss}\" \"scripts/**/*.{js,ts}\"",
+    "format:check": "prettier --check \"src/**/*.{js,ts,jsx,tsx,json,css,scss}\" \"scripts/**/*.{js,ts}\""
   },
   "dependencies": {
     "@eslint/js": "^9.39.2",
