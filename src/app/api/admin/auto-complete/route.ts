@@ -11,7 +11,7 @@ import type {
 // 常量定义
 // ============================================
 
-const HETU_API_BASE = "123";
+const HETU_API_BASE = "http://hetu-api:3000";
 
 // ============================================
 // 工具函数
@@ -113,7 +113,6 @@ function parseLyricMetadata(rawLyric: string) {
     let lyricist: string[] | null = null;
     let composer: string[] | null = null;
     let arranger: string[] | null = null;
-    const contentLines: string[] = [];
 
     for (const line of lines) {
         // 简单正则匹配 [时间] 标签 : 内容
@@ -129,8 +128,6 @@ function parseLyricMetadata(rawLyric: string) {
             composer = splitNames(composerMatch[1]);
         } else if (arrangerMatch) {
             arranger = splitNames(arrangerMatch[1]);
-        } else {
-            contentLines.push(line);
         }
     }
 
@@ -138,9 +135,7 @@ function parseLyricMetadata(rawLyric: string) {
         lyricist: lyricist?.length ? lyricist : null,
         composer: composer?.length ? composer : null,
         arranger: arranger?.length ? arranger : null,
-        lyric: contentLines.join("\n"),
-        // 兼容旧返回值名称
-        cleanedLyric: contentLines.join("\n"),
+        lyric: rawLyric,
     };
 }
 
