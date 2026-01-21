@@ -60,17 +60,20 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
 
         // 滚动停止后，延迟更新显示的 activeId
         activeDebounceRef.current = setTimeout(() => {
-            setDisplayedActiveId(activeId);
+            // 只有当 activeId 变化时才显示标签
+            if (activeId !== displayedActiveId) {
+                setDisplayedActiveId(activeId);
 
-            // 显示标签
-            if (hideTimerRef.current) {
-                clearTimeout(hideTimerRef.current);
+                // 显示标签
+                if (hideTimerRef.current) {
+                    clearTimeout(hideTimerRef.current);
+                }
+                setShowActiveLabel(true);
+                hideTimerRef.current = setTimeout(() => {
+                    setShowActiveLabel(false);
+                    setHoveredId(null);
+                }, 750);
             }
-            setShowActiveLabel(true);
-            hideTimerRef.current = setTimeout(() => {
-                setShowActiveLabel(false);
-                setHoveredId(null);
-            }, 750);
         }, 100);
 
         return () => {
