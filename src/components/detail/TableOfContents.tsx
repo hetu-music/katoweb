@@ -1,114 +1,167 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { SongDetail } from "@/lib/types";
-
-// 简易 classNames 工具
-function cn(...classes: (string | undefined | null | false)[]) {
-    return classes.filter(Boolean).join(" ");
-}
 
 interface TableOfContentsProps {
     song: SongDetail;
 }
 
+interface NavItem {
+    id: string;
+    label: string;
+}
+
 const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
-    const [activeSection, setActiveSection] = useState<string>("info");
+    const [activeId, setActiveId] = useState<string>("info");
+    const [hoveredId, setHoveredId] = useState<string | null>(null);
     const [showActiveLabel, setShowActiveLabel] = useState(false);
-    const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const observerRef = useRef<IntersectionObserver | null>(null);
+    const hideTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-    const navItems = [
-        { id: "info", label: "Basic Info" },
-        ...(song.comment ? [{ id: "remarks", label: "Remarks" }] : []),
-        { id: "lyrics", label: "Lyrics" },
-        ...(song.nmn_status ? [{ id: "score", label: "Score" }] : []),
-    ];
+    // 构建导航项
+    const getNavItems = useCallback((): NavItem[] => {
+        const items: NavItem[] = [{ id: "info", label: "基本信息" }];
+        if (song.comment) items.push({ id: "remarks", label: "备注" });
+        items.push({ id: "lyrics", label: "歌词" });
+        if (song.nmn_status) items.push({ id: "score", label: "乐谱" });
+        return items;
+    }, [song.comment, song.nmn_status]);
 
+    const navItems = getNavItems();
+
+    // 当 activeId 变化时，短暂显示标签
     useEffect(() => {
-        const handleScroll = () => {
-            // Show label on scroll
-            setShowActiveLabel(true);
-            if (scrollTimeoutRef.current) {
-                clearTimeout(scrollTimeoutRef.current);
-            }
-            scrollTimeoutRef.current = setTimeout(() => {
-                setShowActiveLabel(false);
-            }, 1000); // 1s timeout to hide label
+        // 清除之前的定时器
+        if (hideTimerRef.current) {
+            clearTimeout(hideTimerRef.current);
+        }
 
-            const scrollPosition = window.scrollY + 200; // Offset for better triggering
+        // 显示标签
+        setShowActiveLabel(true);
 
-            for (const item of navItems) {
-                const element = document.getElementById(item.id);
-                if (element) {
-                    const { offsetTop, offsetHeight } = element;
-                    if (
-                        scrollPosition >= offsetTop &&
-                        scrollPosition < offsetTop + offsetHeight
-                    ) {
-                        setActiveSection(item.id);
-                    }
-                }
+        // 1.5秒后隐藏
+        hideTimerRef.current = setTimeout(() => {
+            setShowActiveLabel(false);
+        }, 1500);
+
+        return () => {
+            if (hideTimerRef.current) {
+                clearTimeout(hideTimerRef.current);
             }
         };
+    }, [activeId]);
 
-        window.addEventListener("scroll", handleScroll);
-        handleScroll(); // Initial check
+    // 使用 IntersectionObserver 监听当前可见的 section
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const options = {
+            root: null,
+            rootMargin: "-20% 0px -60% 0px",
+            threshold: 0,
+        };
+
+        observerRef.current = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    setActiveId(entry.target.id);
+                }
+            });
+        }, options);
+
+        const timer = setTimeout(() => {
+            navItems.forEach((item) => {
+                const element = document.getElementById(item.id);
+                if (element && observerRef.current) {
+                    observerRef.current.observe(element);
+                }
+            });
+        }, 100);
+
         return () => {
-            window.removeEventListener("scroll", handleScroll);
-            if (scrollTimeoutRef.current) {
-                clearTimeout(scrollTimeoutRef.current);
+            clearTimeout(timer);
+            if (observerRef.current) {
+                observerRef.current.disconnect();
             }
         };
     }, [navItems]);
 
-    const handleScrollTo = (id: string) => {
+    const handleClick = (id: string) => {
         const element = document.getElementById(id);
         if (element) {
-            const offset = 100; // Header height + padding
-            const elementPosition =
-                element.getBoundingClientRect().top + window.scrollY;
-            window.scrollTo({
-                top: elementPosition - offset,
-                behavior: "smooth",
-            });
+            const offset = 120;
+            const top = element.getBoundingClientRect().top + window.scrollY - offset;
+            window.scrollTo({ top, behavior: "smooth" });
         }
     };
 
     return (
-        <div className="fixed right-4 lg:right-8 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-4">
-            {navItems.map((item) => (
-                <button
-                    key={item.id}
-                    onClick={() => handleScrollTo(item.id)}
-                    className="group relative flex items-center justify-end"
-                    aria-label={`Scroll to ${item.label}`}
-                >
-                    {/* Label (Tooltip) */}
-                    <span
-                        className={cn(
-                            "absolute right-8 px-3 py-1.5 rounded-md bg-slate-900/80 dark:bg-white/90 text-white dark:text-slate-900 text-xs font-medium whitespace-nowrap opacity-0 transform translate-x-2 transition-all duration-100 pointer-events-none",
-                            activeSection === item.id && showActiveLabel
-                                ? "opacity-100 translate-x-0 duration-300"
-                                : "group-hover:opacity-100 group-hover:translate-x-0 group-hover:duration-300"
-                        )}
-                    >
-                        {item.label}
-                        {/* Arrow */}
-                        <span className="absolute top-1/2 -right-1 -translate-y-1/2 border-4 border-transparent border-l-slate-900/80 dark:border-l-white/90"></span>
-                    </span>
+        <nav
+            className="fixed right-6 top-1/2 -translate-y-1/2 z-40 hidden lg:flex flex-col items-end gap-3"
+            aria-label="目录导航"
+        >
+            {navItems.map((item) => {
+                const isActive = activeId === item.id;
+                const isHovered = hoveredId === item.id;
+                // 只在悬停时或（激活且 showActiveLabel 为 true）时显示标签
+                const showLabel = isHovered || (isActive && showActiveLabel);
 
-                    {/* Dot */}
-                    <div
-                        className={cn(
-                            "w-3 h-3 rounded-full border-2 transition-all duration-300",
-                            activeSection === item.id
-                                ? "bg-slate-900 dark:bg-white border-slate-900 dark:border-white scale-125"
-                                : "bg-transparent border-slate-400 dark:border-slate-600 group-hover:border-slate-600 dark:group-hover:border-slate-400"
-                        )}
-                    />
-                </button>
-            ))}
-        </div>
+                return (
+                    <button
+                        key={item.id}
+                        onClick={() => handleClick(item.id)}
+                        onMouseEnter={() => setHoveredId(item.id)}
+                        onMouseLeave={() => setHoveredId(null)}
+                        className="group flex items-center gap-3 outline-none"
+                        aria-label={`跳转到${item.label}`}
+                        aria-current={isActive ? "location" : undefined}
+                    >
+                        {/* 标签 */}
+                        <span
+                            className={`
+                                px-3 py-1.5 rounded-full text-xs font-medium
+                                backdrop-blur-md border
+                                transition-all duration-300 ease-out
+                                ${showLabel
+                                    ? "opacity-100 translate-x-0"
+                                    : "opacity-0 translate-x-4 pointer-events-none"
+                                }
+                                ${isActive
+                                    ? "bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 border-transparent shadow-lg"
+                                    : "bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50"
+                                }
+                            `}
+                        >
+                            {item.label}
+                        </span>
+
+                        {/* 指示点 */}
+                        <span
+                            className={`
+                                relative flex items-center justify-center
+                                w-3 h-3 rounded-full
+                                transition-all duration-300 ease-out
+                                ${isActive
+                                    ? "bg-slate-900 dark:bg-white scale-100"
+                                    : "bg-slate-300 dark:bg-slate-600 scale-75 group-hover:scale-100 group-hover:bg-slate-400 dark:group-hover:bg-slate-500"
+                                }
+                            `}
+                        >
+                            {isActive && (
+                                <span className="absolute inset-0 rounded-full bg-slate-900/30 dark:bg-white/30 animate-ping" />
+                            )}
+                        </span>
+                    </button>
+                );
+            })}
+
+            {/* 连接线 */}
+            <div
+                className="absolute right-[5px] top-0 bottom-0 w-[2px] bg-gradient-to-b from-transparent via-slate-200 dark:via-slate-700 to-transparent -z-10"
+                aria-hidden="true"
+            />
+        </nav>
     );
 };
 
