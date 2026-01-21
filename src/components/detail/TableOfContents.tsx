@@ -112,7 +112,8 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
 
         const options = {
             root: null,
-            rootMargin: "-20% 0px -60% 0px",
+            // 检测区域：顶部 15% 到 30%，让区域占据约 65% 屏幕时才触发切换
+            rootMargin: "-15% 0px -70% 0px",
             threshold: 0,
         };
 
