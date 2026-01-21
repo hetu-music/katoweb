@@ -607,16 +607,16 @@ export default function AdminClientComponent({
 
       // 构建搜索关键词：标题 + 艺术家（如果有）
       const keywordsParts = [editForm.title as string];
-      if (editForm.artist && Array.isArray(editForm.artist) && editForm.artist.length > 0) {
+      if (
+        editForm.artist &&
+        Array.isArray(editForm.artist) &&
+        editForm.artist.length > 0
+      ) {
         keywordsParts.push(...editForm.artist);
       }
       const keywords = keywordsParts.join(" ");
 
-      const response = await apiSearchSongs(
-        keywords,
-        csrfToken,
-        10,
-      );
+      const response = await apiSearchSongs(keywords, csrfToken, 10);
 
       if (response.results.length === 0) {
         setOperationMsg({ type: "error", text: "未找到匹配的歌曲" });

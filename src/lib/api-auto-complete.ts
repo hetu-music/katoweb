@@ -1,4 +1,3 @@
-
 // ============================================
 // 自动补全相关类型和函数
 // ============================================
@@ -7,23 +6,23 @@
  * 搜索结果项 - 供用户选择
  */
 export type SearchResultItem = {
-    id: number;
-    name: string;
-    album: string | null;
-    albumartist: string | null; // album.artist.name，用于 albumartist 字段
-    artists: string[];
-    duration: number | null; // 毫秒
-    publishTime: number | null; // 时间戳
+  id: number;
+  name: string;
+  album: string | null;
+  albumartist: string | null; // album.artist.name，用于 albumartist 字段
+  artists: string[];
+  duration: number | null; // 毫秒
+  publishTime: number | null; // 时间戳
 };
 
 /**
  * 搜索响应
  */
 export type SearchResponse = {
-    type: "search";
-    results: SearchResultItem[];
-    hasMore: boolean;
-    total: number;
+  type: "search";
+  results: SearchResultItem[];
+  hasMore: boolean;
+  total: number;
 };
 
 /**
@@ -32,25 +31,25 @@ export type SearchResponse = {
  * 排除：title, hascover, discnumber, disctotal, tracktotal, track, kugolink, qmlink, nelink, nmn_status, artist
  */
 export type AutoCompleteResponse = {
-    album?: string | null;
-    genre?: string[] | null;
-    lyricist?: string[] | null;
-    composer?: string[] | null;
-    length?: number | null;
-    date?: string | null;
-    type?: string[] | null;
-    albumartist?: string[] | null;
-    arranger?: string[] | null;
-    comment?: string | null;
-    lyrics?: string | null;
+  album?: string | null;
+  genre?: string[] | null;
+  lyricist?: string[] | null;
+  composer?: string[] | null;
+  length?: number | null;
+  date?: string | null;
+  type?: string[] | null;
+  albumartist?: string[] | null;
+  arranger?: string[] | null;
+  comment?: string | null;
+  lyrics?: string | null;
 };
 
 /**
  * 详情响应
  */
 export type DetailResponse = {
-    type: "detail";
-    data: AutoCompleteResponse;
+  type: "detail";
+  data: AutoCompleteResponse;
 };
 
 /**
@@ -62,29 +61,29 @@ export type DetailResponse = {
  * @returns 搜索结果列表
  */
 export async function apiSearchSongs(
-    keywords: string,
-    csrfToken: string,
-    limit: number = 10,
+  keywords: string,
+  csrfToken: string,
+  limit: number = 10,
 ): Promise<SearchResponse> {
-    const params = new URLSearchParams({
-        action: "search",
-        keywords,
-        limit: limit.toString(),
-    });
+  const params = new URLSearchParams({
+    action: "search",
+    keywords,
+    limit: limit.toString(),
+  });
 
-    const res = await fetch(`/api/admin/auto-complete?${params}`, {
-        method: "GET",
-        headers: {
-            "x-csrf-token": csrfToken,
-        },
-    });
+  const res = await fetch(`/api/admin/auto-complete?${params}`, {
+    method: "GET",
+    headers: {
+      "x-csrf-token": csrfToken,
+    },
+  });
 
-    if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || `搜索失败: ${res.status}`);
-    }
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || `搜索失败: ${res.status}`);
+  }
 
-    return res.json();
+  return res.json();
 }
 
 /**
@@ -95,40 +94,40 @@ export async function apiSearchSongs(
  * @returns 歌曲详情
  */
 export async function apiGetSongDetail(
-    song: SearchResultItem,
-    csrfToken: string,
+  song: SearchResultItem,
+  csrfToken: string,
 ): Promise<AutoCompleteResponse> {
-    const params = new URLSearchParams({
-        action: "detail",
-        id: song.id.toString(),
-    });
+  const params = new URLSearchParams({
+    action: "detail",
+    id: song.id.toString(),
+  });
 
-    // 传递搜索结果中已有的信息
-    if (song.duration !== null) {
-        params.append("duration", song.duration.toString());
-    }
-    if (song.publishTime !== null) {
-        params.append("publishTime", song.publishTime.toString());
-    }
-    if (song.album) {
-        params.append("album", song.album);
-    }
-    if (song.albumartist) {
-        params.append("albumartist", song.albumartist);
-    }
+  // 传递搜索结果中已有的信息
+  if (song.duration !== null) {
+    params.append("duration", song.duration.toString());
+  }
+  if (song.publishTime !== null) {
+    params.append("publishTime", song.publishTime.toString());
+  }
+  if (song.album) {
+    params.append("album", song.album);
+  }
+  if (song.albumartist) {
+    params.append("albumartist", song.albumartist);
+  }
 
-    const res = await fetch(`/api/admin/auto-complete?${params}`, {
-        method: "GET",
-        headers: {
-            "x-csrf-token": csrfToken,
-        },
-    });
+  const res = await fetch(`/api/admin/auto-complete?${params}`, {
+    method: "GET",
+    headers: {
+      "x-csrf-token": csrfToken,
+    },
+  });
 
-    if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || `获取详情失败: ${res.status}`);
-    }
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || `获取详情失败: ${res.status}`);
+  }
 
-    const response: DetailResponse = await res.json();
-    return response.data;
+  const response: DetailResponse = await res.json();
+  return response.data;
 }

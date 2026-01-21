@@ -428,7 +428,10 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
               {/* 备注 */}
               {song.comment && (
-                <div id="remarks" className="p-6 rounded-2xl bg-slate-100/70 dark:bg-slate-800/30 border border-slate-200/60 dark:border-slate-800">
+                <div
+                  id="remarks"
+                  className="p-6 rounded-2xl bg-slate-100/70 dark:bg-slate-800/30 border border-slate-200/60 dark:border-slate-800"
+                >
                   <div className="flex items-center gap-2 mb-3 text-slate-400">
                     <PenTool size={16} />
                     <h2 className="text-xs font-bold uppercase tracking-wider">
@@ -443,7 +446,10 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
             </section>
 
             {/* 歌词部分 */}
-            <section id="lyrics" className="border-t border-slate-200 dark:border-slate-800 pt-10">
+            <section
+              id="lyrics"
+              className="border-t border-slate-200 dark:border-slate-800 pt-10"
+            >
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-2 text-slate-900 dark:text-white">
                   <Mic2 size={24} />
@@ -517,7 +523,10 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
             {/* 乐谱部分 */}
             {song.nmn_status && (
-              <section id="score" className="border-t border-slate-200 dark:border-slate-800 pt-10 pb-10">
+              <section
+                id="score"
+                className="border-t border-slate-200 dark:border-slate-800 pt-10 pb-10"
+              >
                 <div className="flex items-center gap-2 mb-8 text-slate-900 dark:text-white">
                   <LayoutTemplate size={24} />
                   <h2 className="text-2xl font-bold">Score</h2>
