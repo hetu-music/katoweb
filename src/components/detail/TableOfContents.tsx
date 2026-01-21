@@ -16,8 +16,21 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
     const [activeId, setActiveId] = useState<string>("info");
     const [hoveredId, setHoveredId] = useState<string | null>(null);
     const [showActiveLabel, setShowActiveLabel] = useState(false);
+    const [isTouch, setIsTouch] = useState(false);
     const observerRef = useRef<IntersectionObserver | null>(null);
     const hideTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+    // 检测触摸设备
+    useEffect(() => {
+        const checkTouch = () => {
+            setIsTouch(window.matchMedia("(pointer: coarse)").matches);
+        };
+        checkTouch();
+
+        const mediaQuery = window.matchMedia("(pointer: coarse)");
+        mediaQuery.addEventListener("change", checkTouch);
+        return () => mediaQuery.removeEventListener("change", checkTouch);
+    }, []);
 
     // 构建导航项
     const getNavItems = useCallback((): NavItem[] => {
@@ -38,6 +51,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
         setShowActiveLabel(true);
         hideTimerRef.current = setTimeout(() => {
             setShowActiveLabel(false);
+            setHoveredId(null); // 同时清除 hover 状态
         }, 750);
 
         return () => {
@@ -88,6 +102,25 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
             const offset = 120;
             const top = element.getBoundingClientRect().top + window.scrollY - offset;
             window.scrollTo({ top, behavior: "smooth" });
+
+            // 触摸设备上点击后短暂显示标签
+            if (isTouch) {
+                setHoveredId(id);
+                setTimeout(() => setHoveredId(null), 750);
+            }
+        }
+    };
+
+    // 只在非触摸设备上启用 hover
+    const handleMouseEnter = (id: string) => {
+        if (!isTouch) {
+            setHoveredId(id);
+        }
+    };
+
+    const handleMouseLeave = () => {
+        if (!isTouch) {
+            setHoveredId(null);
         }
     };
 
@@ -107,9 +140,9 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                         <button
                             key={item.id}
                             onClick={() => handleClick(item.id)}
-                            onMouseEnter={() => setHoveredId(item.id)}
-                            onMouseLeave={() => setHoveredId(null)}
-                            className="group flex items-center gap-3 outline-none"
+                            onMouseEnter={() => handleMouseEnter(item.id)}
+                            onMouseLeave={handleMouseLeave}
+                            className="group flex items-center gap-3 outline-none touch-manipulation"
                             aria-label={`跳转到${item.label}`}
                             aria-current={isActive ? "location" : undefined}
                         >
@@ -180,9 +213,9 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                             <button
                                 key={item.id}
                                 onClick={() => handleClick(item.id)}
-                                onMouseEnter={() => setHoveredId(item.id)}
-                                onMouseLeave={() => setHoveredId(null)}
-                                className="group relative flex flex-col items-center outline-none"
+                                onMouseEnter={() => handleMouseEnter(item.id)}
+                                onMouseLeave={handleMouseLeave}
+                                className="group relative flex flex-col items-center outline-none touch-manipulation"
                                 aria-label={`跳转到${item.label}`}
                                 aria-current={isActive ? "location" : undefined}
                             >
