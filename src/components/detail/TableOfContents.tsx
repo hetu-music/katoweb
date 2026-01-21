@@ -81,6 +81,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                 clearTimeout(activeDebounceRef.current);
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeId, isScrolling]);
 
     // 监听滚动状态
