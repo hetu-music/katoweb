@@ -13,6 +13,7 @@ import {
   XCircle,
   CheckCircle2,
   AlertCircle,
+  Wand2,
 } from "lucide-react";
 import Image from "next/image";
 import type { Song, SongDetail, SongFieldConfig } from "@/lib/types";
@@ -23,7 +24,11 @@ import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import Pagination from "@/components/shared/Pagination";
 import { usePagination } from "@/hooks/usePagination";
-import { apiCreateSong, apiUpdateSong } from "@/lib/client-api";
+import {
+  apiCreateSong,
+  apiUpdateSong,
+  apiFetchSongAutoComplete,
+} from "@/lib/client-api";
 import { useSongs } from "@/hooks/useSongs";
 import { useAuth } from "@/hooks/useAuth";
 import Account from "./Account";
@@ -473,6 +478,7 @@ export default function AdminClientComponent({
   } | null>(null);
   const [showNotification, setShowNotification] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAutoCompleting, setIsAutoCompleting] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   // Scroll listener
@@ -583,6 +589,59 @@ export default function AdminClientComponent({
   const startEdit = (song: SongDetail) => {
     setEditSong(song);
     setEditForm({ ...song });
+  };
+
+  // 自动补全歌曲信息
+  const handleAutoComplete = async () => {
+    if (!editForm.title) {
+      setOperationMsg({ type: "error", text: "请先输入歌曲标题" });
+      setTimeout(() => setOperationMsg(null), 3000);
+      return;
+    }
+
+    try {
+      setIsAutoCompleting(true);
+      const data = await apiFetchSongAutoComplete(
+        editForm.title as string,
+        editForm.album as string | null,
+        csrfToken,
+      );
+
+      if (!data) {
+        setOperationMsg({ type: "error", text: "未找到匹配的歌曲信息" });
+        setTimeout(() => setOperationMsg(null), 3000);
+        return;
+      }
+
+      // 合并获取到的数据到表单（只填充当前为空的字段）
+      setEditForm((prev) => {
+        const merged = { ...prev };
+        for (const [key, value] of Object.entries(data)) {
+          const currentValue = prev[key as keyof typeof prev];
+          // 只填充空字段
+          const isEmpty =
+            currentValue === null ||
+            currentValue === undefined ||
+            (Array.isArray(currentValue) && currentValue.length === 0) ||
+            (typeof currentValue === "string" && currentValue.trim() === "");
+          if (isEmpty && value !== null && value !== undefined) {
+            (merged as Record<string, unknown>)[key] = value;
+          }
+        }
+        return merged;
+      });
+
+      setOperationMsg({ type: "success", text: "自动补全成功" });
+      setTimeout(() => setOperationMsg(null), 3000);
+    } catch (err) {
+      setOperationMsg({
+        type: "error",
+        text: err instanceof Error ? err.message : "自动补全失败",
+      });
+      setTimeout(() => setOperationMsg(null), 3000);
+    } finally {
+      setIsAutoCompleting(false);
+    }
   };
 
   return (
@@ -790,9 +849,33 @@ export default function AdminClientComponent({
           <div className="bg-white dark:bg-[#151921] w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col pt-0 animate-in zoom-in-95 duration-200 border border-slate-200/50 dark:border-slate-800">
             {/* Modal Header */}
             <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white/50 dark:bg-[#151921]/50 backdrop-blur-md sticky top-0 z-10">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                {showAdd ? "添加新歌曲" : "编辑歌曲"}
-              </h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                  {showAdd ? "添加新歌曲" : "编辑歌曲"}
+                </h2>
+                {/* 自动补全按钮 - 仅在编辑模式下显示 */}
+                {editSong && (
+                  <button
+                    type="button"
+                    onClick={handleAutoComplete}
+                    disabled={isAutoCompleting}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
+                      "bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-400 hover:to-purple-400",
+                      "text-white shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/30",
+                      "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-md",
+                    )}
+                    title="从 API 自动补全歌曲信息"
+                  >
+                    {isAutoCompleting ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <Wand2 size={16} />
+                    )}
+                    <span>自动补全</span>
+                  </button>
+                )}
+              </div>
               <button
                 onClick={() => {
                   setShowAdd(false);

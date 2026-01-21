@@ -127,3 +127,31 @@ export async function apiCheckFileExists(
   if (!res.ok) throw new Error("Failed to check file existence");
   return res.json();
 }
+
+// 自动补全歌曲信息 - 通过服务器端代理请求 hetu-api
+// TODO: 等实现后定义具体的 API 路径和参数
+export async function apiFetchSongAutoComplete(
+  title: string,
+  album: string | null | undefined,
+  csrfToken: string,
+): Promise<Partial<import("./types").SongDetail> | null> {
+  const params = new URLSearchParams({ title });
+  if (album) params.append("album", album);
+
+  const res = await fetch(`/api/admin/auto-complete?${params}`, {
+    method: "GET",
+    headers: {
+      "x-csrf-token": csrfToken,
+    },
+  });
+
+  if (!res.ok) {
+    if (res.status === 404) {
+      return null; // 没有找到匹配的歌曲
+    }
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || `请求失败: ${res.status}`);
+  }
+
+  return res.json();
+}
