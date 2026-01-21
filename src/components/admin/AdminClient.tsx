@@ -27,7 +27,9 @@ import { usePagination } from "@/hooks/usePagination";
 import {
   apiCreateSong,
   apiUpdateSong,
-  apiFetchSongAutoComplete,
+  apiSearchSongs,
+  apiGetSongDetail,
+  type SearchResultItem,
 } from "@/lib/client-api";
 import { useSongs } from "@/hooks/useSongs";
 import { useAuth } from "@/hooks/useAuth";
@@ -479,6 +481,8 @@ export default function AdminClientComponent({
   const [showNotification, setShowNotification] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAutoCompleting, setIsAutoCompleting] = useState(false);
+  const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   // Scroll listener
@@ -591,7 +595,7 @@ export default function AdminClientComponent({
     setEditForm({ ...song });
   };
 
-  // 自动补全歌曲信息
+  // 自动补全 - 第一步：搜索歌曲
   const handleAutoComplete = async () => {
     if (!editForm.title) {
       setOperationMsg({ type: "error", text: "请先输入歌曲标题" });
@@ -601,17 +605,39 @@ export default function AdminClientComponent({
 
     try {
       setIsAutoCompleting(true);
-      const data = await apiFetchSongAutoComplete(
+      const response = await apiSearchSongs(
         editForm.title as string,
-        editForm.album as string | null,
         csrfToken,
+        10,
       );
 
-      if (!data) {
-        setOperationMsg({ type: "error", text: "未找到匹配的歌曲信息" });
+      if (response.results.length === 0) {
+        setOperationMsg({ type: "error", text: "未找到匹配的歌曲" });
         setTimeout(() => setOperationMsg(null), 3000);
         return;
       }
+
+      // 显示搜索结果供用户选择
+      setSearchResults(response.results);
+      setShowSearchResults(true);
+    } catch (err) {
+      setOperationMsg({
+        type: "error",
+        text: err instanceof Error ? err.message : "搜索失败",
+      });
+      setTimeout(() => setOperationMsg(null), 3000);
+    } finally {
+      setIsAutoCompleting(false);
+    }
+  };
+
+  // 自动补全 - 第二步：用户选择歌曲后获取详情
+  const handleSelectSearchResult = async (song: SearchResultItem) => {
+    try {
+      setIsAutoCompleting(true);
+      setShowSearchResults(false);
+
+      const data = await apiGetSongDetail(song, csrfToken);
 
       // 合并获取到的数据到表单（只填充当前为空的字段）
       setEditForm((prev) => {
@@ -636,7 +662,7 @@ export default function AdminClientComponent({
     } catch (err) {
       setOperationMsg({
         type: "error",
-        text: err instanceof Error ? err.message : "自动补全失败",
+        text: err instanceof Error ? err.message : "获取详情失败",
       });
       setTimeout(() => setOperationMsg(null), 3000);
     } finally {
@@ -952,6 +978,66 @@ export default function AdminClientComponent({
                 )}
                 {showAdd ? "确认添加" : "保存修改"}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 搜索结果选择弹窗 */}
+      {showSearchResults && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#151921] w-full max-w-lg max-h-[70vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-slate-200/50 dark:border-slate-800">
+            {/* 弹窗 Header */}
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white/50 dark:bg-[#151921]/50 backdrop-blur-md">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                选择歌曲
+              </h3>
+              <button
+                onClick={() => setShowSearchResults(false)}
+                className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* 搜索结果列表 */}
+            <div className="flex-1 overflow-y-auto">
+              {searchResults.map((result, index) => (
+                <button
+                  key={result.id}
+                  onClick={() => handleSelectSearchResult(result)}
+                  className={cn(
+                    "w-full px-6 py-4 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors",
+                    "border-b border-slate-100 dark:border-slate-800 last:border-b-0",
+                  )}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 text-sm font-medium shrink-0">
+                      {index + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-slate-900 dark:text-white truncate">
+                        {result.name}
+                      </div>
+                      <div className="text-sm text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                        {result.artists.join(", ") || "未知艺术家"}
+                      </div>
+                      {result.album && (
+                        <div className="text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                          专辑: {result.album}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* 弹窗 Footer */}
+            <div className="px-6 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-[#151921]">
+              <p className="text-xs text-slate-400 text-center">
+                共找到 {searchResults.length} 个结果，点击选择要补全的歌曲
+              </p>
             </div>
           </div>
         </div>

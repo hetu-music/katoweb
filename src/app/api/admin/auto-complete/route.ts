@@ -5,10 +5,38 @@ import { z } from "zod";
 // Hetu API 基础地址 - 只能在服务器端访问
 const HETU_API_BASE = "http://hetu-api:3000";
 
+// ============================================
+// 类型定义
+// ============================================
+
 /**
- * 自动补全返回给前端的 JSON 结构
+ * 搜索结果项 - 返回给前端供用户选择
+ */
+const SearchResultItemSchema = z.object({
+    id: z.number(),
+    name: z.string(),
+    album: z.string().nullable(),
+    artists: z.array(z.string()),
+    duration: z.number().nullable(), // 毫秒
+    publishTime: z.number().nullable(), // 时间戳
+});
+
+export type SearchResultItem = z.infer<typeof SearchResultItemSchema>;
+
+/**
+ * 搜索结果响应
+ */
+export type SearchResponse = {
+    type: "search";
+    results: SearchResultItem[];
+    hasMore: boolean;
+    total: number;
+};
+
+/**
+ * 自动补全最终返回给前端的 JSON 结构
  * 基于 SongSchema，但去掉了以下字段：
- * title, hascover, discnumber, disctotal, tracktotal, track, kugolink, qmlink, nelink, nmn_status
+ * title, hascover, discnumber, disctotal, tracktotal, track, kugolink, qmlink, nelink, nmn_status, artist
  */
 const AutoCompleteResponseSchema = z.object({
     album: z.string().max(100).nullable().optional(),
@@ -24,58 +52,61 @@ const AutoCompleteResponseSchema = z.object({
     lyrics: z.string().max(10000).nullable().optional(),
 });
 
-// 导出类型供其他地方使用
 export type AutoCompleteResponse = z.infer<typeof AutoCompleteResponseSchema>;
 
 /**
- * 处理从 hetu-api 获取的原始数据，整合成符合 AutoCompleteResponse 类型的 JSON
- * TODO: 根据 hetu-api 实际返回的数据结构实现具体的处理逻辑
- *
- * @param rawData - hetu-api 返回的原始数据
- * @returns 处理后的歌曲信息，符合 AutoCompleteResponse 类型
+ * 详情响应
  */
-function processAutoCompleteData(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rawData: any,
-): AutoCompleteResponse {
-    // TODO: 在这里实现具体的数据处理逻辑
-    // 示例结构（根据实际 API 返回调整）：
-    // return {
-    //   album: rawData.album || null,
-    //   genre: rawData.genre ? [rawData.genre] : null,
-    //   lyricist: rawData.lyricist ? [rawData.lyricist] : null,
-    //   composer: rawData.composer ? [rawData.composer] : null,
-    //   artist: rawData.artist ? [rawData.artist] : null,
-    //   length: rawData.duration || null,
-    //   date: rawData.releaseDate || null,
-    //   type: rawData.type ? [rawData.type] : null,
-    //   albumartist: rawData.albumartist ? [rawData.albumartist] : null,
-    //   arranger: rawData.arranger ? [rawData.arranger] : null,
-    //   comment: rawData.comment || null,
-    //   lyrics: rawData.lyrics || null,
-    // };
+export type DetailResponse = {
+    type: "detail";
+    data: AutoCompleteResponse;
+};
 
-    // 暂时直接返回原始数据
-    return rawData as AutoCompleteResponse;
+// ============================================
+// 工具函数
+// ============================================
+
+/**
+ * 将毫秒转换为秒
+ */
+function msToSeconds(ms: number | null | undefined): number | null {
+    if (ms === null || ms === undefined) return null;
+    return Math.round(ms / 1000);
 }
 
 /**
- * 从 hetu-api 获取歌曲信息
- *
- * @param title - 歌曲标题
- * @param album - 专辑名（可选）
- * @returns hetu-api 返回的原始数据
+ * 将时间戳转换为日期字符串 (YYYY-MM-DD)
  */
-async function fetchFromHetuApi(
-    title: string,
-    album: string | null,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<any> {
-    const params = new URLSearchParams({ title });
-    if (album) params.append("album", album);
+function timestampToDateString(
+    timestamp: number | null | undefined,
+): string | null {
+    if (timestamp === null || timestamp === undefined) return null;
+    const date = new Date(timestamp);
+    return date.toISOString().split("T")[0];
+}
 
-    // TODO: 根据实际 hetu-api 接口调整路径和参数
-    const res = await fetch(`${HETU_API_BASE}/api/song/search?${params}`, {
+// ============================================
+// API 调用函数
+// ============================================
+
+/**
+ * 搜索歌曲 - 使用 /cloudsearch 接口
+ *
+ * @param keywords - 搜索关键词
+ * @param limit - 返回数量，默认 10
+ * @returns 搜索结果列表
+ */
+async function searchSongs(
+    keywords: string,
+    limit: number = 10,
+): Promise<SearchResponse> {
+    const params = new URLSearchParams({
+        keywords,
+        limit: limit.toString(),
+        type: "1", // 单曲搜索
+    });
+
+    const res = await fetch(`${HETU_API_BASE}/cloudsearch?${params}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -83,44 +114,134 @@ async function fetchFromHetuApi(
     });
 
     if (!res.ok) {
-        if (res.status === 404) {
-            return null;
-        }
-        throw new Error(`Hetu API 请求失败: ${res.status}`);
+        throw new Error(`Hetu API 搜索失败: ${res.status}`);
     }
 
-    return res.json();
+    const data = await res.json();
+
+    // 解析返回结果
+    if (data.code !== 200 || !data.result?.songs) {
+        return {
+            type: "search",
+            results: [],
+            hasMore: false,
+            total: 0,
+        };
+    }
+
+    // 转换搜索结果格式
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const results: SearchResultItem[] = data.result.songs.map((song: any) => ({
+        id: song.id,
+        name: song.name,
+        album: song.album?.name || null,
+        artists: song.artists?.map((a: { name: string }) => a.name) || [],
+        duration: song.duration || null,
+        publishTime: song.album?.publishTime || null,
+    }));
+
+    return {
+        type: "search",
+        results,
+        hasMore: data.result.hasMore || false,
+        total: data.result.songCount || results.length,
+    };
 }
+
+/**
+ * 获取歌曲详情 - 根据 id 获取详细信息
+ * TODO: 实现获取歌曲详情的逻辑（歌词、作词、作曲等）
+ *
+ * @param id - 歌曲 ID
+ * @param duration - 时长（毫秒），从搜索结果中获取
+ * @param publishTime - 发布时间戳，从搜索结果中获取
+ * @returns 歌曲详情
+ */
+async function getSongDetail(
+    id: number,
+    duration: number | null,
+    publishTime: number | null,
+    album: string | null,
+): Promise<AutoCompleteResponse> {
+    // TODO: 根据 id 调用更多 API 获取歌词、作词、作曲等信息
+    // 例如：
+    // - /lyric?id=${id} 获取歌词
+    // - /song/detail?ids=${id} 获取歌曲详情
+
+    // 目前先返回基本信息
+    return {
+        album: album,
+        length: msToSeconds(duration),
+        date: timestampToDateString(publishTime),
+        // 以下字段需要后续 API 补充
+        lyricist: null,
+        composer: null,
+        arranger: null,
+        albumartist: null,
+        genre: null,
+        type: null,
+        comment: null,
+        lyrics: null,
+    };
+}
+
+// ============================================
+// API 路由
+// ============================================
 
 export const GET = withAuth(
     async (request: NextRequest, _user: AuthenticatedUser) => {
         try {
             const { searchParams } = new URL(request.url);
-            const title = searchParams.get("title");
-            const album = searchParams.get("album");
+            const action = searchParams.get("action") || "search";
 
-            if (!title) {
-                return NextResponse.json(
-                    { error: "缺少 title 参数" },
-                    { status: 400 },
-                );
+            // 搜索模式：根据关键词搜索歌曲
+            if (action === "search") {
+                const keywords = searchParams.get("keywords");
+                const limit = parseInt(searchParams.get("limit") || "10", 10);
+
+                if (!keywords) {
+                    return NextResponse.json(
+                        { error: "缺少 keywords 参数" },
+                        { status: 400 },
+                    );
+                }
+
+                const searchResult = await searchSongs(keywords, limit);
+                return NextResponse.json(searchResult);
             }
 
-            // 1. 从 hetu-api 获取原始数据
-            const rawData = await fetchFromHetuApi(title, album);
+            // 详情模式：根据 id 获取歌曲详情
+            if (action === "detail") {
+                const id = searchParams.get("id");
+                const duration = searchParams.get("duration");
+                const publishTime = searchParams.get("publishTime");
+                const album = searchParams.get("album");
 
-            if (!rawData) {
-                return NextResponse.json(
-                    { error: "未找到匹配的歌曲" },
-                    { status: 404 },
+                if (!id) {
+                    return NextResponse.json(
+                        { error: "缺少 id 参数" },
+                        { status: 400 },
+                    );
+                }
+
+                const detail = await getSongDetail(
+                    parseInt(id, 10),
+                    duration ? parseInt(duration, 10) : null,
+                    publishTime ? parseInt(publishTime, 10) : null,
+                    album || null,
                 );
+
+                return NextResponse.json({
+                    type: "detail",
+                    data: detail,
+                } as DetailResponse);
             }
 
-            // 2. 处理数据，整合成符合 SongDetail 类型的 JSON
-            const processedData = processAutoCompleteData(rawData);
-
-            // 3. 返回处理后的数据给前端
-            return NextResponse.json(processedData);
+            return NextResponse.json(
+                { error: "无效的 action 参数，支持 'search' 或 'detail'" },
+                { status: 400 },
+            );
         } catch (e: unknown) {
             if (
                 e &&
