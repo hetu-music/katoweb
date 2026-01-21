@@ -238,11 +238,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                                         : "bg-slate-300 dark:bg-slate-600 scale-75 group-hover:scale-100 group-hover:bg-slate-400 dark:group-hover:bg-slate-500"
                                     }
                                 `}
-                            >
-                                {isActive && (
-                                    <span className="absolute inset-0 rounded-full bg-slate-900/30 dark:bg-white/30 animate-ping" />
-                                )}
-                            </span>
+                            />
                         </button>
                     );
                 })}
@@ -323,11 +319,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                                             : "bg-slate-300 dark:bg-slate-600 scale-100 group-hover:scale-110 group-hover:bg-slate-400 dark:group-hover:bg-slate-500"
                                         }
                                     `}
-                                >
-                                    {isActive && (
-                                        <span className="absolute inset-0 rounded-full bg-slate-900/30 dark:bg-white/30 animate-ping" />
-                                    )}
-                                </span>
+                                />
                             </button>
                         );
                     })}
