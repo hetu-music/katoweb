@@ -128,13 +128,32 @@ export async function apiCheckFileExists(
   return res.json();
 }
 
+/**
+ * 自动补全返回的 JSON 结构
+ * 包含：album, genre, lyricist, composer, artist, length, date, type, albumartist, arranger, comment, lyrics
+ * 排除：title, hascover, discnumber, disctotal, tracktotal, track, kugolink, qmlink, nelink, nmn_status
+ */
+export type AutoCompleteResponse = {
+  album?: string | null;
+  genre?: string[] | null;
+  lyricist?: string[] | null;
+  composer?: string[] | null;
+  artist?: string[] | null;
+  length?: number | null;
+  date?: string | null;
+  type?: string[] | null;
+  albumartist?: string[] | null;
+  arranger?: string[] | null;
+  comment?: string | null;
+  lyrics?: string | null;
+};
+
 // 自动补全歌曲信息 - 通过服务器端代理请求 hetu-api
-// TODO: 等实现后定义具体的 API 路径和参数
 export async function apiFetchSongAutoComplete(
   title: string,
   album: string | null | undefined,
   csrfToken: string,
-): Promise<Partial<import("./types").SongDetail> | null> {
+): Promise<AutoCompleteResponse | null> {
   const params = new URLSearchParams({ title });
   if (album) params.append("album", album);
 
