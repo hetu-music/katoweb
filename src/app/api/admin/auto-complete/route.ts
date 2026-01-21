@@ -15,7 +15,6 @@ const AutoCompleteResponseSchema = z.object({
     genre: z.array(z.string().max(30)).nullable().optional(),
     lyricist: z.array(z.string().max(30)).nullable().optional(),
     composer: z.array(z.string().max(30)).nullable().optional(),
-    artist: z.array(z.string().max(30)).nullable().optional(),
     length: z.number().int().min(1).nullable().optional(),
     date: z.string().max(30).nullable().optional(),
     type: z.array(z.string().max(30)).nullable().optional(),
