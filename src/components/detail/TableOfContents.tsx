@@ -14,11 +14,15 @@ interface NavItem {
 
 const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
     const [activeId, setActiveId] = useState<string>("info");
+    const [displayedActiveId, setDisplayedActiveId] = useState<string>("info");
     const [hoveredId, setHoveredId] = useState<string | null>(null);
     const [showActiveLabel, setShowActiveLabel] = useState(false);
     const [isTouch, setIsTouch] = useState(false);
+    const [isScrolling, setIsScrolling] = useState(false);
     const observerRef = useRef<IntersectionObserver | null>(null);
     const hideTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const scrollDebounceRef = useRef<NodeJS.Timeout | null>(null);
+    const activeDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
     // 检测触摸设备
     useEffect(() => {
@@ -32,34 +36,72 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
         return () => mediaQuery.removeEventListener("change", checkTouch);
     }, []);
 
-    // 构建导航项
+    // 构建导航项 - 移除备注，只保留基本信息、歌词、乐谱
     const getNavItems = useCallback((): NavItem[] => {
         const items: NavItem[] = [{ id: "info", label: "基本信息" }];
-        if (song.comment) items.push({ id: "remarks", label: "备注" });
         items.push({ id: "lyrics", label: "歌词" });
         if (song.nmn_status) items.push({ id: "score", label: "乐谱" });
         return items;
-    }, [song.comment, song.nmn_status]);
+    }, [song.nmn_status]);
 
     const navItems = getNavItems();
 
-    // 当 activeId 变化时，短暂显示标签
+    // 防抖：只有滚动停止后才更新显示的 activeId 和显示标签
     useEffect(() => {
-        if (hideTimerRef.current) {
-            clearTimeout(hideTimerRef.current);
+        // 清除之前的定时器
+        if (activeDebounceRef.current) {
+            clearTimeout(activeDebounceRef.current);
         }
-        setShowActiveLabel(true);
-        hideTimerRef.current = setTimeout(() => {
-            setShowActiveLabel(false);
-            setHoveredId(null); // 同时清除 hover 状态
-        }, 750);
 
-        return () => {
+        // 滚动期间不更新显示
+        if (isScrolling) {
+            return;
+        }
+
+        // 滚动停止后，延迟更新显示的 activeId
+        activeDebounceRef.current = setTimeout(() => {
+            setDisplayedActiveId(activeId);
+
+            // 显示标签
             if (hideTimerRef.current) {
                 clearTimeout(hideTimerRef.current);
             }
+            setShowActiveLabel(true);
+            hideTimerRef.current = setTimeout(() => {
+                setShowActiveLabel(false);
+                setHoveredId(null);
+            }, 750);
+        }, 100);
+
+        return () => {
+            if (activeDebounceRef.current) {
+                clearTimeout(activeDebounceRef.current);
+            }
         };
-    }, [activeId]);
+    }, [activeId, isScrolling]);
+
+    // 监听滚动状态
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const handleScrollStart = () => {
+            setIsScrolling(true);
+            if (scrollDebounceRef.current) {
+                clearTimeout(scrollDebounceRef.current);
+            }
+            scrollDebounceRef.current = setTimeout(() => {
+                setIsScrolling(false);
+            }, 150);
+        };
+
+        window.addEventListener("scroll", handleScrollStart, { passive: true });
+        return () => {
+            window.removeEventListener("scroll", handleScrollStart);
+            if (scrollDebounceRef.current) {
+                clearTimeout(scrollDebounceRef.current);
+            }
+        };
+    }, []);
 
     // IntersectionObserver 监听当前可见的 section
     useEffect(() => {
@@ -96,6 +138,20 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
         };
     }, [navItems]);
 
+    // 处理快速滚动到顶部的边界情况
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const handleScroll = () => {
+            if (window.scrollY < 150 && navItems.length > 0) {
+                setActiveId(navItems[0].id);
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll, { passive: true });
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, [navItems]);
+
     const handleClick = (id: string) => {
         const element = document.getElementById(id);
         if (element) {
@@ -103,7 +159,10 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
             const top = element.getBoundingClientRect().top + window.scrollY - offset;
             window.scrollTo({ top, behavior: "smooth" });
 
-            // 触摸设备上点击后短暂显示标签
+            // 点击后立即更新显示
+            setDisplayedActiveId(id);
+            setActiveId(id);
+
             if (isTouch) {
                 setHoveredId(id);
                 setTimeout(() => setHoveredId(null), 750);
@@ -111,7 +170,6 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
         }
     };
 
-    // 只在非触摸设备上启用 hover
     const handleMouseEnter = (id: string) => {
         if (!isTouch) {
             setHoveredId(id);
@@ -132,7 +190,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                 aria-label="目录导航"
             >
                 {navItems.map((item) => {
-                    const isActive = activeId === item.id;
+                    const isActive = displayedActiveId === item.id;
                     const isHovered = hoveredId === item.id;
                     const showLabel = isHovered || (isActive && showActiveLabel);
 
@@ -205,7 +263,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                     />
 
                     {navItems.map((item) => {
-                        const isActive = activeId === item.id;
+                        const isActive = displayedActiveId === item.id;
                         const isHovered = hoveredId === item.id;
                         const showLabel = isHovered || (isActive && showActiveLabel);
 
