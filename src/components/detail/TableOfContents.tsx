@@ -74,7 +74,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                     setHoveredId(null);
                 }, 750);
             }
-        }, 100);
+        }, 50);
 
         return () => {
             if (activeDebounceRef.current) {
@@ -94,7 +94,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
             }
             scrollDebounceRef.current = setTimeout(() => {
                 setIsScrolling(false);
-            }, 150);
+            }, 80);
         };
 
         window.addEventListener("scroll", handleScrollStart, { passive: true });
