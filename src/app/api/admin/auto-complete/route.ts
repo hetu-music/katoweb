@@ -44,7 +44,7 @@ async function searchSongs(
         type: "1", // 单曲搜索
     });
 
-    const res = await fetch(`${HETU_API_BASE}/cloudsearch?${params}`, {
+    const res = await fetch(`${HETU_API_BASE}/cloudsearch?${params}&randomCNIP=true`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
     });
@@ -95,7 +95,7 @@ async function fetchLyrics(id: number): Promise<{
     arranger: string[] | null;
 }> {
     try {
-        const res = await fetch(`${HETU_API_BASE}/lyric?id=${id}`, {
+        const res = await fetch(`${HETU_API_BASE}/lyric?id=${id}&randomCNIP=true`, {
             method: "GET",
             headers: { "Content-Type": "application/json" },
         });
