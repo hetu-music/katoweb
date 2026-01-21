@@ -24,13 +24,12 @@ import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import Pagination from "@/components/shared/Pagination";
 import { usePagination } from "@/hooks/usePagination";
+import { apiCreateSong, apiUpdateSong } from "@/lib/client-api";
 import {
-  apiCreateSong,
-  apiUpdateSong,
   apiSearchSongs,
   apiGetSongDetail,
   type SearchResultItem,
-} from "@/lib/client-api";
+} from "@/lib/api-auto-complete";
 import { useSongs } from "@/hooks/useSongs";
 import { useAuth } from "@/hooks/useAuth";
 import Account from "./Account";
@@ -605,8 +604,16 @@ export default function AdminClientComponent({
 
     try {
       setIsAutoCompleting(true);
+
+      // 构建搜索关键词：标题 + 艺术家（如果有）
+      const keywordsParts = [editForm.title as string];
+      if (editForm.artist && Array.isArray(editForm.artist) && editForm.artist.length > 0) {
+        keywordsParts.push(...editForm.artist);
+      }
+      const keywords = keywordsParts.join(" ");
+
       const response = await apiSearchSongs(
-        editForm.title as string,
+        keywords,
         csrfToken,
         10,
       );
