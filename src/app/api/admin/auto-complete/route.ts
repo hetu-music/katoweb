@@ -32,7 +32,7 @@ const timestampToDateString = (timestamp: number | null | undefined): string | n
 // ============================================
 
 /**
- * 搜索歌曲 (Search)
+ * 搜索歌曲 (CloudSearch)
  */
 async function searchSongs(
     keywords: string,
@@ -44,7 +44,7 @@ async function searchSongs(
         type: "1", // 单曲搜索
     });
 
-    const res = await fetch(`${HETU_API_BASE}/search?${params}`, {
+    const res = await fetch(`${HETU_API_BASE}/cloudsearch?${params}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
     });
