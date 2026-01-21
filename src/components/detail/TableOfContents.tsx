@@ -212,20 +212,15 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
               {/* 标签 */}
               <span
                 className={`
-                                    px-3 py-1.5 rounded-full text-xs font-medium
-                                    backdrop-blur-md border
-                                    transition-all duration-300 ease-out
-                                    ${
-                                      showLabel
-                                        ? "opacity-100 translate-x-0"
-                                        : "opacity-0 translate-x-4 pointer-events-none"
-                                    }
-                                    ${
-                                      isActive
-                                        ? "bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 border-transparent shadow-lg"
-                                        : "bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50"
-                                    }
-                                `}
+                  px-3 py-1.5 rounded-full text-xs font-medium
+                  backdrop-blur-md border transition-all duration-300 ease-out
+                  ${showLabel ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4 pointer-events-none"}
+                  ${
+                    isActive
+                      ? "bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 border-transparent shadow-lg"
+                      : "bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50"
+                  }
+                `}
               >
                 {item.label}
               </span>
@@ -233,15 +228,14 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
               {/* 指示点 */}
               <span
                 className={`
-                                    relative flex items-center justify-center
-                                    w-3 h-3 rounded-full
-                                    transition-all duration-300 ease-out
-                                    ${
-                                      isActive
-                                        ? "bg-slate-900 dark:bg-white scale-100"
-                                        : "bg-slate-300 dark:bg-slate-600 scale-75 group-hover:scale-100 group-hover:bg-slate-400 dark:group-hover:bg-slate-500"
-                                    }
-                                `}
+                  relative flex items-center justify-center
+                  w-3 h-3 rounded-full transition-all duration-300 ease-out
+                  ${
+                    isActive
+                      ? "bg-slate-900 dark:bg-white scale-100"
+                      : "bg-slate-300 dark:bg-slate-600 scale-75 group-hover:scale-100 group-hover:bg-slate-400 dark:group-hover:bg-slate-500"
+                  }
+                `}
               />
             </button>
           );
@@ -284,49 +278,39 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                 {/* 标签 - 向上弹出 */}
                 <span
                   className={`
-                                        absolute -top-10 left-1/2 -translate-x-1/2
-                                        px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap
-                                        backdrop-blur-md border
-                                        transition-all duration-300 ease-out
-                                        ${
-                                          showLabel
-                                            ? "opacity-100 translate-y-0"
-                                            : "opacity-0 translate-y-2 pointer-events-none"
-                                        }
-                                        ${
-                                          isActive
-                                            ? "bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 border-transparent shadow-lg"
-                                            : "bg-white/90 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50"
-                                        }
-                                    `}
+                    absolute -top-10 left-1/2 -translate-x-1/2
+                    px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap
+                    backdrop-blur-md border transition-all duration-300 ease-out
+                    ${showLabel ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}
+                    ${
+                      isActive
+                        ? "bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 border-transparent shadow-lg"
+                        : "bg-white/90 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50"
+                    }
+                  `}
                 >
                   {item.label}
                   {/* 小三角 */}
                   <span
                     className={`
-                                            absolute -bottom-1 left-1/2 -translate-x-1/2
-                                            border-4 border-transparent
-                                            ${
-                                              isActive
-                                                ? "border-t-slate-900/90 dark:border-t-white/90"
-                                                : "border-t-white/90 dark:border-t-slate-800/90"
-                                            }
-                                        `}
+                      absolute -bottom-1 left-1/2 -translate-x-1/2
+                      border-4 border-transparent
+                      ${isActive ? "border-t-slate-900/90 dark:border-t-white/90" : "border-t-white/90 dark:border-t-slate-800/90"}
+                    `}
                   />
                 </span>
 
                 {/* 指示点 */}
                 <span
                   className={`
-                                        relative flex items-center justify-center
-                                        w-3 h-3 rounded-full
-                                        transition-all duration-300 ease-out
-                                        ${
-                                          isActive
-                                            ? "bg-slate-900 dark:bg-white scale-125"
-                                            : "bg-slate-300 dark:bg-slate-600 scale-100 group-hover:scale-110 group-hover:bg-slate-400 dark:group-hover:bg-slate-500"
-                                        }
-                                    `}
+                    relative flex items-center justify-center
+                    w-3 h-3 rounded-full transition-all duration-300 ease-out
+                    ${
+                      isActive
+                        ? "bg-slate-900 dark:bg-white scale-125"
+                        : "bg-slate-300 dark:bg-slate-600 scale-100 group-hover:scale-110 group-hover:bg-slate-400 dark:group-hover:bg-slate-500"
+                    }
+                  `}
                 />
               </button>
             );
