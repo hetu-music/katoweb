@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { SongDetail } from "@/lib/types";
 
 // 简易 classNames 工具
@@ -14,6 +14,8 @@ interface TableOfContentsProps {
 
 const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
     const [activeSection, setActiveSection] = useState<string>("info");
+    const [showActiveLabel, setShowActiveLabel] = useState(false);
+    const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const navItems = [
         { id: "info", label: "Basic Info" },
@@ -24,6 +26,15 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
 
     useEffect(() => {
         const handleScroll = () => {
+            // Show label on scroll
+            setShowActiveLabel(true);
+            if (scrollTimeoutRef.current) {
+                clearTimeout(scrollTimeoutRef.current);
+            }
+            scrollTimeoutRef.current = setTimeout(() => {
+                setShowActiveLabel(false);
+            }, 1000); // 1s timeout to hide label
+
             const scrollPosition = window.scrollY + 200; // Offset for better triggering
 
             for (const item of navItems) {
@@ -42,7 +53,12 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
 
         window.addEventListener("scroll", handleScroll);
         handleScroll(); // Initial check
-        return () => window.removeEventListener("scroll", handleScroll);
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+            if (scrollTimeoutRef.current) {
+                clearTimeout(scrollTimeoutRef.current);
+            }
+        };
     }, [navItems]);
 
     const handleScrollTo = (id: string) => {
@@ -59,7 +75,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
     };
 
     return (
-        <div className="fixed right-8 top-1/2 -translate-y-1/2 z-40 hidden lg:flex flex-col gap-4">
+        <div className="fixed right-4 lg:right-8 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-4">
             {navItems.map((item) => (
                 <button
                     key={item.id}
@@ -70,10 +86,10 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                     {/* Label (Tooltip) */}
                     <span
                         className={cn(
-                            "absolute right-8 px-3 py-1.5 rounded-md bg-slate-900/80 dark:bg-white/90 text-white dark:text-slate-900 text-xs font-medium whitespace-nowrap opacity-0 transform translate-x-2 transition-all duration-300 pointer-events-none",
-                            activeSection === item.id
-                                ? "opacity-100 translate-x-0"
-                                : "group-hover:opacity-100 group-hover:translate-x-0"
+                            "absolute right-8 px-3 py-1.5 rounded-md bg-slate-900/80 dark:bg-white/90 text-white dark:text-slate-900 text-xs font-medium whitespace-nowrap opacity-0 transform translate-x-2 transition-all duration-100 pointer-events-none",
+                            activeSection === item.id && showActiveLabel
+                                ? "opacity-100 translate-x-0 duration-300"
+                                : "group-hover:opacity-100 group-hover:translate-x-0 group-hover:duration-300"
                         )}
                     >
                         {item.label}
