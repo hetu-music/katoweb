@@ -59,15 +59,23 @@ async function searchSongs(
 
     // 映射结果
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const results: SearchResultItem[] = data.result.songs.map((song: any) => ({
-        id: song.id,
-        name: song.name,
-        album: song.album?.name || null,
-        albumartist: song.album?.artist?.name || null,
-        artists: song.artists?.map((a: { name: string }) => a.name) || [],
-        duration: song.duration || null,
-        publishTime: song.album?.publishTime || null,
-    }));
+    const results: SearchResultItem[] = data.result.songs.map((song: any) => {
+        // 适配网易云 API 的缩写字段 (ar, al, dt)
+        const albumObj = song.album || song.al;
+        const artistsArray = song.artists || song.ar || [];
+
+        return {
+            id: song.id,
+            name: song.name,
+            album: albumObj?.name || null,
+            // 注意：API 返回的 al 对象中可能没有 artist 字段，这里尝试获取，如果没有则为 null
+            albumartist: albumObj?.artist?.name || null,
+            artists: artistsArray.map((a: { name: string }) => a.name) || [],
+            duration: song.duration || song.dt || null,
+            // publishTime 可能在根对象(song.publishTime) 或 专辑对象(song.album.publishTime)
+            publishTime: song.publishTime || albumObj?.publishTime || null,
+        };
+    });
 
     return {
         type: "search",
