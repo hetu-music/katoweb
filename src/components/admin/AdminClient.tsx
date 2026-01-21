@@ -13,6 +13,7 @@ import {
   XCircle,
   CheckCircle2,
   AlertCircle,
+  Wand2,
 } from "lucide-react";
 import Image from "next/image";
 import type { Song, SongDetail, SongFieldConfig } from "@/lib/types";
@@ -24,6 +25,11 @@ import ThemeToggle from "@/components/shared/ThemeToggle";
 import Pagination from "@/components/shared/Pagination";
 import { usePagination } from "@/hooks/usePagination";
 import { apiCreateSong, apiUpdateSong } from "@/lib/client-api";
+import {
+  apiSearchSongs,
+  apiGetSongDetail,
+  type SearchResultItem,
+} from "@/lib/api-auto-complete";
 import { useSongs } from "@/hooks/useSongs";
 import { useAuth } from "@/hooks/useAuth";
 import Account from "./Account";
@@ -473,6 +479,9 @@ export default function AdminClientComponent({
   } | null>(null);
   const [showNotification, setShowNotification] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAutoCompleting, setIsAutoCompleting] = useState(false);
+  const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   // Scroll listener
@@ -583,6 +592,89 @@ export default function AdminClientComponent({
   const startEdit = (song: SongDetail) => {
     setEditSong(song);
     setEditForm({ ...song });
+  };
+
+  // 自动补全 - 第一步：搜索歌曲
+  const handleAutoComplete = async () => {
+    if (!editForm.title) {
+      setOperationMsg({ type: "error", text: "请先输入歌曲标题" });
+      setTimeout(() => setOperationMsg(null), 3000);
+      return;
+    }
+
+    try {
+      setIsAutoCompleting(true);
+
+      // 构建搜索关键词：标题 + 艺术家（如果有）
+      const keywordsParts = [editForm.title as string];
+      if (
+        editForm.artist &&
+        Array.isArray(editForm.artist) &&
+        editForm.artist.length > 0
+      ) {
+        keywordsParts.push(...editForm.artist);
+      }
+      const keywords = keywordsParts.join(" ");
+
+      const response = await apiSearchSongs(keywords, csrfToken, 10);
+
+      if (response.results.length === 0) {
+        setOperationMsg({ type: "error", text: "未找到匹配的歌曲" });
+        setTimeout(() => setOperationMsg(null), 3000);
+        return;
+      }
+
+      // 显示搜索结果供用户选择
+      setSearchResults(response.results);
+      setShowSearchResults(true);
+    } catch (err) {
+      setOperationMsg({
+        type: "error",
+        text: err instanceof Error ? err.message : "搜索失败",
+      });
+      setTimeout(() => setOperationMsg(null), 3000);
+    } finally {
+      setIsAutoCompleting(false);
+    }
+  };
+
+  // 自动补全 - 第二步：用户选择歌曲后获取详情
+  const handleSelectSearchResult = async (song: SearchResultItem) => {
+    try {
+      setIsAutoCompleting(true);
+      setShowSearchResults(false);
+
+      const data = await apiGetSongDetail(song, csrfToken);
+
+      // 合并获取到的数据到表单（只填充当前为空的字段）
+      setEditForm((prev) => {
+        const merged = { ...prev };
+        for (const [key, value] of Object.entries(data)) {
+          const currentValue = prev[key as keyof typeof prev];
+          // 只填充空字段
+          const isEmpty =
+            currentValue === null ||
+            currentValue === undefined ||
+            (Array.isArray(currentValue) && currentValue.length === 0) ||
+            (typeof currentValue === "string" && currentValue.trim() === "");
+          if (isEmpty && value !== null && value !== undefined) {
+            (merged as Record<string, unknown>)[key] = value;
+          }
+        }
+        return merged;
+      });
+
+      setOperationMsg({ type: "success", text: "自动补全成功" });
+      setTimeout(() => setOperationMsg(null), 3000);
+    } catch (err) {
+      setOperationMsg({
+        type: "error",
+        text: err instanceof Error ? err.message : "获取详情失败",
+      });
+      setTimeout(() => setOperationMsg(null), 3000);
+    } finally {
+      setIsAutoCompleting(false);
+    }
   };
 
   return (
@@ -790,9 +882,33 @@ export default function AdminClientComponent({
           <div className="bg-white dark:bg-[#151921] w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col pt-0 animate-in zoom-in-95 duration-200 border border-slate-200/50 dark:border-slate-800">
             {/* Modal Header */}
             <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white/50 dark:bg-[#151921]/50 backdrop-blur-md sticky top-0 z-10">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                {showAdd ? "添加新歌曲" : "编辑歌曲"}
-              </h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                  {showAdd ? "添加新歌曲" : "编辑歌曲"}
+                </h2>
+                {/* 自动补全按钮 - 仅在编辑模式下显示 */}
+                {editSong && (
+                  <button
+                    type="button"
+                    onClick={handleAutoComplete}
+                    disabled={isAutoCompleting}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
+                      "bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-400 hover:to-purple-400",
+                      "text-white shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/30",
+                      "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-md",
+                    )}
+                    title="从 API 自动补全歌曲信息"
+                  >
+                    {isAutoCompleting ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <Wand2 size={16} />
+                    )}
+                    <span>自动补全</span>
+                  </button>
+                )}
+              </div>
               <button
                 onClick={() => {
                   setShowAdd(false);
@@ -869,6 +985,66 @@ export default function AdminClientComponent({
                 )}
                 {showAdd ? "确认添加" : "保存修改"}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 搜索结果选择弹窗 */}
+      {showSearchResults && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#151921] w-full max-w-lg max-h-[70vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-slate-200/50 dark:border-slate-800">
+            {/* 弹窗 Header */}
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white/50 dark:bg-[#151921]/50 backdrop-blur-md">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                选择歌曲
+              </h3>
+              <button
+                onClick={() => setShowSearchResults(false)}
+                className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* 搜索结果列表 */}
+            <div className="flex-1 overflow-y-auto">
+              {searchResults.map((result, index) => (
+                <button
+                  key={result.id}
+                  onClick={() => handleSelectSearchResult(result)}
+                  className={cn(
+                    "w-full px-6 py-4 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors",
+                    "border-b border-slate-100 dark:border-slate-800 last:border-b-0",
+                  )}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 text-sm font-medium shrink-0">
+                      {index + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-slate-900 dark:text-white truncate">
+                        {result.name}
+                      </div>
+                      <div className="text-sm text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                        {result.artists.join(", ") || "未知艺术家"}
+                      </div>
+                      {result.album && (
+                        <div className="text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                          专辑: {result.album}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* 弹窗 Footer */}
+            <div className="px-6 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-[#151921]">
+              <p className="text-xs text-slate-400 text-center">
+                共找到 {searchResults.length} 个结果，点击选择要补全的歌曲
+              </p>
             </div>
           </div>
         </div>

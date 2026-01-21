@@ -20,6 +20,7 @@ import { getTypeTagStyle, getGenreTagStyle } from "@/lib/constants";
 import ImageModal from "@/components/shared/ImageModal";
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import ThemeToggle from "@/components/shared/ThemeToggle";
+import TableOfContents from "@/components/detail/TableOfContents";
 
 // 简易 classNames 工具
 function cn(...classes: (string | undefined | null | false)[]) {
@@ -369,7 +370,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
             )}
           >
             {/* 标题 & 基础信息 */}
-            <section className="space-y-6">
+            <section className="space-y-6" id="info">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-slate-50 leading-tight">
                 {song.title}
               </h1>
@@ -427,7 +428,10 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
               {/* 备注 */}
               {song.comment && (
-                <div className="p-6 rounded-2xl bg-slate-100/70 dark:bg-slate-800/30 border border-slate-200/60 dark:border-slate-800">
+                <div
+                  id="remarks"
+                  className="p-6 rounded-2xl bg-slate-100/70 dark:bg-slate-800/30 border border-slate-200/60 dark:border-slate-800"
+                >
                   <div className="flex items-center gap-2 mb-3 text-slate-400">
                     <PenTool size={16} />
                     <h2 className="text-xs font-bold uppercase tracking-wider">
@@ -442,7 +446,10 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
             </section>
 
             {/* 歌词部分 */}
-            <section className="border-t border-slate-200 dark:border-slate-800 pt-10">
+            <section
+              id="lyrics"
+              className="border-t border-slate-200 dark:border-slate-800 pt-10"
+            >
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-2 text-slate-900 dark:text-white">
                   <Mic2 size={24} />
@@ -516,7 +523,10 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
             {/* 乐谱部分 */}
             {song.nmn_status && (
-              <section className="border-t border-slate-200 dark:border-slate-800 pt-10 pb-10">
+              <section
+                id="score"
+                className="border-t border-slate-200 dark:border-slate-800 pt-10 pb-10"
+              >
                 <div className="flex items-center gap-2 mb-8 text-slate-900 dark:text-white">
                   <LayoutTemplate size={24} />
                   <h2 className="text-2xl font-bold">Score</h2>
@@ -573,6 +583,8 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         alt={imageModal.alt}
         title={imageModal.title}
       />
+
+      <TableOfContents song={song} />
     </div>
   );
 };

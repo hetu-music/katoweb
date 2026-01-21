@@ -127,3 +127,5 @@ export async function apiCheckFileExists(
   if (!res.ok) throw new Error("Failed to check file existence");
   return res.json();
 }
+
+// Auto-complete logic has been moved to src/lib/api-auto-complete.ts
