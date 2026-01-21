@@ -139,6 +139,7 @@ export type SearchResultItem = {
   id: number;
   name: string;
   album: string | null;
+  albumartist: string | null; // album.artist.name，用于 albumartist 字段
   artists: string[];
   duration: number | null; // 毫秒
   publishTime: number | null; // 时间戳
@@ -240,6 +241,9 @@ export async function apiGetSongDetail(
   }
   if (song.album) {
     params.append("album", song.album);
+  }
+  if (song.albumartist) {
+    params.append("albumartist", song.albumartist);
   }
 
   const res = await fetch(`/api/admin/auto-complete?${params}`, {

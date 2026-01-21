@@ -16,6 +16,7 @@ const SearchResultItemSchema = z.object({
     id: z.number(),
     name: z.string(),
     album: z.string().nullable(),
+    albumartist: z.string().nullable(), // album.artist.name，用于 albumartist 字段
     artists: z.array(z.string()),
     duration: z.number().nullable(), // 毫秒
     publishTime: z.number().nullable(), // 时间戳
@@ -135,6 +136,7 @@ async function searchSongs(
         id: song.id,
         name: song.name,
         album: song.album?.name || null,
+        albumartist: song.album?.artist?.name || null, // 使用 album.artist.name 作为 albumartist
         artists: song.artists?.map((a: { name: string }) => a.name) || [],
         duration: song.duration || null,
         publishTime: song.album?.publishTime || null,
@@ -158,6 +160,7 @@ async function fetchLyrics(id: number): Promise<{
     lyric: string | null;
     lyricist: string[] | null;
     composer: string[] | null;
+    arranger: string[] | null;
 }> {
     try {
         const res = await fetch(`${HETU_API_BASE}/lyric?id=${id}`, {
@@ -168,35 +171,37 @@ async function fetchLyrics(id: number): Promise<{
         });
 
         if (!res.ok) {
-            return { lyric: null, lyricist: null, composer: null };
+            return { lyric: null, lyricist: null, composer: null, arranger: null };
         }
 
         const data = await res.json();
 
         if (data.code !== 200 || !data.lrc?.lyric) {
-            return { lyric: null, lyricist: null, composer: null };
+            return { lyric: null, lyricist: null, composer: null, arranger: null };
         }
 
         const rawLyric = data.lrc.lyric as string;
 
-        // 解析歌词中的元数据（作词、作曲）
-        const { lyricist, composer, cleanedLyric } = parseLyricMetadata(rawLyric);
+        // 解析歌词中的元数据（作词、作曲、编曲）
+        const { lyricist, composer, arranger, cleanedLyric } = parseLyricMetadata(rawLyric);
 
         return {
             lyric: cleanedLyric,
             lyricist,
             composer,
+            arranger,
         };
     } catch {
-        return { lyric: null, lyricist: null, composer: null };
+        return { lyric: null, lyricist: null, composer: null, arranger: null };
     }
 }
 
 /**
- * 解析 LRC 歌词中的元数据（作词、作曲）
+ * 解析 LRC 歌词中的元数据（作词、作曲、编曲）
  * 格式示例：
  * [00:00.000] 作词 : 张国祥
  * [00:01.000] 作曲 : 汤小康
+ * [00:02.000] 编曲 : 某某
  *
  * @param rawLyric - 原始 LRC 歌词
  * @returns 解析后的数据
@@ -204,17 +209,20 @@ async function fetchLyrics(id: number): Promise<{
 function parseLyricMetadata(rawLyric: string): {
     lyricist: string[] | null;
     composer: string[] | null;
+    arranger: string[] | null;
     cleanedLyric: string;
 } {
     const lines = rawLyric.split("\n");
     let lyricist: string[] | null = null;
     let composer: string[] | null = null;
+    let arranger: string[] | null = null;
     const contentLines: string[] = [];
 
     for (const line of lines) {
-        // 匹配 [时间戳] 作词 : xxx 或 [时间戳] 作曲 : xxx
+        // 匹配 [时间戳] 作词 : xxx 或 [时间戳] 作曲 : xxx 或 [时间戳] 编曲 : xxx
         const lyricistMatch = line.match(/\[\d{2}:\d{2}[.\d]*\]\s*作词\s*[:：]\s*(.+)/i);
         const composerMatch = line.match(/\[\d{2}:\d{2}[.\d]*\]\s*作曲\s*[:：]\s*(.+)/i);
+        const arrangerMatch = line.match(/\[\d{2}:\d{2}[.\d]*\]\s*编曲\s*[:：]\s*(.+)/i);
 
         if (lyricistMatch) {
             // 解析作词，可能有多人（用 / 或 、 分隔）
@@ -228,6 +236,12 @@ function parseLyricMetadata(rawLyric: string): {
                 .split(/[/、,，]/)
                 .map((s) => s.trim())
                 .filter(Boolean);
+        } else if (arrangerMatch) {
+            // 解析编曲，可能有多人
+            arranger = arrangerMatch[1]
+                .split(/[/、,，]/)
+                .map((s) => s.trim())
+                .filter(Boolean);
         } else {
             // 保留非元数据行
             contentLines.push(line);
@@ -237,6 +251,7 @@ function parseLyricMetadata(rawLyric: string): {
     return {
         lyricist: lyricist && lyricist.length > 0 ? lyricist : null,
         composer: composer && composer.length > 0 ? composer : null,
+        arranger: arranger && arranger.length > 0 ? arranger : null,
         cleanedLyric: contentLines.join("\n"),
     };
 }
@@ -248,6 +263,7 @@ function parseLyricMetadata(rawLyric: string): {
  * @param duration - 时长（毫秒），从搜索结果中获取
  * @param publishTime - 发布时间戳，从搜索结果中获取
  * @param album - 专辑名，从搜索结果中获取
+ * @param albumartist - 专辑艺术家（album.name），从搜索结果中获取
  * @returns 歌曲详情
  */
 async function getSongDetail(
@@ -255,9 +271,10 @@ async function getSongDetail(
     duration: number | null,
     publishTime: number | null,
     album: string | null,
+    albumartist: string | null,
 ): Promise<AutoCompleteResponse> {
-    // 获取歌词和作词作曲信息
-    const { lyric, lyricist, composer } = await fetchLyrics(id);
+    // 获取歌词和作词作曲编曲信息
+    const { lyric, lyricist, composer, arranger } = await fetchLyrics(id);
 
     return {
         album: album,
@@ -266,9 +283,9 @@ async function getSongDetail(
         lyrics: lyric,
         lyricist: lyricist,
         composer: composer,
-        // 以下字段暂无 API 支持
-        arranger: null,
-        albumartist: null,
+        arranger: arranger,
+        albumartist: albumartist ? [albumartist] : null,
+        // 以下字段暂不实现
         genre: null,
         type: null,
         comment: null,
@@ -307,6 +324,7 @@ export const GET = withAuth(
                 const duration = searchParams.get("duration");
                 const publishTime = searchParams.get("publishTime");
                 const album = searchParams.get("album");
+                const albumartist = searchParams.get("albumartist");
 
                 if (!id) {
                     return NextResponse.json(
@@ -320,6 +338,7 @@ export const GET = withAuth(
                     duration ? parseInt(duration, 10) : null,
                     publishTime ? parseInt(publishTime, 10) : null,
                     album || null,
+                    albumartist || null,
                 );
 
                 return NextResponse.json({
