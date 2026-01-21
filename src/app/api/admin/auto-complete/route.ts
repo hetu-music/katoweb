@@ -149,12 +149,105 @@ async function searchSongs(
 }
 
 /**
+ * 获取歌词
+ *
+ * @param id - 歌曲 ID
+ * @returns 歌词数据
+ */
+async function fetchLyrics(id: number): Promise<{
+    lyric: string | null;
+    lyricist: string[] | null;
+    composer: string[] | null;
+}> {
+    try {
+        const res = await fetch(`${HETU_API_BASE}/lyric?id=${id}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        if (!res.ok) {
+            return { lyric: null, lyricist: null, composer: null };
+        }
+
+        const data = await res.json();
+
+        if (data.code !== 200 || !data.lrc?.lyric) {
+            return { lyric: null, lyricist: null, composer: null };
+        }
+
+        const rawLyric = data.lrc.lyric as string;
+
+        // 解析歌词中的元数据（作词、作曲）
+        const { lyricist, composer, cleanedLyric } = parseLyricMetadata(rawLyric);
+
+        return {
+            lyric: cleanedLyric,
+            lyricist,
+            composer,
+        };
+    } catch {
+        return { lyric: null, lyricist: null, composer: null };
+    }
+}
+
+/**
+ * 解析 LRC 歌词中的元数据（作词、作曲）
+ * 格式示例：
+ * [00:00.000] 作词 : 张国祥
+ * [00:01.000] 作曲 : 汤小康
+ *
+ * @param rawLyric - 原始 LRC 歌词
+ * @returns 解析后的数据
+ */
+function parseLyricMetadata(rawLyric: string): {
+    lyricist: string[] | null;
+    composer: string[] | null;
+    cleanedLyric: string;
+} {
+    const lines = rawLyric.split("\n");
+    let lyricist: string[] | null = null;
+    let composer: string[] | null = null;
+    const contentLines: string[] = [];
+
+    for (const line of lines) {
+        // 匹配 [时间戳] 作词 : xxx 或 [时间戳] 作曲 : xxx
+        const lyricistMatch = line.match(/\[\d{2}:\d{2}[.\d]*\]\s*作词\s*[:：]\s*(.+)/i);
+        const composerMatch = line.match(/\[\d{2}:\d{2}[.\d]*\]\s*作曲\s*[:：]\s*(.+)/i);
+
+        if (lyricistMatch) {
+            // 解析作词，可能有多人（用 / 或 、 分隔）
+            lyricist = lyricistMatch[1]
+                .split(/[/、,，]/)
+                .map((s) => s.trim())
+                .filter(Boolean);
+        } else if (composerMatch) {
+            // 解析作曲，可能有多人
+            composer = composerMatch[1]
+                .split(/[/、,，]/)
+                .map((s) => s.trim())
+                .filter(Boolean);
+        } else {
+            // 保留非元数据行
+            contentLines.push(line);
+        }
+    }
+
+    return {
+        lyricist: lyricist && lyricist.length > 0 ? lyricist : null,
+        composer: composer && composer.length > 0 ? composer : null,
+        cleanedLyric: contentLines.join("\n"),
+    };
+}
+
+/**
  * 获取歌曲详情 - 根据 id 获取详细信息
- * TODO: 实现获取歌曲详情的逻辑（歌词、作词、作曲等）
  *
  * @param id - 歌曲 ID
  * @param duration - 时长（毫秒），从搜索结果中获取
  * @param publishTime - 发布时间戳，从搜索结果中获取
+ * @param album - 专辑名，从搜索结果中获取
  * @returns 歌曲详情
  */
 async function getSongDetail(
@@ -163,25 +256,22 @@ async function getSongDetail(
     publishTime: number | null,
     album: string | null,
 ): Promise<AutoCompleteResponse> {
-    // TODO: 根据 id 调用更多 API 获取歌词、作词、作曲等信息
-    // 例如：
-    // - /lyric?id=${id} 获取歌词
-    // - /song/detail?ids=${id} 获取歌曲详情
+    // 获取歌词和作词作曲信息
+    const { lyric, lyricist, composer } = await fetchLyrics(id);
 
-    // 目前先返回基本信息
     return {
         album: album,
         length: msToSeconds(duration),
         date: timestampToDateString(publishTime),
-        // 以下字段需要后续 API 补充
-        lyricist: null,
-        composer: null,
+        lyrics: lyric,
+        lyricist: lyricist,
+        composer: composer,
+        // 以下字段暂无 API 支持
         arranger: null,
         albumartist: null,
         genre: null,
         type: null,
         comment: null,
-        lyrics: null,
     };
 }
 
