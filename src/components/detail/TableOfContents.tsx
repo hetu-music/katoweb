@@ -32,15 +32,10 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
 
     // 当 activeId 变化时，短暂显示标签
     useEffect(() => {
-        // 清除之前的定时器
         if (hideTimerRef.current) {
             clearTimeout(hideTimerRef.current);
         }
-
-        // 显示标签
         setShowActiveLabel(true);
-
-        // 0.75秒后隐藏
         hideTimerRef.current = setTimeout(() => {
             setShowActiveLabel(false);
         }, 750);
@@ -52,7 +47,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
         };
     }, [activeId]);
 
-    // 使用 IntersectionObserver 监听当前可见的 section
+    // IntersectionObserver 监听当前可见的 section
     useEffect(() => {
         if (typeof window === "undefined") return;
 
@@ -97,71 +92,153 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
     };
 
     return (
-        <nav
-            className="fixed right-4 lg:right-6 top-1/2 -translate-y-1/2 z-40 flex flex-col items-end gap-3"
-            aria-label="目录导航"
-        >
-            {navItems.map((item) => {
-                const isActive = activeId === item.id;
-                const isHovered = hoveredId === item.id;
-                // 只在悬停时或（激活且 showActiveLabel 为 true）时显示标签
-                const showLabel = isHovered || (isActive && showActiveLabel);
+        <>
+            {/* 平板及以上：右侧垂直导航 */}
+            <nav
+                className="fixed right-6 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col items-end gap-3"
+                aria-label="目录导航"
+            >
+                {navItems.map((item) => {
+                    const isActive = activeId === item.id;
+                    const isHovered = hoveredId === item.id;
+                    const showLabel = isHovered || (isActive && showActiveLabel);
 
-                return (
-                    <button
-                        key={item.id}
-                        onClick={() => handleClick(item.id)}
-                        onMouseEnter={() => setHoveredId(item.id)}
-                        onMouseLeave={() => setHoveredId(null)}
-                        className="group flex items-center gap-3 outline-none"
-                        aria-label={`跳转到${item.label}`}
-                        aria-current={isActive ? "location" : undefined}
-                    >
-                        {/* 标签 */}
-                        <span
-                            className={`
-                                px-3 py-1.5 rounded-full text-xs font-medium
-                                backdrop-blur-md border
-                                transition-all duration-300 ease-out
-                                ${showLabel
-                                    ? "opacity-100 translate-x-0"
-                                    : "opacity-0 translate-x-4 pointer-events-none"
-                                }
-                                ${isActive
-                                    ? "bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 border-transparent shadow-lg"
-                                    : "bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50"
-                                }
-                            `}
+                    return (
+                        <button
+                            key={item.id}
+                            onClick={() => handleClick(item.id)}
+                            onMouseEnter={() => setHoveredId(item.id)}
+                            onMouseLeave={() => setHoveredId(null)}
+                            className="group flex items-center gap-3 outline-none"
+                            aria-label={`跳转到${item.label}`}
+                            aria-current={isActive ? "location" : undefined}
                         >
-                            {item.label}
-                        </span>
+                            {/* 标签 */}
+                            <span
+                                className={`
+                                    px-3 py-1.5 rounded-full text-xs font-medium
+                                    backdrop-blur-md border
+                                    transition-all duration-300 ease-out
+                                    ${showLabel
+                                        ? "opacity-100 translate-x-0"
+                                        : "opacity-0 translate-x-4 pointer-events-none"
+                                    }
+                                    ${isActive
+                                        ? "bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 border-transparent shadow-lg"
+                                        : "bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50"
+                                    }
+                                `}
+                            >
+                                {item.label}
+                            </span>
 
-                        {/* 指示点 */}
-                        <span
-                            className={`
-                                relative flex items-center justify-center
-                                w-3 h-3 rounded-full
-                                transition-all duration-300 ease-out
-                                ${isActive
-                                    ? "bg-slate-900 dark:bg-white scale-100"
-                                    : "bg-slate-300 dark:bg-slate-600 scale-75 group-hover:scale-100 group-hover:bg-slate-400 dark:group-hover:bg-slate-500"
-                                }
-                            `}
-                        >
-                            {isActive && (
-                                <span className="absolute inset-0 rounded-full bg-slate-900/30 dark:bg-white/30 animate-ping" />
-                            )}
-                        </span>
-                    </button>
-                );
-            })}
+                            {/* 指示点 */}
+                            <span
+                                className={`
+                                    relative flex items-center justify-center
+                                    w-3 h-3 rounded-full
+                                    transition-all duration-300 ease-out
+                                    ${isActive
+                                        ? "bg-slate-900 dark:bg-white scale-100"
+                                        : "bg-slate-300 dark:bg-slate-600 scale-75 group-hover:scale-100 group-hover:bg-slate-400 dark:group-hover:bg-slate-500"
+                                    }
+                                `}
+                            >
+                                {isActive && (
+                                    <span className="absolute inset-0 rounded-full bg-slate-900/30 dark:bg-white/30 animate-ping" />
+                                )}
+                            </span>
+                        </button>
+                    );
+                })}
 
-            {/* 连接线 */}
-            <div
-                className="absolute right-[5px] top-0 bottom-0 w-[2px] bg-gradient-to-b from-transparent via-slate-200 dark:via-slate-700 to-transparent -z-10"
-                aria-hidden="true"
-            />
-        </nav>
+                {/* 连接线 */}
+                <div
+                    className="absolute right-[5px] top-0 bottom-0 w-[2px] bg-gradient-to-b from-transparent via-slate-200 dark:via-slate-700 to-transparent -z-10"
+                    aria-hidden="true"
+                />
+            </nav>
+
+            {/* 手机端：底部水平导航 */}
+            <nav
+                className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 md:hidden"
+                aria-label="目录导航"
+            >
+                <div className="flex items-center gap-4 px-4 py-3 rounded-full bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-lg shadow-slate-900/5 dark:shadow-black/20">
+                    {/* 水平连接线 */}
+                    <div
+                        className="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-[2px] bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent -z-10"
+                        aria-hidden="true"
+                    />
+
+                    {navItems.map((item) => {
+                        const isActive = activeId === item.id;
+                        const isHovered = hoveredId === item.id;
+                        const showLabel = isHovered || (isActive && showActiveLabel);
+
+                        return (
+                            <button
+                                key={item.id}
+                                onClick={() => handleClick(item.id)}
+                                onMouseEnter={() => setHoveredId(item.id)}
+                                onMouseLeave={() => setHoveredId(null)}
+                                className="group relative flex flex-col items-center outline-none"
+                                aria-label={`跳转到${item.label}`}
+                                aria-current={isActive ? "location" : undefined}
+                            >
+                                {/* 标签 - 向上弹出 */}
+                                <span
+                                    className={`
+                                        absolute -top-10 left-1/2 -translate-x-1/2
+                                        px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap
+                                        backdrop-blur-md border
+                                        transition-all duration-300 ease-out
+                                        ${showLabel
+                                            ? "opacity-100 translate-y-0"
+                                            : "opacity-0 translate-y-2 pointer-events-none"
+                                        }
+                                        ${isActive
+                                            ? "bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 border-transparent shadow-lg"
+                                            : "bg-white/90 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50"
+                                        }
+                                    `}
+                                >
+                                    {item.label}
+                                    {/* 小三角 */}
+                                    <span
+                                        className={`
+                                            absolute -bottom-1 left-1/2 -translate-x-1/2
+                                            border-4 border-transparent
+                                            ${isActive
+                                                ? "border-t-slate-900/90 dark:border-t-white/90"
+                                                : "border-t-white/90 dark:border-t-slate-800/90"
+                                            }
+                                        `}
+                                    />
+                                </span>
+
+                                {/* 指示点 */}
+                                <span
+                                    className={`
+                                        relative flex items-center justify-center
+                                        w-3 h-3 rounded-full
+                                        transition-all duration-300 ease-out
+                                        ${isActive
+                                            ? "bg-slate-900 dark:bg-white scale-125"
+                                            : "bg-slate-300 dark:bg-slate-600 scale-100 group-hover:scale-110 group-hover:bg-slate-400 dark:group-hover:bg-slate-500"
+                                        }
+                                    `}
+                                >
+                                    {isActive && (
+                                        <span className="absolute inset-0 rounded-full bg-slate-900/30 dark:bg-white/30 animate-ping" />
+                                    )}
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </nav>
+        </>
     );
 };
 
