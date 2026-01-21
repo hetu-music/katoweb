@@ -1,14 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-    Info,
-    Mic2,
-    LayoutTemplate,
-    PenTool,
-    List,
-    X,
-} from "lucide-react";
+import React, { useState, useEffect } from "react";
 import { SongDetail } from "@/lib/types";
 
 // 简易 classNames 工具
@@ -21,18 +13,37 @@ interface TableOfContentsProps {
 }
 
 const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
-    const [isOpen, setIsOpen] = useState(false);
+    const [activeSection, setActiveSection] = useState<string>("info");
 
     const navItems = [
-        { id: "info", label: "Basic Info", icon: Info },
-        ...(song.comment
-            ? [{ id: "remarks", label: "Remarks", icon: PenTool }]
-            : []),
-        { id: "lyrics", label: "Lyrics", icon: Mic2 },
-        ...(song.nmn_status
-            ? [{ id: "score", label: "Score", icon: LayoutTemplate }]
-            : []),
+        { id: "info", label: "Basic Info" },
+        ...(song.comment ? [{ id: "remarks", label: "Remarks" }] : []),
+        { id: "lyrics", label: "Lyrics" },
+        ...(song.nmn_status ? [{ id: "score", label: "Score" }] : []),
     ];
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollPosition = window.scrollY + 200; // Offset for better triggering
+
+            for (const item of navItems) {
+                const element = document.getElementById(item.id);
+                if (element) {
+                    const { offsetTop, offsetHeight } = element;
+                    if (
+                        scrollPosition >= offsetTop &&
+                        scrollPosition < offsetTop + offsetHeight
+                    ) {
+                        setActiveSection(item.id);
+                    }
+                }
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll);
+        handleScroll(); // Initial check
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, [navItems]);
 
     const handleScrollTo = (id: string) => {
         const element = document.getElementById(id);
@@ -44,51 +55,43 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                 top: elementPosition - offset,
                 behavior: "smooth",
             });
-            setIsOpen(false);
         }
     };
 
     return (
-        <div className="fixed right-6 top-1/2 -translate-y-1/2 z-40 flex flex-col items-end gap-4">
-            {/* 展开后的菜单 */}
-            <div
-                className={cn(
-                    "bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 shadow-xl rounded-2xl p-2 transition-all duration-300 origin-right overflow-hidden",
-                    isOpen
-                        ? "opacity-100 scale-100 translate-x-0 w-48"
-                        : "opacity-0 scale-95 translate-x-8 w-0 pointer-events-none p-0 border-0"
-                )}
-            >
-                <div className="flex flex-col gap-1">
-                    {navItems.map((item) => (
-                        <button
-                            key={item.id}
-                            onClick={() => handleScrollTo(item.id)}
-                            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-all group w-full text-left"
-                        >
-                            <item.icon
-                                size={16}
-                                className="opacity-50 group-hover:opacity-100 transition-opacity"
-                            />
-                            <span>{item.label}</span>
-                        </button>
-                    ))}
-                </div>
-            </div>
+        <div className="fixed right-8 top-1/2 -translate-y-1/2 z-40 hidden lg:flex flex-col gap-4">
+            {navItems.map((item) => (
+                <button
+                    key={item.id}
+                    onClick={() => handleScrollTo(item.id)}
+                    className="group relative flex items-center justify-end"
+                    aria-label={`Scroll to ${item.label}`}
+                >
+                    {/* Label (Tooltip) */}
+                    <span
+                        className={cn(
+                            "absolute right-8 px-3 py-1.5 rounded-md bg-slate-900/80 dark:bg-white/90 text-white dark:text-slate-900 text-xs font-medium whitespace-nowrap opacity-0 transform translate-x-2 transition-all duration-300 pointer-events-none",
+                            activeSection === item.id
+                                ? "opacity-100 translate-x-0"
+                                : "group-hover:opacity-100 group-hover:translate-x-0"
+                        )}
+                    >
+                        {item.label}
+                        {/* Arrow */}
+                        <span className="absolute top-1/2 -right-1 -translate-y-1/2 border-4 border-transparent border-l-slate-900/80 dark:border-l-white/90"></span>
+                    </span>
 
-            {/* 触发按钮 */}
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className={cn(
-                    "h-12 w-12 rounded-full shadow-lg flex items-center justify-center transition-all duration-300",
-                    isOpen
-                        ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rotate-90"
-                        : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:scale-110"
-                )}
-                title={isOpen ? "关闭目录" : "显示目录"}
-            >
-                {isOpen ? <X size={20} /> : <List size={20} />}
-            </button>
+                    {/* Dot */}
+                    <div
+                        className={cn(
+                            "w-3 h-3 rounded-full border-2 transition-all duration-300",
+                            activeSection === item.id
+                                ? "bg-slate-900 dark:bg-white border-slate-900 dark:border-white scale-125"
+                                : "bg-transparent border-slate-400 dark:border-slate-600 group-hover:border-slate-600 dark:group-hover:border-slate-400"
+                        )}
+                    />
+                </button>
+            ))}
         </div>
     );
 };
