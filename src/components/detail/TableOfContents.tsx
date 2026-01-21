@@ -40,10 +40,10 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
         // 显示标签
         setShowActiveLabel(true);
 
-        // 1.5秒后隐藏
+        // 0.75秒后隐藏
         hideTimerRef.current = setTimeout(() => {
             setShowActiveLabel(false);
-        }, 1500);
+        }, 750);
 
         return () => {
             if (hideTimerRef.current) {
@@ -98,7 +98,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
 
     return (
         <nav
-            className="fixed right-6 top-1/2 -translate-y-1/2 z-40 hidden lg:flex flex-col items-end gap-3"
+            className="fixed right-4 lg:right-6 top-1/2 -translate-y-1/2 z-40 flex flex-col items-end gap-3"
             aria-label="目录导航"
         >
             {navItems.map((item) => {
