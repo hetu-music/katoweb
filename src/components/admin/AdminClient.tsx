@@ -29,6 +29,7 @@ import {
   apiSearchSongs,
   apiGetSongDetail,
   type SearchResultItem,
+  type MusicProviderType,
 } from "@/lib/api-auto-complete";
 import { useSongs } from "@/hooks/useSongs";
 import { useAuth } from "@/hooks/useAuth";
@@ -482,6 +483,7 @@ export default function AdminClientComponent({
   const [isAutoCompleting, setIsAutoCompleting] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [currentProvider, setCurrentProvider] = useState<MusicProviderType>("netease");
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   // Scroll listener
@@ -595,7 +597,7 @@ export default function AdminClientComponent({
   };
 
   // 自动补全 - 第一步：搜索歌曲
-  const handleAutoComplete = async () => {
+  const handleAutoComplete = async (provider: MusicProviderType) => {
     if (!editForm.title) {
       setOperationMsg({ type: "error", text: "请先输入歌曲标题" });
       setTimeout(() => setOperationMsg(null), 3000);
@@ -604,6 +606,7 @@ export default function AdminClientComponent({
 
     try {
       setIsAutoCompleting(true);
+      setCurrentProvider(provider);
 
       // 构建搜索关键词：标题 + 艺术家（如果有）
       const keywordsParts = [editForm.title as string];
@@ -616,7 +619,7 @@ export default function AdminClientComponent({
       }
       const keywords = keywordsParts.join(" ");
 
-      const response = await apiSearchSongs(keywords, csrfToken, 10);
+      const response = await apiSearchSongs(keywords, csrfToken, provider, 10);
 
       if (response.results.length === 0) {
         setOperationMsg({ type: "error", text: "未找到匹配的歌曲" });
@@ -644,7 +647,7 @@ export default function AdminClientComponent({
       setIsAutoCompleting(true);
       setShowSearchResults(false);
 
-      const data = await apiGetSongDetail(song, csrfToken);
+      const data = await apiGetSongDetail(song, csrfToken, currentProvider);
 
       // 合并获取到的数据到表单（只填充当前为空的字段）
       setEditForm((prev) => {
@@ -888,25 +891,46 @@ export default function AdminClientComponent({
                 </h2>
                 {/* 自动补全按钮 - 仅在编辑模式下显示 */}
                 {editSong && (
-                  <button
-                    type="button"
-                    onClick={handleAutoComplete}
-                    disabled={isAutoCompleting}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
-                      "bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-400 hover:to-purple-400",
-                      "text-white shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/30",
-                      "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-md",
-                    )}
-                    title="从 API 自动补全歌曲信息"
-                  >
-                    {isAutoCompleting ? (
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <Wand2 size={16} />
-                    )}
-                    <span>自动补全</span>
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => handleAutoComplete("netease")}
+                      disabled={isAutoCompleting}
+                      className={cn(
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
+                        "bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-400 hover:to-rose-400",
+                        "text-white shadow-md shadow-red-500/20 hover:shadow-lg hover:shadow-red-500/30",
+                        "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-md",
+                      )}
+                      title="从网易云音乐自动补全"
+                    >
+                      {isAutoCompleting && currentProvider === "netease" ? (
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <Wand2 size={16} />
+                      )}
+                      <span>网易云</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAutoComplete("kugou")}
+                      disabled={isAutoCompleting}
+                      className={cn(
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
+                        "bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400",
+                        "text-white shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30",
+                        "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-md",
+                      )}
+                      title="从酷狗音乐自动补全"
+                    >
+                      {isAutoCompleting && currentProvider === "kugou" ? (
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <Wand2 size={16} />
+                      )}
+                      <span>酷狗</span>
+                    </button>
+                  </>
                 )}
               </div>
               <button

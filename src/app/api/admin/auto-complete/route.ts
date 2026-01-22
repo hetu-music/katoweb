@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
 import type { DetailResponse } from "@/lib/api-auto-complete";
-import { neteaseProvider, type MusicProvider } from "./providers";
+import { neteaseProvider, kugouProvider, type MusicProvider } from "./providers";
 
 // ============================================
 // 提供者注册表
@@ -9,8 +9,7 @@ import { neteaseProvider, type MusicProvider } from "./providers";
 
 const providers: Record<string, MusicProvider> = {
   netease: neteaseProvider,
-  // 后续可添加其他提供者，例如：
-  // kugou: kugouProvider,
+  kugou: kugouProvider,
 };
 
 /** 默认提供者 */
@@ -65,10 +64,19 @@ export const GET = withAuth(
         const album = searchParams.get("album");
         const albumartist = searchParams.get("albumartist");
 
+        // 解析 ID：网易云是数字，酷狗是字符串 (FileHash)
+        const parsedId = /^\d+$/.test(id) ? parseInt(id, 10) : id;
+        // 解析 publishTime：可能是时间戳数字或日期字符串
+        const parsedPublishTime = publishTime
+          ? /^\d+$/.test(publishTime)
+            ? parseInt(publishTime, 10)
+            : publishTime
+          : null;
+
         const data = await provider.getSongDetail(
-          parseInt(id, 10),
+          parsedId,
           duration ? parseInt(duration, 10) : null,
-          publishTime ? parseInt(publishTime, 10) : null,
+          parsedPublishTime,
           album || null,
           albumartist || null,
         );

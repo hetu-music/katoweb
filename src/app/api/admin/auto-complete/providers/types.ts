@@ -16,9 +16,9 @@ export interface MusicProvider {
 
     /** 获取歌曲详情 */
     getSongDetail(
-        id: number,
+        id: number | string,
         duration: number | null,
-        publishTime: number | null,
+        publishTime: number | string | null,
         album: string | null,
         albumartist: string | null,
     ): Promise<AutoCompleteResponse>;
