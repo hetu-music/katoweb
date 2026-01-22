@@ -3,7 +3,7 @@ import type {
     SearchResponse,
     AutoCompleteResponse,
 } from "@/lib/api-auto-complete";
-import { type MusicProvider, msToSeconds, timestampToDateString } from "./types";
+import { type MusicProvider, msToSeconds, timestampToDateString, parseLyricMetadata } from "./types";
 
 // ============================================
 // 常量定义
@@ -42,50 +42,6 @@ async function fetchLyrics(id: number): Promise<{
     } catch {
         return { lyric: null, lyricist: null, composer: null, arranger: null };
     }
-}
-
-/**
- * 解析 LRC 格式歌词中的元数据
- */
-function parseLyricMetadata(rawLyric: string) {
-    const lines = rawLyric.split("\n");
-    let lyricist: string[] | null = null;
-    let composer: string[] | null = null;
-    let arranger: string[] | null = null;
-
-    for (const line of lines) {
-        // 简单正则匹配 [时间] 标签 : 内容
-        const lyricistMatch = line.match(
-            /\[\d{2}:\d{2}[.\d]*\]\s*作词\s*[:：]\s*(.+)/i,
-        );
-        const composerMatch = line.match(
-            /\[\d{2}:\d{2}[.\d]*\]\s*作曲\s*[:：]\s*(.+)/i,
-        );
-        const arrangerMatch = line.match(
-            /\[\d{2}:\d{2}[.\d]*\]\s*编曲\s*[:：]\s*(.+)/i,
-        );
-
-        const splitNames = (str: string) =>
-            str
-                .split(/[/、,，]/)
-                .map((s) => s.trim())
-                .filter(Boolean);
-
-        if (lyricistMatch) {
-            lyricist = splitNames(lyricistMatch[1]);
-        } else if (composerMatch) {
-            composer = splitNames(composerMatch[1]);
-        } else if (arrangerMatch) {
-            arranger = splitNames(arrangerMatch[1]);
-        }
-    }
-
-    return {
-        lyricist: lyricist?.length ? lyricist : null,
-        composer: composer?.length ? composer : null,
-        arranger: arranger?.length ? arranger : null,
-        lyric: rawLyric,
-    };
 }
 
 // ============================================

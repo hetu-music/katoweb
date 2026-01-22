@@ -3,13 +3,64 @@ import type {
     SearchResponse,
     AutoCompleteResponse,
 } from "@/lib/api-auto-complete";
-import { type MusicProvider } from "./types";
+import { type MusicProvider, parseLyricMetadata } from "./types";
 
 // ============================================
 // 常量定义
 // ============================================
 
 const KUGOU_API_BASE = "http://kgm:3000";
+
+// ============================================
+// 内部辅助函数
+// ============================================
+
+/**
+ * 获取酷狗歌词
+ * 1. 先通过 hash 搜索歌词，获取 id 和 accesskey
+ * 2. 再通过 id 和 accesskey 获取解码后的歌词
+ */
+async function fetchLyrics(hash: string): Promise<string | null> {
+    try {
+        // 第一步：搜索歌词获取 candidates
+        const searchRes = await fetch(
+            `${KUGOU_API_BASE}/search/lyric?hash=${hash}`,
+            {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+            },
+        );
+
+        if (!searchRes.ok) return null;
+
+        const searchData = await searchRes.json();
+
+        // 获取第一个歌词候选
+        const candidates = searchData.candidates;
+        if (!candidates || !Array.isArray(candidates) || candidates.length === 0) {
+            return null;
+        }
+
+        const { id, accesskey } = candidates[0];
+        if (!id || !accesskey) return null;
+
+        // 第二步：获取解码后的歌词
+        const lyricRes = await fetch(
+            `${KUGOU_API_BASE}/lyric?id=${id}&accesskey=${accesskey}&decode=true`,
+            {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+            },
+        );
+
+        if (!lyricRes.ok) return null;
+
+        const lyricData = await lyricRes.json();
+        return lyricData.decodeContent || null;
+    } catch {
+        return null;
+    }
+}
 
 // ============================================
 // 酷狗音乐提供者
@@ -74,18 +125,20 @@ export const kugouProvider: MusicProvider = {
         album: string | null,
         albumartist: string | null,
     ): Promise<AutoCompleteResponse> {
-        // 酷狗的详情 API 可以进一步获取歌词等信息
-        // 但目前基础信息已经从搜索结果中获取
-        // 如果需要歌词等额外信息，可以在此扩展
+        // 获取歌词（id 就是 FileHash）
+        const rawLyrics = await fetchLyrics(id.toString());
+
+        // 解析歌词元数据
+        const lyricData = rawLyrics ? parseLyricMetadata(rawLyrics) : null;
 
         return {
             album,
             length: duration, // 酷狗已经是秒，无需转换
-            date: typeof publishTime === "string" ? publishTime : null, // 酷狗直接返回日期字符串
-            lyrics: null, // 酷狗获取歌词需要额外接口，暂不实现
-            lyricist: null,
-            composer: null,
-            arranger: null,
+            date: typeof publishTime === "string" ? publishTime : null,
+            lyrics: lyricData?.lyric || null,
+            lyricist: lyricData?.lyricist || null,
+            composer: lyricData?.composer || null,
+            arranger: lyricData?.arranger || null,
             albumartist: albumartist ? [albumartist] : null,
             genre: null,
             type: null,
