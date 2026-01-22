@@ -9,7 +9,7 @@ import { type MusicProvider, parseLyricMetadata } from "./types";
 // 常量定义
 // ============================================
 
-const KUGOU_API_BASE = "http://kgm:3000";
+const KUGOU_API_BASE = "http://kgm-api:3000";
 
 // ============================================
 // 内部辅助函数
