@@ -43,14 +43,14 @@ export const kugouProvider: MusicProvider = {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const results: SearchResultItem[] = data.data.lists.map((song: any) => {
-            // 处理歌手数组
-            const singers = song.Singers || [];
-            const artistNames = singers.map((s: { name: string }) => s.name);
+            // 处理歌手数组：song.Singers 是 [{name: "xxx", id: xxx}, ...] 格式
+            const singers: Array<{ name: string; id: number }> = song.Singers || [];
+            const artistNames = singers.map((s) => s.name);
             const firstArtist = artistNames.length > 0 ? artistNames[0] : null;
 
             return {
                 id: song.FileHash, // 酷狗使用 FileHash 作为 ID
-                name: song.OriSongName || song.SongName,
+                name: song.OriSongName || song.FileName?.split(" - ").pop() || "",
                 album: song.AlbumName || null,
                 albumartist: firstArtist,
                 artists: artistNames,
