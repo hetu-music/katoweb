@@ -25,8 +25,14 @@ import ThemeToggle from "@/components/shared/ThemeToggle";
 import Pagination from "@/components/shared/Pagination";
 import { usePagination } from "@/hooks/usePagination";
 import { apiCreateSong, apiUpdateSong } from "@/lib/client-api";
-import { type SearchResultItem, type MusicProviderType } from "@/lib/api-auto-complete";
-import { useAutoComplete, mergeAutoCompleteData } from "@/hooks/useAutoComplete";
+import {
+  type SearchResultItem,
+  type MusicProviderType,
+} from "@/lib/api-auto-complete";
+import {
+  useAutoComplete,
+  mergeAutoCompleteData,
+} from "@/hooks/useAutoComplete";
 import { useSongs } from "@/hooks/useSongs";
 import { useAuth } from "@/hooks/useAuth";
 import Account from "./Account";
@@ -596,8 +602,15 @@ export default function AdminClientComponent({
 
   // 自动补全处理函数
   const handleAutoComplete = async (provider: MusicProviderType) => {
-    const artists = editForm.artist && Array.isArray(editForm.artist) ? editForm.artist : undefined;
-    await autoComplete.handleAutoComplete(provider, editForm.title as string, artists);
+    const artists =
+      editForm.artist && Array.isArray(editForm.artist)
+        ? editForm.artist
+        : undefined;
+    await autoComplete.handleAutoComplete(
+      provider,
+      editForm.title as string,
+      artists,
+    );
   };
 
   const handleSelectSearchResult = async (song: SearchResultItem) => {
@@ -833,7 +846,8 @@ export default function AdminClientComponent({
                       )}
                       title="从网易云音乐自动补全"
                     >
-                      {autoComplete.isAutoCompleting && autoComplete.currentProvider === "netease" ? (
+                      {autoComplete.isAutoCompleting &&
+                      autoComplete.currentProvider === "netease" ? (
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       ) : (
                         <Wand2 size={16} />
@@ -852,7 +866,8 @@ export default function AdminClientComponent({
                       )}
                       title="从酷狗音乐自动补全"
                     >
-                      {autoComplete.isAutoCompleting && autoComplete.currentProvider === "kugou" ? (
+                      {autoComplete.isAutoCompleting &&
+                      autoComplete.currentProvider === "kugou" ? (
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       ) : (
                         <Wand2 size={16} />
@@ -962,41 +977,44 @@ export default function AdminClientComponent({
 
             {/* 搜索结果列表 */}
             <div className="flex-1 overflow-y-auto">
-              {autoComplete.searchResults.map((result: SearchResultItem, index: number) => (
-                <button
-                  key={result.id}
-                  onClick={() => handleSelectSearchResult(result)}
-                  className={cn(
-                    "w-full px-6 py-4 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors",
-                    "border-b border-slate-100 dark:border-slate-800 last:border-b-0",
-                  )}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 text-sm font-medium shrink-0">
-                      {index + 1}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-slate-900 dark:text-white truncate">
-                        {result.name}
+              {autoComplete.searchResults.map(
+                (result: SearchResultItem, index: number) => (
+                  <button
+                    key={result.id}
+                    onClick={() => handleSelectSearchResult(result)}
+                    className={cn(
+                      "w-full px-6 py-4 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors",
+                      "border-b border-slate-100 dark:border-slate-800 last:border-b-0",
+                    )}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 text-sm font-medium shrink-0">
+                        {index + 1}
                       </div>
-                      <div className="text-sm text-slate-500 dark:text-slate-400 truncate mt-0.5">
-                        {result.artists.join(", ") || "未知艺术家"}
-                      </div>
-                      {result.album && (
-                        <div className="text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5">
-                          专辑: {result.album}
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-slate-900 dark:text-white truncate">
+                          {result.name}
                         </div>
-                      )}
+                        <div className="text-sm text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                          {result.artists.join(", ") || "未知艺术家"}
+                        </div>
+                        {result.album && (
+                          <div className="text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                            专辑: {result.album}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                ),
+              )}
             </div>
 
             {/* 弹窗 Footer */}
             <div className="px-6 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-[#151921]">
               <p className="text-xs text-slate-400 text-center">
-                共找到 {autoComplete.searchResults.length} 个结果，点击选择要补全的歌曲
+                共找到 {autoComplete.searchResults.length}{" "}
+                个结果，点击选择要补全的歌曲
               </p>
             </div>
           </div>
