@@ -25,12 +25,8 @@ import ThemeToggle from "@/components/shared/ThemeToggle";
 import Pagination from "@/components/shared/Pagination";
 import { usePagination } from "@/hooks/usePagination";
 import { apiCreateSong, apiUpdateSong } from "@/lib/client-api";
-import {
-  apiSearchSongs,
-  apiGetSongDetail,
-  type SearchResultItem,
-  type MusicProviderType,
-} from "@/lib/api-auto-complete";
+import { type SearchResultItem, type MusicProviderType } from "@/lib/api-auto-complete";
+import { useAutoComplete, mergeAutoCompleteData } from "@/hooks/useAutoComplete";
 import { useSongs } from "@/hooks/useSongs";
 import { useAuth } from "@/hooks/useAuth";
 import Account from "./Account";
@@ -480,11 +476,13 @@ export default function AdminClientComponent({
   } | null>(null);
   const [showNotification, setShowNotification] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isAutoCompleting, setIsAutoCompleting] = useState(false);
-  const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
-  const [showSearchResults, setShowSearchResults] = useState(false);
-  const [currentProvider, setCurrentProvider] = useState<MusicProviderType>("netease");
   const [showScrollTop, setShowScrollTop] = useState(false);
+
+  // 自动补全 Hook
+  const autoComplete = useAutoComplete(csrfToken, (msg) => {
+    setOperationMsg({ type: "error", text: msg });
+    setTimeout(() => setOperationMsg(null), 3000);
+  });
 
   // Scroll listener
   useEffect(() => {
@@ -596,87 +594,18 @@ export default function AdminClientComponent({
     setEditForm({ ...song });
   };
 
-  // 自动补全 - 第一步：搜索歌曲
+  // 自动补全处理函数
   const handleAutoComplete = async (provider: MusicProviderType) => {
-    if (!editForm.title) {
-      setOperationMsg({ type: "error", text: "请先输入歌曲标题" });
-      setTimeout(() => setOperationMsg(null), 3000);
-      return;
-    }
-
-    try {
-      setIsAutoCompleting(true);
-      setCurrentProvider(provider);
-
-      // 构建搜索关键词：标题 + 艺术家（如果有）
-      const keywordsParts = [editForm.title as string];
-      if (
-        editForm.artist &&
-        Array.isArray(editForm.artist) &&
-        editForm.artist.length > 0
-      ) {
-        keywordsParts.push(...editForm.artist);
-      }
-      const keywords = keywordsParts.join(" ");
-
-      const response = await apiSearchSongs(keywords, csrfToken, provider, 10);
-
-      if (response.results.length === 0) {
-        setOperationMsg({ type: "error", text: "未找到匹配的歌曲" });
-        setTimeout(() => setOperationMsg(null), 3000);
-        return;
-      }
-
-      // 显示搜索结果供用户选择
-      setSearchResults(response.results);
-      setShowSearchResults(true);
-    } catch (err) {
-      setOperationMsg({
-        type: "error",
-        text: err instanceof Error ? err.message : "搜索失败",
-      });
-      setTimeout(() => setOperationMsg(null), 3000);
-    } finally {
-      setIsAutoCompleting(false);
-    }
+    const artists = editForm.artist && Array.isArray(editForm.artist) ? editForm.artist : undefined;
+    await autoComplete.handleAutoComplete(provider, editForm.title as string, artists);
   };
 
-  // 自动补全 - 第二步：用户选择歌曲后获取详情
   const handleSelectSearchResult = async (song: SearchResultItem) => {
-    try {
-      setIsAutoCompleting(true);
-      setShowSearchResults(false);
-
-      const data = await apiGetSongDetail(song, csrfToken, currentProvider);
-
-      // 合并获取到的数据到表单（只填充当前为空的字段）
-      setEditForm((prev) => {
-        const merged = { ...prev };
-        for (const [key, value] of Object.entries(data)) {
-          const currentValue = prev[key as keyof typeof prev];
-          // 只填充空字段
-          const isEmpty =
-            currentValue === null ||
-            currentValue === undefined ||
-            (Array.isArray(currentValue) && currentValue.length === 0) ||
-            (typeof currentValue === "string" && currentValue.trim() === "");
-          if (isEmpty && value !== null && value !== undefined) {
-            (merged as Record<string, unknown>)[key] = value;
-          }
-        }
-        return merged;
-      });
-
+    const data = await autoComplete.handleSelectSearchResult(song);
+    if (data) {
+      setEditForm((prev) => mergeAutoCompleteData(prev, data));
       setOperationMsg({ type: "success", text: "自动补全成功" });
       setTimeout(() => setOperationMsg(null), 3000);
-    } catch (err) {
-      setOperationMsg({
-        type: "error",
-        text: err instanceof Error ? err.message : "获取详情失败",
-      });
-      setTimeout(() => setOperationMsg(null), 3000);
-    } finally {
-      setIsAutoCompleting(false);
     }
   };
 
@@ -895,7 +824,7 @@ export default function AdminClientComponent({
                     <button
                       type="button"
                       onClick={() => handleAutoComplete("netease")}
-                      disabled={isAutoCompleting}
+                      disabled={autoComplete.isAutoCompleting}
                       className={cn(
                         "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
                         "bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-400 hover:to-rose-400",
@@ -904,7 +833,7 @@ export default function AdminClientComponent({
                       )}
                       title="从网易云音乐自动补全"
                     >
-                      {isAutoCompleting && currentProvider === "netease" ? (
+                      {autoComplete.isAutoCompleting && autoComplete.currentProvider === "netease" ? (
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       ) : (
                         <Wand2 size={16} />
@@ -914,7 +843,7 @@ export default function AdminClientComponent({
                     <button
                       type="button"
                       onClick={() => handleAutoComplete("kugou")}
-                      disabled={isAutoCompleting}
+                      disabled={autoComplete.isAutoCompleting}
                       className={cn(
                         "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
                         "bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400",
@@ -923,7 +852,7 @@ export default function AdminClientComponent({
                       )}
                       title="从酷狗音乐自动补全"
                     >
-                      {isAutoCompleting && currentProvider === "kugou" ? (
+                      {autoComplete.isAutoCompleting && autoComplete.currentProvider === "kugou" ? (
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       ) : (
                         <Wand2 size={16} />
@@ -1015,7 +944,7 @@ export default function AdminClientComponent({
       )}
 
       {/* 搜索结果选择弹窗 */}
-      {showSearchResults && (
+      {autoComplete.showSearchResults && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-[#151921] w-full max-w-lg max-h-[70vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-slate-200/50 dark:border-slate-800">
             {/* 弹窗 Header */}
@@ -1024,7 +953,7 @@ export default function AdminClientComponent({
                 选择歌曲
               </h3>
               <button
-                onClick={() => setShowSearchResults(false)}
+                onClick={() => autoComplete.closeSearchResults()}
                 className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors"
               >
                 <X size={18} />
@@ -1033,7 +962,7 @@ export default function AdminClientComponent({
 
             {/* 搜索结果列表 */}
             <div className="flex-1 overflow-y-auto">
-              {searchResults.map((result, index) => (
+              {autoComplete.searchResults.map((result: SearchResultItem, index: number) => (
                 <button
                   key={result.id}
                   onClick={() => handleSelectSearchResult(result)}
@@ -1067,7 +996,7 @@ export default function AdminClientComponent({
             {/* 弹窗 Footer */}
             <div className="px-6 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-[#151921]">
               <p className="text-xs text-slate-400 text-center">
-                共找到 {searchResults.length} 个结果，点击选择要补全的歌曲
+                共找到 {autoComplete.searchResults.length} 个结果，点击选择要补全的歌曲
               </p>
             </div>
           </div>
