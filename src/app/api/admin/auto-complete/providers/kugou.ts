@@ -90,7 +90,7 @@ export const kugouProvider: MusicProvider = {
             genre: null,
             type: null,
             comment: null,
-            kglink: `https://www.kugou.com/song/#hash=${id}`,
+            // kglink: 格式待确定
         };
     },
 };

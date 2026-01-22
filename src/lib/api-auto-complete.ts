@@ -45,7 +45,7 @@ export type AutoCompleteResponse = {
   comment?: string | null;
   lyrics?: string | null;
   nelink?: string | null; // 网易云音乐链接: https://music.163.com/#/song?id={id}
-  kglink?: string | null; // 酷狗音乐链接: https://www.kugou.com/song/#hash={hash}
+  // kglink?: string | null; // 酷狗音乐链接格式待确定
 };
 
 /**
