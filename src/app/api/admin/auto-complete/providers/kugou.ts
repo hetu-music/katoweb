@@ -46,7 +46,7 @@ async function fetchLyrics(hash: string): Promise<string | null> {
 
     // 第二步：获取解码后的歌词
     const lyricRes = await fetch(
-      `${KUGOU_API_BASE}/lyric?id=${id}&accesskey=${accesskey}&decode=true`,
+      `${KUGOU_API_BASE}/lyric?id=${id}&accesskey=${accesskey}&decode=true&fmt=lrc`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },
