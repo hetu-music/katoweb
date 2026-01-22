@@ -2,17 +2,20 @@
 // 自动补全相关类型和函数
 // ============================================
 
+/** 支持的音乐提供者 */
+export type MusicProviderType = "netease" | "kugou";
+
 /**
  * 搜索结果项 - 供用户选择
  */
 export type SearchResultItem = {
-  id: number;
+  id: string | number; // 网易云是数字，酷狗是 FileHash 字符串
   name: string;
   album: string | null;
-  albumartist: string | null; // album.artist.name，用于 albumartist 字段
+  albumartist: string | null;
   artists: string[];
-  duration: number | null; // 毫秒
-  publishTime: number | null; // 时间戳
+  duration: number | null; // 毫秒（网易云）或秒（酷狗，会转换为秒）
+  publishTime: string | number | null; // 时间戳（网易云）或日期字符串（酷狗）
 };
 
 /**
@@ -27,21 +30,22 @@ export type SearchResponse = {
 
 /**
  * 自动补全最终返回的 JSON 结构
- * 包含：album, genre, lyricist, composer, length, date, type, albumartist, arranger, comment, lyrics
- * 排除：title, hascover, discnumber, disctotal, tracktotal, track, kugolink, qmlink, nelink, nmn_status, artist
+ * 包含：album, genre, lyricist, composer, length, date, type, albumartist, arranger, comment, lyrics, nelink, kglink
  */
 export type AutoCompleteResponse = {
   album?: string | null;
   genre?: string[] | null;
   lyricist?: string[] | null;
   composer?: string[] | null;
-  length?: number | null;
-  date?: string | null;
+  length?: number | null; // 秒
+  date?: string | null; // YYYY-MM-DD
   type?: string[] | null;
   albumartist?: string[] | null;
   arranger?: string[] | null;
   comment?: string | null;
   lyrics?: string | null;
+  nelink?: string | null; // 网易云音乐链接: https://music.163.com/#/song?id={id}
+  // kglink?: string | null; // 酷狗音乐链接格式待确定
 };
 
 /**
@@ -57,17 +61,20 @@ export type DetailResponse = {
  *
  * @param keywords - 搜索关键词（歌曲标题）
  * @param csrfToken - CSRF token
+ * @param provider - 音乐提供者，默认 netease
  * @param limit - 返回数量，默认 10
  * @returns 搜索结果列表
  */
 export async function apiSearchSongs(
   keywords: string,
   csrfToken: string,
+  provider: MusicProviderType = "netease",
   limit: number = 10,
 ): Promise<SearchResponse> {
   const params = new URLSearchParams({
     action: "search",
     keywords,
+    provider,
     limit: limit.toString(),
   });
 
@@ -91,15 +98,18 @@ export async function apiSearchSongs(
  *
  * @param song - 用户选择的搜索结果项
  * @param csrfToken - CSRF token
+ * @param provider - 音乐提供者，默认 netease
  * @returns 歌曲详情
  */
 export async function apiGetSongDetail(
   song: SearchResultItem,
   csrfToken: string,
+  provider: MusicProviderType = "netease",
 ): Promise<AutoCompleteResponse> {
   const params = new URLSearchParams({
     action: "detail",
     id: song.id.toString(),
+    provider,
   });
 
   // 传递搜索结果中已有的信息
