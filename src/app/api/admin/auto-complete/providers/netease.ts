@@ -171,6 +171,7 @@ export const neteaseProvider: MusicProvider = {
             genre: null, // 暂无数据源
             type: null, // 暂无数据源
             comment: null,
+            nelink: `https://music.163.com/#/song?id=${id}`,
         };
     },
 };

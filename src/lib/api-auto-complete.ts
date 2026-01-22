@@ -42,6 +42,7 @@ export type AutoCompleteResponse = {
   arranger?: string[] | null;
   comment?: string | null;
   lyrics?: string | null;
+  nelink?: string | null; // 网易云音乐链接: https://music.163.com/#/song?id={id}
 };
 
 /**
