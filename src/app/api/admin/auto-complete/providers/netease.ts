@@ -9,7 +9,7 @@ import { type MusicProvider, msToSeconds, timestampToDateString } from "./types"
 // 常量定义
 // ============================================
 
-const HETU_API_BASE = "http://hetu-api:3000";
+const HETU_API_BASE = "http://ncm-api:3000";
 
 // ============================================
 // 内部辅助函数
