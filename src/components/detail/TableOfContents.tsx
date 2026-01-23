@@ -250,13 +250,13 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
 
       {/* 手机端：底部水平导航 */}
       <nav
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 md:hidden"
+        className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 md:hidden"
         aria-label="目录导航"
       >
-        <div className="flex items-center gap-4 px-4 py-3 rounded-full bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-lg shadow-slate-900/5 dark:shadow-black/20">
+        <div className="flex items-center gap-8 px-2 py-2">
           {/* 水平连接线 */}
           <div
-            className="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-[2px] bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent -z-10"
+            className="absolute left-1 right-1 top-1/2 -translate-y-1/2 h-[1.5px] bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent -z-10"
             aria-hidden="true"
           />
 
@@ -278,13 +278,13 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                 {/* 标签 - 向上弹出 */}
                 <span
                   className={`
-                    absolute -top-10 left-1/2 -translate-x-1/2
-                    px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap
+                    absolute -top-8 left-1/2 -translate-x-1/2
+                    px-2 py-1 rounded-full text-[10px] font-medium whitespace-nowrap
                     backdrop-blur-md border transition-all duration-300 ease-out
                     ${showLabel ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}
                     ${
                       isActive
-                        ? "bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 border-transparent shadow-lg"
+                        ? "bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 border-transparent shadow-md"
                         : "bg-white/90 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50"
                     }
                   `}
@@ -294,7 +294,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                   <span
                     className={`
                       absolute -bottom-1 left-1/2 -translate-x-1/2
-                      border-4 border-transparent
+                      border-[3px] border-transparent
                       ${isActive ? "border-t-slate-900/90 dark:border-t-white/90" : "border-t-white/90 dark:border-t-slate-800/90"}
                     `}
                   />
@@ -304,11 +304,11 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                 <span
                   className={`
                     relative flex items-center justify-center
-                    w-3 h-3 rounded-full transition-all duration-300 ease-out
+                    w-2.5 h-2.5 rounded-full transition-all duration-300 ease-out
                     ${
                       isActive
-                        ? "bg-slate-900 dark:bg-white scale-125"
-                        : "bg-slate-300 dark:bg-slate-600 scale-100 group-hover:scale-110 group-hover:bg-slate-400 dark:group-hover:bg-slate-500"
+                        ? "bg-slate-900 dark:bg-white scale-110"
+                        : "bg-slate-300 dark:bg-slate-600 scale-100 group-hover:scale-105 group-hover:bg-slate-400 dark:group-hover:bg-slate-500"
                     }
                   `}
                 />
