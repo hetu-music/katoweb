@@ -35,6 +35,14 @@ export function PWARegistration() {
       }
     };
 
+    // 当新 SW 接管控制权时，自动刷新页面以显示最新内容
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
+
     registerSW();
 
     // 2. 监听安装事件 (为了自定义安装按钮)

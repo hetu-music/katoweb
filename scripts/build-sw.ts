@@ -34,15 +34,12 @@ async function buildServiceWorker(): Promise<void> {
   try {
     // 3. 准备预缓存列表 (Precache)
     // 这些文件会在 SW 安装时立即下载
+    // ⚠️ 注意：不要将 ISR/动态页面（如首页 "/"）放入预缓存！
+    // 因为 Precache 路由的优先级高于 runtimeCaching 路由，
+    // 预缓存的页面会绕过 NetworkOnly 策略，导致 PWA 始终返回旧 HTML。
     const additionalManifestEntries: ManifestEntry[] = [];
 
-    // 必选: 首页
-    additionalManifestEntries.push({
-      url: "/",
-      revision: Date.now().toString(), // 强制每次构建都更新首页缓存
-    });
-
-    // 可选: manifest.json
+    // 可选: manifest.json（静态文件，适合预缓存）
     if (fs.existsSync(path.join(publicDir, "manifest.json"))) {
       additionalManifestEntries.push({
         url: "/manifest.json",
