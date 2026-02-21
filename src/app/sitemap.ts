@@ -31,3 +31,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return staticRoutes;
   }
 }
+
+// 使用 ISR，与主页同步更新（避免构建时数据库不可用导致 sitemap 为空）
+export const revalidate = 7200;
