@@ -58,6 +58,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://hetu-music.com"),
   title: "河图作品勘鉴",
   description: "河图音乐作品收录与筛选",
   manifest: "/manifest.json",
