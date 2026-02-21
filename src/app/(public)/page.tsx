@@ -31,6 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: "河图作品勘鉴",
       description,
       type: "website",
+      images: [{ url: "/icons/source.png" }],
     },
   };
 }

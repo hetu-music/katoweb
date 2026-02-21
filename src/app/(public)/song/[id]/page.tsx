@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import SongDetailClient from "@/components/detail/SongDetailClient";
 import { getSongById } from "@/lib/service-songs";
+import { getCoverUrl } from "@/lib/utils-song";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -29,6 +30,8 @@ export async function generateMetadata({
     ? `${song.title} — ${parts.join("｜")}`
     : `${song.title} — 河图音乐作品详情`;
 
+  const coverUrl = getCoverUrl(song);
+
   return {
     title: `${song.title} — 河图作品勘鉴`,
     description,
@@ -36,6 +39,7 @@ export async function generateMetadata({
       title: `${song.title} — 河图作品勘鉴`,
       description,
       type: "music.song",
+      images: [{ url: coverUrl }],
     },
   };
 }
