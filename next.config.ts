@@ -46,6 +46,15 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // OG 图片代理：爬虫通过部署服务器中转访问封面图
+  async rewrites() {
+    return [
+      {
+        source: "/og-cover/:path*",
+        destination: "https://cover.hetu-music.com/cover/:path*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

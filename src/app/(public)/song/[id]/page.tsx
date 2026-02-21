@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import SongDetailClient from "@/components/detail/SongDetailClient";
 import { getSongById } from "@/lib/service-songs";
-import { getCoverUrl } from "@/lib/utils-song";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -30,7 +29,13 @@ export async function generateMetadata({
     ? `${song.title} — ${parts.join("｜")}`
     : `${song.title} — 河图音乐作品详情`;
 
-  const coverUrl = getCoverUrl(song);
+  // OG 封面走代理路径，确保爬虫可以访问
+  const coverFilename =
+    song.hascover === true
+      ? `${song.id}.jpg`
+      : song.hascover === false
+        ? "proto.jpg"
+        : "default.jpg";
 
   return {
     title: `${song.title} — 河图作品勘鉴`,
@@ -39,7 +44,7 @@ export async function generateMetadata({
       title: `${song.title} — 河图作品勘鉴`,
       description,
       type: "music.song",
-      images: [{ url: coverUrl }],
+      images: [{ url: `/og-cover/${coverFilename}` }],
     },
   };
 }
