@@ -12,12 +12,13 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 重新验证音乐库页面
+    // 重新验证音乐库页面和 sitemap
     revalidatePath("/");
+    revalidatePath("/sitemap.xml");
 
     const timestamp = new Date().toISOString();
 
-    const response = `SUCCESS: Home page revalidated at ${timestamp}`;
+    const response = `SUCCESS: Home page and sitemap revalidated at ${timestamp}`;
 
     return new NextResponse(response, {
       status: 200,
