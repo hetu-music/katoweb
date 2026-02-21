@@ -1,9 +1,22 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import MusicLibraryClient from "@/components/library/MusicLibraryClient";
 import { getSongs } from "@/lib/service-songs";
 import { Song } from "@/lib/types";
 import Loading from "@/components/shared/Loading";
 import ErrorState from "@/components/shared/Error";
+
+export const metadata: Metadata = {
+  title: "河图作品勘鉴 — 河图音乐作品收录与鉴赏",
+  description:
+    "收录河图音乐作品，提供歌曲信息、歌词、专辑等详细资料的查阅与筛选。",
+  openGraph: {
+    title: "河图作品勘鉴",
+    description:
+      "收录河图音乐作品，提供歌曲信息、歌词、专辑等详细资料的查阅与筛选。",
+    type: "website",
+  },
+};
 
 // 服务端组件 - 使用 ISR
 export default async function MusicLibraryPage() {
