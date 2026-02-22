@@ -131,7 +131,27 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
             <button
               onClick={() => {
                 setIsBackActive(true);
-                router.back();
+                // 判断来源是否为同站页面（含子域名），站外直接进入时跳转首页
+                const referrer = document.referrer;
+                let isSameSite = false;
+                if (referrer) {
+                  try {
+                    const refHost = new URL(referrer).hostname;
+                    const curHost = window.location.hostname;
+                    // 提取根域名（取最后两段），支持子域名互通
+                    const getRootDomain = (h: string) =>
+                      h.split(".").slice(-2).join(".");
+                    isSameSite =
+                      getRootDomain(refHost) === getRootDomain(curHost);
+                  } catch {
+                    // referrer 解析失败，视为站外
+                  }
+                }
+                if (isSameSite) {
+                  router.back();
+                } else {
+                  router.push("/");
+                }
               }}
               className={cn(
                 "p-2 -ml-2 rounded-full transition-colors text-slate-600 dark:text-slate-400 group",

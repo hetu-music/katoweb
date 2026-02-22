@@ -59,8 +59,11 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://hetu-music.com"),
-  title: "河图作品勘鉴",
-  description: "河图音乐作品收录与筛选",
+  title: {
+    default: "河图作品勘鉴 - 河图音乐作品收录与鉴赏",
+    template: "%s - 河图作品勘鉴",
+  },
+  description: "河图音乐作品收录与鉴赏。",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
