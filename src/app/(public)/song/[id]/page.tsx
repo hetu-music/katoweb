@@ -21,9 +21,12 @@ export async function generateMetadata({
   // 构建描述信息 — 使用自然语言句式，减少 Google 忽略 meta description 的概率
   const descParts: string[] = [];
   if (song.artist?.length) descParts.push(`演唱：${song.artist.join("、")}`);
-  if (song.lyricist?.length) descParts.push(`作词：${song.lyricist.join("、")}`);
-  if (song.composer?.length) descParts.push(`作曲：${song.composer.join("、")}`);
-  if (song.arranger?.length) descParts.push(`编曲：${song.arranger.join("、")}`);
+  if (song.lyricist?.length)
+    descParts.push(`作词：${song.lyricist.join("、")}`);
+  if (song.composer?.length)
+    descParts.push(`作曲：${song.composer.join("、")}`);
+  if (song.arranger?.length)
+    descParts.push(`编曲：${song.arranger.join("、")}`);
 
   let description = `《${song.title}》`;
   if (song.album) description += `收录于专辑《${song.album}》`;
