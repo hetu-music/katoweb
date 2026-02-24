@@ -18,8 +18,8 @@ export async function generateMetadata({
   const song = await getSongById(songId);
   if (!song) return {};
 
-  // 构建描述信息 — 使用自然语言句式，减少 Google 忽略 meta description 的概率
-  const descParts: string[] = [];
+  // 构建描述信息 — 使用｜分隔的紧凑格式
+  const descParts: string[] = [`《${song.title}》`];
   if (song.artist?.length) descParts.push(`演唱：${song.artist.join("、")}`);
   if (song.lyricist?.length)
     descParts.push(`作词：${song.lyricist.join("、")}`);
@@ -27,13 +27,10 @@ export async function generateMetadata({
     descParts.push(`作曲：${song.composer.join("、")}`);
   if (song.arranger?.length)
     descParts.push(`编曲：${song.arranger.join("、")}`);
+  if (song.album) descParts.push(`专辑：《${song.album}》`);
+  if (song.year) descParts.push(`${song.year}年`);
 
-  let description = `《${song.title}》`;
-  if (song.album) description += `收录于专辑《${song.album}》`;
-  if (song.year) description += `（${song.year}年）`;
-  description += "。";
-  if (descParts.length) description += descParts.join("，") + "。";
-  description += "河图作品勘鉴收录。";
+  const description = descParts.join("｜") + "。河图作品勘鉴收录。";
 
   // OG 封面走代理路径，确保爬虫可以访问
   const coverFilename =
