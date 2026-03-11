@@ -744,8 +744,14 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       onClick={() => {
                         setActiveSongId(work.id);
                         handleSongClick();
-                        const d = parseInt(sessionStorage.getItem("__katoweb_nav_depth") || "0", 10);
-                        sessionStorage.setItem("__katoweb_nav_depth", String(d + 1));
+                        const d = parseInt(
+                          sessionStorage.getItem("__katoweb_nav_depth") || "0",
+                          10,
+                        );
+                        sessionStorage.setItem(
+                          "__katoweb_nav_depth",
+                          String(d + 1),
+                        );
                         router.push(`/song/${work.id}`);
                       }}
                       className="animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both"
@@ -779,8 +785,14 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       onClick={() => {
                         setActiveSongId(work.id);
                         handleSongClick();
-                        const d = parseInt(sessionStorage.getItem("__katoweb_nav_depth") || "0", 10);
-                        sessionStorage.setItem("__katoweb_nav_depth", String(d + 1));
+                        const d = parseInt(
+                          sessionStorage.getItem("__katoweb_nav_depth") || "0",
+                          10,
+                        );
+                        sessionStorage.setItem(
+                          "__katoweb_nav_depth",
+                          String(d + 1),
+                        );
                         router.push(`/song/${work.id}`);
                       }}
                       className="animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both"

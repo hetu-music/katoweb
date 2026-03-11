@@ -133,10 +133,15 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 setIsBackActive(true);
                 // 通过 sessionStorage 中的导航深度判断是否有站内历史
                 // 该值由主页面在 router.push 前递增，确保 SPA 导航也能正确追踪
-                const navDepthStr = sessionStorage.getItem("__katoweb_nav_depth");
+                const navDepthStr = sessionStorage.getItem(
+                  "__katoweb_nav_depth",
+                );
                 const navDepth = navDepthStr ? parseInt(navDepthStr, 10) : 0;
                 if (navDepth > 0) {
-                  sessionStorage.setItem("__katoweb_nav_depth", String(navDepth - 1));
+                  sessionStorage.setItem(
+                    "__katoweb_nav_depth",
+                    String(navDepth - 1),
+                  );
                   router.back();
                 } else {
                   router.push("/");

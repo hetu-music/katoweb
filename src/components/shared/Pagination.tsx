@@ -26,7 +26,10 @@ const Pagination: React.FC<PaginationProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
+      if (
+        popupRef.current &&
+        !popupRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -89,7 +92,9 @@ const Pagination: React.FC<PaginationProps> = ({
           aria-expanded={isOpen}
           title="选择页数"
         >
-          <span className={isOpen ? "" : "text-blue-600 dark:text-blue-400"}>{currentPage}</span>
+          <span className={isOpen ? "" : "text-blue-600 dark:text-blue-400"}>
+            {currentPage}
+          </span>
           <span className="mx-1 text-slate-400">/</span>
           <span>{totalPages}</span>
         </button>
@@ -99,25 +104,30 @@ const Pagination: React.FC<PaginationProps> = ({
             <div className="w-full text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1 text-center">
               跳转到...
             </div>
-            <div className="w-full overflow-y-auto max-h-48 grid grid-cols-4 gap-1 pb-1 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => {
-                    if (page !== currentPage) {
-                      onPageChange(page);
-                    }
-                    setIsOpen(false);
-                  }}
-                  className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm transition-colors ${
-                    page === currentPage
-                      ? "bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20"
-                      : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
+            <div
+              className="w-full overflow-y-auto max-h-48 grid grid-cols-4 gap-1 pb-1 scrollbar-hide"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    onClick={() => {
+                      if (page !== currentPage) {
+                        onPageChange(page);
+                      }
+                      setIsOpen(false);
+                    }}
+                    className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm transition-colors ${
+                      page === currentPage
+                        ? "bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20"
+                        : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ),
+              )}
             </div>
             {/* 隐藏原生滚动条的样式通过内联或全局类控制，这里使用通用的防穿透 */}
             <style jsx>{`
