@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   ChevronsLeft,
   ChevronLeft,
@@ -21,6 +21,37 @@ const Pagination: React.FC<PaginationProps> = ({
   onPageChange,
   className = "",
 }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const popupRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    const handleScroll = (event: Event) => {
+      // 如果用户正在滚动弹出菜单内部的内容，不要关闭它
+      if (popupRef.current && popupRef.current.contains(event.target as Node)) {
+        return;
+      }
+      setIsOpen(false);
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      // 使用 capture 阶段捕获所有的 scroll 事件，因为普通的 scroll 事件不会冒泡
+      window.addEventListener("scroll", handleScroll, true);
+      window.addEventListener("touchmove", handleScroll, { passive: true });
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("touchmove", handleScroll);
+    };
+  }, [isOpen]);
+
   if (totalPages <= 1) return null;
 
   return (
@@ -46,10 +77,56 @@ const Pagination: React.FC<PaginationProps> = ({
       </button>
 
       {/* 当前页 / 总页数 */}
-      <div className="flex items-center justify-center min-w-[80px] px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 font-medium text-sm">
-        <span className="text-blue-600 dark:text-blue-400">{currentPage}</span>
-        <span className="mx-1 text-slate-400">/</span>
-        <span>{totalPages}</span>
+      <div className="relative" ref={popupRef}>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className={`flex items-center justify-center min-w-[80px] px-4 py-2 rounded-lg border transition-all duration-200 text-sm font-medium focus:outline-none ${
+            isOpen
+              ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm"
+              : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+          }`}
+          aria-haspopup="true"
+          aria-expanded={isOpen}
+          title="选择页数"
+        >
+          <span className={isOpen ? "" : "text-blue-600 dark:text-blue-400"}>{currentPage}</span>
+          <span className="mx-1 text-slate-400">/</span>
+          <span>{totalPages}</span>
+        </button>
+
+        {isOpen && (
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 flex flex-col items-center w-max min-w-[120px]">
+            <div className="w-full text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1 text-center">
+              跳转到...
+            </div>
+            <div className="w-full overflow-y-auto max-h-48 grid grid-cols-4 gap-1 pb-1 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => {
+                    if (page !== currentPage) {
+                      onPageChange(page);
+                    }
+                    setIsOpen(false);
+                  }}
+                  className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm transition-colors ${
+                    page === currentPage
+                      ? "bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20"
+                      : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+            {/* 隐藏原生滚动条的样式通过内联或全局类控制，这里使用通用的防穿透 */}
+            <style jsx>{`
+              .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+              }
+            `}</style>
+          </div>
+        )}
       </div>
 
       {/* 下一页 */}
