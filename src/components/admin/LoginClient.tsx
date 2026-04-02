@@ -214,7 +214,7 @@ export default function LoginClient({ nonce }: LoginClientProps) {
           </form>
 
           {/* Footer Link */}
-          <div className="bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 p-6 text-center">
+          <div className="bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 p-6 flex items-center justify-between">
             <button
               type="button"
               onClick={() => router.push("/")}
@@ -222,6 +222,13 @@ export default function LoginClient({ nonce }: LoginClientProps) {
             >
               <ArrowLeft size={16} />
               <span>Back to Library</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push("/register")}
+              className="text-sm text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+            >
+              注册账号
             </button>
           </div>
         </div>
