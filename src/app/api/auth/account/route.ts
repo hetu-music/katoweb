@@ -12,7 +12,7 @@ export const GET = withAuth(
         .from("users")
         .select("name, display, intro")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         return NextResponse.json({ error: error.message }, { status: 500 });

@@ -12,9 +12,11 @@ export async function GET(request: NextRequest) {
     if (!error) {
       return NextResponse.redirect(new URL(next, request.url));
     }
-    console.error("Auth callback error:", error.message);
+    console.error("Auth callback error:", error?.message);
   }
 
   // 出错时跳回登录页
-  return NextResponse.redirect(new URL("/login?error=auth_callback_failed", request.url));
+  return NextResponse.redirect(
+    new URL("/login?error=auth_callback_failed", request.url),
+  );
 }
