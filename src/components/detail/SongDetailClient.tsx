@@ -19,6 +19,7 @@ import { getCoverUrl, calculateSongInfo, getNmnUrl } from "@/lib/utils-song";
 import { getTypeTagStyle, getGenreTagStyle } from "@/lib/constants";
 import ImageModal from "@/components/shared/ImageModal";
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
+import FavoriteButton from "@/components/shared/FavoriteButton";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import TableOfContents from "@/components/detail/TableOfContents";
 
@@ -588,7 +589,9 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         showScrollTop={showScrollTop}
         onScrollToTop={scrollToTop}
         onShare={handleShare}
-      />
+      >
+        <FavoriteButton songId={song.id} variant="icon" />
+      </FloatingActionButtons>
 
       <ImageModal
         isOpen={imageModal.isOpen}

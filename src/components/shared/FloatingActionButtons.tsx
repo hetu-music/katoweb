@@ -10,6 +10,7 @@ interface FloatingActionButtonsProps {
   onScrollToTop: () => void;
   onShare?: () => void;
   className?: string; // Add className prop for flexibility
+  children?: React.ReactNode; // Extra buttons to render in the container
 }
 
 const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
@@ -17,6 +18,7 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
   onScrollToTop,
   onShare,
   className,
+  children,
 }) => {
   const { isInstallable, install, isIOS, isStandalone } = usePWAInstall();
   const [showIOSPrompt, setShowIOSPrompt] = React.useState(false);
@@ -43,6 +45,7 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
       <div
         className={`fixed bottom-8 right-8 z-50 flex flex-col gap-4 ${className || ""}`}
       >
+        {children}
         {/* PWA 安装按钮 */}
         {showInstallButton && (
           <button

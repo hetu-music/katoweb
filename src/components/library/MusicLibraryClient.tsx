@@ -19,6 +19,7 @@ import {
   XCircle,
   Info,
   RotateCcw,
+  Heart,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -38,6 +39,8 @@ import Pagination from "../shared/Pagination";
 import SongFilters from "./SongFilters";
 import About from "./About";
 import FloatingActionButtons from "../shared/FloatingActionButtons";
+import FavoritesPanel from "../shared/FavoritesPanel";
+import { useFavorites } from "@/hooks/useFavorites";
 import ThemeToggle from "../shared/ThemeToggle";
 import MultiTagDisplay from "./MultiTagDisplay";
 
@@ -101,7 +104,11 @@ const GridCard = ({
   style?: React.CSSProperties;
   className?: string;
   isActive?: boolean;
-}) => (
+}) => {
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const active = isFavorite(song.id);
+
+  return (
   <div
     onClick={onClick}
     className={cn("group flex flex-col gap-4 cursor-pointer", className)}
@@ -127,6 +134,21 @@ const GridCard = ({
             : "group-hover:bg-black/10 group-hover:opacity-100",
         )}
       />
+
+      {/* 收藏按钮 */}
+      <button
+        onClick={(e) => { e.stopPropagation(); toggleFavorite(song.id); }}
+        aria-label={active ? "取消收藏" : "收藏"}
+        title={active ? "取消收藏" : "收藏"}
+        className={cn(
+          "absolute top-2 right-2 p-1.5 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm transition-all duration-200",
+          active
+            ? "opacity-100 text-rose-500"
+            : "opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-500",
+        )}
+      >
+        <Heart size={14} className={active ? "fill-current" : ""} />
+      </button>
     </div>
 
     {/* 信息区 */}
@@ -165,7 +187,8 @@ const GridCard = ({
       </p>
     </div>
   </div>
-);
+  );
+};
 
 // 3. 列表模式行 (List Row)
 const ListRow = ({
@@ -180,7 +203,11 @@ const ListRow = ({
   style?: React.CSSProperties;
   className?: string;
   isActive?: boolean;
-}) => (
+}) => {
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const active = isFavorite(song.id);
+
+  return (
   <div
     onClick={onClick}
     className={cn(
@@ -228,9 +255,24 @@ const ListRow = ({
         <Clock size={14} />
         {formatTime(song.length)}
       </div>
+      {/* 收藏按钮 */}
+      <button
+        onClick={(e) => { e.stopPropagation(); toggleFavorite(song.id); }}
+        aria-label={active ? "取消收藏" : "收藏"}
+        title={active ? "取消收藏" : "收藏"}
+        className={cn(
+          "p-1.5 rounded-lg transition-all duration-200",
+          active
+            ? "text-rose-500"
+            : "text-slate-300 dark:text-slate-600 opacity-0 group-hover:opacity-100 hover:text-rose-400",
+        )}
+      >
+        <Heart size={15} className={active ? "fill-current" : ""} />
+      </button>
     </div>
   </div>
-);
+  );
+};
 
 // 筛选按钮组件
 const FilterPill = ({
@@ -307,6 +349,9 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   // 关于弹窗状态 (Local UI state)
   const [showAbout, setShowAbout] = useState(false);
   const [activeSongId, setActiveSongId] = useState<number | null>(null);
+  const [showFavorites, setShowFavorites] = useState(false);
+
+  const { favorites } = useFavorites();
 
   /*
    * Force re-render key for list/grid content.
@@ -534,6 +579,18 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
             作品勘鉴
           </button>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowFavorites(true)}
+              className="relative p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+              title="我的收藏"
+            >
+              <Heart size={20} className={favorites.length > 0 ? "text-rose-500 fill-current" : ""} />
+              {favorites.length > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-0.5 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+                  {favorites.length > 99 ? "99+" : favorites.length}
+                </span>
+              )}
+            </button>
             <button
               onClick={() => setShowAbout(true)}
               className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
@@ -826,6 +883,12 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
       {/* 关于弹窗 */}
       {showAbout && <About onClose={() => setShowAbout(false)} />}
+
+      <FavoritesPanel
+        isOpen={showFavorites}
+        onClose={() => setShowFavorites(false)}
+        allSongs={initialSongsData}
+      />
 
       <FloatingActionButtons
         showScrollTop={showScrollTop}
