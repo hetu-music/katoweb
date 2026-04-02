@@ -84,35 +84,29 @@ export async function proxy(request: NextRequest) {
   // Apply Security Headers to Response
   response.headers.set("Content-Security-Policy", cspHeader);
 
-  // Auth Logic for Admin Routes
-  if (request.nextUrl.pathname.startsWith("/admin")) {
-    try {
-      const supabase = createSupabaseMiddlewareClient(request, response);
+  // Always refresh the Supabase session so cookies stay valid on all routes
+  // (including public pages that need to read auth state client-side)
+  try {
+    const supabase = createSupabaseMiddlewareClient(request, response);
+    const { data: { user }, error } = await supabase.auth.getUser();
 
-      // Verify session via getUser
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
-
-      // Redirect to login if error or no user
+    // Admin-only: redirect to login if not authenticated
+    if (request.nextUrl.pathname.startsWith("/admin")) {
       if (error || !user) {
         console.warn("Auth middleware: User not authenticated", error?.message);
-
-        // Ensure redirect response also has security headers
-        const redirectUrl = new URL("/login", request.url);
-        const redirectResponse = NextResponse.redirect(redirectUrl);
-        // Copy security headers to redirect response
+        const redirectResponse = NextResponse.redirect(
+          new URL("/login", request.url),
+        );
         redirectResponse.headers.set("Content-Security-Policy", cspHeader);
-
         return redirectResponse;
       }
-    } catch (error) {
-      console.error("Auth middleware error:", error);
+    }
+  } catch (error) {
+    console.error("Auth middleware error:", error);
+    if (request.nextUrl.pathname.startsWith("/admin")) {
       const redirectResponse = NextResponse.redirect(
         new URL("/login", request.url),
       );
-      // Copy security headers to redirect response
       redirectResponse.headers.set("Content-Security-Policy", cspHeader);
       return redirectResponse;
     }

@@ -16,9 +16,10 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
   variant = "icon",
   className = "",
 }) => {
-  const { isFavorite, toggleFavorite, loaded } = useFavorites();
+  const { isFavorite, toggleFavorite, loaded, isLoggedIn } = useFavorites();
 
-  if (!loaded) return null;
+  // 未加载完成或未登录时不渲染
+  if (!loaded || !isLoggedIn) return null;
 
   const active = isFavorite(songId);
 
@@ -37,15 +38,11 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
             : "text-slate-400 dark:text-slate-500 hover:text-rose-400 dark:hover:text-rose-400"
         } ${className}`}
       >
-        <Heart
-          size={16}
-          className={active ? "fill-current" : ""}
-        />
+        <Heart size={16} className={active ? "fill-current" : ""} />
       </button>
     );
   }
 
-  // icon variant — 与 FloatingActionButtons 风格一致
   return (
     <button
       onClick={(e) => {

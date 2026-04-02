@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Mail, LogIn, X, User, Award } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Mail, X, User, Award } from "lucide-react";
 import { TYPE_ORDER } from "@/lib/constants";
 
 interface Contributor {
@@ -29,7 +28,6 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [contributorsError, setContributorsError] = useState<string | null>(
     null,
   );
-  const router = useRouter();
 
   useEffect(() => {
     // Prevent scrolling when modal is open and compensate for scrollbar width to prevent shift
@@ -67,10 +65,6 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       document.body.style.paddingRight = "0px";
     };
   }, [activeTab, contributors.length]);
-
-  const handleLoginClick = () => {
-    router.push("/login");
-  };
 
   const mainContributor = contributors.find((c) => c.sort_order === 2);
 
@@ -333,16 +327,6 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     ))}
                 </div>
               )}
-
-              <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-                <button
-                  onClick={handleLoginClick}
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
-                >
-                  <LogIn size={16} />
-                  <span>管理员登录</span>
-                </button>
-              </div>
             </div>
           )}
         </div>

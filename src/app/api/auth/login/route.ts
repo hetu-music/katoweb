@@ -9,7 +9,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, turnstileToken } = body;
+    const { email, turnstileToken, next } = body;
+    const nextPath = typeof next === "string" && next.startsWith("/") ? next : "/admin";
 
     const turnstileResult = await verifyTurnstileToken(turnstileToken);
     if (!turnstileResult.success) {
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/callback`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/callback?next=${encodeURIComponent(nextPath)}`,
         shouldCreateUser: true,
       },
     });
