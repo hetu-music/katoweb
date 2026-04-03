@@ -15,6 +15,7 @@ import {
   Disc,
   ExternalLink,
   FileText,
+  Home,
   Info,
   LayoutTemplate,
   Mic2,
@@ -147,43 +148,55 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => {
-                setIsBackActive(true);
-                // 通过 sessionStorage 中的导航深度判断是否有站内历史
-                // 该值由主页面在 router.push 前递增，确保 SPA 导航也能正确追踪
-                const navDepthStr = sessionStorage.getItem(
-                  "__katoweb_nav_depth",
-                );
-                const navDepth = navDepthStr ? parseInt(navDepthStr, 10) : 0;
-                if (navDepth > 0) {
-                  sessionStorage.setItem(
+            <div className="flex items-center gap-1 -ml-2">
+              <button
+                onClick={() => {
+                  setIsBackActive(true);
+                  // 通过 sessionStorage 中的导航深度判断是否有站内历史
+                  // 该值由主页面在 router.push 前递增，确保 SPA 导航也能正确追踪
+                  const navDepthStr = sessionStorage.getItem(
                     "__katoweb_nav_depth",
-                    String(navDepth - 1),
                   );
-                  router.back();
-                } else {
-                  router.push("/");
-                }
-              }}
-              className={cn(
-                "p-2 -ml-2 rounded-full transition-colors text-slate-600 dark:text-slate-400 group",
-                isBackActive
-                  ? "bg-slate-200/50 dark:bg-slate-800"
-                  : "hover:bg-slate-200/50 dark:hover:bg-slate-800",
-              )}
-              title="返回"
-            >
-              <ArrowLeft
-                size={20}
+                  const navDepth = navDepthStr ? parseInt(navDepthStr, 10) : 0;
+                  if (navDepth > 0) {
+                    sessionStorage.setItem(
+                      "__katoweb_nav_depth",
+                      String(navDepth - 1),
+                    );
+                    router.back();
+                  } else {
+                    router.push("/");
+                  }
+                }}
                 className={cn(
-                  "transition-transform",
+                  "p-2 rounded-full transition-colors text-slate-600 dark:text-slate-400 group",
                   isBackActive
-                    ? "-translate-x-1"
-                    : "group-hover:-translate-x-1",
+                    ? "bg-slate-200/50 dark:bg-slate-800"
+                    : "hover:bg-slate-200/50 dark:hover:bg-slate-800",
                 )}
-              />
-            </button>
+                title="返回"
+              >
+                <ArrowLeft
+                  size={20}
+                  className={cn(
+                    "transition-transform",
+                    isBackActive
+                      ? "-translate-x-0.5"
+                      : "group-hover:-translate-x-0.5",
+                  )}
+                />
+              </button>
+              
+              <div className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-0.5" />
+
+              <button
+                onClick={() => router.push("/")}
+                className="p-2 rounded-full transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800 group"
+                title="回到主页"
+              >
+                <Home size={20} className="transition-transform group-hover:scale-105 group-active:scale-95" />
+              </button>
+            </div>
             <div className="text-xl font-bold text-slate-900 dark:text-white tracking-tight hidden sm:block font-serif">
               {song.title}
             </div>

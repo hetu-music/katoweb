@@ -9,6 +9,7 @@ import {
   Check,
   ChevronRight,
   Heart,
+  Home,
   Loader2,
   LogOut,
   Mail,
@@ -186,16 +187,28 @@ function ProfileContent() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button
-              onClick={handleBack}
-              className="p-2 -ml-2 rounded-full transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800 group"
-              title="返回"
-            >
-              <ArrowLeft
-                size={20}
-                className="transition-transform group-hover:-translate-x-1"
-              />
-            </button>
+            <div className="flex items-center gap-1 -ml-2">
+              <button
+                onClick={handleBack}
+                className="p-2 rounded-full transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800 group"
+                title="返回"
+              >
+                <ArrowLeft
+                  size={20}
+                  className="transition-transform group-hover:-translate-x-0.5"
+                />
+              </button>
+              
+              <div className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-0.5" />
+
+              <button
+                onClick={() => router.push("/")}
+                className="p-2 rounded-full transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800 group"
+                title="回到主页"
+              >
+                <Home size={20} className="transition-transform group-hover:scale-105 group-active:scale-95" />
+              </button>
+            </div>
             <h1 className="text-xl font-bold text-slate-900 dark:text-white font-serif tracking-tight">
               个人中心
             </h1>
@@ -415,8 +428,8 @@ function ProfileContent() {
                                     className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                   >
                                     {expandedReviews[song.id]
-                                      ? "隐藏详情"
-                                      : "显示详情"}
+                                      ? "隐藏评论"
+                                      : "查看评论"}
                                   </button>
                                 )}
                                 <button

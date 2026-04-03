@@ -22,6 +22,8 @@ interface FavoritesContextValue {
   isFavorite: (id: number) => boolean;
   /** Clear all favorites */
   clearFavorites: () => Promise<void>;
+  /** Refresh favorites from server */
+  refreshFavorites: () => Promise<void>;
   /** Whether favorites data has been loaded */
   loaded: boolean;
   /** Whether the current user is logged in */
@@ -182,6 +184,7 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
         toggleFavorite,
         isFavorite,
         clearFavorites,
+        refreshFavorites: fetchFavorites,
         loaded: userLoaded && loaded,
         isLoggedIn: !!user,
       }}

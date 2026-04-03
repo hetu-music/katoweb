@@ -91,7 +91,7 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
       if (!res.ok) {
         setError(
           result.error ||
-            (isLogin ? "登录失败，请检查邮箱或密码" : "注册失败，请稍后重试"),
+          (isLogin ? "登录失败，请检查邮箱或密码" : "注册失败，请稍后重试"),
         );
         setLoading(false);
         return;
@@ -169,7 +169,7 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
                 }}
                 className="w-full py-3 text-sm text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
               >
-                返回重新注册
+                重新注册
               </button>
             </div>
           ) : (

@@ -11,7 +11,7 @@ interface UserReviewProps {
 
 const UserReview: React.FC<UserReviewProps> = ({ songId }) => {
   const { user } = useUserContext();
-  const { isFavorite, toggleFavorite } = useFavorites();
+  const { isFavorite, refreshFavorites } = useFavorites();
   const [review, setReview] = useState("");
   const [isEditingReview, setIsEditingReview] = useState(false);
   const [isSavingReview, setIsSavingReview] = useState(false);
@@ -34,20 +34,36 @@ const UserReview: React.FC<UserReviewProps> = ({ songId }) => {
     try {
       const csrfRes = await fetch("/api/public/csrf-token");
       const csrfData = await csrfRes.json();
+      const csrf = csrfData.csrfToken;
+
       const res = await fetch("/api/public/collections/review", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-csrf-token": csrfData.csrfToken,
+          "x-csrf-token": csrf,
         },
         body: JSON.stringify({ songId, review }),
       });
       if (!res.ok) throw new Error("Failed to save review");
       setIsEditingReview(false);
 
+      // If the song isn't favorited yet, add it to the collection first
+      // (the review POST may have already created the row, but POST collections
+      //  handles duplicates gracefully via 23505 unique constraint)
       if (!isFavorite(songId)) {
-        toggleFavorite(songId);
+        await fetch("/api/public/collections", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-csrf-token": csrf,
+          },
+          body: JSON.stringify({ songId }),
+        });
       }
+
+      // Now that both the review and collection row are persisted,
+      // refresh favorites so the profile page has up-to-date data
+      await refreshFavorites();
     } catch (err) {
       console.error(err);
       alert("保存评论失败，请稍后重试");
