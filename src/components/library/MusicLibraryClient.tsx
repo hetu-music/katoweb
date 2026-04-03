@@ -40,7 +40,6 @@ import Pagination from "../shared/Pagination";
 import SongFilters from "./SongFilters";
 import About from "./About";
 import FloatingActionButtons from "../shared/FloatingActionButtons";
-import FavoritesPanel from "../shared/FavoritesPanel";
 import UserPanel from "../shared/UserPanel";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useUserContext } from "@/context/UserContext";
@@ -356,11 +355,18 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   // 关于弹窗状态 (Local UI state)
   const [showAbout, setShowAbout] = useState(false);
   const [activeSongId, setActiveSongId] = useState<number | null>(null);
-  const [showFavorites, setShowFavorites] = useState(false);
   const [showUserPanel, setShowUserPanel] = useState(false);
+  const [userPanelTab, setUserPanelTab] = useState<"account" | "favorites">(
+    "account",
+  );
 
   const { favorites, isLoggedIn } = useFavorites();
   const { user } = useUserContext();
+
+  const openUserPanel = (tab: "account" | "favorites" = "account") => {
+    setUserPanelTab(tab);
+    setShowUserPanel(true);
+  };
 
   /*
    * Force re-render key for list/grid content.
@@ -590,7 +596,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
           <div className="flex items-center gap-2">
             {isLoggedIn && (
               <button
-                onClick={() => setShowFavorites(true)}
+                onClick={() => openUserPanel("favorites")}
                 className="relative p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
                 title="我的收藏"
               >
@@ -610,7 +616,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
               <Info size={20} />
             </button>
             <button
-              onClick={() => setShowUserPanel(true)}
+              onClick={() => openUserPanel("account")}
               className="relative p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
               title={user ? user.name : "登录"}
             >
@@ -902,15 +908,11 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       {/* 关于弹窗 */}
       {showAbout && <About onClose={() => setShowAbout(false)} />}
 
-      <FavoritesPanel
-        isOpen={showFavorites}
-        onClose={() => setShowFavorites(false)}
-        allSongs={initialSongsData}
-      />
-
       <UserPanel
         isOpen={showUserPanel}
         onClose={() => setShowUserPanel(false)}
+        allSongs={initialSongsData}
+        initialTab={userPanelTab}
       />
 
       <FloatingActionButtons

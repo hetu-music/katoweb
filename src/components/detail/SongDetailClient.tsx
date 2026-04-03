@@ -34,6 +34,14 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const router = useRouter();
   const { user } = useUserContext();
   const [showUserPanel, setShowUserPanel] = useState(false);
+  const [userPanelTab, setUserPanelTab] = useState<"account" | "favorites">(
+    "account",
+  );
+
+  const openUserPanel = (tab: "account" | "favorites" = "account") => {
+    setUserPanelTab(tab);
+    setShowUserPanel(true);
+  };
 
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [lyricsType, setLyricsType] = useState<"normal" | "lrc">("normal");
@@ -127,6 +135,8 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const [isBackActive, setIsBackActive] = useState(false);
   const [activeLinkId, setActiveLinkId] = useState<string | null>(null);
 
+  const { favorites, isLoggedIn } = useFavorites();
+
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500">
       {/* 顶部导航 - 与 MusicLibraryClient 保持一致 */}
@@ -176,9 +186,23 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
           </div>
 
           <div className="flex items-center gap-2">
+            {isLoggedIn && (
+              <button
+                onClick={() => openUserPanel("favorites")}
+                className="relative p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+                title="我的收藏"
+              >
+                <Heart size={20} className={favorites.length > 0 ? "text-rose-500 fill-current" : ""} />
+                {favorites.length > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-0.5 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+                    {favorites.length > 99 ? "99+" : favorites.length}
+                  </span>
+                )}
+              </button>
+            )}
             <button
-              onClick={() => setShowUserPanel(true)}
-              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+              onClick={() => openUserPanel("account")}
+              className="relative p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
               title={user ? user.name : "登录"}
             >
               <User size={20} className={user ? "text-blue-500 dark:text-blue-400" : ""} />
@@ -616,7 +640,11 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
       <TableOfContents song={song} />
 
-      <UserPanel isOpen={showUserPanel} onClose={() => setShowUserPanel(false)} />
+      <UserPanel
+        isOpen={showUserPanel}
+        onClose={() => setShowUserPanel(false)}
+        initialTab={userPanelTab}
+      />
     </div>
   );
 };
