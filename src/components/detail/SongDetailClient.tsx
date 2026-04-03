@@ -1,28 +1,29 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import TableOfContents from "@/components/detail/TableOfContents";
+import UserReview from "@/components/detail/UserReview";
+import FavoriteButton from "@/components/shared/FavoriteButton";
+import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
+import ImageModal from "@/components/shared/ImageModal";
+import ThemeToggle from "@/components/shared/ThemeToggle";
+import { useUserContext } from "@/context/UserContext";
+import { getGenreTagStyle, getTypeTagStyle } from "@/lib/constants";
+import { SongDetailClientProps } from "@/lib/types";
+import { calculateSongInfo, getCoverUrl, getNmnUrl } from "@/lib/utils-song";
 import {
   ArrowLeft,
+  Disc,
+  ExternalLink,
   FileText,
   Info,
-  Disc,
-  User,
+  LayoutTemplate,
   Mic2,
   PenTool,
-  LayoutTemplate,
-  ExternalLink,
+  User,
 } from "lucide-react";
 import Image from "next/image";
-import { SongDetailClientProps } from "@/lib/types";
-import { getCoverUrl, calculateSongInfo, getNmnUrl } from "@/lib/utils-song";
-import { getTypeTagStyle, getGenreTagStyle } from "@/lib/constants";
-import ImageModal from "@/components/shared/ImageModal";
-import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
-import FavoriteButton from "@/components/shared/FavoriteButton";
-import ThemeToggle from "@/components/shared/ThemeToggle";
-import TableOfContents from "@/components/detail/TableOfContents";
-import { useUserContext } from "@/context/UserContext";
+import { useRouter } from "next/navigation";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 // 简易 classNames 工具
 function cn(...classes: (string | undefined | null | false)[]) {
   return classes.filter(Boolean).join(" ");
@@ -424,7 +425,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                         <span className="text-slate-500 dark:text-slate-400 whitespace-nowrap">
                           {item.label}
                         </span>
-                        <span className="font-medium text-slate-900 dark:text-slate-200 text-right [word-break:keep-all] [overflow-wrap:break-word]">
+                        <span className="font-medium text-slate-900 dark:text-slate-200 text-right break-keep wrap-break-word">
                           {item.value}
                         </span>
                       </div>
@@ -448,7 +449,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                         <span className="text-slate-500 dark:text-slate-400 whitespace-nowrap">
                           {item.label}
                         </span>
-                        <span className="font-medium text-slate-900 dark:text-slate-200 text-right [word-break:keep-all] [overflow-wrap:break-word]">
+                        <span className="font-medium text-slate-900 dark:text-slate-200 text-right break-keep wrap-break-word">
                           {item.value}
                         </span>
                       </div>
@@ -474,6 +475,9 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                   </p>
                 </div>
               )}
+
+              {/* 我的评论 (内部自带权限校验与显示隐藏) */}
+              <UserReview songId={song.id} />
             </section>
 
             {/* 歌词部分 */}
