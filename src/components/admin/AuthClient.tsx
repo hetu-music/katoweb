@@ -159,12 +159,6 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
     setVerifying(true);
 
     try {
-      if (!turnstileToken) {
-        setError("请完成人机验证");
-        setVerifying(false);
-        return;
-      }
-
       const csrfRes = await fetch("/api/public/csrf-token", {
         cache: "no-store",
       });
@@ -180,7 +174,6 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
         body: JSON.stringify({
           email,
           otp,
-          turnstileToken,
         }),
         cache: "no-store",
       });
@@ -201,7 +194,7 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
       setError(err instanceof Error ? err.message : "网络连接异常，请稍后重试");
       setVerifying(false);
     }
-  }, [otpValues, turnstileToken, email, nextPath]);
+  }, [otpValues, email, nextPath]);
 
   // 当6位验证码全部输入完成后自动提交
   useEffect(() => {

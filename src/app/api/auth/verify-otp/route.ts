@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { verifyCSRFToken, verifyTurnstileToken } from "@/lib/server-utils";
+import { verifyCSRFToken } from "@/lib/server-utils";
 import { createSupabaseServerClient } from "@/lib/supabase-auth";
+import { NextRequest, NextResponse } from "next/server";
 
 /**
  * OTP 验证码验证端点
@@ -21,15 +21,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, otp, turnstileToken } = body;
-
-    const turnstileResult = await verifyTurnstileToken(turnstileToken);
-    if (!turnstileResult.success) {
-      return NextResponse.json(
-        { error: turnstileResult.error || "人机验证失败" },
-        { status: 403 },
-      );
-    }
+    const { email, otp } = body;
 
     if (!email || typeof email !== "string") {
       return NextResponse.json({ error: "邮箱不能为空" }, { status: 400 });
