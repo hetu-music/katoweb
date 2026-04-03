@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useUserContext } from "@/context/UserContext";
+import type { Song } from "@/lib/types";
 
 export function useFavorites() {
   const { user, loaded: userLoaded } = useUserContext();
   const [favorites, setFavorites] = useState<number[]>([]);
+  const [favoriteSongs, setFavoriteSongs] = useState<Song[]>([]);
   const [loaded, setLoaded] = useState(false);
   const csrfRef = useRef<string>("");
   const prevUserIdRef = useRef<string | null>(null);
@@ -31,6 +33,7 @@ export function useFavorites() {
     if (!user) {
       requestAnimationFrame(() => {
         setFavorites([]);
+        setFavoriteSongs([]);
         setLoaded(true);
       });
       return;
@@ -42,10 +45,11 @@ export function useFavorites() {
     });
 
     fetch("/api/public/collections")
-      .then((res) => res.ok ? res.json() : { songIds: [] })
+      .then((res) => res.ok ? res.json() : { songIds: [], songs: [] })
       .then((data) => {
         if (!ignore) {
           setFavorites(data.songIds ?? []);
+          setFavoriteSongs(Array.isArray(data.songs) ? data.songs : []);
           setLoaded(true);
         }
       })
@@ -116,6 +120,7 @@ export function useFavorites() {
 
   return {
     favorites,
+    favoriteSongs,
     toggleFavorite,
     isFavorite,
     clearFavorites,

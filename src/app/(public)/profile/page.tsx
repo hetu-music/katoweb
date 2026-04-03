@@ -20,7 +20,6 @@ import Image from "next/image";
 import { useUserContext } from "@/context/UserContext";
 import { useFavorites } from "@/hooks/useFavorites";
 import { getCoverUrl } from "@/lib/utils-song";
-import type { Song } from "@/lib/types";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 
 function cn(...classes: (string | undefined | null | false)[]) {
@@ -37,6 +36,7 @@ export default function ProfilePage() {
   const { user, loaded: userLoaded, logout, loggingOut } = useUserContext();
   const {
     favorites,
+    favoriteSongs,
     toggleFavorite,
     clearFavorites,
     loaded: favoritesLoaded,
@@ -106,22 +106,11 @@ export default function ProfilePage() {
     }
   }, [router]);
 
-  // Favorites Data
-  const [internalSongs, setInternalSongs] = useState<Song[]>([]);
-  const [loadingSongs, setLoadingSongs] = useState(false);
-
-  useEffect(() => {
-    if (!isLoggedIn || activeTab !== "favorites" || internalSongs.length > 0 || loadingSongs) return;
-    setLoadingSongs(true);
-    fetch("/api/public/collections")
-      .then((r) => r.json())
-      .then((data) => { if (Array.isArray(data.songs)) setInternalSongs(data.songs); })
-      .finally(() => setLoadingSongs(false));
-  }, [activeTab, internalSongs.length, loadingSongs, isLoggedIn]);
+  // Favorites Data — now sourced from useFavorites hook directly
 
   const favoritedSongs = useMemo(
-    () => internalSongs.filter((s) => favorites.includes(s.id)),
-    [internalSongs, favorites],
+    () => favoriteSongs.filter((s) => favorites.includes(s.id)),
+    [favoriteSongs, favorites],
   );
 
   const NotLoggedInState = useCallback(() => (
@@ -266,7 +255,7 @@ export default function ProfilePage() {
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
                   {!isLoggedIn ? (
                     <NotLoggedInState />
-                  ) : !favoritesLoaded || loadingSongs ? (
+                  ) : !favoritesLoaded ? (
                     <div className="flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-320px)]">
                       <Loader2 size={32} className="animate-spin text-blue-500" />
                     </div>
