@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
 import { createSupabaseServerClient } from "@/lib/supabase-auth";
+import { getSongs } from "@/lib/service-songs";
+import { TABLE_NAMES } from "@/lib/constants";
 
 const TABLE = "collections";
 
-// GET /api/public/collections — 获取当前用户的收藏 song_id 列表
+// GET /api/public/collections — 获取当前用户的收藏，返回 songIds 和完整 songs 数据
 export const GET = withAuth(
   async (_request: NextRequest, user: AuthenticatedUser) => {
     const supabase = await createSupabaseServerClient();
@@ -18,7 +20,17 @@ export const GET = withAuth(
       return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });
     }
 
-    return NextResponse.json({ songIds: data.map((r) => r.song_id) });
+    const songIds: number[] = data.map((r) => r.song_id);
+
+    if (songIds.length === 0) {
+      return NextResponse.json({ songIds: [], songs: [] });
+    }
+
+    // 服务端直接查歌曲数据，避免客户端二次请求
+    const allSongs = await getSongs(TABLE_NAMES.MAIN, undefined, true);
+    const songs = allSongs.filter((s) => songIds.includes(s.id));
+
+    return NextResponse.json({ songIds, songs });
   },
 );
 
