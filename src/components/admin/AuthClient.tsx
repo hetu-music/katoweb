@@ -2,29 +2,37 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Mail,
+  Lock,
   ArrowLeft,
   Send,
   ShieldCheck,
   AlertCircle,
   CheckCircle2,
+  LogIn,
+  UserPlus
 } from "lucide-react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 
-interface LoginClientProps {
+interface AuthClientProps {
   nonce?: string;
+  mode: "login" | "register";
 }
 
-export default function LoginClient({ nonce }: LoginClientProps) {
+export default function AuthClient({ nonce, mode }: AuthClientProps) {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
   const [nextPath, setNextPath] = useState("/");
   const router = useRouter();
+
+  const isLogin = mode === "login";
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -44,33 +52,50 @@ export default function LoginClient({ nonce }: LoginClientProps) {
         return;
       }
 
+      if (!password || password.length < 6) {
+        setError("密码长度至少为 6 位");
+        setLoading(false);
+        return;
+      }
+
       const csrfRes = await fetch("/api/public/csrf-token", { cache: "no-store" });
       if (!csrfRes.ok) throw new Error("无法获取安全令牌");
       const { csrfToken } = await csrfRes.json();
       if (!csrfToken) throw new Error("安全令牌无效");
 
-      const res = await fetch("/api/auth/login", {
+      const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
+
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "x-csrf-token": csrfToken,
         },
-        body: JSON.stringify({ email, turnstileToken, next: nextPath }),
+        body: JSON.stringify({ email, password, turnstileToken, next: nextPath }),
         cache: "no-store",
       });
 
       const result = await res.json();
       if (!res.ok) {
-        setError(result.error || "发送失败，请稍后重试");
+        setError(result.error || (isLogin ? "登录失败，请检查邮箱或密码" : "注册失败，请稍后重试"));
         setLoading(false);
         return;
       }
 
-      setSent(true);
+      if (isLogin) {
+        router.push(nextPath || "/admin");
+        router.refresh();
+      } else {
+        setSent(true);
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "网络连接异常，请稍后重试");
     } finally {
-      setLoading(false);
+      if (!isLogin && sent) {
+        // If registration mail was sent, we might be navigating away soon or just stay on success screen
+      } else {
+        setLoading(false);
+      }
     }
   };
 
@@ -92,23 +117,23 @@ export default function LoginClient({ nonce }: LoginClientProps) {
               <ShieldCheck size={32} strokeWidth={1.5} />
             </div>
             <h1 className="text-3xl font-medium text-slate-900 dark:text-white tracking-tight">
-              Admin Portal
+              {isLogin ? "Welcome Back" : "Create Account"}
             </h1>
             <p className="text-slate-500 dark:text-slate-400 font-light text-sm">
-              输入邮箱，我们将发送一封登录链接。
+              {isLogin ? "请输入邮箱和密码登录" : "请设置您的邮箱和密码进行注册"}
             </p>
           </div>
 
-          {sent ? (
+          {!isLogin && sent ? (
             <div className="px-8 pb-12 space-y-6">
               <div className="flex flex-col items-center gap-4 p-6 rounded-2xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30 text-center">
                 <CheckCircle2 size={40} className="text-emerald-500" strokeWidth={1.5} />
                 <div className="space-y-1">
-                  <p className="font-medium text-slate-800 dark:text-slate-200">邮件已发送</p>
+                  <p className="font-medium text-slate-800 dark:text-slate-200">验证邮件已发送</p>
                   <p className="text-sm text-slate-500 dark:text-slate-400">
                     请检查{" "}
                     <span className="font-medium text-slate-700 dark:text-slate-300">{email}</span>{" "}
-                    的收件箱，点击邮件中的链接完成登录。
+                    的收件箱，点击邮件中的链接完成注册。
                   </p>
                 </div>
               </div>
@@ -117,27 +142,49 @@ export default function LoginClient({ nonce }: LoginClientProps) {
                 onClick={() => { setSent(false); setTurnstileToken(""); }}
                 className="w-full py-3 text-sm text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
               >
-                重新发送
+                返回重新注册
               </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="px-8 pb-12 space-y-6">
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ml-1">
-                  Email
-                </label>
-                <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                    <Mail size={18} />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ml-1">
+                    Email
+                  </label>
+                  <div className="relative group">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                      <Mail size={18} />
+                    </div>
+                    <input
+                      type="email"
+                      placeholder="name@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 pl-11 pr-4 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                      required
+                    />
                   </div>
-                  <input
-                    type="email"
-                    placeholder="name@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 pl-11 pr-4 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
-                    required
-                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ml-1">
+                    Password
+                  </label>
+                  <div className="relative group">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                      <Lock size={18} />
+                    </div>
+                    <input
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 pl-11 pr-4 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                      required
+                      minLength={6}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -169,11 +216,33 @@ export default function LoginClient({ nonce }: LoginClientProps) {
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
                   <>
-                    <span>发送登录链接</span>
-                    <Send size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                    <span>{isLogin ? "登录" : "注册"}</span>
+                    {isLogin ? (
+                      <LogIn size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                    ) : (
+                      <UserPlus size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                    )}
                   </>
                 )}
               </button>
+              
+              <div className="mt-4 text-center text-sm text-slate-500 dark:text-slate-400">
+                {isLogin ? (
+                  <p>
+                    还没有账号？{" "}
+                    <Link href={"/register" + (nextPath !== "/" ? "?next=" + encodeURIComponent(nextPath) : "")} className="text-blue-600 dark:text-blue-400 hover:underline">
+                      立即注册
+                    </Link>
+                  </p>
+                ) : (
+                  <p>
+                    已有账号？{" "}
+                    <Link href={"/login" + (nextPath !== "/" ? "?next=" + encodeURIComponent(nextPath) : "")} className="text-blue-600 dark:text-blue-400 hover:underline">
+                      返回登录
+                    </Link>
+                  </p>
+                )}
+              </div>
             </form>
           )}
 
