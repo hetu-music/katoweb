@@ -16,6 +16,7 @@ export type Song = {
   collectionInfo?: {
     created_at: string;
     review: string | null;
+    snippet: string | null;
   };
 };
 

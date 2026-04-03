@@ -5,6 +5,7 @@ import { getSongs } from "@/lib/service-songs";
 import { TABLE_NAMES } from "@/lib/constants";
 
 const TABLE = "collections";
+const TARGET_TYPE_FAVORITE = 0;
 
 // GET /api/public/collections — 获取当前用户的收藏，返回 songIds 和完整 songs 数据
 export const GET = withAuth(
@@ -12,8 +13,9 @@ export const GET = withAuth(
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
       .from(TABLE)
-      .select("song_id, created_at, review")
+      .select("song_id, created_at, review, snippet")
       .eq("user_id", user.id)
+      .eq("target_type", TARGET_TYPE_FAVORITE)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -21,17 +23,7 @@ export const GET = withAuth(
       return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });
     }
 
-    // Deduplicate data by song_id since database might have duplicate entries
-    const uniqueData = [];
-    const seen = new Set();
-    for (const row of data) {
-      if (!seen.has(row.song_id)) {
-        seen.add(row.song_id);
-        uniqueData.push(row);
-      }
-    }
-
-    const songIds: number[] = uniqueData.map((r) => r.song_id);
+    const songIds: number[] = data.map((r) => r.song_id);
 
     if (songIds.length === 0) {
       return NextResponse.json({ songIds: [], songs: [] });
@@ -42,9 +34,13 @@ export const GET = withAuth(
 
     // 从数据行转为映射
     const idToCol = Object.fromEntries(
-      uniqueData.map((r) => [
+      data.map((r) => [
         r.song_id,
-        { created_at: r.created_at, review: r.review },
+        {
+          created_at: r.created_at,
+          review: r.review,
+          snippet: r.snippet,
+        },
       ]),
     );
 
@@ -72,7 +68,7 @@ export const POST = withAuth(
     const supabase = await createSupabaseServerClient();
     const { error } = await supabase
       .from(TABLE)
-      .insert({ user_id: user.id, song_id: songId });
+      .insert({ user_id: user.id, song_id: songId, target_type: TARGET_TYPE_FAVORITE });
 
     if (error) {
       // 唯一约束冲突 — 已收藏，视为成功
@@ -102,7 +98,8 @@ export const DELETE = withAuth(
       .from(TABLE)
       .delete()
       .eq("user_id", user.id)
-      .eq("song_id", songId);
+      .eq("song_id", songId)
+      .eq("target_type", TARGET_TYPE_FAVORITE);
 
     if (error) {
       console.error("DELETE collections error:", error);

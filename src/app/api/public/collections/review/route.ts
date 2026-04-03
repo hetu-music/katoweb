@@ -3,7 +3,9 @@ import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
 import { createSupabaseServerClient } from "@/lib/supabase-auth";
 
 const TABLE = "collections";
+const TARGET_TYPE_FAVORITE = 0;
 
+// GET /api/public/collections/review — 获取指定歌曲的评论
 export const GET = withAuth(
   async (request: NextRequest, user: AuthenticatedUser) => {
     const { searchParams } = new URL(request.url);
@@ -19,7 +21,7 @@ export const GET = withAuth(
       .select("review")
       .eq("user_id", user.id)
       .eq("song_id", songId)
-      .limit(1)
+      .eq("target_type", TARGET_TYPE_FAVORITE)
       .maybeSingle();
 
     if (error) {
@@ -34,6 +36,9 @@ export const GET = withAuth(
   },
 );
 
+// POST /api/public/collections/review — 保存评论
+// 唯一约束 uk_only_one_song_collection (user_id, song_id) WHERE target_type=0
+// 保证同一用户同一歌曲只有一行，update 安全不会产生重复
 export const POST = withAuth(
   async (request: NextRequest, user: AuthenticatedUser) => {
     const body = await request.json();
@@ -47,45 +52,50 @@ export const POST = withAuth(
 
     const supabase = await createSupabaseServerClient();
 
-    const { data: existing, error: findError } = await supabase
+    // 先尝试 update 已有行
+    const { data: updated, error: updateError } = await supabase
       .from(TABLE)
-      .select("song_id")
+      .update({ review: review || null })
       .eq("user_id", user.id)
       .eq("song_id", songId)
-      .limit(1)
-      .maybeSingle();
+      .eq("target_type", TARGET_TYPE_FAVORITE)
+      .select("song_id");
 
-    if (findError) {
-      console.error("Error finding existing collection:", findError);
+    if (updateError) {
+      console.error("Error updating review:", updateError);
       return NextResponse.json(
-        { error: "Failed to update review" },
+        { error: "Failed to save review" },
         { status: 500 },
       );
     }
 
-    if (existing) {
-      const { error: updateError } = await supabase
-        .from(TABLE)
-        .update({ review: review || null })
-        .eq("user_id", user.id)
-        .eq("song_id", songId);
-      if (updateError) {
-        console.error("Error updating review:", updateError);
-        return NextResponse.json(
-          { error: "Failed to update review" },
-          { status: 500 },
-        );
-      }
-    } else {
+    // 如果没有命中任何行，说明还没有收藏记录，插入新行
+    if (!updated || updated.length === 0) {
       const { error: insertError } = await supabase
         .from(TABLE)
-        .insert({ user_id: user.id, song_id: songId, review: review || null });
+        .insert({
+          user_id: user.id,
+          song_id: songId,
+          target_type: TARGET_TYPE_FAVORITE,
+          review: review || null,
+        });
+
       if (insertError) {
-        console.error("Error inserting review:", insertError);
-        return NextResponse.json(
-          { error: "Failed to insert review" },
-          { status: 500 },
-        );
+        // 唯一约束冲突说明并发插入，再次尝试 update
+        if (insertError.code === "23505") {
+          await supabase
+            .from(TABLE)
+            .update({ review: review || null })
+            .eq("user_id", user.id)
+            .eq("song_id", songId)
+            .eq("target_type", TARGET_TYPE_FAVORITE);
+        } else {
+          console.error("Error inserting review:", insertError);
+          return NextResponse.json(
+            { error: "Failed to save review" },
+            { status: 500 },
+          );
+        }
       }
     }
 

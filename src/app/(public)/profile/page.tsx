@@ -39,19 +39,49 @@ function ProfileContent() {
     favoriteSongs,
     toggleFavorite,
     clearFavorites,
+    refreshFavorites,
     loaded: favoritesLoaded,
-    isLoggedIn,
   } = useFavorites();
 
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [expandedReviews, setExpandedReviews] = useState<
     Record<number, boolean>
   >({});
+  // Lazy-loaded review texts: songId -> review text (or "loading")
+  const [reviewTexts, setReviewTexts] = useState<
+    Record<number, string | null>
+  >({});
 
-  const toggleReview = useCallback((id: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setExpandedReviews((prev) => ({ ...prev, [id]: !prev[id] }));
-  }, []);
+  // Always refresh favorites on mount to ensure review data is up-to-date
+  useEffect(() => {
+    if (user) {
+      refreshFavorites();
+    }
+    // Only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  const toggleReview = useCallback(
+    async (id: number, e: React.MouseEvent) => {
+      e.stopPropagation();
+      setExpandedReviews((prev) => {
+        const isExpanding = !prev[id];
+        if (isExpanding && reviewTexts[id] === undefined) {
+          // Lazy-load review text on first expand
+          fetch(`/api/public/collections/review?songId=${id}`)
+            .then((res) => res.json())
+            .then((data) => {
+              setReviewTexts((rt) => ({ ...rt, [id]: data.review || "" }));
+            })
+            .catch(() => {
+              setReviewTexts((rt) => ({ ...rt, [id]: null }));
+            });
+        }
+        return { ...prev, [id]: isExpanding };
+      });
+    },
+    [reviewTexts],
+  );
 
   // Account Form State
   const [name, setName] = useState("");
@@ -74,11 +104,11 @@ function ProfileContent() {
   }, [user]);
 
   useEffect(() => {
-    if (!isLoggedIn || activeTab !== "account") return;
+    if (!user || activeTab !== "account") return;
     fetch("/api/public/csrf-token")
       .then((r) => r.json())
       .then((d) => setCsrfToken(d.csrfToken || ""));
-  }, [activeTab, isLoggedIn]);
+  }, [activeTab, user]);
 
   const handleSave = useCallback(async () => {
     if (!csrfToken || saving) return;
@@ -136,13 +166,6 @@ function ProfileContent() {
     }
   }, [csrfToken, pwdSaving, currentPassword, newPassword]);
 
-  const handleLogin = useCallback(() => {
-    const next = encodeURIComponent(
-      window.location.pathname + window.location.search,
-    );
-    window.location.href = `/login?next=${next}`;
-  }, []);
-
   const handleBack = useCallback(() => {
     const navDepthStr = sessionStorage.getItem("__katoweb_nav_depth");
     const navDepth = navDepthStr ? parseInt(navDepthStr, 10) : 0;
@@ -157,29 +180,6 @@ function ProfileContent() {
   // Favorites Data — sourced directly from FavoritesContext
   // favoriteSongs already contains the full Song objects for all favorited songs
   const favoritedSongs = favoriteSongs;
-
-  const NotLoggedInState = useCallback(
-    () => (
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-320px)] p-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 border-dashed transition-all">
-        <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center mb-6">
-          <User size={32} className="text-slate-200 dark:text-slate-700" />
-        </div>
-        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">
-          尚未登录
-        </h3>
-        <p className="text-sm text-slate-400 mb-8">
-          请先登录账号以访问您的个人收藏与设置
-        </p>
-        <button
-          onClick={handleLogin}
-          className="px-10 py-3 rounded-full bg-blue-600 text-white font-bold hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 active:scale-95"
-        >
-          立即登录
-        </button>
-      </div>
-    ),
-    [handleLogin],
-  );
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500 font-sans">
@@ -289,7 +289,7 @@ function ProfileContent() {
                 </a>
               )}
 
-              {isLoggedIn && (
+              {user && (
                 <button
                   onClick={logout}
                   disabled={loggingOut}
@@ -337,9 +337,7 @@ function ProfileContent() {
             <div className="flex-1 flex flex-col">
               {activeTab === "favorites" && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
-                  {!isLoggedIn ? (
-                    <NotLoggedInState />
-                  ) : !favoritesLoaded ? (
+                  {!favoritesLoaded ? (
                     <div className="flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-320px)]">
                       <Loader2
                         size={32}
@@ -422,7 +420,7 @@ function ProfileContent() {
                               </div>
 
                               <div className="flex items-center gap-2">
-                                {song.collectionInfo?.review && (
+                                {!!song.collectionInfo?.review && (
                                   <button
                                     onClick={(e) => toggleReview(song.id, e)}
                                     className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
@@ -437,7 +435,7 @@ function ProfileContent() {
                                     e.stopPropagation();
                                     toggleFavorite(song.id);
                                   }}
-                                  className="p-2 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100"
+                                  className="p-2 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
                                   title="取消收藏"
                                 >
                                   <Heart size={16} className="fill-current" />
@@ -445,14 +443,20 @@ function ProfileContent() {
                               </div>
                             </div>
 
-                            {/* Expanded Review */}
-                            {song.collectionInfo?.review &&
+                            {/* Expanded Review — lazy-loaded */}
+                            {!!song.collectionInfo?.review &&
                               expandedReviews[song.id] && (
                                 <div className="px-4 pb-4 pt-1 border-t border-slate-100 dark:border-slate-800/50 mt-1">
                                   <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg border border-slate-100 dark:border-slate-800/30">
-                                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed">
-                                      {song.collectionInfo.review}
-                                    </p>
+                                    {reviewTexts[song.id] === undefined ? (
+                                      <p className="text-sm text-slate-400 animate-pulse">
+                                        加载评论中...
+                                      </p>
+                                    ) : (
+                                      <p className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed">
+                                        {reviewTexts[song.id] || song.collectionInfo.review || "暂无内容"}
+                                      </p>
+                                    )}
                                   </div>
                                 </div>
                               )}
@@ -466,8 +470,13 @@ function ProfileContent() {
 
               {activeTab === "account" && (
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
-                  {!isLoggedIn ? (
-                    <NotLoggedInState />
+                  {!userLoaded ? (
+                    <div className="flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-320px)]">
+                      <Loader2
+                        size={32}
+                        className="animate-spin text-blue-500"
+                      />
+                    </div>
                   ) : (
                     <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200/60 dark:border-slate-800/60 shadow-sm space-y-8 flex-1">
                       <div className="space-y-1">
