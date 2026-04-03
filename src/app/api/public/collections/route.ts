@@ -66,13 +66,11 @@ export const POST = withAuth(
     }
 
     const supabase = await createSupabaseServerClient();
-    const { error } = await supabase
-      .from(TABLE)
-      .insert({
-        user_id: user.id,
-        song_id: songId,
-        target_type: TARGET_TYPE_FAVORITE,
-      });
+    const { error } = await supabase.from(TABLE).insert({
+      user_id: user.id,
+      song_id: songId,
+      target_type: TARGET_TYPE_FAVORITE,
+    });
 
     if (error) {
       // 唯一约束冲突 — 已收藏，视为成功

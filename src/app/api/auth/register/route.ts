@@ -44,11 +44,22 @@ export async function POST(request: NextRequest) {
     // Check if user already exists
     // The safest way is to just try to sign up, Supabase will return error if email exists,
     // depending on settings. Wait, sometimes it returns a generic message.
-    const host = request.nextUrl.host;
-    const origin =
-      host === "origin-zb.hetu-music.com"
-        ? "https://zb.hetu-music.com"
-        : "https://hetu-music.com";
+    const forwardedHost = request.headers.get("x-forwarded-host");
+    const reqHost = request.headers.get("host");
+    const host = forwardedHost || reqHost || request.nextUrl.host;
+
+    // 显式匹配 zb 相关的域名
+    const isZbHost =
+      host === "zb.hetu-music.com" || host === "origin-zb.hetu-music.com";
+    const origin = isZbHost
+      ? "https://zb.hetu-music.com"
+      : "https://hetu-music.com";
+
+    // 记录日志以便在 Docker 容器中调试域名识别情况
+    console.warn(
+      `[Register API Host Check] forwardedHost: ${forwardedHost}, reqHost: ${reqHost}, finalHost: ${host}, detectedOrigin: ${origin}`,
+    );
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
