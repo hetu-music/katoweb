@@ -29,13 +29,17 @@ export function useFavorites() {
     prevUserIdRef.current = currentId;
 
     if (!user) {
-      setFavorites([]);
-      setLoaded(true);
+      requestAnimationFrame(() => {
+        setFavorites([]);
+        setLoaded(true);
+      });
       return;
     }
 
     let ignore = false;
-    setLoaded(false);
+    requestAnimationFrame(() => {
+      setLoaded(false);
+    });
 
     fetch("/api/public/collections")
       .then((res) => res.ok ? res.json() : { songIds: [] })
