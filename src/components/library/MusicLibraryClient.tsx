@@ -40,7 +40,6 @@ import Pagination from "../shared/Pagination";
 import SongFilters from "./SongFilters";
 import About from "./About";
 import FloatingActionButtons from "../shared/FloatingActionButtons";
-import UserPanel from "../shared/UserPanel";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useUserContext } from "@/context/UserContext";
 import ThemeToggle from "../shared/ThemeToggle";
@@ -352,20 +351,16 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     notifyDataReady,
   } = useMusicLibraryState(sliderYears.length);
 
-  // 关于弹窗状态 (Local UI state)
   const [showAbout, setShowAbout] = useState(false);
   const [activeSongId, setActiveSongId] = useState<number | null>(null);
-  const [showUserPanel, setShowUserPanel] = useState(false);
-  const [userPanelTab, setUserPanelTab] = useState<"account" | "favorites">(
-    "account",
-  );
 
   const { favorites, isLoggedIn } = useFavorites();
   const { user } = useUserContext();
 
   const openUserPanel = (tab: "account" | "favorites" = "account") => {
-    setUserPanelTab(tab);
-    setShowUserPanel(true);
+    const d = parseInt(sessionStorage.getItem("__katoweb_nav_depth") || "0", 10);
+    sessionStorage.setItem("__katoweb_nav_depth", String(d + 1));
+    router.push(`/profile?tab=${tab}`);
   };
 
   /*
@@ -907,13 +902,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
       {/* 关于弹窗 */}
       {showAbout && <About onClose={() => setShowAbout(false)} />}
-
-      <UserPanel
-        isOpen={showUserPanel}
-        onClose={() => setShowUserPanel(false)}
-        allSongs={initialSongsData}
-        initialTab={userPanelTab}
-      />
 
       <FloatingActionButtons
         showScrollTop={showScrollTop}

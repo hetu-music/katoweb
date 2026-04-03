@@ -12,6 +12,7 @@ import {
   PenTool,
   LayoutTemplate,
   ExternalLink,
+  Heart,
 } from "lucide-react";
 import Image from "next/image";
 import { SongDetailClientProps } from "@/lib/types";
@@ -22,9 +23,8 @@ import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import FavoriteButton from "@/components/shared/FavoriteButton";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import TableOfContents from "@/components/detail/TableOfContents";
-import UserPanel from "@/components/shared/UserPanel";
 import { useUserContext } from "@/context/UserContext";
-
+import { useFavorites } from "@/hooks/useFavorites";
 // 简易 classNames 工具
 function cn(...classes: (string | undefined | null | false)[]) {
   return classes.filter(Boolean).join(" ");
@@ -33,14 +33,12 @@ function cn(...classes: (string | undefined | null | false)[]) {
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const router = useRouter();
   const { user } = useUserContext();
-  const [showUserPanel, setShowUserPanel] = useState(false);
-  const [userPanelTab, setUserPanelTab] = useState<"account" | "favorites">(
-    "account",
-  );
+  const { favorites, isLoggedIn } = useFavorites();
 
   const openUserPanel = (tab: "account" | "favorites" = "account") => {
-    setUserPanelTab(tab);
-    setShowUserPanel(true);
+    const d = parseInt(sessionStorage.getItem("__katoweb_nav_depth") || "0", 10);
+    sessionStorage.setItem("__katoweb_nav_depth", String(d + 1));
+    router.push(`/profile?tab=${tab}`);
   };
 
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -134,8 +132,6 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
   const [isBackActive, setIsBackActive] = useState(false);
   const [activeLinkId, setActiveLinkId] = useState<string | null>(null);
-
-  const { favorites, isLoggedIn } = useFavorites();
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500">
@@ -639,12 +635,6 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
       />
 
       <TableOfContents song={song} />
-
-      <UserPanel
-        isOpen={showUserPanel}
-        onClose={() => setShowUserPanel(false)}
-        initialTab={userPanelTab}
-      />
     </div>
   );
 };
