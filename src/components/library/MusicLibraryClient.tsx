@@ -356,7 +356,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
   const { user } = useUserContext();
 
-  const openUserPanel = (tab: "account" | "favorites" = "account") => {
+  const openUserPanel = (tab: "account" | "favorites" = "favorites") => {
     if (!user) {
       const next = encodeURIComponent(window.location.pathname + window.location.search);
       router.push(`/login?next=${next}`);
@@ -601,7 +601,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
               <Info size={20} />
             </button>
             <button
-              onClick={() => openUserPanel("account")}
+              onClick={() => openUserPanel("favorites")}
               className="relative p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
               title={user ? user.name : "登录"}
             >

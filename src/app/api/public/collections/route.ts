@@ -21,7 +21,17 @@ export const GET = withAuth(
       return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });
     }
 
-    const songIds: number[] = data.map((r) => r.song_id);
+    // Deduplicate data by song_id since database might have duplicate entries
+    const uniqueData = [];
+    const seen = new Set();
+    for (const row of data) {
+      if (!seen.has(row.song_id)) {
+        seen.add(row.song_id);
+        uniqueData.push(row);
+      }
+    }
+
+    const songIds: number[] = uniqueData.map((r) => r.song_id);
 
     if (songIds.length === 0) {
       return NextResponse.json({ songIds: [], songs: [] });
@@ -32,7 +42,7 @@ export const GET = withAuth(
     
     // 从数据行转为映射
     const idToCol = Object.fromEntries(
-      data.map((r) => [r.song_id, { created_at: r.created_at, review: r.review }])
+      uniqueData.map((r) => [r.song_id, { created_at: r.created_at, review: r.review }])
     );
 
     const songs = songIds
