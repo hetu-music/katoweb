@@ -36,6 +36,7 @@ const UserReview: React.FC<UserReviewProps> = ({ songId }) => {
       const csrfData = await csrfRes.json();
       const csrf = csrfData.csrfToken;
 
+      // Save review (the review API handles insert-or-update, setting has_review atomically)
       const res = await fetch("/api/public/collections/review", {
         method: "POST",
         headers: {
@@ -47,9 +48,7 @@ const UserReview: React.FC<UserReviewProps> = ({ songId }) => {
       if (!res.ok) throw new Error("Failed to save review");
       setIsEditingReview(false);
 
-      // If the song isn't favorited yet, add it to the collection first
-      // (the review POST may have already created the row, but POST collections
-      //  handles duplicates gracefully via 23505 unique constraint)
+      // Ensure the song is also in the favorites list
       if (!isFavorite(songId)) {
         await fetch("/api/public/collections", {
           method: "POST",
@@ -61,9 +60,8 @@ const UserReview: React.FC<UserReviewProps> = ({ songId }) => {
         });
       }
 
-      // Now that both the review and collection row are persisted,
-      // refresh favorites so the profile page has up-to-date data
-      await refreshFavorites();
+      // Refresh context so other pages pick up updated data
+      refreshFavorites();
     } catch (err) {
       console.error(err);
       alert("保存评论失败，请稍后重试");

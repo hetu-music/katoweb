@@ -12,7 +12,7 @@ export const GET = withAuth(
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
       .from(TABLE)
-      .select("song_id, created_at, review")
+      .select("song_id, created_at, review, has_review")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
@@ -44,7 +44,7 @@ export const GET = withAuth(
     const idToCol = Object.fromEntries(
       uniqueData.map((r) => [
         r.song_id,
-        { created_at: r.created_at, review: r.review },
+        { created_at: r.created_at, review: r.review, has_review: !!r.has_review },
       ]),
     );
 

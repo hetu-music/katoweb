@@ -39,6 +39,7 @@ function ProfileContent() {
     favoriteSongs,
     toggleFavorite,
     clearFavorites,
+    refreshFavorites,
     loaded: favoritesLoaded,
     isLoggedIn,
   } = useFavorites();
@@ -47,11 +48,41 @@ function ProfileContent() {
   const [expandedReviews, setExpandedReviews] = useState<
     Record<number, boolean>
   >({});
+  // Lazy-loaded review texts: songId -> review text (or "loading")
+  const [reviewTexts, setReviewTexts] = useState<
+    Record<number, string | null>
+  >({});
 
-  const toggleReview = useCallback((id: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setExpandedReviews((prev) => ({ ...prev, [id]: !prev[id] }));
-  }, []);
+  // Always refresh favorites on mount to ensure has_review flags are up-to-date
+  useEffect(() => {
+    if (isLoggedIn) {
+      refreshFavorites();
+    }
+    // Only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn]);
+
+  const toggleReview = useCallback(
+    async (id: number, e: React.MouseEvent) => {
+      e.stopPropagation();
+      setExpandedReviews((prev) => {
+        const isExpanding = !prev[id];
+        if (isExpanding && reviewTexts[id] === undefined) {
+          // Lazy-load review text on first expand
+          fetch(`/api/public/collections/review?songId=${id}`)
+            .then((res) => res.json())
+            .then((data) => {
+              setReviewTexts((rt) => ({ ...rt, [id]: data.review || "" }));
+            })
+            .catch(() => {
+              setReviewTexts((rt) => ({ ...rt, [id]: null }));
+            });
+        }
+        return { ...prev, [id]: isExpanding };
+      });
+    },
+    [reviewTexts],
+  );
 
   // Account Form State
   const [name, setName] = useState("");
@@ -337,15 +368,15 @@ function ProfileContent() {
             <div className="flex-1 flex flex-col">
               {activeTab === "favorites" && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
-                  {!isLoggedIn ? (
-                    <NotLoggedInState />
-                  ) : !favoritesLoaded ? (
+                  {!favoritesLoaded ? (
                     <div className="flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-320px)]">
                       <Loader2
                         size={32}
                         className="animate-spin text-blue-500"
                       />
                     </div>
+                  ) : !isLoggedIn ? (
+                    <NotLoggedInState />
                   ) : favoritedSongs.length === 0 ? (
                     <div className="flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-320px)] bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 transition-all">
                       <Heart
@@ -422,7 +453,7 @@ function ProfileContent() {
                               </div>
 
                               <div className="flex items-center gap-2">
-                                {song.collectionInfo?.review && (
+                                {song.collectionInfo?.has_review && (
                                   <button
                                     onClick={(e) => toggleReview(song.id, e)}
                                     className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
@@ -445,14 +476,20 @@ function ProfileContent() {
                               </div>
                             </div>
 
-                            {/* Expanded Review */}
-                            {song.collectionInfo?.review &&
+                            {/* Expanded Review — lazy-loaded */}
+                            {song.collectionInfo?.has_review &&
                               expandedReviews[song.id] && (
                                 <div className="px-4 pb-4 pt-1 border-t border-slate-100 dark:border-slate-800/50 mt-1">
                                   <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg border border-slate-100 dark:border-slate-800/30">
-                                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed">
-                                      {song.collectionInfo.review}
-                                    </p>
+                                    {reviewTexts[song.id] === undefined ? (
+                                      <p className="text-sm text-slate-400 animate-pulse">
+                                        加载评论中...
+                                      </p>
+                                    ) : (
+                                      <p className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed">
+                                        {reviewTexts[song.id] || song.collectionInfo.review || "暂无内容"}
+                                      </p>
+                                    )}
                                   </div>
                                 </div>
                               )}
@@ -466,7 +503,14 @@ function ProfileContent() {
 
               {activeTab === "account" && (
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
-                  {!isLoggedIn ? (
+                  {!userLoaded ? (
+                    <div className="flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-320px)]">
+                      <Loader2
+                        size={32}
+                        className="animate-spin text-blue-500"
+                      />
+                    </div>
+                  ) : !isLoggedIn ? (
                     <NotLoggedInState />
                   ) : (
                     <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200/60 dark:border-slate-800/60 shadow-sm space-y-8 flex-1">

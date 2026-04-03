@@ -66,7 +66,7 @@ export const POST = withAuth(
     if (existing) {
       const { error: updateError } = await supabase
         .from(TABLE)
-        .update({ review: review || null })
+        .update({ review: review || null, has_review: !!review })
         .eq("user_id", user.id)
         .eq("song_id", songId);
       if (updateError) {
@@ -79,7 +79,7 @@ export const POST = withAuth(
     } else {
       const { error: insertError } = await supabase
         .from(TABLE)
-        .insert({ user_id: user.id, song_id: songId, review: review || null });
+        .insert({ user_id: user.id, song_id: songId, review: review || null, has_review: !!review });
       if (insertError) {
         console.error("Error inserting review:", insertError);
         return NextResponse.json(
