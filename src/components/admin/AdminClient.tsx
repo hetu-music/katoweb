@@ -1,43 +1,43 @@
 "use client";
 
-import React, { useState, useCallback, useEffect, useMemo } from "react";
+import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
+import Pagination from "@/components/shared/Pagination";
+import ThemeToggle from "@/components/shared/ThemeToggle";
+import { useUserContext } from "@/context/UserContext";
 import {
-  Search,
-  Plus,
-  Edit,
-  Save,
-  X,
-  Eye,
-  EyeOff,
-  Bell,
-  XCircle,
-  CheckCircle2,
-  AlertCircle,
-  Wand2,
-} from "lucide-react";
-import Image from "next/image";
+  mergeAutoCompleteData,
+  useAutoComplete,
+} from "@/hooks/useAutoComplete";
+import { usePagination } from "@/hooks/usePagination";
+import { useSongs } from "@/hooks/useSongs";
+import {
+  type MusicProviderType,
+  type SearchResultItem,
+} from "@/lib/api-auto-complete";
+import { apiCreateSong, apiUpdateSong } from "@/lib/client-api";
+import { genreColorMap, songFields, typeColorMap } from "@/lib/constants";
 import type { Song, SongDetail, SongFieldConfig } from "@/lib/types";
 import { convertEmptyStringToNull, formatField } from "@/lib/utils-common";
-import { validateField, getCoverUrl } from "@/lib/utils-song";
-import { songFields, genreColorMap, typeColorMap } from "@/lib/constants";
-import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
-import ThemeToggle from "@/components/shared/ThemeToggle";
-import Pagination from "@/components/shared/Pagination";
-import { usePagination } from "@/hooks/usePagination";
-import { apiCreateSong, apiUpdateSong } from "@/lib/client-api";
+import { getCoverUrl, validateField } from "@/lib/utils-song";
 import {
-  type SearchResultItem,
-  type MusicProviderType,
-} from "@/lib/api-auto-complete";
-import {
-  useAutoComplete,
-  mergeAutoCompleteData,
-} from "@/hooks/useAutoComplete";
-import { useSongs } from "@/hooks/useSongs";
-import { useAuth } from "@/hooks/useAuth";
+  AlertCircle,
+  Bell,
+  CheckCircle2,
+  Edit,
+  Eye,
+  EyeOff,
+  Plus,
+  Save,
+  Search,
+  Wand2,
+  X,
+  XCircle,
+} from "lucide-react";
+import Image from "next/image";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Account from "./Account";
-import Notification from "./Notification";
 import CoverUpload from "./CoverUpload";
+import Notification from "./Notification";
 import ScoreUpload from "./ScoreUpload";
 
 // Force simpler classNames utility
@@ -459,7 +459,13 @@ export default function AdminClientComponent({
   }, [searchTerm, currentPage, isClient, updateUrl]);
 
   // Auth & Actions
-  const { csrfToken, handleLogout, logoutLoading } = useAuth();
+  const { logout, loggingOut } = useUserContext();
+  const [csrfToken, setCsrfToken] = useState("");
+  useEffect(() => {
+    fetch("/api/public/csrf-token")
+      .then((r) => r.json())
+      .then((d) => setCsrfToken(d.csrfToken || ""));
+  }, []);
   const [showAdd, setShowAdd] = useState(false);
   const [newSong, setNewSong] = useState<Partial<Song>>({
     title: "",
@@ -644,8 +650,8 @@ export default function AdminClientComponent({
             <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1" />
             <Account
               csrfToken={csrfToken}
-              handleLogout={handleLogout}
-              logoutLoading={logoutLoading}
+              handleLogout={logout}
+              logoutLoading={loggingOut}
             />
           </div>
         </div>
@@ -840,14 +846,14 @@ export default function AdminClientComponent({
                       disabled={autoComplete.isAutoCompleting}
                       className={cn(
                         "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
-                        "bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-400 hover:to-rose-400",
+                        "bg-linear-to-r from-red-500 to-rose-500 hover:from-red-400 hover:to-rose-400",
                         "text-white shadow-md shadow-red-500/20 hover:shadow-lg hover:shadow-red-500/30",
                         "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-md",
                       )}
                       title="从网易云音乐自动补全"
                     >
                       {autoComplete.isAutoCompleting &&
-                      autoComplete.currentProvider === "netease" ? (
+                        autoComplete.currentProvider === "netease" ? (
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       ) : (
                         <Wand2 size={16} />
@@ -860,14 +866,14 @@ export default function AdminClientComponent({
                       disabled={autoComplete.isAutoCompleting}
                       className={cn(
                         "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
-                        "bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400",
+                        "bg-linear-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400",
                         "text-white shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30",
                         "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-md",
                       )}
                       title="从酷狗音乐自动补全"
                     >
                       {autoComplete.isAutoCompleting &&
-                      autoComplete.currentProvider === "kugou" ? (
+                        autoComplete.currentProvider === "kugou" ? (
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       ) : (
                         <Wand2 size={16} />
@@ -960,7 +966,7 @@ export default function AdminClientComponent({
 
       {/* 搜索结果选择弹窗 */}
       {autoComplete.showSearchResults && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-[#151921] w-full max-w-lg max-h-[70vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-slate-200/50 dark:border-slate-800">
             {/* 弹窗 Header */}
             <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white/50 dark:bg-[#151921]/50 backdrop-blur-md">

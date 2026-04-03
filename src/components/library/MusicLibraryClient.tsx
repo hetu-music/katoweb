@@ -19,6 +19,8 @@ import {
   XCircle,
   Info,
   RotateCcw,
+  Heart,
+  User,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -38,6 +40,8 @@ import Pagination from "../shared/Pagination";
 import SongFilters from "./SongFilters";
 import About from "./About";
 import FloatingActionButtons from "../shared/FloatingActionButtons";
+import { useFavorites } from "@/context/FavoritesContext";
+import { useUserContext } from "@/context/UserContext";
 import ThemeToggle from "../shared/ThemeToggle";
 import MultiTagDisplay from "./MultiTagDisplay";
 
@@ -101,7 +105,11 @@ const GridCard = ({
   style?: React.CSSProperties;
   className?: string;
   isActive?: boolean;
-}) => (
+}) => {
+  const { isFavorite, toggleFavorite, isLoggedIn } = useFavorites();
+  const active = isFavorite(song.id);
+
+  return (
   <div
     onClick={onClick}
     className={cn("group flex flex-col gap-4 cursor-pointer", className)}
@@ -127,6 +135,23 @@ const GridCard = ({
             : "group-hover:bg-black/10 group-hover:opacity-100",
         )}
       />
+
+      {/* 收藏按钮 — 仅登录用户可见 */}
+      {isLoggedIn && (
+        <button
+          onClick={(e) => { e.stopPropagation(); toggleFavorite(song.id); }}
+          aria-label={active ? "取消收藏" : "收藏"}
+          title={active ? "取消收藏" : "收藏"}
+          className={cn(
+            "absolute top-2 right-2 p-1.5 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm transition-all duration-200",
+            active
+              ? "opacity-100 text-rose-500"
+              : "opacity-100 lg:opacity-0 lg:group-hover:opacity-100 text-slate-500 dark:text-slate-400 hover:text-rose-500",
+          )}
+        >
+          <Heart size={16} className={active ? "fill-current" : ""} />
+        </button>
+      )}
     </div>
 
     {/* 信息区 */}
@@ -165,7 +190,8 @@ const GridCard = ({
       </p>
     </div>
   </div>
-);
+  );
+};
 
 // 3. 列表模式行 (List Row)
 const ListRow = ({
@@ -180,7 +206,11 @@ const ListRow = ({
   style?: React.CSSProperties;
   className?: string;
   isActive?: boolean;
-}) => (
+}) => {
+  const { isFavorite, toggleFavorite, isLoggedIn } = useFavorites();
+  const active = isFavorite(song.id);
+
+  return (
   <div
     onClick={onClick}
     className={cn(
@@ -229,8 +259,28 @@ const ListRow = ({
         {formatTime(song.length)}
       </div>
     </div>
+
+    {/* 收藏按钮 — 仅登录用户可见 */}
+    {isLoggedIn && (
+      <div className="flex items-center shrink-0 ml-2">
+        <button
+          onClick={(e) => { e.stopPropagation(); toggleFavorite(song.id); }}
+          aria-label={active ? "取消收藏" : "收藏"}
+          title={active ? "取消收藏" : "收藏"}
+          className={cn(
+            "p-2 rounded-lg transition-all duration-200",
+            active
+              ? "text-rose-500"
+              : "text-slate-400 dark:text-slate-500 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 hover:text-rose-400",
+          )}
+        >
+          <Heart size={16} className={active ? "fill-current" : ""} />
+        </button>
+      </div>
+    )}
   </div>
-);
+  );
+};
 
 // 筛选按钮组件
 const FilterPill = ({
@@ -304,9 +354,21 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     notifyDataReady,
   } = useMusicLibraryState(sliderYears.length);
 
-  // 关于弹窗状态 (Local UI state)
   const [showAbout, setShowAbout] = useState(false);
   const [activeSongId, setActiveSongId] = useState<number | null>(null);
+
+  const { user } = useUserContext();
+
+  const openUserPanel = (tab: "account" | "favorites" = "favorites") => {
+    if (!user) {
+      const next = encodeURIComponent(window.location.pathname + window.location.search);
+      router.push(`/login?next=${next}`);
+      return;
+    }
+    const d = parseInt(sessionStorage.getItem("__katoweb_nav_depth") || "0", 10);
+    sessionStorage.setItem("__katoweb_nav_depth", String(d + 1));
+    router.push(`/profile?tab=${tab}`);
+  };
 
   /*
    * Force re-render key for list/grid content.
@@ -540,6 +602,13 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
               title="关于"
             >
               <Info size={20} />
+            </button>
+            <button
+              onClick={() => openUserPanel("favorites")}
+              className="relative p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+              title={user ? user.name : "登录"}
+            >
+              <User size={20} className={user ? "text-blue-500 dark:text-blue-400" : ""} />
             </button>
             <ThemeToggle />
           </div>
