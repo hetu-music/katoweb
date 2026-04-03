@@ -435,7 +435,7 @@ function ProfileContent() {
                                     e.stopPropagation();
                                     toggleFavorite(song.id);
                                   }}
-                                  className="p-2 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100"
+                                  className="p-2 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
                                   title="取消收藏"
                                 >
                                   <Heart size={16} className="fill-current" />
