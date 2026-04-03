@@ -10,7 +10,7 @@ import {
   LogIn,
   Mail,
   ShieldCheck,
-  UserPlus
+  UserPlus,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -63,7 +63,9 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
         return;
       }
 
-      const csrfRes = await fetch("/api/public/csrf-token", { cache: "no-store" });
+      const csrfRes = await fetch("/api/public/csrf-token", {
+        cache: "no-store",
+      });
       if (!csrfRes.ok) throw new Error("无法获取安全令牌");
       const { csrfToken } = await csrfRes.json();
       if (!csrfToken) throw new Error("安全令牌无效");
@@ -76,13 +78,21 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
           "Content-Type": "application/json",
           "x-csrf-token": csrfToken,
         },
-        body: JSON.stringify({ email, password, turnstileToken, next: nextPath }),
+        body: JSON.stringify({
+          email,
+          password,
+          turnstileToken,
+          next: nextPath,
+        }),
         cache: "no-store",
       });
 
       const result = await res.json();
       if (!res.ok) {
-        setError(result.error || (isLogin ? "登录失败，请检查邮箱或密码" : "注册失败，请稍后重试"));
+        setError(
+          result.error ||
+            (isLogin ? "登录失败，请检查邮箱或密码" : "注册失败，请稍后重试"),
+        );
         setLoading(false);
         return;
       }
@@ -124,26 +134,39 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
               {isLogin ? "Welcome Back" : "Create Account"}
             </h1>
             <p className="text-slate-500 dark:text-slate-400 font-light text-sm">
-              {isLogin ? "请输入邮箱和密码登录" : "请设置您的邮箱和密码进行注册"}
+              {isLogin
+                ? "请输入邮箱和密码登录"
+                : "请设置您的邮箱和密码进行注册"}
             </p>
           </div>
 
           {!isLogin && sent ? (
             <div className="px-8 pb-12 space-y-6">
               <div className="flex flex-col items-center gap-4 p-6 rounded-2xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30 text-center">
-                <CheckCircle2 size={40} className="text-emerald-500" strokeWidth={1.5} />
+                <CheckCircle2
+                  size={40}
+                  className="text-emerald-500"
+                  strokeWidth={1.5}
+                />
                 <div className="space-y-1">
-                  <p className="font-medium text-slate-800 dark:text-slate-200">验证邮件已发送</p>
+                  <p className="font-medium text-slate-800 dark:text-slate-200">
+                    验证邮件已发送
+                  </p>
                   <p className="text-sm text-slate-500 dark:text-slate-400">
                     请检查{" "}
-                    <span className="font-medium text-slate-700 dark:text-slate-300">{email}</span>{" "}
+                    <span className="font-medium text-slate-700 dark:text-slate-300">
+                      {email}
+                    </span>{" "}
                     的收件箱，点击邮件中的链接完成注册。
                   </p>
                 </div>
               </div>
               <button
                 type="button"
-                onClick={() => { setSent(false); setTurnstileToken(""); }}
+                onClick={() => {
+                  setSent(false);
+                  setTurnstileToken("");
+                }}
                 className="w-full py-3 text-sm text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
               >
                 返回重新注册
@@ -181,7 +204,9 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
                     </div>
                     <input
                       type="password"
-                      placeholder={isLogin ? "••••••••" : "至少8位，包含字母和数字"}
+                      placeholder={
+                        isLogin ? "••••••••" : "至少8位，包含字母和数字"
+                      }
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 pl-11 pr-4 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
@@ -221,9 +246,15 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
                   <>
                     <span>{isLogin ? "登录" : "注册"}</span>
                     {isLogin ? (
-                      <LogIn size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                      <LogIn
+                        size={16}
+                        className="group-hover:translate-x-0.5 transition-transform"
+                      />
                     ) : (
-                      <UserPlus size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                      <UserPlus
+                        size={16}
+                        className="group-hover:translate-x-0.5 transition-transform"
+                      />
                     )}
                   </>
                 )}
@@ -233,14 +264,30 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
                 {isLogin ? (
                   <p>
                     还没有账号？{" "}
-                    <Link href={"/register" + (nextPath !== "/" ? "?next=" + encodeURIComponent(nextPath) : "")} className="text-blue-600 dark:text-blue-400 hover:underline">
+                    <Link
+                      href={
+                        "/register" +
+                        (nextPath !== "/"
+                          ? "?next=" + encodeURIComponent(nextPath)
+                          : "")
+                      }
+                      className="text-blue-600 dark:text-blue-400 hover:underline"
+                    >
                       立即注册
                     </Link>
                   </p>
                 ) : (
                   <p>
                     已有账号？{" "}
-                    <Link href={"/login" + (nextPath !== "/" ? "?next=" + encodeURIComponent(nextPath) : "")} className="text-blue-600 dark:text-blue-400 hover:underline">
+                    <Link
+                      href={
+                        "/login" +
+                        (nextPath !== "/"
+                          ? "?next=" + encodeURIComponent(nextPath)
+                          : "")
+                      }
+                      className="text-blue-600 dark:text-blue-400 hover:underline"
+                    >
                       返回登录
                     </Link>
                   </p>

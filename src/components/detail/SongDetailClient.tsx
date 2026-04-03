@@ -35,11 +35,16 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
   const openUserPanel = (tab: "account" | "favorites" = "favorites") => {
     if (!user) {
-      const next = encodeURIComponent(window.location.pathname + window.location.search);
+      const next = encodeURIComponent(
+        window.location.pathname + window.location.search,
+      );
       router.push(`/login?next=${next}`);
       return;
     }
-    const d = parseInt(sessionStorage.getItem("__katoweb_nav_depth") || "0", 10);
+    const d = parseInt(
+      sessionStorage.getItem("__katoweb_nav_depth") || "0",
+      10,
+    );
     sessionStorage.setItem("__katoweb_nav_depth", String(d + 1));
     router.push(`/profile?tab=${tab}`);
   };
@@ -190,7 +195,10 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
               className="relative p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
               title={user ? user.name : "登录"}
             >
-              <User size={20} className={user ? "text-blue-500 dark:text-blue-400" : ""} />
+              <User
+                size={20}
+                className={user ? "text-blue-500 dark:text-blue-400" : ""}
+              />
             </button>
             <ThemeToggle />
           </div>

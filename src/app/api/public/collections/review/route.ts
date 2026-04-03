@@ -24,18 +24,22 @@ export const GET = withAuth(
 
     if (error) {
       console.error("GET collection review error:", error);
-      return NextResponse.json({ error: "Failed to fetch review" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to fetch review" },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({ review: data?.review || "" });
-  }
+  },
 );
 
 export const POST = withAuth(
   async (request: NextRequest, user: AuthenticatedUser) => {
     const body = await request.json();
     const songId = Number(body?.songId);
-    const review = body?.review === undefined ? null : String(body.review).trim();
+    const review =
+      body?.review === undefined ? null : String(body.review).trim();
 
     if (!Number.isInteger(songId) || songId < 1) {
       return NextResponse.json({ error: "Invalid songId" }, { status: 400 });
@@ -52,31 +56,40 @@ export const POST = withAuth(
       .maybeSingle();
 
     if (findError) {
-       console.error("Error finding existing collection:", findError);
-       return NextResponse.json({ error: "Failed to update review" }, { status: 500 });
+      console.error("Error finding existing collection:", findError);
+      return NextResponse.json(
+        { error: "Failed to update review" },
+        { status: 500 },
+      );
     }
 
     if (existing) {
-       const { error: updateError } = await supabase
-         .from(TABLE)
-         .update({ review: review || null })
-         .eq("user_id", user.id)
-         .eq("song_id", songId);
-       if (updateError) {
-         console.error("Error updating review:", updateError);
-         return NextResponse.json({ error: "Failed to update review" }, { status: 500 });
-       }
+      const { error: updateError } = await supabase
+        .from(TABLE)
+        .update({ review: review || null })
+        .eq("user_id", user.id)
+        .eq("song_id", songId);
+      if (updateError) {
+        console.error("Error updating review:", updateError);
+        return NextResponse.json(
+          { error: "Failed to update review" },
+          { status: 500 },
+        );
+      }
     } else {
-       const { error: insertError } = await supabase
-         .from(TABLE)
-         .insert({ user_id: user.id, song_id: songId, review: review || null });
-       if (insertError) {
-         console.error("Error inserting review:", insertError);
-         return NextResponse.json({ error: "Failed to insert review" }, { status: 500 });
-       }
+      const { error: insertError } = await supabase
+        .from(TABLE)
+        .insert({ user_id: user.id, song_id: songId, review: review || null });
+      if (insertError) {
+        console.error("Error inserting review:", insertError);
+        return NextResponse.json(
+          { error: "Failed to insert review" },
+          { status: 500 },
+        );
+      }
     }
 
     return NextResponse.json({ success: true, review });
   },
-  { requireCSRF: true }
+  { requireCSRF: true },
 );

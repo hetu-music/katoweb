@@ -60,11 +60,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(async () => {
     setLoggingOut(true);
     try {
-      const csrfRes = await fetch("/api/public/csrf-token", { cache: "no-store" });
+      const csrfRes = await fetch("/api/public/csrf-token", {
+        cache: "no-store",
+      });
       const { csrfToken } = await csrfRes.json();
       await fetch("/api/auth/logout", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
+        headers: {
+          "Content-Type": "application/json",
+          "x-csrf-token": csrfToken,
+        },
       });
       setUser(null);
       window.location.href = "/login";

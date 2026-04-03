@@ -110,86 +110,89 @@ const GridCard = ({
   const active = isFavorite(song.id);
 
   return (
-  <div
-    onClick={onClick}
-    className={cn("group flex flex-col gap-4 cursor-pointer", className)}
-    style={style}
-  >
-    {/* 封面容器 */}
     <div
-      className={cn(
-        "relative aspect-square w-full rounded-sm overflow-hidden transition-all duration-500 shadow-lg shadow-slate-200/50 dark:shadow-black/40 ring-1 ring-slate-900/5 dark:ring-white/10",
-        isActive
-          ? "-translate-y-2 shadow-2xl"
-          : "group-hover:-translate-y-2 group-hover:shadow-2xl",
-      )}
+      onClick={onClick}
+      className={cn("group flex flex-col gap-4 cursor-pointer", className)}
+      style={style}
     >
-      <CoverArt song={song} isActive={isActive} />
-
-      {/* 悬浮遮罩 */}
+      {/* 封面容器 */}
       <div
         className={cn(
-          "absolute inset-0 bg-black/0 transition-colors opacity-0",
+          "relative aspect-square w-full rounded-sm overflow-hidden transition-all duration-500 shadow-lg shadow-slate-200/50 dark:shadow-black/40 ring-1 ring-slate-900/5 dark:ring-white/10",
           isActive
-            ? "bg-black/10 opacity-100"
-            : "group-hover:bg-black/10 group-hover:opacity-100",
+            ? "-translate-y-2 shadow-2xl"
+            : "group-hover:-translate-y-2 group-hover:shadow-2xl",
         )}
-      />
+      >
+        <CoverArt song={song} isActive={isActive} />
 
-      {/* 收藏按钮 — 仅登录用户可见 */}
-      {isLoggedIn && (
-        <button
-          onClick={(e) => { e.stopPropagation(); toggleFavorite(song.id); }}
-          aria-label={active ? "取消收藏" : "收藏"}
-          title={active ? "取消收藏" : "收藏"}
+        {/* 悬浮遮罩 */}
+        <div
           className={cn(
-            "absolute top-2 right-2 p-1.5 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm transition-all duration-200",
-            active
-              ? "opacity-100 text-rose-500"
-              : "opacity-100 lg:opacity-0 lg:group-hover:opacity-100 text-slate-500 dark:text-slate-400 hover:text-rose-500",
-          )}
-        >
-          <Heart size={16} className={active ? "fill-current" : ""} />
-        </button>
-      )}
-    </div>
-
-    {/* 信息区 */}
-    <div className="space-y-1">
-      <div className="flex justify-between items-start gap-4">
-        <h2
-          className={cn(
-            "text-xl text-slate-900 dark:text-slate-100 leading-tight transition-colors line-clamp-1 flex-1 min-w-0",
+            "absolute inset-0 bg-black/0 transition-colors opacity-0",
             isActive
-              ? "text-blue-600 dark:text-blue-400"
-              : "group-hover:text-blue-600 dark:group-hover:text-blue-400",
+              ? "bg-black/10 opacity-100"
+              : "group-hover:bg-black/10 group-hover:opacity-100",
           )}
-          title={song.title}
-        >
-          {song.title}
-        </h2>
-        <span className="text-xs font-mono text-slate-400 shrink-0">
-          {song.year || "未知"}
-        </span>
-      </div>
-      <p className="text-sm text-slate-500 dark:text-slate-400 font-light flex items-center gap-2 overflow-hidden">
-        <span className="truncate">{song.album || "单曲"}</span>
-        {song.type && song.type[0] && (
-          <>
-            <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 shrink-0" />
-            <span
-              className={cn(
-                "text-sm font-light uppercase tracking-wider shrink-0",
-                getTypeTagStyle(song.type[0]),
-              )}
-            >
-              {song.type[0]}
-            </span>
-          </>
+        />
+
+        {/* 收藏按钮 — 仅登录用户可见 */}
+        {isLoggedIn && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleFavorite(song.id);
+            }}
+            aria-label={active ? "取消收藏" : "收藏"}
+            title={active ? "取消收藏" : "收藏"}
+            className={cn(
+              "absolute top-2 right-2 p-1.5 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm transition-all duration-200",
+              active
+                ? "opacity-100 text-rose-500"
+                : "opacity-100 lg:opacity-0 lg:group-hover:opacity-100 text-slate-500 dark:text-slate-400 hover:text-rose-500",
+            )}
+          >
+            <Heart size={16} className={active ? "fill-current" : ""} />
+          </button>
         )}
-      </p>
+      </div>
+
+      {/* 信息区 */}
+      <div className="space-y-1">
+        <div className="flex justify-between items-start gap-4">
+          <h2
+            className={cn(
+              "text-xl text-slate-900 dark:text-slate-100 leading-tight transition-colors line-clamp-1 flex-1 min-w-0",
+              isActive
+                ? "text-blue-600 dark:text-blue-400"
+                : "group-hover:text-blue-600 dark:group-hover:text-blue-400",
+            )}
+            title={song.title}
+          >
+            {song.title}
+          </h2>
+          <span className="text-xs font-mono text-slate-400 shrink-0">
+            {song.year || "未知"}
+          </span>
+        </div>
+        <p className="text-sm text-slate-500 dark:text-slate-400 font-light flex items-center gap-2 overflow-hidden">
+          <span className="truncate">{song.album || "单曲"}</span>
+          {song.type && song.type[0] && (
+            <>
+              <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 shrink-0" />
+              <span
+                className={cn(
+                  "text-sm font-light uppercase tracking-wider shrink-0",
+                  getTypeTagStyle(song.type[0]),
+                )}
+              >
+                {song.type[0]}
+              </span>
+            </>
+          )}
+        </p>
+      </div>
     </div>
-  </div>
   );
 };
 
@@ -211,74 +214,77 @@ const ListRow = ({
   const active = isFavorite(song.id);
 
   return (
-  <div
-    onClick={onClick}
-    className={cn(
-      "group flex items-center gap-6 p-4 rounded-xl transition-colors cursor-pointer relative z-20 hover:z-30",
-      isActive
-        ? "bg-slate-100 dark:bg-slate-800/50"
-        : "hover:bg-slate-100 dark:hover:bg-slate-800/50",
-      className,
-    )}
-    style={style}
-  >
-    {/* 小封面 */}
-    <div className="w-16 h-16 shrink-0 rounded shadow-sm overflow-hidden">
-      <CoverArt song={song} isActive={isActive} />
-    </div>
-
-    {/* 主要信息 */}
-    <div className="grow min-w-0 flex flex-col justify-center">
-      <h2
-        className={cn(
-          "text-lg text-slate-900 dark:text-slate-100 truncate transition-colors",
-          isActive
-            ? "text-blue-600 dark:text-blue-400"
-            : "group-hover:text-blue-600 dark:group-hover:text-blue-400",
-        )}
-      >
-        {song.title}
-      </h2>
-      <p className="text-sm text-slate-500 dark:text-slate-400 font-light truncate">
-        {song.lyricist?.join(" ") || "-"}{" "}
-        <span className="opacity-50 mx-1">/</span>{" "}
-        {song.composer?.join(" ") || "-"}
-      </p>
-    </div>
-
-    {/* 辅助信息 (在大屏幕显示) */}
-    <div className="hidden md:flex items-center gap-8 text-sm text-slate-500 dark:text-slate-400 shrink-0">
-      <MultiTagDisplay tags={song.type} type="type" />
-      <MultiTagDisplay tags={song.genre} type="genre" />
-      <div className="flex items-center gap-2 w-16 font-mono text-xs opacity-70">
-        <Calendar size={14} />
-        {song.year || "-"}
+    <div
+      onClick={onClick}
+      className={cn(
+        "group flex items-center gap-6 p-4 rounded-xl transition-colors cursor-pointer relative z-20 hover:z-30",
+        isActive
+          ? "bg-slate-100 dark:bg-slate-800/50"
+          : "hover:bg-slate-100 dark:hover:bg-slate-800/50",
+        className,
+      )}
+      style={style}
+    >
+      {/* 小封面 */}
+      <div className="w-16 h-16 shrink-0 rounded shadow-sm overflow-hidden">
+        <CoverArt song={song} isActive={isActive} />
       </div>
-      <div className="flex items-center gap-2 w-16 font-mono text-xs opacity-70">
-        <Clock size={14} />
-        {formatTime(song.length)}
-      </div>
-    </div>
 
-    {/* 收藏按钮 — 仅登录用户可见 */}
-    {isLoggedIn && (
-      <div className="flex items-center shrink-0 ml-2">
-        <button
-          onClick={(e) => { e.stopPropagation(); toggleFavorite(song.id); }}
-          aria-label={active ? "取消收藏" : "收藏"}
-          title={active ? "取消收藏" : "收藏"}
+      {/* 主要信息 */}
+      <div className="grow min-w-0 flex flex-col justify-center">
+        <h2
           className={cn(
-            "p-2 rounded-lg transition-all duration-200",
-            active
-              ? "text-rose-500"
-              : "text-slate-400 dark:text-slate-500 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 hover:text-rose-400",
+            "text-lg text-slate-900 dark:text-slate-100 truncate transition-colors",
+            isActive
+              ? "text-blue-600 dark:text-blue-400"
+              : "group-hover:text-blue-600 dark:group-hover:text-blue-400",
           )}
         >
-          <Heart size={16} className={active ? "fill-current" : ""} />
-        </button>
+          {song.title}
+        </h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 font-light truncate">
+          {song.lyricist?.join(" ") || "-"}{" "}
+          <span className="opacity-50 mx-1">/</span>{" "}
+          {song.composer?.join(" ") || "-"}
+        </p>
       </div>
-    )}
-  </div>
+
+      {/* 辅助信息 (在大屏幕显示) */}
+      <div className="hidden md:flex items-center gap-8 text-sm text-slate-500 dark:text-slate-400 shrink-0">
+        <MultiTagDisplay tags={song.type} type="type" />
+        <MultiTagDisplay tags={song.genre} type="genre" />
+        <div className="flex items-center gap-2 w-16 font-mono text-xs opacity-70">
+          <Calendar size={14} />
+          {song.year || "-"}
+        </div>
+        <div className="flex items-center gap-2 w-16 font-mono text-xs opacity-70">
+          <Clock size={14} />
+          {formatTime(song.length)}
+        </div>
+      </div>
+
+      {/* 收藏按钮 — 仅登录用户可见 */}
+      {isLoggedIn && (
+        <div className="flex items-center shrink-0 ml-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleFavorite(song.id);
+            }}
+            aria-label={active ? "取消收藏" : "收藏"}
+            title={active ? "取消收藏" : "收藏"}
+            className={cn(
+              "p-2 rounded-lg transition-all duration-200",
+              active
+                ? "text-rose-500"
+                : "text-slate-400 dark:text-slate-500 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 hover:text-rose-400",
+            )}
+          >
+            <Heart size={16} className={active ? "fill-current" : ""} />
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -361,11 +367,16 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
   const openUserPanel = (tab: "account" | "favorites" = "favorites") => {
     if (!user) {
-      const next = encodeURIComponent(window.location.pathname + window.location.search);
+      const next = encodeURIComponent(
+        window.location.pathname + window.location.search,
+      );
       router.push(`/login?next=${next}`);
       return;
     }
-    const d = parseInt(sessionStorage.getItem("__katoweb_nav_depth") || "0", 10);
+    const d = parseInt(
+      sessionStorage.getItem("__katoweb_nav_depth") || "0",
+      10,
+    );
     sessionStorage.setItem("__katoweb_nav_depth", String(d + 1));
     router.push(`/profile?tab=${tab}`);
   };
@@ -608,7 +619,10 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
               className="relative p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
               title={user ? user.name : "登录"}
             >
-              <User size={20} className={user ? "text-blue-500 dark:text-blue-400" : ""} />
+              <User
+                size={20}
+                className={user ? "text-blue-500 dark:text-blue-400" : ""}
+              />
             </button>
             <ThemeToggle />
           </div>

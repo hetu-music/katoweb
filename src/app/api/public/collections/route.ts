@@ -39,10 +39,13 @@ export const GET = withAuth(
 
     // 服务端直接查歌曲数据，避免客户端二次请求
     const allSongs = await getSongs(TABLE_NAMES.MAIN, undefined, true);
-    
+
     // 从数据行转为映射
     const idToCol = Object.fromEntries(
-      uniqueData.map((r) => [r.song_id, { created_at: r.created_at, review: r.review }])
+      uniqueData.map((r) => [
+        r.song_id,
+        { created_at: r.created_at, review: r.review },
+      ]),
     );
 
     const songs = songIds
@@ -50,7 +53,7 @@ export const GET = withAuth(
       .filter((s): s is NonNullable<typeof s> => Boolean(s))
       .map((song) => ({
         ...song,
-        collectionInfo: idToCol[song.id]
+        collectionInfo: idToCol[song.id],
       }));
 
     return NextResponse.json({ songIds, songs });

@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { createSupabaseMiddlewareClient } from "./lib/supabase-auth";
 
 export async function proxy(request: NextRequest) {
@@ -48,7 +48,7 @@ export async function proxy(request: NextRequest) {
     // - valid for: /, /song/*, and all routes in 'pnpm dev'
     cspHeader = `
       default-src 'self';
-      script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com https://static.cloudflareinsights.com;
+      script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://static.cloudflareinsights.com;
       style-src 'self' 'unsafe-inline';
       img-src 'self' blob: data: https://cover.hetu-music.com;
       font-src 'self';
@@ -88,7 +88,10 @@ export async function proxy(request: NextRequest) {
   // (including public pages that need to read auth state client-side)
   try {
     const supabase = createSupabaseMiddlewareClient(request, response);
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
 
     // Admin-only: redirect to login if not authenticated or not admin
     if (request.nextUrl.pathname.startsWith("/admin")) {

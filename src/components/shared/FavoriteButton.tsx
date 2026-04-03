@@ -26,13 +26,13 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     // 防抖/节流：防止短时间内重复点击
     if (isProcessing.current) return;
-    
+
     isProcessing.current = true;
     toggleFavorite(songId);
-    
+
     setTimeout(() => {
       isProcessing.current = false;
     }, 500); // 500ms 冷却时间

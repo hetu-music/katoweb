@@ -853,7 +853,7 @@ export default function AdminClientComponent({
                       title="从网易云音乐自动补全"
                     >
                       {autoComplete.isAutoCompleting &&
-                        autoComplete.currentProvider === "netease" ? (
+                      autoComplete.currentProvider === "netease" ? (
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       ) : (
                         <Wand2 size={16} />
@@ -873,7 +873,7 @@ export default function AdminClientComponent({
                       title="从酷狗音乐自动补全"
                     >
                       {autoComplete.isAutoCompleting &&
-                        autoComplete.currentProvider === "kugou" ? (
+                      autoComplete.currentProvider === "kugou" ? (
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       ) : (
                         <Wand2 size={16} />

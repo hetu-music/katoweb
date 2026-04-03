@@ -25,7 +25,8 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const showInstallButton = isInstallable || (isIOS && !isStandalone);
-  const hasSecondaryActions = Boolean(children) || showInstallButton || Boolean(onShare);
+  const hasSecondaryActions =
+    Boolean(children) || showInstallButton || Boolean(onShare);
 
   const handleInstallClick = () => {
     if (isIOS) {
@@ -64,7 +65,7 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
               }`}
             >
               {children}
-              
+
               {showInstallButton && (
                 <button
                   onClick={handleInstallClick}

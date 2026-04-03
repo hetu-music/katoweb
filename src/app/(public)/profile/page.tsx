@@ -15,11 +15,11 @@ import {
   Settings,
   ShieldCheck,
   Trash2,
-  User
+  User,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 
 function cn(...classes: (string | undefined | null | false)[]) {
   return classes.filter(Boolean).join(" ");
@@ -27,7 +27,7 @@ function cn(...classes: (string | undefined | null | false)[]) {
 
 type TabType = "favorites" | "account";
 
-export default function ProfilePage() {
+function ProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialTab = (searchParams.get("tab") as TabType) ?? "favorites";
@@ -43,11 +43,13 @@ export default function ProfilePage() {
   } = useFavorites();
 
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
-  const [expandedReviews, setExpandedReviews] = useState<Record<number, boolean>>({});
+  const [expandedReviews, setExpandedReviews] = useState<
+    Record<number, boolean>
+  >({});
 
   const toggleReview = useCallback((id: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    setExpandedReviews(prev => ({ ...prev, [id]: !prev[id] }));
+    setExpandedReviews((prev) => ({ ...prev, [id]: !prev[id] }));
   }, []);
 
   // Account Form State
@@ -84,7 +86,10 @@ export default function ProfilePage() {
     try {
       const res = await fetch("/api/auth/account", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
+        headers: {
+          "Content-Type": "application/json",
+          "x-csrf-token": csrfToken,
+        },
         body: JSON.stringify({ displayName: name, intro }),
       });
       if (res.ok) {
@@ -108,7 +113,10 @@ export default function ProfilePage() {
     try {
       const res = await fetch("/api/auth/change-password", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
+        headers: {
+          "Content-Type": "application/json",
+          "x-csrf-token": csrfToken,
+        },
         body: JSON.stringify({ currentPassword, newPassword }),
       });
       if (res.ok) {
@@ -128,7 +136,9 @@ export default function ProfilePage() {
   }, [csrfToken, pwdSaving, currentPassword, newPassword]);
 
   const handleLogin = useCallback(() => {
-    const next = encodeURIComponent(window.location.pathname + window.location.search);
+    const next = encodeURIComponent(
+      window.location.pathname + window.location.search,
+    );
     window.location.href = `/login?next=${next}`;
   }, []);
 
@@ -147,21 +157,28 @@ export default function ProfilePage() {
   // favoriteSongs already contains the full Song objects for all favorited songs
   const favoritedSongs = favoriteSongs;
 
-  const NotLoggedInState = useCallback(() => (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-320px)] p-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 border-dashed transition-all">
-      <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center mb-6">
-        <User size={32} className="text-slate-200 dark:text-slate-700" />
+  const NotLoggedInState = useCallback(
+    () => (
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-320px)] p-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 border-dashed transition-all">
+        <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center mb-6">
+          <User size={32} className="text-slate-200 dark:text-slate-700" />
+        </div>
+        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">
+          尚未登录
+        </h3>
+        <p className="text-sm text-slate-400 mb-8">
+          请先登录账号以访问您的个人收藏与设置
+        </p>
+        <button
+          onClick={handleLogin}
+          className="px-10 py-3 rounded-full bg-blue-600 text-white font-bold hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 active:scale-95"
+        >
+          立即登录
+        </button>
       </div>
-      <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">尚未登录</h3>
-      <p className="text-sm text-slate-400 mb-8">请先登录账号以访问您的个人收藏与设置</p>
-      <button
-        onClick={handleLogin}
-        className="px-10 py-3 rounded-full bg-blue-600 text-white font-bold hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 active:scale-95"
-      >
-        立即登录
-      </button>
-    </div>
-  ), [handleLogin]);
+    ),
+    [handleLogin],
+  );
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500 font-sans">
@@ -174,7 +191,10 @@ export default function ProfilePage() {
               className="p-2 -ml-2 rounded-full transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800 group"
               title="返回"
             >
-              <ArrowLeft size={20} className="transition-transform group-hover:-translate-x-1" />
+              <ArrowLeft
+                size={20}
+                className="transition-transform group-hover:-translate-x-1"
+              />
             </button>
             <h1 className="text-xl font-bold text-slate-900 dark:text-white font-serif tracking-tight">
               个人中心
@@ -188,7 +208,6 @@ export default function ProfilePage() {
 
       <main className="pt-32 pb-20 max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
           {/* Left Column: Compact Profile Card (Col-3) */}
           <aside className="lg:col-span-3 space-y-4 lg:sticky lg:top-32">
             <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/60 dark:border-slate-800/60 shadow-sm overflow-hidden relative">
@@ -219,15 +238,21 @@ export default function ProfilePage() {
                 {/* Compact Stats */}
                 <div className="flex w-full gap-4 pt-4 border-t border-slate-100 dark:border-slate-800/50">
                   <div className="flex-1 text-center">
-                    <p className="text-lg font-bold text-slate-900 dark:text-white">{favorites.length}</p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">收藏</p>
+                    <p className="text-lg font-bold text-slate-900 dark:text-white">
+                      {favorites.length}
+                    </p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      收藏
+                    </p>
                   </div>
                   <div className="w-px h-8 bg-slate-100 dark:bg-slate-800/50 self-center" />
                   <div className="flex-1 text-center">
                     <p className="text-lg font-bold text-slate-900 dark:text-white truncate">
                       {user?.isAdmin ? "管理" : "用户"}
                     </p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">角色</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      角色
+                    </p>
                   </div>
                 </div>
               </div>
@@ -244,7 +269,10 @@ export default function ProfilePage() {
                     <ShieldCheck size={16} />
                     管理面板
                   </div>
-                  <ChevronRight size={14} className="transition-transform group-hover:translate-x-1" />
+                  <ChevronRight
+                    size={14}
+                    className="transition-transform group-hover:translate-x-1"
+                  />
                 </a>
               )}
 
@@ -254,7 +282,11 @@ export default function ProfilePage() {
                   disabled={loggingOut}
                   className="flex items-center justify-center gap-2 w-full p-3.5 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-rose-500 hover:border-rose-200 dark:hover:border-rose-500/30 transition-all font-bold text-xs"
                 >
-                  {loggingOut ? <Loader2 size={16} className="animate-spin" /> : <LogOut size={16} />}
+                  {loggingOut ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <LogOut size={16} />
+                  )}
                   退出登录
                 </button>
               )}
@@ -273,10 +305,15 @@ export default function ProfilePage() {
                     "py-2 px-6 rounded-lg text-sm font-bold transition-all flex items-center gap-2",
                     activeTab === tab
                       ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                      : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200",
                   )}
                 >
-                  {tab === "favorites" && <Heart size={14} className={cn(activeTab === tab && "fill-current")} />}
+                  {tab === "favorites" && (
+                    <Heart
+                      size={14}
+                      className={cn(activeTab === tab && "fill-current")}
+                    />
+                  )}
                   {tab === "account" && <Settings size={14} />}
                   {tab === "favorites" ? "我的收藏" : "账户设置"}
                 </button>
@@ -291,12 +328,20 @@ export default function ProfilePage() {
                     <NotLoggedInState />
                   ) : !favoritesLoaded ? (
                     <div className="flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-320px)]">
-                      <Loader2 size={32} className="animate-spin text-blue-500" />
+                      <Loader2
+                        size={32}
+                        className="animate-spin text-blue-500"
+                      />
                     </div>
                   ) : favoritedSongs.length === 0 ? (
                     <div className="flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-320px)] bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 transition-all">
-                      <Heart size={40} className="text-slate-100 dark:text-slate-800 mb-4" />
-                      <p className="text-slate-400 text-sm">还没有收藏任何曲目</p>
+                      <Heart
+                        size={40}
+                        className="text-slate-100 dark:text-slate-800 mb-4"
+                      />
+                      <p className="text-slate-400 text-sm">
+                        还没有收藏任何曲目
+                      </p>
                     </div>
                   ) : (
                     <div className="space-y-4 flex-1">
@@ -317,11 +362,22 @@ export default function ProfilePage() {
 
                       <div className="grid grid-cols-1 gap-4 pb-8">
                         {favoritedSongs.map((song) => (
-                          <div key={song.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/60 dark:border-slate-800/60 overflow-hidden transition-all hover:border-blue-500/30 dark:hover:border-blue-500/30 group">
+                          <div
+                            key={song.id}
+                            className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/60 dark:border-slate-800/60 overflow-hidden transition-all hover:border-blue-500/30 dark:hover:border-blue-500/30 group"
+                          >
                             <div
                               onClick={() => {
-                                const d = parseInt(sessionStorage.getItem("__katoweb_nav_depth") || "0", 10);
-                                sessionStorage.setItem("__katoweb_nav_depth", String(d + 1));
+                                const d = parseInt(
+                                  sessionStorage.getItem(
+                                    "__katoweb_nav_depth",
+                                  ) || "0",
+                                  10,
+                                );
+                                sessionStorage.setItem(
+                                  "__katoweb_nav_depth",
+                                  String(d + 1),
+                                );
                                 router.push(`/song/${song.id}`);
                               }}
                               className="flex items-center gap-4 p-4 cursor-pointer"
@@ -342,7 +398,12 @@ export default function ProfilePage() {
                                 </h4>
                                 <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 truncate flex items-center gap-2">
                                   {song.collectionInfo?.created_at && (
-                                    <span>收藏于 {new Date(song.collectionInfo.created_at).toLocaleDateString()}</span>
+                                    <span>
+                                      收藏于{" "}
+                                      {new Date(
+                                        song.collectionInfo.created_at,
+                                      ).toLocaleDateString()}
+                                    </span>
                                   )}
                                 </p>
                               </div>
@@ -353,7 +414,9 @@ export default function ProfilePage() {
                                     onClick={(e) => toggleReview(song.id, e)}
                                     className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                   >
-                                    {expandedReviews[song.id] ? "隐藏详情" : "显示详情"}
+                                    {expandedReviews[song.id]
+                                      ? "隐藏详情"
+                                      : "显示详情"}
                                   </button>
                                 )}
                                 <button
@@ -370,15 +433,16 @@ export default function ProfilePage() {
                             </div>
 
                             {/* Expanded Review */}
-                            {song.collectionInfo?.review && expandedReviews[song.id] && (
-                              <div className="px-4 pb-4 pt-1 border-t border-slate-100 dark:border-slate-800/50 mt-1">
-                                <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg border border-slate-100 dark:border-slate-800/30">
-                                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed">
-                                    {song.collectionInfo.review}
-                                  </p>
+                            {song.collectionInfo?.review &&
+                              expandedReviews[song.id] && (
+                                <div className="px-4 pb-4 pt-1 border-t border-slate-100 dark:border-slate-800/50 mt-1">
+                                  <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg border border-slate-100 dark:border-slate-800/30">
+                                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed">
+                                      {song.collectionInfo.review}
+                                    </p>
+                                  </div>
                                 </div>
-                              </div>
-                            )}
+                              )}
                           </div>
                         ))}
                       </div>
@@ -394,14 +458,20 @@ export default function ProfilePage() {
                   ) : (
                     <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200/60 dark:border-slate-800/60 shadow-sm space-y-8 flex-1">
                       <div className="space-y-1">
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">账户设置</h3>
-                        <p className="text-xs text-slate-400">管理您的公开资料与基本信息</p>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                          账户设置
+                        </h3>
+                        <p className="text-xs text-slate-400">
+                          管理您的公开资料与基本信息
+                        </p>
                       </div>
 
                       <div className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">用户名</label>
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
+                              用户名
+                            </label>
                             <input
                               type="text"
                               value={name}
@@ -411,7 +481,9 @@ export default function ProfilePage() {
                             />
                           </div>
                           <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">邮箱</label>
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
+                              邮箱
+                            </label>
                             <div className="w-full px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 text-xs text-slate-400 cursor-not-allowed">
                               {user?.email}
                             </div>
@@ -419,7 +491,9 @@ export default function ProfilePage() {
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">个人简介</label>
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
+                            个人简介
+                          </label>
                           <textarea
                             value={intro}
                             onChange={(e) => setIntro(e.target.value)}
@@ -437,10 +511,14 @@ export default function ProfilePage() {
                               "px-6 py-2.5 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2",
                               saving || !name.trim()
                                 ? "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
-                                : "bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-500/10 active:scale-95"
+                                : "bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-500/10 active:scale-95",
                             )}
                           >
-                            {saving ? <Loader2 size={16} className="animate-spin" /> : saveMsg === "已保存" ? <Check size={16} /> : null}
+                            {saving ? (
+                              <Loader2 size={16} className="animate-spin" />
+                            ) : saveMsg === "已保存" ? (
+                              <Check size={16} />
+                            ) : null}
                             {saveMsg ?? "保存更改"}
                           </button>
                         </div>
@@ -449,22 +527,32 @@ export default function ProfilePage() {
                       {/* Password Change Section */}
                       <div className="pt-8 mt-8 border-t border-slate-100 dark:border-slate-800 space-y-6">
                         <div className="space-y-1">
-                          <h4 className="text-sm font-bold text-slate-900 dark:text-white">修改密码</h4>
-                          <p className="text-xs text-slate-400">设置一个更安全的新密码</p>
+                          <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                            修改密码
+                          </h4>
+                          <p className="text-xs text-slate-400">
+                            设置一个更安全的新密码
+                          </p>
                         </div>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">当前密码</label>
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
+                              当前密码
+                            </label>
                             <input
                               type="password"
                               value={currentPassword}
-                              onChange={(e) => setCurrentPassword(e.target.value)}
+                              onChange={(e) =>
+                                setCurrentPassword(e.target.value)
+                              }
                               className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:bg-white dark:focus:bg-[#111] focus:border-blue-500/50 outline-none transition-all text-sm text-slate-800 dark:text-slate-200"
                             />
                           </div>
                           <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">新密码</label>
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
+                              新密码
+                            </label>
                             <input
                               type="password"
                               value={newPassword}
@@ -477,19 +565,30 @@ export default function ProfilePage() {
                         <div className="pt-2 flex items-center gap-3">
                           <button
                             onClick={handleChangePassword}
-                            disabled={pwdSaving || !currentPassword || !newPassword}
+                            disabled={
+                              pwdSaving || !currentPassword || !newPassword
+                            }
                             className={cn(
                               "px-6 py-2.5 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2",
                               pwdSaving || !currentPassword || !newPassword
                                 ? "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
-                                : "bg-rose-600 text-white hover:bg-rose-700 shadow-md shadow-rose-500/10 active:scale-95"
+                                : "bg-rose-600 text-white hover:bg-rose-700 shadow-md shadow-rose-500/10 active:scale-95",
                             )}
                           >
-                            {pwdSaving ? <Loader2 size={16} className="animate-spin" /> : null}
+                            {pwdSaving ? (
+                              <Loader2 size={16} className="animate-spin" />
+                            ) : null}
                             确认修改
                           </button>
                           {pwdMsg && (
-                            <span className={cn("text-xs font-bold", pwdMsg === "密码修改成功" ? "text-emerald-500" : "text-rose-500")}>
+                            <span
+                              className={cn(
+                                "text-xs font-bold",
+                                pwdMsg === "密码修改成功"
+                                  ? "text-emerald-500"
+                                  : "text-rose-500",
+                              )}
+                            >
                               {pwdMsg}
                             </span>
                           )}
@@ -499,11 +598,24 @@ export default function ProfilePage() {
                   )}
                 </div>
               )}
-
             </div>
           </div>
         </div>
       </main>
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] flex items-center justify-center">
+          <Loader2 size={32} className="animate-spin text-blue-500" />
+        </div>
+      }
+    >
+      <ProfileContent />
+    </Suspense>
   );
 }

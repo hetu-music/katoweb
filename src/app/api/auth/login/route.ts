@@ -5,7 +5,10 @@ import { createSupabaseServerClient } from "@/lib/supabase-auth";
 export async function POST(request: NextRequest) {
   try {
     if (!(await verifyCSRFToken(request))) {
-      return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Invalid CSRF token" },
+        { status: 403 },
+      );
     }
 
     const body = await request.json();
