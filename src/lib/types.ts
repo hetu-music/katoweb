@@ -13,6 +13,10 @@ export type Song = {
   date?: string | null;
   type?: string[] | null;
   updated_at: string;
+  collectionInfo?: {
+    created_at: string;
+    review: string | null;
+  };
 };
 
 // Song 类型的数据库字段列表（用于 Supabase 查询）

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { FileText } from "lucide-react";
 import { useUserContext } from "@/context/UserContext";
+import { useFavorites } from "@/context/FavoritesContext";
 
 interface UserReviewProps {
   songId: number;
@@ -10,6 +11,7 @@ interface UserReviewProps {
 
 const UserReview: React.FC<UserReviewProps> = ({ songId }) => {
   const { user } = useUserContext();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [review, setReview] = useState("");
   const [isEditingReview, setIsEditingReview] = useState(false);
   const [isSavingReview, setIsSavingReview] = useState(false);
@@ -42,6 +44,10 @@ const UserReview: React.FC<UserReviewProps> = ({ songId }) => {
       });
       if (!res.ok) throw new Error("Failed to save review");
       setIsEditingReview(false);
+
+      if (!isFavorite(songId)) {
+        toggleFavorite(songId);
+      }
     } catch (err) {
       console.error(err);
       alert("保存评论失败，请稍后重试");

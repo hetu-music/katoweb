@@ -43,6 +43,12 @@ export default function ProfilePage() {
   } = useFavorites();
 
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
+  const [expandedReviews, setExpandedReviews] = useState<Record<number, boolean>>({});
+
+  const toggleReview = useCallback((id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpandedReviews(prev => ({ ...prev, [id]: !prev[id] }));
+  }, []);
 
   // Account Form State
   const [name, setName] = useState("");
@@ -309,42 +315,70 @@ export default function ProfilePage() {
                         </button>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-8">
+                      <div className="grid grid-cols-1 gap-4 pb-8">
                         {favoritedSongs.map((song) => (
-                          <div
-                            key={song.id}
-                            onClick={() => router.push(`/song/${song.id}`)}
-                            className="group flex items-center gap-4 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/60 dark:border-slate-800/60 hover:border-blue-500/30 dark:hover:border-blue-500/30 transition-all hover:shadow-lg hover:shadow-slate-200/20 dark:hover:shadow-none cursor-pointer"
-                          >
-                            <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 shadow-sm">
-                              <Image
-                                src={getCoverUrl(song)}
-                                alt={song.title}
-                                width={56}
-                                height={56}
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                              />
-                            </div>
-
-                            <div className="flex-1 min-w-0">
-                              <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                {song.title}
-                              </h4>
-                              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 truncate">
-                                {song.artist?.join(" / ") || "河图"}
-                              </p>
-                            </div>
-
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleFavorite(song.id);
-                              }}
-                              className="p-2 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100"
-                              title="取消收藏"
+                          <div key={song.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/60 dark:border-slate-800/60 overflow-hidden transition-all hover:border-blue-500/30 dark:hover:border-blue-500/30 group">
+                            <div
+                              onClick={() => router.push(`/song/${song.id}`)}
+                              className="flex items-center gap-4 p-4 cursor-pointer"
                             >
-                              <Heart size={16} className="fill-current" />
-                            </button>
+                              <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 shadow-sm">
+                                <Image
+                                  src={getCoverUrl(song)}
+                                  alt={song.title}
+                                  width={56}
+                                  height={56}
+                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                />
+                              </div>
+
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                  {song.title}
+                                </h4>
+                                <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 truncate flex items-center gap-2">
+                                  <span>{song.artist?.join(" / ") || "河图"}</span>
+                                  {song.collectionInfo?.created_at && (
+                                    <>
+                                      <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                                      <span>收藏于 {new Date(song.collectionInfo.created_at).toLocaleDateString()}</span>
+                                    </>
+                                  )}
+                                </p>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                {song.collectionInfo?.review && (
+                                  <button
+                                    onClick={(e) => toggleReview(song.id, e)}
+                                    className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                                  >
+                                    {expandedReviews[song.id] ? "隐藏详情" : "显示详情"}
+                                  </button>
+                                )}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleFavorite(song.id);
+                                  }}
+                                  className="p-2 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100"
+                                  title="取消收藏"
+                                >
+                                  <Heart size={16} className="fill-current" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Expanded Review */}
+                            {song.collectionInfo?.review && expandedReviews[song.id] && (
+                              <div className="px-4 pb-4 pt-1 border-t border-slate-100 dark:border-slate-800/50 mt-1">
+                                <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg border border-slate-100 dark:border-slate-800/30">
+                                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed">
+                                    {song.collectionInfo.review}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
