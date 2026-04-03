@@ -1,15 +1,15 @@
 "use client";
-import React, { useState } from "react";
 import {
-  User,
-  Key,
-  Type,
-  LogOut,
-  X,
-  Loader2,
-  CheckCircle2,
   AlertCircle,
+  CheckCircle2,
+  Key,
+  Loader2,
+  LogOut,
+  Type,
+  User,
+  X,
 } from "lucide-react";
+import React, { useState } from "react";
 import { createPortal } from "react-dom";
 
 const Modal = ({
@@ -23,7 +23,7 @@ const Modal = ({
 }) => {
   if (typeof window === "undefined") return null;
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="bg-white dark:bg-[#151921] w-full max-w-md rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-in zoom-in-95 duration-200">
         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-[#151921]/50">
           <h3 className="font-bold text-slate-900 dark:text-white">{title}</h3>
