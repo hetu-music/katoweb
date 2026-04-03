@@ -1,26 +1,25 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import ThemeToggle from "@/components/shared/ThemeToggle";
+import { useFavorites } from "@/context/FavoritesContext";
+import { useUserContext } from "@/context/UserContext";
+import { getCoverUrl } from "@/lib/utils-song";
 import {
-  User,
-  LogOut,
-  Settings,
   ArrowLeft,
   Check,
-  Loader2,
   ChevronRight,
   Heart,
-  Trash2,
-  ExternalLink,
-  ShieldCheck,
+  Loader2,
+  LogOut,
   Mail,
+  Settings,
+  ShieldCheck,
+  Trash2,
+  User
 } from "lucide-react";
 import Image from "next/image";
-import { useUserContext } from "@/context/UserContext";
-import { useFavorites } from "@/hooks/useFavorites";
-import { getCoverUrl } from "@/lib/utils-song";
-import ThemeToggle from "@/components/shared/ThemeToggle";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 
 function cn(...classes: (string | undefined | null | false)[]) {
   return classes.filter(Boolean).join(" ");
@@ -44,7 +43,7 @@ export default function ProfilePage() {
   } = useFavorites();
 
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
-  
+
   // Account Form State
   const [name, setName] = useState("");
   const [intro, setIntro] = useState("");
@@ -106,12 +105,9 @@ export default function ProfilePage() {
     }
   }, [router]);
 
-  // Favorites Data — now sourced from useFavorites hook directly
-
-  const favoritedSongs = useMemo(
-    () => favoriteSongs.filter((s) => favorites.includes(s.id)),
-    [favoriteSongs, favorites],
-  );
+  // Favorites Data — sourced directly from FavoritesContext
+  // favoriteSongs already contains the full Song objects for all favorited songs
+  const favoritedSongs = favoriteSongs;
 
   const NotLoggedInState = useCallback(() => (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-320px)] p-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 border-dashed transition-all">
@@ -147,14 +143,14 @@ export default function ProfilePage() {
             </h1>
           </div>
           <div className="flex items-center gap-3">
-             <ThemeToggle />
+            <ThemeToggle />
           </div>
         </div>
       </nav>
 
       <main className="pt-32 pb-20 max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
+
           {/* Left Column: Compact Profile Card (Col-3) */}
           <aside className="lg:col-span-3 space-y-4 lg:sticky lg:top-32">
             <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/60 dark:border-slate-800/60 shadow-sm overflow-hidden relative">
@@ -164,18 +160,18 @@ export default function ProfilePage() {
                     {user?.name?.charAt(0)?.toUpperCase() || <User size={24} />}
                   </div>
                 </div>
-                
+
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white truncate w-full">
                   {user?.name || (userLoaded ? "访客" : "加载中...")}
                 </h2>
-                
+
                 {user?.email && (
                   <div className="flex items-center justify-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 mt-1 mb-4">
                     <Mail size={12} />
                     {user.email}
                   </div>
                 )}
-                
+
                 {user?.intro && (
                   <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6 line-clamp-2">
                     {user.intro}
@@ -267,18 +263,18 @@ export default function ProfilePage() {
                   ) : (
                     <div className="space-y-4 flex-1">
                       <div className="flex items-center justify-between px-1">
-                         <div className="flex items-center gap-2">
-                           <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                             已收藏 {favoritedSongs.length} 首作品
-                           </span>
-                         </div>
-                         <button
-                           onClick={clearFavorites}
-                           className="text-xs font-bold text-rose-500 hover:text-rose-600 px-3 py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors flex items-center gap-1.5"
-                         >
-                           <Trash2 size={12} />
-                           全部清除
-                         </button>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                            已收藏 {favoritedSongs.length} 首作品
+                          </span>
+                        </div>
+                        <button
+                          onClick={clearFavorites}
+                          className="text-xs font-bold text-rose-500 hover:text-rose-600 px-3 py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors flex items-center gap-1.5"
+                        >
+                          <Trash2 size={12} />
+                          全部清除
+                        </button>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-8">
@@ -288,7 +284,7 @@ export default function ProfilePage() {
                             onClick={() => router.push(`/song/${song.id}`)}
                             className="group flex items-center gap-4 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/60 dark:border-slate-800/60 hover:border-blue-500/30 dark:hover:border-blue-500/30 transition-all hover:shadow-lg hover:shadow-slate-200/20 dark:hover:shadow-none cursor-pointer"
                           >
-                            <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 shadow-sm">
+                            <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 shadow-sm">
                               <Image
                                 src={getCoverUrl(song)}
                                 alt={song.title}
@@ -297,7 +293,7 @@ export default function ProfilePage() {
                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                               />
                             </div>
-                            
+
                             <div className="flex-1 min-w-0">
                               <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                                 {song.title}
@@ -327,13 +323,13 @@ export default function ProfilePage() {
 
               {activeTab === "account" && (
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
-                   {!isLoggedIn ? (
-                     <NotLoggedInState />
-                   ) : (
+                  {!isLoggedIn ? (
+                    <NotLoggedInState />
+                  ) : (
                     <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200/60 dark:border-slate-800/60 shadow-sm space-y-8 flex-1">
                       <div className="space-y-1">
-                          <h3 className="text-lg font-bold text-slate-900 dark:text-white">账户设置</h3>
-                          <p className="text-xs text-slate-400">管理您的公开资料与基本信息</p>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">账户设置</h3>
+                        <p className="text-xs text-slate-400">管理您的公开资料与基本信息</p>
                       </div>
 
                       <div className="space-y-6">
@@ -384,7 +380,7 @@ export default function ProfilePage() {
                         </div>
                       </div>
                     </div>
-                   )}
+                  )}
                 </div>
               )}
 

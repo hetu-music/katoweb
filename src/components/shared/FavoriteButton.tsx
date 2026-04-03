@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Heart } from "lucide-react";
-import { useFavorites } from "@/hooks/useFavorites";
+import { useFavorites } from "@/context/FavoritesContext";
 
 interface FavoriteButtonProps {
   songId: number;
