@@ -11,7 +11,7 @@ interface UserReviewProps {
 
 const UserReview: React.FC<UserReviewProps> = ({ songId }) => {
   const { user } = useUserContext();
-  const { isFavorite, refreshFavorites } = useFavorites();
+  const { refreshFavorites } = useFavorites();
   const [review, setReview] = useState("");
   const [isEditingReview, setIsEditingReview] = useState(false);
   const [isSavingReview, setIsSavingReview] = useState(false);
@@ -36,22 +36,11 @@ const UserReview: React.FC<UserReviewProps> = ({ songId }) => {
       const csrfData = await csrfRes.json();
       const csrf = csrfData.csrfToken;
 
-      // IMPORTANT: Ensure the favorite row exists BEFORE saving the review.
-      // The review API does insert-or-update on the collections row.
-      // If we insert a new favorite row AFTER the review, it creates a duplicate
-      // row without a review, which the collections GET returns instead (ordered by created_at DESC).
-      if (!isFavorite(songId)) {
-        await fetch("/api/public/collections", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-csrf-token": csrf,
-          },
-          body: JSON.stringify({ songId }),
-        });
-      }
-
-      // Save review (the review API handles insert-or-update, setting has_review atomically)
+      // The review API handles insert-or-update on the collections row atomically.
+      // Do NOT call POST /api/public/collections separately — the collections table lacks
+      // a unique constraint on (user_id, song_id), so inserting a separate favorite row
+      // would create a duplicate. The review route's insert branch already creates the
+      // collection row with the review + has_review fields in one operation.
       const res = await fetch("/api/public/collections/review", {
         method: "POST",
         headers: {

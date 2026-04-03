@@ -47,13 +47,14 @@ export const POST = withAuth(
 
     const supabase = await createSupabaseServerClient();
 
-    const { data: existing, error: findError } = await supabase
+    // Use array query instead of maybeSingle() to avoid PGRST116 errors
+    // when duplicate rows exist (no unique constraint on user_id + song_id)
+    const { data: rows, error: findError } = await supabase
       .from(TABLE)
       .select("song_id")
       .eq("user_id", user.id)
       .eq("song_id", songId)
-      .limit(1)
-      .maybeSingle();
+      .limit(1);
 
     if (findError) {
       console.error("Error finding existing collection:", findError);
@@ -63,7 +64,8 @@ export const POST = withAuth(
       );
     }
 
-    if (existing) {
+    if (rows && rows.length > 0) {
+      // Update ALL matching rows (cleans up duplicates by setting review on all of them)
       const { error: updateError } = await supabase
         .from(TABLE)
         .update({ review: review || null, has_review: !!review })
