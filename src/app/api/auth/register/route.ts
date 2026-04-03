@@ -12,9 +12,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, password, turnstileToken, next } = body;
-    const nextPath =
-      typeof next === "string" && next.startsWith("/") ? next : "/";
+    const { email, password, turnstileToken } = body;
 
     const turnstileResult = await verifyTurnstileToken(turnstileToken);
     if (!turnstileResult.success) {
@@ -41,30 +39,24 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createSupabaseServerClient();
 
-    // Check if user already exists
-    // The safest way is to just try to sign up, Supabase will return error if email exists,
-    // depending on settings. Wait, sometimes it returns a generic message.
+    // 根据请求域名检测来源站点
     const forwardedHost = request.headers.get("x-forwarded-host");
     const reqHost = request.headers.get("host");
     const host = forwardedHost || reqHost || request.nextUrl.host;
 
-    // 显式匹配 zb 相关的域名
     const isZbHost =
       host === "zb.hetu-music.com" || host === "origin-zb.hetu-music.com";
     const origin = isZbHost
       ? "https://zb.hetu-music.com"
       : "https://hetu-music.com";
 
-    // 记录日志以便在 Docker 容器中调试域名识别情况
-    console.warn(
-      `[Register API Host Check] forwardedHost: ${forwardedHost}, reqHost: ${reqHost}, finalHost: ${host}, detectedOrigin: ${origin}`,
-    );
-
+    // emailRedirectTo 仅传递 origin，邮件模板会用 {{ .RedirectTo }} 拼接完整的验证链接：
+    // {{ .RedirectTo }}/api/auth/confirm?token_hash={{ .TokenHash }}&type=email&next={{ .RedirectTo | urlquery }}
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${origin}/api/auth/callback?next=${encodeURIComponent(nextPath)}`,
+        emailRedirectTo: origin,
       },
     });
 
