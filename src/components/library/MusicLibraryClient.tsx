@@ -146,10 +146,10 @@ const GridCard = ({
             "absolute top-2 right-2 p-1.5 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm transition-all duration-200",
             active
               ? "opacity-100 text-rose-500"
-              : "opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-500",
+              : "opacity-100 lg:opacity-0 lg:group-hover:opacity-100 text-slate-500 dark:text-slate-400 hover:text-rose-500",
           )}
         >
-          <Heart size={14} className={active ? "fill-current" : ""} />
+          <Heart size={16} className={active ? "fill-current" : ""} />
         </button>
       )}
     </div>
@@ -258,23 +258,26 @@ const ListRow = ({
         <Clock size={14} />
         {formatTime(song.length)}
       </div>
-      {/* 收藏按钮 — 仅登录用户可见 */}
-      {isLoggedIn && (
+    </div>
+
+    {/* 收藏按钮 — 仅登录用户可见 */}
+    {isLoggedIn && (
+      <div className="flex items-center shrink-0 ml-2">
         <button
           onClick={(e) => { e.stopPropagation(); toggleFavorite(song.id); }}
           aria-label={active ? "取消收藏" : "收藏"}
           title={active ? "取消收藏" : "收藏"}
           className={cn(
-            "p-1.5 rounded-lg transition-all duration-200",
+            "p-2 rounded-lg transition-all duration-200",
             active
               ? "text-rose-500"
-              : "text-slate-300 dark:text-slate-600 opacity-0 group-hover:opacity-100 hover:text-rose-400",
+              : "text-slate-400 dark:text-slate-500 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 hover:text-rose-400",
           )}
         >
-          <Heart size={15} className={active ? "fill-current" : ""} />
+          <Heart size={16} className={active ? "fill-current" : ""} />
         </button>
-      )}
-    </div>
+      </div>
+    )}
   </div>
   );
 };

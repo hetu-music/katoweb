@@ -1,21 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import ThemeToggle from "@/components/shared/ThemeToggle";
+import { Turnstile } from "@marsidev/react-turnstile";
 import {
-  Mail,
-  Lock,
-  ArrowLeft,
-  Send,
-  ShieldCheck,
   AlertCircle,
+  ArrowLeft,
   CheckCircle2,
+  Lock,
   LogIn,
+  Mail,
+  ShieldCheck,
   UserPlus
 } from "lucide-react";
-import { Turnstile } from "@marsidev/react-turnstile";
-import ThemeToggle from "@/components/shared/ThemeToggle";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface AuthClientProps {
   nonce?: string;
@@ -229,7 +228,7 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
                   </>
                 )}
               </button>
-              
+
               <div className="mt-4 text-center text-sm text-slate-500 dark:text-slate-400">
                 {isLogin ? (
                   <p>
@@ -257,7 +256,7 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
               className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
             >
               <ArrowLeft size={16} />
-              <span>Back to Library</span>
+              <span>返回主页</span>
             </button>
           </div>
         </div>
