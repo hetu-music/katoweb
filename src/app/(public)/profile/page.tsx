@@ -48,9 +48,9 @@ function ProfileContent() {
     Record<number, boolean>
   >({});
   // Lazy-loaded review texts: songId -> review text (or "loading")
-  const [reviewTexts, setReviewTexts] = useState<
-    Record<number, string | null>
-  >({});
+  const [reviewTexts, setReviewTexts] = useState<Record<number, string | null>>(
+    {},
+  );
 
   // Always refresh favorites on mount to ensure review data is up-to-date
   useEffect(() => {
@@ -198,7 +198,7 @@ function ProfileContent() {
                   className="transition-transform group-hover:-translate-x-0.5"
                 />
               </button>
-              
+
               <div className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-0.5" />
 
               <button
@@ -206,7 +206,10 @@ function ProfileContent() {
                 className="p-2 rounded-full transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800 group"
                 title="回到主页"
               >
-                <Home size={20} className="transition-transform group-hover:scale-105 group-active:scale-95" />
+                <Home
+                  size={20}
+                  className="transition-transform group-hover:scale-105 group-active:scale-95"
+                />
               </button>
             </div>
             <h1 className="text-xl font-bold text-slate-900 dark:text-white font-serif tracking-tight">
@@ -454,7 +457,9 @@ function ProfileContent() {
                                       </p>
                                     ) : (
                                       <p className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed">
-                                        {reviewTexts[song.id] || song.collectionInfo.review || "暂无内容"}
+                                        {reviewTexts[song.id] ||
+                                          song.collectionInfo.review ||
+                                          "暂无内容"}
                                       </p>
                                     )}
                                   </div>

@@ -91,7 +91,7 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
       if (!res.ok) {
         setError(
           result.error ||
-          (isLogin ? "登录失败，请检查邮箱或密码" : "注册失败，请稍后重试"),
+            (isLogin ? "登录失败，请检查邮箱或密码" : "注册失败，请稍后重试"),
         );
         setLoading(false);
         return;

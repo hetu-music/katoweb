@@ -186,7 +186,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                   )}
                 />
               </button>
-              
+
               <div className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-0.5" />
 
               <button
@@ -194,7 +194,10 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 className="p-2 rounded-full transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800 group"
                 title="回到主页"
               >
-                <Home size={20} className="transition-transform group-hover:scale-105 group-active:scale-95" />
+                <Home
+                  size={20}
+                  className="transition-transform group-hover:scale-105 group-active:scale-95"
+                />
               </button>
             </div>
             <div className="text-xl font-bold text-slate-900 dark:text-white tracking-tight hidden sm:block font-serif">
