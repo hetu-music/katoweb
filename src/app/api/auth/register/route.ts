@@ -44,7 +44,11 @@ export async function POST(request: NextRequest) {
     // Check if user already exists
     // The safest way is to just try to sign up, Supabase will return error if email exists,
     // depending on settings. Wait, sometimes it returns a generic message.
-    const origin = request.nextUrl.origin;
+    const host = request.nextUrl.host;
+    const origin =
+      host === "origin-zb.hetu-music.com"
+        ? "https://zb.hetu-music.com"
+        : "https://hetu-music.com";
     const { error } = await supabase.auth.signUp({
       email,
       password,
