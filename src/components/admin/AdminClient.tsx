@@ -34,7 +34,7 @@ import {
   mergeAutoCompleteData,
 } from "@/hooks/useAutoComplete";
 import { useSongs } from "@/hooks/useSongs";
-import { useAuth } from "@/hooks/useAuth";
+import { useUserContext } from "@/context/UserContext";
 import Account from "./Account";
 import Notification from "./Notification";
 import CoverUpload from "./CoverUpload";
@@ -459,7 +459,13 @@ export default function AdminClientComponent({
   }, [searchTerm, currentPage, isClient, updateUrl]);
 
   // Auth & Actions
-  const { csrfToken, handleLogout, logoutLoading } = useAuth();
+  const { logout, loggingOut } = useUserContext();
+  const [csrfToken, setCsrfToken] = useState("");
+  useEffect(() => {
+    fetch("/api/public/csrf-token")
+      .then((r) => r.json())
+      .then((d) => setCsrfToken(d.csrfToken || ""));
+  }, []);
   const [showAdd, setShowAdd] = useState(false);
   const [newSong, setNewSong] = useState<Partial<Song>>({
     title: "",
@@ -644,8 +650,8 @@ export default function AdminClientComponent({
             <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1" />
             <Account
               csrfToken={csrfToken}
-              handleLogout={handleLogout}
-              logoutLoading={logoutLoading}
+              handleLogout={logout}
+              logoutLoading={loggingOut}
             />
           </div>
         </div>

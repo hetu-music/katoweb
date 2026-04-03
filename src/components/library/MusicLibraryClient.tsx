@@ -43,7 +43,7 @@ import FloatingActionButtons from "../shared/FloatingActionButtons";
 import FavoritesPanel from "../shared/FavoritesPanel";
 import UserPanel from "../shared/UserPanel";
 import { useFavorites } from "@/hooks/useFavorites";
-import { useUser } from "@/hooks/useUser";
+import { useUserContext } from "@/context/UserContext";
 import ThemeToggle from "../shared/ThemeToggle";
 import MultiTagDisplay from "./MultiTagDisplay";
 
@@ -360,7 +360,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   const [showUserPanel, setShowUserPanel] = useState(false);
 
   const { favorites, isLoggedIn } = useFavorites();
-  const { user } = useUser();
+  const { user } = useUserContext();
 
   /*
    * Force re-render key for list/grid content.

@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useUser } from "./useUser";
+import { useUserContext } from "@/context/UserContext";
 
 export function useFavorites() {
-  const { user, loaded: userLoaded } = useUser();
+  const { user, loaded: userLoaded } = useUserContext();
   const [favorites, setFavorites] = useState<number[]>([]);
   const [loaded, setLoaded] = useState(false);
   const csrfRef = useRef<string>("");

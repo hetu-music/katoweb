@@ -22,6 +22,8 @@ import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import FavoriteButton from "@/components/shared/FavoriteButton";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import TableOfContents from "@/components/detail/TableOfContents";
+import UserPanel from "@/components/shared/UserPanel";
+import { useUserContext } from "@/context/UserContext";
 
 // 简易 classNames 工具
 function cn(...classes: (string | undefined | null | false)[]) {
@@ -30,6 +32,8 @@ function cn(...classes: (string | undefined | null | false)[]) {
 
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const router = useRouter();
+  const { user } = useUserContext();
+  const [showUserPanel, setShowUserPanel] = useState(false);
 
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [lyricsType, setLyricsType] = useState<"normal" | "lrc">("normal");
@@ -171,7 +175,16 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
             </div>
           </div>
 
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowUserPanel(true)}
+              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+              title={user ? user.name : "登录"}
+            >
+              <User size={20} className={user ? "text-blue-500 dark:text-blue-400" : ""} />
+            </button>
+            <ThemeToggle />
+          </div>
         </div>
       </nav>
 
@@ -602,6 +615,8 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
       />
 
       <TableOfContents song={song} />
+
+      <UserPanel isOpen={showUserPanel} onClose={() => setShowUserPanel(false)} />
     </div>
   );
 };

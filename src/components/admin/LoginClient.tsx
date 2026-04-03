@@ -23,7 +23,7 @@ export default function LoginClient({ nonce }: LoginClientProps) {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
-  const [nextPath, setNextPath] = useState("/admin");
+  const [nextPath, setNextPath] = useState("/");
   const router = useRouter();
 
   useEffect(() => {

@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { email, turnstileToken, next } = body;
-    const nextPath = typeof next === "string" && next.startsWith("/") ? next : "/admin";
+    const nextPath = typeof next === "string" && next.startsWith("/") ? next : "/";
 
     const turnstileResult = await verifyTurnstileToken(turnstileToken);
     if (!turnstileResult.success) {
