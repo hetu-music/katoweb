@@ -41,7 +41,6 @@ function ProfileContent() {
     clearFavorites,
     refreshFavorites,
     loaded: favoritesLoaded,
-    isLoggedIn,
   } = useFavorites();
 
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
@@ -55,12 +54,12 @@ function ProfileContent() {
 
   // Always refresh favorites on mount to ensure has_review flags are up-to-date
   useEffect(() => {
-    if (isLoggedIn) {
+    if (user) {
       refreshFavorites();
     }
     // Only run on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoggedIn]);
+  }, [user]);
 
   const toggleReview = useCallback(
     async (id: number, e: React.MouseEvent) => {
@@ -105,11 +104,11 @@ function ProfileContent() {
   }, [user]);
 
   useEffect(() => {
-    if (!isLoggedIn || activeTab !== "account") return;
+    if (!user || activeTab !== "account") return;
     fetch("/api/public/csrf-token")
       .then((r) => r.json())
       .then((d) => setCsrfToken(d.csrfToken || ""));
-  }, [activeTab, isLoggedIn]);
+  }, [activeTab, user]);
 
   const handleSave = useCallback(async () => {
     if (!csrfToken || saving) return;
@@ -167,13 +166,6 @@ function ProfileContent() {
     }
   }, [csrfToken, pwdSaving, currentPassword, newPassword]);
 
-  const handleLogin = useCallback(() => {
-    const next = encodeURIComponent(
-      window.location.pathname + window.location.search,
-    );
-    window.location.href = `/login?next=${next}`;
-  }, []);
-
   const handleBack = useCallback(() => {
     const navDepthStr = sessionStorage.getItem("__katoweb_nav_depth");
     const navDepth = navDepthStr ? parseInt(navDepthStr, 10) : 0;
@@ -188,29 +180,6 @@ function ProfileContent() {
   // Favorites Data — sourced directly from FavoritesContext
   // favoriteSongs already contains the full Song objects for all favorited songs
   const favoritedSongs = favoriteSongs;
-
-  const NotLoggedInState = useCallback(
-    () => (
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-320px)] p-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 border-dashed transition-all">
-        <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center mb-6">
-          <User size={32} className="text-slate-200 dark:text-slate-700" />
-        </div>
-        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">
-          尚未登录
-        </h3>
-        <p className="text-sm text-slate-400 mb-8">
-          请先登录账号以访问您的个人收藏与设置
-        </p>
-        <button
-          onClick={handleLogin}
-          className="px-10 py-3 rounded-full bg-blue-600 text-white font-bold hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 active:scale-95"
-        >
-          立即登录
-        </button>
-      </div>
-    ),
-    [handleLogin],
-  );
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500 font-sans">
@@ -320,7 +289,7 @@ function ProfileContent() {
                 </a>
               )}
 
-              {isLoggedIn && (
+              {user && (
                 <button
                   onClick={logout}
                   disabled={loggingOut}
@@ -375,8 +344,6 @@ function ProfileContent() {
                         className="animate-spin text-blue-500"
                       />
                     </div>
-                  ) : !isLoggedIn ? (
-                    <NotLoggedInState />
                   ) : favoritedSongs.length === 0 ? (
                     <div className="flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-320px)] bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 transition-all">
                       <Heart
@@ -510,8 +477,6 @@ function ProfileContent() {
                         className="animate-spin text-blue-500"
                       />
                     </div>
-                  ) : !isLoggedIn ? (
-                    <NotLoggedInState />
                   ) : (
                     <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200/60 dark:border-slate-800/60 shadow-sm space-y-8 flex-1">
                       <div className="space-y-1">
