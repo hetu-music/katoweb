@@ -34,6 +34,11 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const { user } = useUserContext();
 
   const openUserPanel = (tab: "account" | "favorites" = "account") => {
+    if (!user) {
+      const next = encodeURIComponent(window.location.pathname + window.location.search);
+      router.push(`/login?next=${next}`);
+      return;
+    }
     const d = parseInt(sessionStorage.getItem("__katoweb_nav_depth") || "0", 10);
     sessionStorage.setItem("__katoweb_nav_depth", String(d + 1));
     router.push(`/profile?tab=${tab}`);

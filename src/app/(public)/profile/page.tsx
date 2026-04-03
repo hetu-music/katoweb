@@ -51,6 +51,12 @@ export default function ProfilePage() {
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [csrfToken, setCsrfToken] = useState("");
 
+  // Password Form State
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [pwdSaving, setPwdSaving] = useState(false);
+  const [pwdMsg, setPwdMsg] = useState<string | null>(null);
+
   useEffect(() => {
     if (user) {
       setName(user.name ?? "");
@@ -88,6 +94,32 @@ export default function ProfilePage() {
       setTimeout(() => setSaveMsg(null), 2500);
     }
   }, [csrfToken, saving, name, intro]);
+
+  const handleChangePassword = useCallback(async () => {
+    if (!csrfToken || pwdSaving || !currentPassword || !newPassword) return;
+    setPwdSaving(true);
+    setPwdMsg(null);
+    try {
+      const res = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      if (res.ok) {
+        setPwdMsg("密码修改成功");
+        setCurrentPassword("");
+        setNewPassword("");
+      } else {
+        const d = await res.json();
+        setPwdMsg(d.error || "修改失败");
+      }
+    } catch {
+      setPwdMsg("修改失败");
+    } finally {
+      setPwdSaving(false);
+      setTimeout(() => setPwdMsg(null), 3500);
+    }
+  }, [csrfToken, pwdSaving, currentPassword, newPassword]);
 
   const handleLogin = useCallback(() => {
     const next = encodeURIComponent(window.location.pathname + window.location.search);
@@ -377,6 +409,56 @@ export default function ProfilePage() {
                             {saving ? <Loader2 size={16} className="animate-spin" /> : saveMsg === "已保存" ? <Check size={16} /> : null}
                             {saveMsg ?? "保存更改"}
                           </button>
+                        </div>
+                      </div>
+
+                      {/* Password Change Section */}
+                      <div className="pt-8 mt-8 border-t border-slate-100 dark:border-slate-800 space-y-6">
+                        <div className="space-y-1">
+                          <h4 className="text-sm font-bold text-slate-900 dark:text-white">修改密码</h4>
+                          <p className="text-xs text-slate-400">设置一个更安全的新密码</p>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">当前密码</label>
+                            <input
+                              type="password"
+                              value={currentPassword}
+                              onChange={(e) => setCurrentPassword(e.target.value)}
+                              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:bg-white dark:focus:bg-[#111] focus:border-blue-500/50 outline-none transition-all text-sm text-slate-800 dark:text-slate-200"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">新密码</label>
+                            <input
+                              type="password"
+                              value={newPassword}
+                              onChange={(e) => setNewPassword(e.target.value)}
+                              placeholder="至少8位，包含字母和数字"
+                              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:bg-white dark:focus:bg-[#111] focus:border-blue-500/50 outline-none transition-all text-sm text-slate-800 dark:text-slate-200"
+                            />
+                          </div>
+                        </div>
+                        <div className="pt-2 flex items-center gap-3">
+                          <button
+                            onClick={handleChangePassword}
+                            disabled={pwdSaving || !currentPassword || !newPassword}
+                            className={cn(
+                              "px-6 py-2.5 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2",
+                              pwdSaving || !currentPassword || !newPassword
+                                ? "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
+                                : "bg-rose-600 text-white hover:bg-rose-700 shadow-md shadow-rose-500/10 active:scale-95"
+                            )}
+                          >
+                            {pwdSaving ? <Loader2 size={16} className="animate-spin" /> : null}
+                            确认修改
+                          </button>
+                          {pwdMsg && (
+                            <span className={cn("text-xs font-bold", pwdMsg === "密码修改成功" ? "text-emerald-500" : "text-rose-500")}>
+                              {pwdMsg}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>

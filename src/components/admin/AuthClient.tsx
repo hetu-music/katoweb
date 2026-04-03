@@ -52,8 +52,14 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
         return;
       }
 
-      if (!password || password.length < 6) {
-        setError("密码长度至少为 6 位");
+      if (!isLogin && !/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password)) {
+        setError("密码要求至少8位，并包含字母和数字");
+        setLoading(false);
+        return;
+      }
+
+      if (isLogin && (!password || password.length < 1)) {
+        setError("请输入密码");
         setLoading(false);
         return;
       }
@@ -83,8 +89,7 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
       }
 
       if (isLogin) {
-        router.push(nextPath || "/admin");
-        router.refresh();
+        window.location.href = nextPath || "/admin";
       } else {
         setSent(true);
       }
@@ -177,12 +182,11 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
                     </div>
                     <input
                       type="password"
-                      placeholder="••••••••"
+                      placeholder={isLogin ? "••••••••" : "至少8位，包含字母和数字"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 pl-11 pr-4 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
                       required
-                      minLength={6}
                     />
                   </div>
                 </div>

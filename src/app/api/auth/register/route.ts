@@ -24,8 +24,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "邮箱不能为空" }, { status: 400 });
     }
 
-    if (!password || typeof password !== "string" || password.length < 6) {
-      return NextResponse.json({ error: "密码长度至少为6位" }, { status: 400 });
+    if (!password || typeof password !== "string" || !/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password)) {
+      return NextResponse.json({ error: "密码要求至少8位，并包含字母和数字" }, { status: 400 });
     }
 
     const supabase = await createSupabaseServerClient();
