@@ -36,6 +36,21 @@ const UserReview: React.FC<UserReviewProps> = ({ songId }) => {
       const csrfData = await csrfRes.json();
       const csrf = csrfData.csrfToken;
 
+      // IMPORTANT: Ensure the favorite row exists BEFORE saving the review.
+      // The review API does insert-or-update on the collections row.
+      // If we insert a new favorite row AFTER the review, it creates a duplicate
+      // row without a review, which the collections GET returns instead (ordered by created_at DESC).
+      if (!isFavorite(songId)) {
+        await fetch("/api/public/collections", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-csrf-token": csrf,
+          },
+          body: JSON.stringify({ songId }),
+        });
+      }
+
       // Save review (the review API handles insert-or-update, setting has_review atomically)
       const res = await fetch("/api/public/collections/review", {
         method: "POST",
@@ -47,18 +62,6 @@ const UserReview: React.FC<UserReviewProps> = ({ songId }) => {
       });
       if (!res.ok) throw new Error("Failed to save review");
       setIsEditingReview(false);
-
-      // Ensure the song is also in the favorites list
-      if (!isFavorite(songId)) {
-        await fetch("/api/public/collections", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-csrf-token": csrf,
-          },
-          body: JSON.stringify({ songId }),
-        });
-      }
 
       // Refresh context so other pages pick up updated data
       refreshFavorites();

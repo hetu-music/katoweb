@@ -22,12 +22,17 @@ export const GET = withAuth(
     }
 
     // Deduplicate data by song_id since database might have duplicate entries
+    // Prefer the row that has a review (has_review = true) to avoid losing review data
     const uniqueData = [];
-    const seen = new Set();
+    const seen = new Map<number, number>(); // song_id -> index in uniqueData
     for (const row of data) {
-      if (!seen.has(row.song_id)) {
-        seen.add(row.song_id);
+      const existingIdx = seen.get(row.song_id);
+      if (existingIdx === undefined) {
+        seen.set(row.song_id, uniqueData.length);
         uniqueData.push(row);
+      } else if (row.has_review && !uniqueData[existingIdx].has_review) {
+        // Replace with the row that has a review
+        uniqueData[existingIdx] = row;
       }
     }
 
