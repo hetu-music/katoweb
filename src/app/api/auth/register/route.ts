@@ -33,11 +33,12 @@ export async function POST(request: NextRequest) {
     // Check if user already exists
     // The safest way is to just try to sign up, Supabase will return error if email exists, 
     // depending on settings. Wait, sometimes it returns a generic message.
+    const origin = request.nextUrl.origin;
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/callback?next=${encodeURIComponent(nextPath)}`,
+        emailRedirectTo: `${origin}/api/auth/callback?next=${encodeURIComponent(nextPath)}`,
       },
     });
 
