@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { ArrowUp, Download, Share2 } from "lucide-react";
+import React, { useState } from "react";
+import { ArrowUp, Download, Share2, Plus } from "lucide-react";
 import { usePWAInstall } from "@/components/pwa/PWARegistration";
 import IOSInstallPrompt from "@/components/pwa/IOSInstallPrompt";
 
@@ -22,8 +22,10 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
 }) => {
   const { isInstallable, install, isIOS, isStandalone } = usePWAInstall();
   const [showIOSPrompt, setShowIOSPrompt] = React.useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const showInstallButton = isInstallable || (isIOS && !isStandalone);
+  const hasSecondaryActions = Boolean(children) || showInstallButton || Boolean(onShare);
 
   const handleInstallClick = () => {
     if (isIOS) {
@@ -31,6 +33,12 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
     } else {
       install();
     }
+    setIsMenuOpen(false);
+  };
+
+  const handleShareClick = () => {
+    onShare?.();
+    setIsMenuOpen(false);
   };
 
   const buttonClass =
@@ -43,31 +51,58 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
         onClose={() => setShowIOSPrompt(false)}
       />
       <div
-        className={`fixed bottom-8 right-8 z-50 flex flex-col gap-4 ${className || ""}`}
+        className={`fixed bottom-8 right-8 z-50 flex flex-col gap-4 items-center ${className || ""}`}
       >
-        {children}
-        {/* PWA 安装按钮 */}
-        {showInstallButton && (
-          <button
-            onClick={handleInstallClick}
-            className={`${buttonClass} animate-in fade-in slide-in-from-bottom-4 duration-500`}
-            title="安装为PWA应用"
-            aria-label="安装为PWA应用"
-          >
-            <Download size={20} />
-          </button>
-        )}
+        {/* 二级菜单 */}
+        {hasSecondaryActions && (
+          <div className="relative flex flex-col items-center gap-4">
+            <div
+              className={`flex flex-col gap-4 absolute bottom-full mb-4 transition-all duration-300 origin-bottom right-0 items-center overflow-visible ${
+                isMenuOpen
+                  ? "scale-100 opacity-100 pointer-events-auto translate-y-0"
+                  : "scale-50 opacity-0 pointer-events-none translate-y-8"
+              }`}
+            >
+              {children}
+              
+              {showInstallButton && (
+                <button
+                  onClick={handleInstallClick}
+                  className={buttonClass}
+                  title="安装为PWA应用"
+                  aria-label="安装为PWA应用"
+                >
+                  <Download size={20} />
+                </button>
+              )}
 
-        {/* 分享按钮 */}
-        {onShare && (
-          <button
-            onClick={onShare}
-            className={`${buttonClass} animate-in fade-in slide-in-from-bottom-4 duration-500`}
-            title="分享"
-            aria-label="分享"
-          >
-            <Share2 size={20} />
-          </button>
+              {onShare && (
+                <button
+                  onClick={handleShareClick}
+                  className={buttonClass}
+                  title="分享"
+                  aria-label="分享"
+                >
+                  <Share2 size={20} />
+                </button>
+              )}
+            </div>
+
+            {/* 菜单触发按钮 */}
+            <button
+              onClick={() => setIsMenuOpen((prev) => !prev)}
+              className={buttonClass}
+              title="更多操作"
+              aria-label="更多操作"
+            >
+              <Plus
+                size={20}
+                className={`transition-transform duration-300 ${
+                  isMenuOpen ? "rotate-45" : ""
+                }`}
+              />
+            </button>
+          </div>
         )}
 
         {/* 返回顶部按钮 */}
