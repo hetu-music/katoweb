@@ -52,7 +52,7 @@ function ProfileContent() {
     Record<number, string | null>
   >({});
 
-  // Always refresh favorites on mount to ensure has_review flags are up-to-date
+  // Always refresh favorites on mount to ensure review data is up-to-date
   useEffect(() => {
     if (user) {
       refreshFavorites();
@@ -420,7 +420,7 @@ function ProfileContent() {
                               </div>
 
                               <div className="flex items-center gap-2">
-                                {song.collectionInfo?.has_review && (
+                                {!!song.collectionInfo?.review && (
                                   <button
                                     onClick={(e) => toggleReview(song.id, e)}
                                     className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
@@ -444,7 +444,7 @@ function ProfileContent() {
                             </div>
 
                             {/* Expanded Review — lazy-loaded */}
-                            {song.collectionInfo?.has_review &&
+                            {!!song.collectionInfo?.review &&
                               expandedReviews[song.id] && (
                                 <div className="px-4 pb-4 pt-1 border-t border-slate-100 dark:border-slate-800/50 mt-1">
                                   <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg border border-slate-100 dark:border-slate-800/30">

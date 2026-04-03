@@ -11,7 +11,7 @@ interface UserReviewProps {
 
 const UserReview: React.FC<UserReviewProps> = ({ songId }) => {
   const { user } = useUserContext();
-  const { refreshFavorites } = useFavorites();
+  const { isFavorite, refreshFavorites } = useFavorites();
   const [review, setReview] = useState("");
   const [isEditingReview, setIsEditingReview] = useState(false);
   const [isSavingReview, setIsSavingReview] = useState(false);
@@ -36,11 +36,19 @@ const UserReview: React.FC<UserReviewProps> = ({ songId }) => {
       const csrfData = await csrfRes.json();
       const csrf = csrfData.csrfToken;
 
-      // The review API handles insert-or-update on the collections row atomically.
-      // Do NOT call POST /api/public/collections separately — the collections table lacks
-      // a unique constraint on (user_id, song_id), so inserting a separate favorite row
-      // would create a duplicate. The review route's insert branch already creates the
-      // collection row with the review + has_review fields in one operation.
+      // 确保收藏行存在（唯一约束保证不会重复，23505 冲突视为成功）
+      if (!isFavorite(songId)) {
+        await fetch("/api/public/collections", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-csrf-token": csrf,
+          },
+          body: JSON.stringify({ songId }),
+        });
+      }
+
+      // 保存评论（upsert：基于唯一约束原子更新）
       const res = await fetch("/api/public/collections/review", {
         method: "POST",
         headers: {
