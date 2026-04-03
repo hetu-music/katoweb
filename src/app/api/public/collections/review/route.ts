@@ -19,6 +19,7 @@ export const GET = withAuth(
       .select("review")
       .eq("user_id", user.id)
       .eq("song_id", songId)
+      .limit(1)
       .maybeSingle();
 
     if (error) {
@@ -47,6 +48,7 @@ export const POST = withAuth(
       .select("song_id")
       .eq("user_id", user.id)
       .eq("song_id", songId)
+      .limit(1)
       .maybeSingle();
 
     if (findError) {

@@ -319,7 +319,11 @@ export default function ProfilePage() {
                         {favoritedSongs.map((song) => (
                           <div key={song.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/60 dark:border-slate-800/60 overflow-hidden transition-all hover:border-blue-500/30 dark:hover:border-blue-500/30 group">
                             <div
-                              onClick={() => router.push(`/song/${song.id}`)}
+                              onClick={() => {
+                                const d = parseInt(sessionStorage.getItem("__katoweb_nav_depth") || "0", 10);
+                                sessionStorage.setItem("__katoweb_nav_depth", String(d + 1));
+                                router.push(`/song/${song.id}`);
+                              }}
                               className="flex items-center gap-4 p-4 cursor-pointer"
                             >
                               <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 shadow-sm">
@@ -337,12 +341,8 @@ export default function ProfilePage() {
                                   {song.title}
                                 </h4>
                                 <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 truncate flex items-center gap-2">
-                                  <span>{song.artist?.join(" / ") || "河图"}</span>
                                   {song.collectionInfo?.created_at && (
-                                    <>
-                                      <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
-                                      <span>收藏于 {new Date(song.collectionInfo.created_at).toLocaleDateString()}</span>
-                                    </>
+                                    <span>收藏于 {new Date(song.collectionInfo.created_at).toLocaleDateString()}</span>
                                   )}
                                 </p>
                               </div>
