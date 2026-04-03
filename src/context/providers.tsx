@@ -3,12 +3,13 @@
 import { ThemeProvider } from "next-themes";
 import React from "react";
 import { ChunkErrorHandler } from "@/components/shared/ChunkErrorHandler";
+import { UserProvider } from "@/context/UserContext";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <ChunkErrorHandler />
-      {children}
+      <UserProvider>{children}</UserProvider>
     </ThemeProvider>
   );
 }

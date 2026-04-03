@@ -90,12 +90,28 @@ export async function proxy(request: NextRequest) {
     const supabase = createSupabaseMiddlewareClient(request, response);
     const { data: { user }, error } = await supabase.auth.getUser();
 
-    // Admin-only: redirect to login if not authenticated
+    // Admin-only: redirect to login if not authenticated or not admin
     if (request.nextUrl.pathname.startsWith("/admin")) {
       if (error || !user) {
         console.warn("Auth middleware: User not authenticated", error?.message);
         const redirectResponse = NextResponse.redirect(
           new URL("/login", request.url),
+        );
+        redirectResponse.headers.set("Content-Security-Policy", cspHeader);
+        return redirectResponse;
+      }
+
+      // Check is_admin flag in the users table
+      const { data: userData } = await supabase
+        .from("users")
+        .select("is_admin")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!userData?.is_admin) {
+        console.warn("Auth middleware: User is not admin", user.id);
+        const redirectResponse = NextResponse.redirect(
+          new URL("/", request.url),
         );
         redirectResponse.headers.set("Content-Security-Policy", cspHeader);
         return redirectResponse;

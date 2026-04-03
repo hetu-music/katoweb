@@ -1,47 +1,21 @@
+// useAuth is kept for backward compatibility with AdminClient.
+// It provides csrfToken fetching + logout via UserContext.
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useUserContext } from "@/context/UserContext";
 
 export function useAuth() {
   const [csrfToken, setCsrfToken] = useState("");
-  const [logoutLoading, setLogoutLoading] = useState(false);
-  const router = useRouter();
-
-  const fetchCsrfToken = async () => {
-    const res = await fetch("/api/public/csrf-token");
-    const data = await res.json();
-    setCsrfToken(data.csrfToken || "");
-  };
+  const { logout, loggingOut } = useUserContext();
 
   useEffect(() => {
-    fetchCsrfToken();
+    fetch("/api/public/csrf-token")
+      .then((r) => r.json())
+      .then((d) => setCsrfToken(d.csrfToken || ""));
   }, []);
-
-  const handleLogout = async () => {
-    setLogoutLoading(true);
-    try {
-      // 使用当前的 CSRF token，不要获取新的
-      const res = await fetch("/api/auth/logout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-csrf-token": csrfToken,
-        },
-      });
-      if (res.ok) {
-        // 清空当前的 CSRF token
-        setCsrfToken("");
-        router.push("/login");
-        router.refresh();
-        // 只有在需要时才获取新的 CSRF token（比如用户重新访问登录页面）
-      }
-    } finally {
-      setLogoutLoading(false);
-    }
-  };
 
   return {
     csrfToken,
-    handleLogout,
-    logoutLoading,
+    handleLogout: logout,
+    logoutLoading: loggingOut,
   };
 }

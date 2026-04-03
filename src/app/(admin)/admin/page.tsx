@@ -17,24 +17,10 @@ export default async function AdminPage() {
   } = await supabase.auth.getSession();
 
   if (sessionError || !session) {
-    console.error(
-      "Session error:",
-      sessionError?.message || "No session found",
-    );
     redirect("/login");
   }
 
-  // 检查 is_admin 权限
-  const { data: userData } = await supabase
-    .from("users")
-    .select("is_admin")
-    .eq("id", session.user.id)
-    .maybeSingle();
-
-  if (!userData?.is_admin) {
-    redirect("/");
-  }
-
+  // middleware 已经验证了 is_admin，这里直接获取数据
   let songs: Song[] = [];
   let error = null;
   try {

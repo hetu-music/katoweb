@@ -11,15 +11,7 @@ import {
   Loader2,
   ChevronRight,
 } from "lucide-react";
-import { useUser } from "@/hooks/useUser";
-import { createBrowserClient } from "@supabase/ssr";
-
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) return null;
-  return createBrowserClient(url, key);
-}
+import { useUserContext } from "@/context/UserContext";
 
 function cn(...classes: (string | undefined | null | false)[]) {
   return classes.filter(Boolean).join(" ");
@@ -31,7 +23,7 @@ interface UserPanelProps {
 }
 
 const UserPanel: React.FC<UserPanelProps> = ({ isOpen, onClose }) => {
-  const { user, loaded } = useUser();
+  const { user, loaded, logout, loggingOut } = useUserContext();
   const panelRef = useRef<HTMLDivElement>(null);
 
   // 个人信息编辑状态
@@ -41,8 +33,7 @@ const UserPanel: React.FC<UserPanelProps> = ({ isOpen, onClose }) => {
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [csrfToken, setCsrfToken] = useState("");
 
-  // 登出状态
-  const [loggingOut, setLoggingOut] = useState(false);
+  // 登出状态由 UserContext 提供 (loggingOut)
 
   // 初始化表单
   useEffect(() => {
@@ -109,20 +100,7 @@ const UserPanel: React.FC<UserPanelProps> = ({ isOpen, onClose }) => {
     }
   }, [csrfToken, saving, name, intro]);
 
-  const handleLogout = useCallback(async () => {
-    setLoggingOut(true);
-    try {
-      const csrf = csrfToken || (await fetch("/api/public/csrf-token").then(r => r.json()).then(d => d.csrfToken));
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-csrf-token": csrf },
-      });
-      // 刷新页面让 session 状态同步
-      window.location.reload();
-    } finally {
-      setLoggingOut(false);
-    }
-  }, [csrfToken]);
+  const handleLogout = logout;
 
   const handleLogin = useCallback(() => {
     // 记录当前路径，登录后回来
