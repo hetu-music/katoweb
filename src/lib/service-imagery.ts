@@ -1,4 +1,5 @@
 import { createSupabaseDataClient } from "./supabase-server";
+import { TABLE_NAMES } from "./constants";
 import type {
   ImageryCategory,
   ImageryItem,
@@ -6,8 +7,13 @@ import type {
   SongRef,
 } from "./types";
 
+// 复用 MAIN 表的高权限客户端来访问所有意象相关表
+function getSupabase() {
+  return createSupabaseDataClient(TABLE_NAMES.MAIN);
+}
+
 export async function getImageryCategories(): Promise<ImageryCategory[]> {
-  const supabase = createSupabaseDataClient("imagery_categories");
+  const supabase = getSupabase();
   if (!supabase) return [];
 
   const { data, error } = await supabase
@@ -24,7 +30,7 @@ export async function getImageryCategories(): Promise<ImageryCategory[]> {
 }
 
 export async function getImageryWithCounts(): Promise<ImageryItem[]> {
-  const supabase = createSupabaseDataClient("imagery");
+  const supabase = getSupabase();
   if (!supabase) return [];
 
   // Fetch all imagery
@@ -39,10 +45,7 @@ export async function getImageryWithCounts(): Promise<ImageryItem[]> {
   }
 
   // Fetch all occurrences for counting and category mapping
-  const supabase2 = createSupabaseDataClient("imagery_occurrences");
-  if (!supabase2) return imageryData.map((i) => ({ ...i, count: 0, categoryIds: [] }));
-
-  const { data: occurrences, error: occError } = await supabase2
+  const { data: occurrences, error: occError } = await supabase
     .from("imagery_occurrences")
     .select("imagery_id, category_id");
 
@@ -81,7 +84,7 @@ export async function getSongsForImagery(imageryId: number): Promise<
     occurrenceCount: number;
   }>
 > {
-  const supabase = createSupabaseDataClient("imagery_occurrences");
+  const supabase = getSupabase();
   if (!supabase) return [];
 
   const { data, error } = await supabase
@@ -113,10 +116,7 @@ export async function getSongsForImagery(imageryId: number): Promise<
 
   if (songCountMap.size === 0) return [];
 
-  const supabase2 = createSupabaseDataClient("music");
-  if (!supabase2) return [];
-
-  const { data: songs, error: songError } = await supabase2
+  const { data: songs, error: songError } = await supabase
     .from("music")
     .select("id, title, album")
     .in("id", Array.from(songCountMap.keys()));
