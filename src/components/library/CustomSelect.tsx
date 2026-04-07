@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Check, ChevronDown, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
@@ -36,16 +36,33 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   disabled = false,
 }) => {
   const [open, setOpen] = useState(false);
+  // Snapshot of sorted options taken at open time — doesn't re-sort while dropdown is open
+  const [stableOptions, setStableOptions] = useState<Option[]>([...options]);
 
-  // Sort selected options to the top for easy access
-  const sortedOptions = useMemo(() => {
-    return [...options].sort((a, b) => {
-      const aSelected = value.includes(a.value);
-      const bSelected = value.includes(b.value);
-      if (aSelected === bSelected) return 0;
-      return aSelected ? -1 : 1;
-    });
-  }, [options, value]);
+  // Sync when the options prop changes while dropdown is closed (e.g., initial data load)
+  const prevOptionsRef = useRef(options);
+  useEffect(() => {
+    if (!open && prevOptionsRef.current !== options) {
+      prevOptionsRef.current = options;
+      setStableOptions([...options]);
+    }
+  }, [options, open]);
+
+  const handleOpenChange = (next: boolean) => {
+    if (disabled) return;
+    if (next) {
+      // Sort selected to the top, then freeze order until the next open
+      setStableOptions(
+        [...options].sort((a, b) => {
+          const aSelected = value.includes(a.value);
+          const bSelected = value.includes(b.value);
+          if (aSelected === bSelected) return 0;
+          return aSelected ? -1 : 1;
+        }),
+      );
+    }
+    setOpen(next);
+  };
 
   const toggleOption = (optionValue: string) => {
     if (value.includes(optionValue)) {
@@ -73,12 +90,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   const hasSelection = value.length > 0;
 
   return (
-    <Popover
-      open={open}
-      onOpenChange={(next) => {
-        if (!disabled) setOpen(next);
-      }}
-    >
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <button
           type="button"
@@ -86,7 +98,6 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            // Match the design system: solid bg, clean border, like search bar & advanced filter button
             "flex h-10 w-full items-center justify-between gap-2 rounded-lg",
             "border border-slate-200 dark:border-slate-800",
             "bg-white dark:bg-slate-900",
@@ -118,7 +129,8 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                 aria-label="清除筛选"
                 onClick={clearAll}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") clearAll(e as unknown as React.MouseEvent);
+                  if (e.key === "Enter" || e.key === " ")
+                    clearAll(e as unknown as React.MouseEvent);
                 }}
                 className="flex h-4 w-4 items-center justify-center rounded-full text-slate-400 hover:bg-slate-200 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300 transition-colors"
               >
@@ -136,23 +148,33 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         </button>
       </PopoverTrigger>
 
+      {/*
+        max-height uses Radix's --radix-popover-content-available-height variable,
+        which reflects the actual remaining viewport space in the current placement
+        direction (above or below the trigger). This adapts automatically.
+      */}
       <PopoverContent
-        className="p-0"
-        style={{ width: "var(--radix-popover-trigger-width)", minWidth: "160px" }}
+        className="p-0 flex flex-col overflow-hidden"
+        collisionPadding={8}
+        style={{
+          width: "var(--radix-popover-trigger-width)",
+          minWidth: "160px",
+          maxHeight: "calc(var(--radix-popover-content-available-height) - 8px)",
+        }}
       >
         <Command
-          className="max-h-[min(400px,70vh)]"
+          className="flex-1 min-h-0"
           filter={(itemValue, search) => {
             if (!search) return 1;
             return itemValue.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
           }}
         >
           <CommandInput placeholder="搜索…" />
-          {/* flex-1 min-h-0 lets the list fill remaining height inside the capped Command */}
+          {/* flex-1 min-h-0 fills remaining height; max-h-none removes the fixed cap from command.tsx */}
           <CommandList className="flex-1 min-h-0 max-h-none">
             <CommandEmpty>无匹配结果</CommandEmpty>
             <CommandGroup>
-              {sortedOptions.map((option) => {
+              {stableOptions.map((option) => {
                 const isSelected = value.includes(option.value);
                 return (
                   <CommandItem
@@ -181,7 +203,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             </CommandGroup>
           </CommandList>
           {hasSelection && (
-            <div className="border-t border-slate-100 dark:border-slate-800 p-1">
+            <div className="shrink-0 border-t border-slate-100 dark:border-slate-800 p-1">
               <button
                 type="button"
                 onClick={() => {
