@@ -35,8 +35,8 @@ function AnimatedHeight({ children }: { children: React.ReactNode }) {
         transition: "height 350ms cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >
-      {/* min-height keeps loading/empty states from collapsing too small */}
-      <div ref={innerRef} style={{ minHeight: 200 }}>
+      {/* small min-height only guards against momentary 0-height during unmount */}
+      <div ref={innerRef} style={{ minHeight: 60 }}>
         {children}
       </div>
     </div>
