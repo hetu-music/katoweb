@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState, useMemo, useCallback, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Home, X } from "lucide-react";
+import { X } from "lucide-react";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import type { ImageryCategory, ImageryItem } from "@/lib/types";
@@ -157,61 +156,23 @@ interface Props {
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
-const NavBar: React.FC<{ onBack: () => void }> = ({ onBack }) => {
-  const router = useRouter();
-  const [isBackActive, setIsBackActive] = useState(false);
-  const handleBack = () => {
-    setIsBackActive(true);
-    onBack();
-  };
-  return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
-      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1 -ml-2">
-            <button
-              onClick={handleBack}
-              className={cn(
-                "p-2 rounded-full transition-colors text-slate-600 dark:text-slate-400 group",
-                isBackActive
-                  ? "bg-slate-200/50 dark:bg-slate-800"
-                  : "hover:bg-slate-200/50 dark:hover:bg-slate-800",
-              )}
-              title="返回"
-            >
-              <ArrowLeft
-                size={20}
-                className={cn(
-                  "transition-transform",
-                  isBackActive
-                    ? "-translate-x-0.5"
-                    : "group-hover:-translate-x-0.5",
-                )}
-              />
-            </button>
-            <div className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-0.5" />
-            <button
-              onClick={() => router.push("/")}
-              className="p-2 rounded-full transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800 group"
-              title="回到主页"
-            >
-              <Home
-                size={20}
-                className="transition-transform group-hover:scale-105 group-active:scale-95"
-              />
-            </button>
-          </div>
-          <span className="text-xl font-bold text-slate-900 dark:text-white tracking-tight hidden sm:block font-serif">
-            意象
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-        </div>
+const NavBar: React.FC = () => (
+  <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
+    <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <Link
+        href="/"
+        className="text-2xl font-bold tracking-tight flex items-center gap-1 transition-colors font-serif text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
+      >
+        河图
+        <span className="w-[2px] h-5 bg-blue-600 mx-2 rounded-full translate-y-[1.5px]" />
+        作品勘鉴
+      </Link>
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
       </div>
-    </nav>
-  );
-};
+    </div>
+  </nav>
+);
 
 // A single imagery tag in the cloud
 const ImageryTag: React.FC<{
@@ -297,7 +258,6 @@ const SongChip: React.FC<{
 
 // ─── Main component ───────────────────────────────────────────────────────────
 const ImageryClient: React.FC<Props> = ({ items, categories }) => {
-  const router = useRouter();
   const [activeL1Id, setActiveL1Id] = useState<number | null>(null);
   const [activeL2Id, setActiveL2Id] = useState<number | null>(null);
   const [selectedItem, setSelectedItem] = useState<ImageryItem | null>(null);
@@ -308,17 +268,6 @@ const ImageryClient: React.FC<Props> = ({ items, categories }) => {
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  const handleBack = useCallback(() => {
-    const navDepthStr = sessionStorage.getItem("__katoweb_nav_depth");
-    const navDepth = navDepthStr ? parseInt(navDepthStr, 10) : 0;
-    if (navDepth > 0) {
-      sessionStorage.setItem("__katoweb_nav_depth", String(navDepth - 1));
-      router.back();
-    } else {
-      router.push("/");
-    }
-  }, [router]);
 
   // Level-1 categories (no parent)
   const topLevelCategories = useMemo(
@@ -413,7 +362,7 @@ const ImageryClient: React.FC<Props> = ({ items, categories }) => {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500">
-      <NavBar onBack={handleBack} />
+      <NavBar />
 
       <main className="pt-28 pb-24 max-w-7xl mx-auto px-6">
         {/* ── Hero ── */}

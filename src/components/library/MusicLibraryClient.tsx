@@ -1,51 +1,53 @@
 "use client";
 
-import React, {
-  useState,
-  useMemo,
-  useEffect,
-  useCallback,
-  useRef,
-} from "react";
-import {
-  Search,
-  LayoutGrid,
-  List,
-  Disc,
-  Calendar,
-  Clock,
-  SlidersHorizontal,
-  X,
-  XCircle,
-  Info,
-  RotateCcw,
-  Heart,
-  User,
-  Mic2,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { MusicLibraryClientProps, Song } from "@/lib/types";
-import {
-  getCoverUrl,
-  filterSongs,
-  calculateFilterOptions,
-  createFuseInstance,
-} from "@/lib/utils-song";
-import { formatTime } from "@/lib/utils-common";
-import { getTypeTagStyle } from "@/lib/constants";
-import { usePagination } from "@/hooks/usePagination";
-import { useDebounce } from "@/hooks/useDebounce";
-import { useMusicLibraryState } from "@/hooks/useMusicLibraryState";
-import Pagination from "../shared/Pagination";
-import SongFilters from "./SongFilters";
-import About from "./About";
-import FloatingActionButtons from "../shared/FloatingActionButtons";
 import { useFavorites } from "@/context/FavoritesContext";
 import { useUserContext } from "@/context/UserContext";
+import { useDebounce } from "@/hooks/useDebounce";
+import { extractLyricsSnippet, useLyricsIndex } from "@/hooks/useLyricsIndex";
+import { useMusicLibraryState } from "@/hooks/useMusicLibraryState";
+import { usePagination } from "@/hooks/usePagination";
+import { getTypeTagStyle } from "@/lib/constants";
+import { MusicLibraryClientProps, Song } from "@/lib/types";
+import { formatTime } from "@/lib/utils-common";
+import {
+  calculateFilterOptions,
+  createFuseInstance,
+  filterSongs,
+  getCoverUrl,
+} from "@/lib/utils-song";
+import {
+  ArrowUpRight,
+  Calendar,
+  Clock,
+  Disc,
+  Heart,
+  Info,
+  LayoutGrid,
+  List,
+  Mic2,
+  RotateCcw,
+  Search,
+  SlidersHorizontal,
+  User,
+  X,
+  XCircle,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import FloatingActionButtons from "../shared/FloatingActionButtons";
+import Pagination from "../shared/Pagination";
 import ThemeToggle from "../shared/ThemeToggle";
+import About from "./About";
 import MultiTagDisplay from "./MultiTagDisplay";
-import { useLyricsIndex, extractLyricsSnippet } from "@/hooks/useLyricsIndex";
+import SongFilters from "./SongFilters";
 
 // 简易 classNames 工具 (替代 clsx/tailwind-merge)
 function cn(...classes: (string | undefined | null | false)[]) {
@@ -664,17 +666,61 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       </nav>
 
       <main className="pt-32 pb-20 max-w-7xl mx-auto px-6">
-        {/* Header */}
-        <section className="mb-16 space-y-4">
-          <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50 italic">
-            谣歌{" "}
-            <span className="text-[1.3em] font-semibold">
-              {filteredWorks.length}
-            </span>
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 font-light max-w-lg">
-            你一定想知道，戏里讲了什么故事。
+        {/* ── Feature navigation ── */}
+        <section className="mb-14">
+          <p className="text-[10px] tracking-[0.3em] uppercase text-slate-400 dark:text-slate-500 font-sans mb-6 select-none">
+            河图作品勘鉴
           </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
+            {/* 作品库 — active/current */}
+            <div className="relative overflow-hidden rounded-2xl border-2 border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-800/40 p-6">
+              <div
+                aria-hidden
+                className="absolute -right-3 -bottom-5 font-serif font-bold leading-none select-none pointer-events-none text-[6rem] text-slate-100 dark:text-slate-800"
+              >
+                谣
+              </div>
+              <div className="relative">
+                <p className="text-[10px] tracking-[0.2em] uppercase font-sans text-blue-500 dark:text-blue-400 mb-3">
+                  当前
+                </p>
+                <h2 className="text-2xl font-bold font-serif text-slate-900 dark:text-white mb-1.5">
+                  作品库
+                </h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400 font-light">
+                  {filteredWorks.length} 首谣歌 · 音乐作品收录
+                </p>
+              </div>
+            </div>
+
+            {/* 意象图谱 — link */}
+            <Link
+              href="/imagery"
+              className="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700/60 bg-white/50 dark:bg-slate-800/20 p-6 hover:border-indigo-200 dark:hover:border-indigo-600/50 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/20 transition-all duration-300"
+            >
+              <div
+                aria-hidden
+                className="absolute -right-3 -bottom-5 font-serif font-bold leading-none select-none pointer-events-none text-[6rem] text-slate-100 dark:text-slate-800 group-hover:text-indigo-100 dark:group-hover:text-indigo-900/60 transition-colors duration-300"
+              >
+                意
+              </div>
+              <ArrowUpRight
+                size={15}
+                className="absolute top-5 right-5 text-slate-300 dark:text-slate-600 group-hover:text-indigo-400 dark:group-hover:text-indigo-500 transition-colors duration-300"
+              />
+              <div className="relative">
+                <p className="text-[10px] tracking-[0.2em] uppercase font-sans text-indigo-400 dark:text-indigo-500 mb-3">
+                  词
+                </p>
+                <h2 className="text-2xl font-bold font-serif text-slate-900 dark:text-white mb-1.5 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors duration-300">
+                  意象图谱
+                </h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400 font-light">
+                  词中意境 · 诗词意象探索
+                </p>
+              </div>
+            </Link>
+          </div>
         </section>
 
         {/* 控制栏 */}
@@ -874,9 +920,9 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       lyricsSnippet={
                         debouncedSearchQuery && lyricsState === "ready"
                           ? extractLyricsSnippet(
-                              lyricsMap.get(work.id) || "",
-                              debouncedSearchQuery,
-                            )
+                            lyricsMap.get(work.id) || "",
+                            debouncedSearchQuery,
+                          )
                           : undefined
                       }
                       onClick={() => {
@@ -923,9 +969,9 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       lyricsSnippet={
                         debouncedSearchQuery && lyricsState === "ready"
                           ? extractLyricsSnippet(
-                              lyricsMap.get(work.id) || "",
-                              debouncedSearchQuery,
-                            )
+                            lyricsMap.get(work.id) || "",
+                            debouncedSearchQuery,
+                          )
                           : undefined
                       }
                       onClick={() => {
