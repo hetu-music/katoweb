@@ -118,7 +118,7 @@ export async function getSongsForImagery(imageryId: number): Promise<
 
   const { data: songs, error: songError } = await supabase
     .from("music")
-    .select("id, title, album")
+    .select("id, title, album, lyricist")
     .in("id", Array.from(songCountMap.keys()));
 
   if (songError || !songs) {

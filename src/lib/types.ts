@@ -97,6 +97,7 @@ export type SongRef = {
   id: number;
   title: string;
   album: string | null;
+  lyricist: string[] | null;
 };
 
 // 歌曲字段配置类型（用于管理页面表单渲染和校验）

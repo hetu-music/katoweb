@@ -118,7 +118,27 @@ function getPaletteForCategory(
   return COLOR_PALETTES[(idx % (COLOR_PALETTES.length - 1)) + 1];
 }
 
-// ─── Font size tiers based on occurrence count ───────────────────────────────
+// Build ancestor path for any category id: returns { l1, l2, l3 }
+// Assumes level-3 IDs are passed (the ones stored on imagery_occurrences)
+function buildCategoryPath(
+  categoryId: number,
+  categories: ImageryCategory[],
+): {
+  l1: ImageryCategory | null;
+  l2: ImageryCategory | null;
+  l3: ImageryCategory | null;
+} {
+  const l3 = categories.find((c) => c.id === categoryId) ?? null;
+  const l2 = l3?.parent_id
+    ? (categories.find((c) => c.id === l3.parent_id) ?? null)
+    : null;
+  const l1 = l2?.parent_id
+    ? (categories.find((c) => c.id === l2.parent_id) ?? null)
+    : null;
+  return { l1, l2, l3 };
+}
+
+
 function getTagSizeClass(count: number, max: number): string {
   if (max === 0) return "text-sm";
   const ratio = count / max;
@@ -252,8 +272,9 @@ const SongChip: React.FC<{
   songId: number;
   title: string;
   album: string | null;
+  lyricist: string[] | null;
   occurrenceCount: number;
-}> = ({ songId, title, album, occurrenceCount }) => (
+}> = ({ songId, title, album, lyricist, occurrenceCount }) => (
   <Link
     href={`/song/${songId}`}
     className="group flex items-center justify-between gap-4 px-4 py-3 rounded-xl bg-white dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-sm transition-all duration-200"
@@ -262,11 +283,11 @@ const SongChip: React.FC<{
       <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
         {title}
       </p>
-      {album && (
-        <p className="text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5">
-          {album}
-        </p>
-      )}
+      <p className="text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5">
+        {lyricist && lyricist.length > 0
+          ? `词：${lyricist.join("、")}`
+          : (album ?? "")}
+      </p>
     </div>
     <span className="shrink-0 text-xs tabular-nums text-slate-400 dark:text-slate-500">
       ×{occurrenceCount}
@@ -277,7 +298,8 @@ const SongChip: React.FC<{
 // ─── Main component ───────────────────────────────────────────────────────────
 const ImageryClient: React.FC<Props> = ({ items, categories }) => {
   const router = useRouter();
-  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
+  const [activeL1Id, setActiveL1Id] = useState<number | null>(null);
+  const [activeL2Id, setActiveL2Id] = useState<number | null>(null);
   const [selectedItem, setSelectedItem] = useState<ImageryItem | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const detailRef = useRef<HTMLDivElement>(null);
@@ -299,10 +321,21 @@ const ImageryClient: React.FC<Props> = ({ items, categories }) => {
     }
   }, [router]);
 
-  // Only show top-level categories as filter pills
+  // Level-1 categories (no parent)
   const topLevelCategories = useMemo(
     () => categories.filter((c) => !c.parent_id).sort((a, b) => a.id - b.id),
     [categories],
+  );
+
+  // Level-2 categories under the selected L1
+  const l2Categories = useMemo(
+    () =>
+      activeL1Id
+        ? categories
+            .filter((c) => c.parent_id === activeL1Id)
+            .sort((a, b) => a.id - b.id)
+        : [],
+    [categories, activeL1Id],
   );
 
   // Build a map: categoryId → all descendant categoryIds (including self)
@@ -324,19 +357,23 @@ const ImageryClient: React.FC<Props> = ({ items, categories }) => {
     return map;
   }, [categories]);
 
-  // Filtered items based on active category
+  // Filter items: L2 wins over L1 if set
   const filteredItems = useMemo(() => {
-    if (!activeCategoryId) return items;
-    const descendants = categoryDescendants.get(activeCategoryId);
+    const activeId = activeL2Id ?? activeL1Id;
+    if (!activeId) return items;
+    const descendants = categoryDescendants.get(activeId);
     if (!descendants) return items;
     return items.filter((item) =>
       item.categoryIds.some((cid) => descendants.has(cid)),
     );
-  }, [items, activeCategoryId, categoryDescendants]);
+  }, [items, activeL1Id, activeL2Id, categoryDescendants]);
 
   // Sort: by count descending, then alphabetically
   const sortedItems = useMemo(
-    () => [...filteredItems].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "zh")),
+    () =>
+      [...filteredItems].sort(
+        (a, b) => b.count - a.count || a.name.localeCompare(b.name, "zh"),
+      ),
     [filteredItems],
   );
 
@@ -345,16 +382,12 @@ const ImageryClient: React.FC<Props> = ({ items, categories }) => {
     [items],
   );
 
-  // Songs for selected item — pre-computed from occurrences embedded in items
-  // Since we don't have song details on the client, we'll show placeholder
-  // that links to the song page. (Full detail fetch is deferred to the server route.)
   const handleTagClick = useCallback(
     (item: ImageryItem) => {
       if (selectedItem?.id === item.id) {
         setSelectedItem(null);
       } else {
         setSelectedItem(item);
-        // Scroll detail panel into view on mobile
         setTimeout(() => {
           detailRef.current?.scrollIntoView({
             behavior: "smooth",
@@ -366,21 +399,28 @@ const ImageryClient: React.FC<Props> = ({ items, categories }) => {
     [selectedItem],
   );
 
-  // Count items per top-level category
+  // Item counts per L1 and L2 category
   const categoryCountMap = useMemo(() => {
     const map = new Map<number, number>();
-    for (const cat of topLevelCategories) {
+    for (const cat of [...topLevelCategories, ...l2Categories]) {
       const descendants = categoryDescendants.get(cat.id);
       if (!descendants) continue;
-      const count = items.filter((item) =>
-        item.categoryIds.some((cid) => descendants.has(cid)),
-      ).length;
-      map.set(cat.id, count);
+      map.set(
+        cat.id,
+        items.filter((item) =>
+          item.categoryIds.some((cid) => descendants.has(cid)),
+        ).length,
+      );
     }
     return map;
-  }, [topLevelCategories, items, categoryDescendants]);
+  }, [topLevelCategories, l2Categories, items, categoryDescendants]);
 
-  // (palette computed inline at usage sites)
+  // Palette for active L1 (used to tint L2 pills consistently)
+  const activeL1Palette = useMemo(() => {
+    if (!activeL1Id) return COLOR_PALETTES[0];
+    const idx = topLevelCategories.findIndex((c) => c.id === activeL1Id);
+    return COLOR_PALETTES[(idx % (COLOR_PALETTES.length - 1)) + 1];
+  }, [activeL1Id, topLevelCategories]);
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500">
@@ -401,35 +441,67 @@ const ImageryClient: React.FC<Props> = ({ items, categories }) => {
         </section>
 
         {/* ── Category filter bar ── */}
-        <section className="sticky top-20 z-40 bg-[#FAFAFA]/95 dark:bg-[#0B0F19]/95 backdrop-blur-sm py-3 mb-10 -mx-6 px-6 border-b border-slate-100/80 dark:border-slate-800/80">
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+        <section className="sticky top-20 z-40 bg-[#FAFAFA]/95 dark:bg-[#0B0F19]/95 backdrop-blur-sm pt-3 pb-2 mb-10 -mx-6 px-6 border-b border-slate-100/80 dark:border-slate-800/80">
+          {/* L1 row */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2">
             <CategoryPill
               label="全部"
-              active={activeCategoryId === null}
+              active={activeL1Id === null}
               count={items.length}
               palette={COLOR_PALETTES[0]}
               onClick={() => {
-                setActiveCategoryId(null);
+                setActiveL1Id(null);
+                setActiveL2Id(null);
                 setSelectedItem(null);
               }}
             />
             {topLevelCategories.map((cat, idx) => {
-              const palette = COLOR_PALETTES[(idx % (COLOR_PALETTES.length - 1)) + 1];
+              const palette =
+                COLOR_PALETTES[(idx % (COLOR_PALETTES.length - 1)) + 1];
               return (
                 <CategoryPill
                   key={cat.id}
                   label={cat.name}
-                  active={activeCategoryId === cat.id}
+                  active={activeL1Id === cat.id}
                   count={categoryCountMap.get(cat.id)}
                   palette={palette}
                   onClick={() => {
-                    setActiveCategoryId(activeCategoryId === cat.id ? null : cat.id);
+                    const next = activeL1Id === cat.id ? null : cat.id;
+                    setActiveL1Id(next);
+                    setActiveL2Id(null);
                     setSelectedItem(null);
                   }}
                 />
               );
             })}
           </div>
+
+          {/* L2 drill-down row — slides in when an L1 is active */}
+          {activeL1Id && l2Categories.length > 0 && (
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 pt-1 animate-in fade-in slide-in-from-top-1 duration-200">
+              {l2Categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => {
+                    setActiveL2Id(activeL2Id === cat.id ? null : cat.id);
+                    setSelectedItem(null);
+                  }}
+                  className={cn(
+                    "flex items-center gap-1 px-3 py-1 rounded-full text-xs border transition-all duration-200 whitespace-nowrap shrink-0 font-sans",
+                    activeL2Id === cat.id
+                      ? activeL1Palette.pillActive
+                      : activeL1Palette.pill,
+                    "opacity-90",
+                  )}
+                >
+                  {cat.name}
+                  <span className="tabular-nums opacity-60">
+                    {categoryCountMap.get(cat.id)}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* ── Main layout: cloud + detail ── */}
@@ -483,24 +555,50 @@ const ImageryClient: React.FC<Props> = ({ items, categories }) => {
                     <h2 className="text-2xl font-bold font-serif text-slate-900 dark:text-white">
                       {selectedItem.name}
                     </h2>
-                    <div className="flex items-center gap-2 flex-wrap">
+                    {/* Full category paths: L1 › L2 › L3 for each level-3 the item belongs to */}
+                    <div className="flex flex-col gap-1 pt-0.5">
                       {selectedItem.categoryIds.map((cid) => {
-                        const cat = categories.find((c) => c.id === cid);
-                        if (!cat) return null;
+                        const { l1, l2, l3 } = buildCategoryPath(
+                          cid,
+                          categories,
+                        );
+                        if (!l3) return null;
                         const pal = getPaletteForCategory(cid, categories);
                         return (
-                          <span
+                          <div
                             key={cid}
-                            className={cn(
-                              "text-xs px-2 py-0.5 rounded-full border font-sans",
-                              pal.pill,
-                            )}
+                            className="flex items-center gap-1 flex-wrap"
                           >
-                            {cat.name}
-                          </span>
+                            {l1 && (
+                              <span className="text-xs text-slate-400 dark:text-slate-500">
+                                {l1.name}
+                              </span>
+                            )}
+                            {l2 && (
+                              <>
+                                <span className="text-xs text-slate-300 dark:text-slate-600">
+                                  ›
+                                </span>
+                                <span className="text-xs text-slate-400 dark:text-slate-500">
+                                  {l2.name}
+                                </span>
+                              </>
+                            )}
+                            <span className="text-xs text-slate-300 dark:text-slate-600">
+                              ›
+                            </span>
+                            <span
+                              className={cn(
+                                "text-xs px-2 py-0.5 rounded-full border font-sans",
+                                pal.pill,
+                              )}
+                            >
+                              {l3.name}
+                            </span>
+                          </div>
                         );
                       })}
-                      <span className="text-xs text-slate-400 dark:text-slate-500 tabular-nums">
+                      <span className="text-xs text-slate-400 dark:text-slate-500 tabular-nums mt-0.5">
                         出现 {selectedItem.count} 处
                       </span>
                     </div>
@@ -515,11 +613,8 @@ const ImageryClient: React.FC<Props> = ({ items, categories }) => {
 
                 <div className="h-px bg-slate-100 dark:bg-slate-700/60 mx-5" />
 
-                {/* Song list placeholder — client-side we only have ids */}
+                {/* Song list with lyricist filter */}
                 <div className="px-5 py-4 space-y-2">
-                  <p className="text-xs text-slate-400 dark:text-slate-500 mb-3 font-sans">
-                    出现于以下作品
-                  </p>
                   <ImageryDetailSongs
                     key={selectedItem.id}
                     imageryId={selectedItem.id}
@@ -548,18 +643,19 @@ const ImageryClient: React.FC<Props> = ({ items, categories }) => {
 };
 
 // ─── Detail songs: client-side fetch ─────────────────────────────────────────
-// Fetch song details for the selected imagery via a lightweight API call
 const ImageryDetailSongs: React.FC<{ imageryId: number }> = ({ imageryId }) => {
   const [songs, setSongs] = React.useState<
     Array<{
-      song: { id: number; title: string; album: string | null };
+      song: { id: number; title: string; album: string | null; lyricist: string[] | null };
       occurrenceCount: number;
     }> | null
   >(null);
   const [loading, setLoading] = React.useState(true);
+  const [activeLyricist, setActiveLyricist] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     setLoading(true);
+    setActiveLyricist(null);
     fetch(`/api/imagery/${imageryId}/songs`)
       .then((r) => r.json())
       .then((data) => {
@@ -572,9 +668,23 @@ const ImageryDetailSongs: React.FC<{ imageryId: number }> = ({ imageryId }) => {
       });
   }, [imageryId]);
 
+  const allLyricists = React.useMemo(() => {
+    if (!songs) return [];
+    const seen = new Set<string>();
+    for (const { song } of songs) {
+      for (const l of song.lyricist ?? []) seen.add(l);
+    }
+    return [...seen].sort((a, b) => a.localeCompare(b, "zh"));
+  }, [songs]);
+
+  const displayedSongs = React.useMemo(() => {
+    if (!activeLyricist || !songs) return songs;
+    return songs.filter((s) => s.song.lyricist?.includes(activeLyricist));
+  }, [songs, activeLyricist]);
+
   if (loading) {
     return (
-      <div className="space-y-2">
+      <div className="space-y-2 pt-1">
         {[0, 1, 2].map((i) => (
           <div
             key={i}
@@ -594,16 +704,64 @@ const ImageryDetailSongs: React.FC<{ imageryId: number }> = ({ imageryId }) => {
   }
 
   return (
-    <div className="space-y-2">
-      {songs.map(({ song, occurrenceCount }) => (
-        <SongChip
-          key={song.id}
-          songId={song.id}
-          title={song.title}
-          album={song.album}
-          occurrenceCount={occurrenceCount}
-        />
-      ))}
+    <div className="space-y-3">
+      {/* Lyricist chips — only show when multiple lyricists exist */}
+      {allLyricists.length > 1 && (
+        <div>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mb-2 font-sans">
+            词人
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {allLyricists.map((l) => (
+              <button
+                key={l}
+                onClick={() =>
+                  setActiveLyricist(activeLyricist === l ? null : l)
+                }
+                className={cn(
+                  "text-xs px-2.5 py-1 rounded-full border transition-all duration-150 font-sans",
+                  activeLyricist === l
+                    ? "bg-slate-800 text-white border-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:border-slate-100"
+                    : "bg-white dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500",
+                )}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* When only one lyricist, show them as a small label */}
+      {allLyricists.length === 1 && (
+        <p className="text-xs text-slate-400 dark:text-slate-500 font-sans">
+          词：{allLyricists[0]}
+        </p>
+      )}
+
+      <div className="h-px bg-slate-100 dark:bg-slate-700/60" />
+
+      <p className="text-xs text-slate-400 dark:text-slate-500 font-sans">
+        出现于以下作品
+        {activeLyricist && (
+          <span className="ml-1 text-slate-500 dark:text-slate-400">
+            · {activeLyricist}
+          </span>
+        )}
+      </p>
+
+      <div className="space-y-2">
+        {displayedSongs?.map(({ song, occurrenceCount }) => (
+          <SongChip
+            key={song.id}
+            songId={song.id}
+            title={song.title}
+            album={song.album}
+            lyricist={song.lyricist}
+            occurrenceCount={occurrenceCount}
+          />
+        ))}
+      </div>
     </div>
   );
 };
