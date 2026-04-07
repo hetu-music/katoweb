@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useCallback, useEffect } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Home, X } from "lucide-react";
@@ -302,7 +302,6 @@ const ImageryClient: React.FC<Props> = ({ items, categories }) => {
   const [activeL2Id, setActiveL2Id] = useState<number | null>(null);
   const [selectedItem, setSelectedItem] = useState<ImageryItem | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const detailRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onScroll = () => setShowScrollTop(window.scrollY > 200);
@@ -384,19 +383,9 @@ const ImageryClient: React.FC<Props> = ({ items, categories }) => {
 
   const handleTagClick = useCallback(
     (item: ImageryItem) => {
-      if (selectedItem?.id === item.id) {
-        setSelectedItem(null);
-      } else {
-        setSelectedItem(item);
-        setTimeout(() => {
-          detailRef.current?.scrollIntoView({
-            behavior: "smooth",
-            block: "nearest",
-          });
-        }, 50);
-      }
+      setSelectedItem((prev) => (prev?.id === item.id ? null : item));
     },
-    [selectedItem],
+    [],
   );
 
   // Item counts per L1 and L2 category
@@ -533,106 +522,77 @@ const ImageryClient: React.FC<Props> = ({ items, categories }) => {
             )}
           </section>
 
-          {/* ── Detail panel ── */}
+          {/* ── Detail panel — desktop only (sticky sidebar) ── */}
           <aside
-            ref={detailRef}
             className={cn(
-              "lg:w-72 xl:w-80 shrink-0 lg:sticky lg:top-36 transition-all duration-300",
+              "hidden lg:block lg:w-72 xl:w-80 shrink-0",
+              "lg:sticky lg:top-32",
+              "lg:max-h-[calc(100vh-9rem)] lg:overflow-y-auto no-scrollbar",
+              "transition-all duration-300",
               selectedItem
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 pointer-events-none translate-y-2 lg:translate-y-0",
+                ? "opacity-100"
+                : "opacity-0 pointer-events-none",
             )}
           >
             {selectedItem && (
               <div className="rounded-2xl border border-slate-200/80 dark:border-slate-700/60 bg-white/60 dark:bg-slate-800/30 backdrop-blur-sm overflow-hidden shadow-sm">
-                {/* Panel header */}
-                <div
-                  className={cn(
-                    "flex items-start justify-between gap-3 px-5 pt-5 pb-4",
-                  )}
-                >
-                  <div className="space-y-1 min-w-0">
-                    <h2 className="text-2xl font-bold font-serif text-slate-900 dark:text-white">
-                      {selectedItem.name}
-                    </h2>
-                    {/* Full category paths: L1 › L2 › L3 for each level-3 the item belongs to */}
-                    <div className="flex flex-col gap-1 pt-0.5">
-                      {selectedItem.categoryIds.map((cid) => {
-                        const { l1, l2, l3 } = buildCategoryPath(
-                          cid,
-                          categories,
-                        );
-                        if (!l3) return null;
-                        const pal = getPaletteForCategory(cid, categories);
-                        return (
-                          <div
-                            key={cid}
-                            className="flex items-center gap-1 flex-wrap"
-                          >
-                            {l1 && (
-                              <span className="text-xs text-slate-400 dark:text-slate-500">
-                                {l1.name}
-                              </span>
-                            )}
-                            {l2 && (
-                              <>
-                                <span className="text-xs text-slate-300 dark:text-slate-600">
-                                  ›
-                                </span>
-                                <span className="text-xs text-slate-400 dark:text-slate-500">
-                                  {l2.name}
-                                </span>
-                              </>
-                            )}
-                            <span className="text-xs text-slate-300 dark:text-slate-600">
-                              ›
-                            </span>
-                            <span
-                              className={cn(
-                                "text-xs px-2 py-0.5 rounded-full border font-sans",
-                                pal.pill,
-                              )}
-                            >
-                              {l3.name}
-                            </span>
-                          </div>
-                        );
-                      })}
-                      <span className="text-xs text-slate-400 dark:text-slate-500 tabular-nums mt-0.5">
-                        出现 {selectedItem.count} 处
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setSelectedItem(null)}
-                    className="mt-0.5 p-1.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shrink-0"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-
-                <div className="h-px bg-slate-100 dark:bg-slate-700/60 mx-5" />
-
-                {/* Song list with lyricist filter */}
-                <div className="px-5 py-4 space-y-2">
-                  <ImageryDetailSongs
-                    key={selectedItem.id}
-                    imageryId={selectedItem.id}
-                  />
-                </div>
+                <DetailPanelInner
+                  item={selectedItem}
+                  categories={categories}
+                  onClose={() => setSelectedItem(null)}
+                />
               </div>
             )}
-
-            {/* Empty state hint when nothing selected */}
             {!selectedItem && (
-              <div className="hidden lg:flex flex-col items-center justify-center text-center py-16 px-6 text-slate-300 dark:text-slate-600">
+              <div className="flex flex-col items-center justify-center text-center py-16 px-6 text-slate-300 dark:text-slate-600">
                 <div className="text-4xl mb-3 opacity-40 font-serif">詞</div>
-                <p className="text-sm font-light">点击左侧意象查看详情</p>
+                <p className="text-sm font-light">点击意象查看详情</p>
               </div>
             )}
           </aside>
         </div>
       </main>
+
+      {/* ── Mobile bottom sheet ── */}
+      {/* Backdrop */}
+      <div
+        className={cn(
+          "fixed inset-0 z-40 lg:hidden transition-opacity duration-300",
+          selectedItem
+            ? "opacity-100 pointer-events-auto bg-black/30 backdrop-blur-[2px]"
+            : "opacity-0 pointer-events-none",
+        )}
+        onClick={() => setSelectedItem(null)}
+      />
+      {/* Sheet */}
+      <div
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-50 lg:hidden",
+          "rounded-t-2xl bg-[#FAFAFA] dark:bg-[#0B0F19]",
+          "border-t border-slate-200/80 dark:border-slate-700/60",
+          "shadow-2xl transition-transform duration-300 ease-out",
+          selectedItem ? "translate-y-0" : "translate-y-full",
+        )}
+      >
+        {/* Drag handle — tap to close */}
+        <button
+          className="flex w-full justify-center pt-3 pb-2"
+          onClick={() => setSelectedItem(null)}
+          aria-label="关闭"
+        >
+          <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
+        </button>
+        {/* Scrollable content */}
+        <div className="max-h-[72vh] overflow-y-auto pb-8">
+          {selectedItem && (
+            <DetailPanelInner
+              item={selectedItem}
+              categories={categories}
+              onClose={() => setSelectedItem(null)}
+            />
+          )}
+        </div>
+      </div>
 
       <FloatingActionButtons
         showScrollTop={showScrollTop}
@@ -641,6 +601,75 @@ const ImageryClient: React.FC<Props> = ({ items, categories }) => {
     </div>
   );
 };
+
+// ─── Shared detail panel content ─────────────────────────────────────────────
+// Used by both the desktop sticky sidebar and the mobile bottom sheet
+const DetailPanelInner: React.FC<{
+  item: ImageryItem;
+  categories: ImageryCategory[];
+  onClose: () => void;
+}> = ({ item, categories, onClose }) => (
+  <>
+    {/* Header */}
+    <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-4">
+      <div className="space-y-1 min-w-0">
+        <h2 className="text-2xl font-bold font-serif text-slate-900 dark:text-white">
+          {item.name}
+        </h2>
+        {/* Full category paths: L1 › L2 › L3 */}
+        <div className="flex flex-col gap-1 pt-0.5">
+          {item.categoryIds.map((cid) => {
+            const { l1, l2, l3 } = buildCategoryPath(cid, categories);
+            if (!l3) return null;
+            const pal = getPaletteForCategory(cid, categories);
+            return (
+              <div key={cid} className="flex items-center gap-1 flex-wrap">
+                {l1 && (
+                  <span className="text-xs text-slate-400 dark:text-slate-500">
+                    {l1.name}
+                  </span>
+                )}
+                {l2 && (
+                  <>
+                    <span className="text-xs text-slate-300 dark:text-slate-600">›</span>
+                    <span className="text-xs text-slate-400 dark:text-slate-500">
+                      {l2.name}
+                    </span>
+                  </>
+                )}
+                <span className="text-xs text-slate-300 dark:text-slate-600">›</span>
+                <span
+                  className={cn(
+                    "text-xs px-2 py-0.5 rounded-full border font-sans",
+                    pal.pill,
+                  )}
+                >
+                  {l3.name}
+                </span>
+              </div>
+            );
+          })}
+          <span className="text-xs text-slate-400 dark:text-slate-500 tabular-nums mt-0.5">
+            出现 {item.count} 处
+          </span>
+        </div>
+      </div>
+      <button
+        onClick={onClose}
+        className="mt-0.5 p-1.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shrink-0"
+      >
+        <X size={16} />
+      </button>
+    </div>
+
+    <div className="h-px bg-slate-100 dark:bg-slate-700/60 mx-5" />
+
+    {/* Songs with lyricist filter */}
+    <div className="px-5 py-4">
+      <ImageryDetailSongs key={item.id} imageryId={item.id} />
+    </div>
+  </>
+);
 
 // ─── Detail songs: client-side fetch ─────────────────────────────────────────
 const ImageryDetailSongs: React.FC<{ imageryId: number }> = ({ imageryId }) => {
