@@ -56,7 +56,7 @@ const TabsContent = React.forwardRef<
       "overflow-y-auto p-6 outline-none",
       // Fade + subtle slide-up when the tab becomes active
       "data-[state=active]:animate-in data-[state=active]:fade-in-0",
-      "data-[state=active]:slide-in-from-bottom-2 data-[state=active]:duration-300",
+      "data-[state=active]:slide-in-from-bottom-4 data-[state=active]:duration-500",
       className,
     )}
     {...props}

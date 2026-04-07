@@ -214,14 +214,16 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </TabsContent>
 
           {/* Types Tab */}
-          <TabsContent value="types" className="max-h-[65vh]">
-            <div className="space-y-3">
-              {TYPE_ORDER.filter((t) => typeDescriptions[t]).map((type) => {
+          <TabsContent value="types" className="max-h-[65vh] px-6 py-4">
+            <div className="grid grid-cols-1 gap-3">
+              {TYPE_ORDER.filter((t) => typeDescriptions[t]).map((type, idx) => {
                 const colors = typeColors[type] ?? fallbackColors;
                 return (
                   <div
                     key={type}
+                    style={{ animationDelay: `${idx * 40}ms` }}
                     className={`
+                      animate-in fade-in slide-in-from-right-4 duration-500 fill-mode-both
                       relative overflow-hidden rounded-xl
                       border-l-[3px] ${colors.border}
                       bg-linear-to-r ${colors.bg} to-transparent
@@ -263,13 +265,14 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                   <span className="text-sm">暂无贡献者信息</span>
                 </div>
               ) : (
-                <div className="space-y-3">
+                  <div className="space-y-3">
                   {[...contributors]
                     .sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999))
                     .map((contributor, idx) => (
                       <div
                         key={idx}
-                        className="flex items-start gap-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-slate-700 transition-colors"
+                        style={{ animationDelay: `${idx * 40}ms` }}
+                        className="animate-in fade-in slide-in-from-right-4 duration-500 fill-mode-both flex items-start gap-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-slate-700 transition-colors"
                       >
                         <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 text-sm font-bold shrink-0">
                           {contributor.name?.charAt(0).toUpperCase() ?? "?"}
