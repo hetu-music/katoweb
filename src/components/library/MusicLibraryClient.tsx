@@ -666,59 +666,64 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       </nav>
 
       <main className="pt-32 pb-20 max-w-7xl mx-auto px-6">
-        {/* ── Feature navigation ── */}
-        <section className="mb-14">
-          <p className="text-[10px] tracking-[0.3em] uppercase text-slate-400 dark:text-slate-500 font-sans mb-6 select-none">
-            河图作品勘鉴
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
-            {/* 作品库 — active/current */}
-            <div className="relative overflow-hidden rounded-2xl border-2 border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-800/40 p-6">
-              <div
-                aria-hidden
-                className="absolute -right-3 -bottom-5 font-serif font-bold leading-none select-none pointer-events-none text-[6rem] text-slate-100 dark:text-slate-800"
-              >
-                谣
-              </div>
-              <div className="relative">
-                <p className="text-[10px] tracking-[0.2em] uppercase font-sans text-blue-500 dark:text-blue-400 mb-3">
-                  当前
-                </p>
-                <h2 className="text-2xl font-bold font-serif text-slate-900 dark:text-white mb-1.5">
-                  作品库
-                </h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400 font-light">
-                  {filteredWorks.length} 首谣歌 · 音乐作品收录
-                </p>
-              </div>
+        {/* ── Hero ── */}
+        <section className="mb-16">
+          <div className="flex items-end justify-between gap-8">
+            {/* Left: current page identity */}
+            <div className="space-y-4">
+              <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50 italic">
+                谣歌{" "}
+                <span className="text-[1.3em] font-semibold">
+                  {filteredWorks.length}
+                </span>
+              </h1>
+              <p className="text-slate-500 dark:text-slate-400 font-light max-w-lg">
+                你一定想知道，戏里讲了什么故事。
+              </p>
             </div>
 
-            {/* 意象图谱 — link */}
-            <Link
-              href="/imagery"
-              className="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700/60 bg-white/50 dark:bg-slate-800/20 p-6 hover:border-indigo-200 dark:hover:border-indigo-600/50 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/20 transition-all duration-300"
-            >
-              <div
-                aria-hidden
-                className="absolute -right-3 -bottom-5 font-serif font-bold leading-none select-none pointer-events-none text-[6rem] text-slate-100 dark:text-slate-800 group-hover:text-indigo-100 dark:group-hover:text-indigo-900/60 transition-colors duration-300"
-              >
-                意
-              </div>
-              <ArrowUpRight
-                size={15}
-                className="absolute top-5 right-5 text-slate-300 dark:text-slate-600 group-hover:text-indigo-400 dark:group-hover:text-indigo-500 transition-colors duration-300"
-              />
-              <div className="relative">
-                <p className="text-[10px] tracking-[0.2em] uppercase font-sans text-indigo-400 dark:text-indigo-500 mb-3">
-                  词
-                </p>
-                <h2 className="text-2xl font-bold font-serif text-slate-900 dark:text-white mb-1.5 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors duration-300">
-                  意象图谱
-                </h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400 font-light">
+            {/* Right: feature entries — desktop */}
+            <div className="hidden md:flex flex-col items-end gap-6 pb-1 shrink-0">
+              <Link href="/imagery" className="group flex flex-col items-end gap-0.5">
+                <span
+                  aria-hidden
+                  className="text-[3.2rem] leading-none font-serif font-bold select-none
+                             text-slate-100 dark:text-slate-800
+                             group-hover:text-indigo-100 dark:group-hover:text-indigo-900/60
+                             transition-colors duration-500 mb-2"
+                  style={{ animation: "feature-drift 4.5s ease-in-out infinite" }}
+                >
+                  意
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-bold font-serif text-slate-600 dark:text-slate-400
+                                   group-hover:text-indigo-600 dark:group-hover:text-indigo-400
+                                   transition-colors duration-300">
+                    意象图谱
+                  </span>
+                  <ArrowUpRight
+                    size={13}
+                    className="text-slate-400 dark:text-slate-500 group-hover:text-indigo-500
+                               transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                  />
+                </div>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 font-light tracking-wide">
                   词中意境 · 诗词意象探索
                 </p>
-              </div>
+                <span className="mt-1 block h-px w-0 group-hover:w-full bg-indigo-300 dark:bg-indigo-700 transition-all duration-300 ease-out" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Mobile: feature links below hero text */}
+          <div className="flex md:hidden items-center gap-5 mt-6 pt-5 border-t border-slate-100 dark:border-slate-800/60">
+            <Link
+              href="/imagery"
+              className="group flex items-center gap-1.5 text-slate-500 dark:text-slate-400
+                         hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+            >
+              <span className="text-sm font-bold font-serif">意象图谱</span>
+              <ArrowUpRight size={13} className="transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </Link>
           </div>
         </section>
