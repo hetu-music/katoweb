@@ -10,12 +10,12 @@ export interface MusicLibraryState {
   setFilterType: (type: string) => void;
   yearRangeIndices: [number, number];
   setYearRangeIndices: (range: [number, number]) => void;
-  filterLyricist: string;
-  setFilterLyricist: (lyricist: string) => void;
-  filterComposer: string;
-  setFilterComposer: (composer: string) => void;
-  filterArranger: string;
-  setFilterArranger: (arranger: string) => void;
+  filterLyricist: string[];
+  setFilterLyricist: (lyricist: string[]) => void;
+  filterComposer: string[];
+  setFilterComposer: (composer: string[]) => void;
+  filterArranger: string[];
+  setFilterArranger: (arranger: string[]) => void;
   viewMode: "grid" | "list";
   setViewMode: (mode: "grid" | "list") => void;
   currentPage: number;
@@ -66,14 +66,14 @@ export function useMusicLibraryState(
   const [filterType, setFilterType] = useState(
     () => searchParams.get("type") ?? "全部",
   );
-  const [filterLyricist, setFilterLyricist] = useState(
-    () => searchParams.get("lyricist") ?? "全部",
+  const [filterLyricist, setFilterLyricist] = useState<string[]>(
+    () => searchParams.get("lyricist")?.split(",").filter(Boolean) ?? [],
   );
-  const [filterComposer, setFilterComposer] = useState(
-    () => searchParams.get("composer") ?? "全部",
+  const [filterComposer, setFilterComposer] = useState<string[]>(
+    () => searchParams.get("composer")?.split(",").filter(Boolean) ?? [],
   );
-  const [filterArranger, setFilterArranger] = useState(
-    () => searchParams.get("arranger") ?? "全部",
+  const [filterArranger, setFilterArranger] = useState<string[]>(
+    () => searchParams.get("arranger")?.split(",").filter(Boolean) ?? [],
   );
   const [yearRangeIndices, setYearRangeIndices] = useState<[number, number]>(
     () => parseYearRange,
@@ -106,9 +106,9 @@ export function useMusicLibraryState(
       // Only add non-default params to URL
       if (searchQuery) params.set("q", searchQuery);
       if (filterType !== "全部") params.set("type", filterType);
-      if (filterLyricist !== "全部") params.set("lyricist", filterLyricist);
-      if (filterComposer !== "全部") params.set("composer", filterComposer);
-      if (filterArranger !== "全部") params.set("arranger", filterArranger);
+      if (filterLyricist.length > 0) params.set("lyricist", filterLyricist.join(","));
+      if (filterComposer.length > 0) params.set("composer", filterComposer.join(","));
+      if (filterArranger.length > 0) params.set("arranger", filterArranger.join(","));
       if (viewMode !== defaultViewMode) params.set("view", viewMode);
       if (currentPage > 1) params.set("page", currentPage.toString());
       if (showAdvancedFilters) params.set("advanced", "true");
@@ -202,17 +202,17 @@ export function useMusicLibraryState(
     setCurrentPage(1);
   }, []);
 
-  const setFilterLyricistWrapped = useCallback((val: string) => {
+  const setFilterLyricistWrapped = useCallback((val: string[]) => {
     setFilterLyricist(val);
     setCurrentPage(1);
   }, []);
 
-  const setFilterComposerWrapped = useCallback((val: string) => {
+  const setFilterComposerWrapped = useCallback((val: string[]) => {
     setFilterComposer(val);
     setCurrentPage(1);
   }, []);
 
-  const setFilterArrangerWrapped = useCallback((val: string) => {
+  const setFilterArrangerWrapped = useCallback((val: string[]) => {
     setFilterArranger(val);
     setCurrentPage(1);
   }, []);
@@ -226,9 +226,9 @@ export function useMusicLibraryState(
   const resetAllFilters = useCallback(() => {
     setSearchQuery("");
     setFilterType("全部");
-    setFilterLyricist("全部");
-    setFilterComposer("全部");
-    setFilterArranger("全部");
+    setFilterLyricist([]);
+    setFilterComposer([]);
+    setFilterArranger([]);
     setYearRangeIndices([0, getMaxYearIndex()]);
     setCurrentPage(1);
   }, [getMaxYearIndex]);
