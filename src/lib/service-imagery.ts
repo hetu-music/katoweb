@@ -12,57 +12,95 @@ function getSupabase() {
   return createSupabaseDataClient(TABLE_NAMES.MAIN);
 }
 
+const PAGE_SIZE = 1000;
+
+/**
+ * Supabase/PostgREST 默认每次最多返回 1000 行。
+ * 此函数通过分页循环拉取指定表的全部数据。
+ */
+async function fetchAll<T>(
+  supabase: NonNullable<ReturnType<typeof getSupabase>>,
+  table: string,
+  selectFields: string,
+  extraFilter?: (
+    query: ReturnType<typeof supabase.from>,
+  ) => ReturnType<typeof supabase.from>,
+): Promise<T[]> {
+  const results: T[] = [];
+  let from = 0;
+
+  while (true) {
+    let query = supabase
+      .from(table)
+      .select(selectFields)
+      .range(from, from + PAGE_SIZE - 1);
+
+    if (extraFilter) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      query = extraFilter(query as any) as any;
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error(`Failed to fetch ${table} (range ${from}–${from + PAGE_SIZE - 1}):`, error);
+      break;
+    }
+
+    if (!data || data.length === 0) break;
+
+    results.push(...(data as T[]));
+
+    if (data.length < PAGE_SIZE) break; // last page
+    from += PAGE_SIZE;
+  }
+
+  return results;
+}
+
 export async function getImageryCategories(): Promise<ImageryCategory[]> {
   const supabase = getSupabase();
   if (!supabase) return [];
 
-  const { data, error } = await supabase
-    .from("imagery_categories")
-    .select("id, name, parent_id, level, description")
-    .order("level", { ascending: true })
-    .order("name");
-
-  if (error) {
-    console.error("Failed to fetch imagery categories:", error);
-    return [];
-  }
-  return (data ?? []) as ImageryCategory[];
+  // Categories are small — a single query is fine, but use fetchAll for consistency
+  const data = await fetchAll<ImageryCategory>(
+    supabase,
+    "imagery_categories",
+    "id, name, parent_id, level, description",
+  );
+  return data;
 }
 
 export async function getImageryWithCounts(): Promise<ImageryItem[]> {
   const supabase = getSupabase();
   if (!supabase) return [];
 
-  // Fetch all imagery
-  const { data: imageryData, error: imageryError } = await supabase
-    .from("imagery")
-    .select("id, name")
-    .order("name");
+  // Fetch all imagery (may exceed 1000)
+  const imageryData = await fetchAll<{ id: number; name: string }>(
+    supabase,
+    "imagery",
+    "id, name",
+  );
 
-  if (imageryError || !imageryData) {
-    console.error("Failed to fetch imagery:", imageryError);
-    return [];
-  }
+  if (imageryData.length === 0) return [];
 
-  // Fetch all occurrences for counting and category mapping
-  const { data: occurrences, error: occError } = await supabase
-    .from("imagery_occurrences")
-    .select("imagery_id, category_id");
-
-  if (occError || !occurrences) {
-    console.error("Failed to fetch imagery occurrences:", occError);
-    return imageryData.map((i) => ({ ...i, count: 0, categoryIds: [] }));
-  }
+  // Fetch all occurrences (may exceed 1000)
+  const occurrences = await fetchAll<
+    Pick<ImageryOccurrence, "imagery_id" | "category_id">
+  >(supabase, "imagery_occurrences", "imagery_id, category_id");
 
   // Group occurrences by imagery_id
   const countMap = new Map<number, { count: number; categoryIds: Set<number> }>();
-  for (const occ of occurrences as Pick<ImageryOccurrence, "imagery_id" | "category_id">[]) {
+  for (const occ of occurrences) {
     const existing = countMap.get(occ.imagery_id);
     if (existing) {
       existing.count++;
       existing.categoryIds.add(occ.category_id);
     } else {
-      countMap.set(occ.imagery_id, { count: 1, categoryIds: new Set([occ.category_id]) });
+      countMap.set(occ.imagery_id, {
+        count: 1,
+        categoryIds: new Set([occ.category_id]),
+      });
     }
   }
 
@@ -87,22 +125,22 @@ export async function getSongsForImagery(imageryId: number): Promise<
   const supabase = getSupabase();
   if (!supabase) return [];
 
-  const { data, error } = await supabase
-    .from("imagery_occurrences")
-    .select("song_id, category_id")
-    .eq("imagery_id", imageryId);
+  // A single imagery rarely appears in more than 1000 songs, but paginate anyway
+  const occurrences = await fetchAll<
+    Pick<ImageryOccurrence, "song_id" | "category_id">
+  >(supabase, "imagery_occurrences", "song_id, category_id", (q) =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (q as any).eq("imagery_id", imageryId),
+  );
 
-  if (error || !data) {
-    console.error("Failed to fetch occurrences for imagery:", error);
-    return [];
-  }
+  if (occurrences.length === 0) return [];
 
   // Collect unique song ids
   const songCountMap = new Map<
     number,
     { categoryId: number; occurrenceCount: number }
   >();
-  for (const occ of data as Pick<ImageryOccurrence, "song_id" | "category_id">[]) {
+  for (const occ of occurrences) {
     const existing = songCountMap.get(occ.song_id);
     if (existing) {
       existing.occurrenceCount++;
