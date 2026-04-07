@@ -11,7 +11,37 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TYPE_ORDER } from "@/lib/constants";
 import { Award, Mail, User, X } from "lucide-react";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useLayoutEffect, useRef, useState } from "react";
+
+/** Smoothly animates height changes when children resize (e.g. tab switching). */
+function AnimatedHeight({ children }: { children: React.ReactNode }) {
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState<number | undefined>(undefined);
+
+  useLayoutEffect(() => {
+    const el = innerRef.current;
+    if (!el) return;
+    setHeight(el.offsetHeight);
+    const ro = new ResizeObserver(() => setHeight(el.offsetHeight));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    <div
+      style={{
+        height: height ?? "auto",
+        overflow: "hidden",
+        transition: "height 350ms cubic-bezier(0.4, 0, 0.2, 1)",
+      }}
+    >
+      {/* min-height keeps loading/empty states from collapsing too small */}
+      <div ref={innerRef} style={{ minHeight: 200 }}>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 interface Contributor {
   name?: string;
@@ -109,7 +139,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   return (
     // Dialog handles scroll-lock, focus-trap, Escape key, and backdrop automatically
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent>
+      <DialogContent className="overflow-hidden">
         <DialogHeader>
           <DialogTitle>关于</DialogTitle>
           <DialogClose asChild>
@@ -125,7 +155,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
         <Tabs
           defaultValue="about"
-          className="flex flex-col flex-1 overflow-hidden"
+          className="flex flex-col"
           onValueChange={(value) => {
             if (value === "maintainer" && contributors.length === 0 && !contributorsLoading) {
               fetchContributors();
@@ -138,8 +168,9 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <TabsTrigger value="maintainer">维护团队</TabsTrigger>
           </TabsList>
 
+          <AnimatedHeight>
           {/* About Tab */}
-          <TabsContent value="about">
+          <TabsContent value="about" className="max-h-[65vh]">
             <div className="space-y-6 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
               <div className="space-y-2">
                 <h3 className="font-semibold text-slate-900 dark:text-white">简介</h3>
@@ -183,7 +214,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </TabsContent>
 
           {/* Types Tab */}
-          <TabsContent value="types">
+          <TabsContent value="types" className="max-h-[65vh]">
             <div className="space-y-3">
               {TYPE_ORDER.filter((t) => typeDescriptions[t]).map((type) => {
                 const colors = typeColors[type] ?? fallbackColors;
@@ -214,7 +245,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </TabsContent>
 
           {/* Maintainer Tab */}
-          <TabsContent value="maintainer">
+          <TabsContent value="maintainer" className="max-h-[65vh]">
             <div className="space-y-4">
               {contributorsLoading ? (
                 <div className="flex flex-col items-center justify-center py-12 text-slate-400 gap-3">
@@ -259,6 +290,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               )}
             </div>
           </TabsContent>
+          </AnimatedHeight>
         </Tabs>
       </DialogContent>
     </Dialog>

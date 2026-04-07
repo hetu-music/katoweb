@@ -1,8 +1,8 @@
 "use client";
 
-import * as React from "react";
-import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { cn } from "@/lib/utils";
+import * as TabsPrimitive from "@radix-ui/react-tabs";
+import * as React from "react";
 
 const Tabs = TabsPrimitive.Root;
 
@@ -52,10 +52,17 @@ const TabsContent = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <TabsPrimitive.Content
     ref={ref}
-    className={cn("flex-1 overflow-y-auto p-6 outline-none", className)}
+    className={cn(
+      "overflow-y-auto p-6 outline-none",
+      // Fade + subtle slide-up when the tab becomes active
+      "data-[state=active]:animate-in data-[state=active]:fade-in-0",
+      "data-[state=active]:slide-in-from-bottom-2 data-[state=active]:duration-300",
+      className,
+    )}
     {...props}
   />
 ));
 TabsContent.displayName = TabsPrimitive.Content.displayName;
 
-export { Tabs, TabsList, TabsTrigger, TabsContent };
+export { Tabs, TabsContent, TabsList, TabsTrigger };
+
