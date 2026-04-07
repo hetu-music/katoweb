@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import CustomSelect from "./CustomSelect";
 
 interface SongFiltersProps {
@@ -160,7 +160,7 @@ const YearRangeSlider = ({
             e.stopPropagation(); // Prevent track click
             setDragging("left");
           }}
-          className={`absolute top-1/2 -translate-y-1/2 -ml-3 w-6 h-6 bg-white dark:bg-slate-200 rounded-full shadow-md border border-slate-200 hover:scale-110 focus:outline-none z-10 flex items-center justify-center cursor-grab ${dragging === "left" ? "!scale-110 !cursor-grabbing ring-2 ring-blue-500/30" : ""} transition-transform`}
+          className={`absolute top-1/2 -translate-y-1/2 -ml-3 w-6 h-6 bg-white dark:bg-slate-200 rounded-full shadow-md border border-slate-200 hover:scale-110 focus:outline-none z-10 flex items-center justify-center cursor-grab ${dragging === "left" ? "scale-110! cursor-grabbing! ring-2 ring-blue-500/30" : ""} transition-transform`}
           style={{ left: `${leftPercent}%` }}
           role="slider"
           aria-label="Start Year"
@@ -176,7 +176,7 @@ const YearRangeSlider = ({
             e.stopPropagation(); // Prevent track click
             setDragging("right");
           }}
-          className={`absolute top-1/2 -translate-y-1/2 -ml-3 w-6 h-6 bg-white dark:bg-slate-200 rounded-full shadow-md border border-slate-200 hover:scale-110 focus:outline-none z-10 flex items-center justify-center cursor-grab ${dragging === "right" ? "!scale-110 !cursor-grabbing ring-2 ring-blue-500/30" : ""} transition-transform`}
+          className={`absolute top-1/2 -translate-y-1/2 -ml-3 w-6 h-6 bg-white dark:bg-slate-200 rounded-full shadow-md border border-slate-200 hover:scale-110 focus:outline-none z-10 flex items-center justify-center cursor-grab ${dragging === "right" ? "scale-110! cursor-grabbing! ring-2 ring-blue-500/30" : ""} transition-transform`}
           style={{ left: `${rightPercent}%` }}
           role="slider"
           aria-label="End Year"
