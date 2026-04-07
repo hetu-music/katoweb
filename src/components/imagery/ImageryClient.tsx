@@ -1,0 +1,611 @@
+"use client";
+
+import React, { useState, useMemo, useRef, useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft, Home, X } from "lucide-react";
+import ThemeToggle from "@/components/shared/ThemeToggle";
+import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
+import type { ImageryCategory, ImageryItem } from "@/lib/types";
+
+function cn(...classes: (string | undefined | null | false)[]) {
+  return classes.filter(Boolean).join(" ");
+}
+
+// ─── Category color palette ──────────────────────────────────────────────────
+// Assign a stable color index to each top-level category by its id modulo slots
+const COLOR_PALETTES = [
+  // slate (default / unset)
+  {
+    pill: "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800/60 dark:text-slate-300 dark:border-slate-700",
+    pillActive:
+      "bg-slate-800 text-white border-slate-800 dark:bg-slate-200 dark:text-slate-900 dark:border-slate-200",
+    tag: "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100",
+    tagActive:
+      "text-slate-900 dark:text-white ring-1 ring-slate-400 dark:ring-slate-500",
+    dot: "bg-slate-400 dark:bg-slate-500",
+  },
+  // indigo
+  {
+    pill: "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:border-indigo-500/30",
+    pillActive:
+      "bg-indigo-600 text-white border-indigo-600 dark:bg-indigo-400 dark:text-indigo-950 dark:border-indigo-400",
+    tag: "text-indigo-500/70 dark:text-indigo-400/70 hover:text-indigo-700 dark:hover:text-indigo-200",
+    tagActive:
+      "text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-400 dark:ring-indigo-500",
+    dot: "bg-indigo-400 dark:bg-indigo-500",
+  },
+  // amber
+  {
+    pill: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/30",
+    pillActive:
+      "bg-amber-500 text-white border-amber-500 dark:bg-amber-400 dark:text-amber-950 dark:border-amber-400",
+    tag: "text-amber-500/70 dark:text-amber-400/70 hover:text-amber-700 dark:hover:text-amber-200",
+    tagActive:
+      "text-amber-700 dark:text-amber-300 ring-1 ring-amber-400 dark:ring-amber-500",
+    dot: "bg-amber-400 dark:bg-amber-500",
+  },
+  // emerald
+  {
+    pill: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30",
+    pillActive:
+      "bg-emerald-600 text-white border-emerald-600 dark:bg-emerald-400 dark:text-emerald-950 dark:border-emerald-400",
+    tag: "text-emerald-500/70 dark:text-emerald-400/70 hover:text-emerald-700 dark:hover:text-emerald-200",
+    tagActive:
+      "text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-400 dark:ring-emerald-500",
+    dot: "bg-emerald-400 dark:bg-emerald-500",
+  },
+  // rose
+  {
+    pill: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/30",
+    pillActive:
+      "bg-rose-600 text-white border-rose-600 dark:bg-rose-400 dark:text-rose-950 dark:border-rose-400",
+    tag: "text-rose-500/70 dark:text-rose-400/70 hover:text-rose-700 dark:hover:text-rose-200",
+    tagActive:
+      "text-rose-700 dark:text-rose-300 ring-1 ring-rose-400 dark:ring-rose-500",
+    dot: "bg-rose-400 dark:bg-rose-500",
+  },
+  // sky
+  {
+    pill: "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:border-sky-500/30",
+    pillActive:
+      "bg-sky-600 text-white border-sky-600 dark:bg-sky-400 dark:text-sky-950 dark:border-sky-400",
+    tag: "text-sky-500/70 dark:text-sky-400/70 hover:text-sky-700 dark:hover:text-sky-200",
+    tagActive:
+      "text-sky-700 dark:text-sky-300 ring-1 ring-sky-400 dark:ring-sky-500",
+    dot: "bg-sky-400 dark:bg-sky-500",
+  },
+  // violet
+  {
+    pill: "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-500/10 dark:text-violet-300 dark:border-violet-500/30",
+    pillActive:
+      "bg-violet-600 text-white border-violet-600 dark:bg-violet-400 dark:text-violet-950 dark:border-violet-400",
+    tag: "text-violet-500/70 dark:text-violet-400/70 hover:text-violet-700 dark:hover:text-violet-200",
+    tagActive:
+      "text-violet-700 dark:text-violet-300 ring-1 ring-violet-400 dark:ring-violet-500",
+    dot: "bg-violet-400 dark:bg-violet-500",
+  },
+  // teal
+  {
+    pill: "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-500/10 dark:text-teal-300 dark:border-teal-500/30",
+    pillActive:
+      "bg-teal-600 text-white border-teal-600 dark:bg-teal-400 dark:text-teal-950 dark:border-teal-400",
+    tag: "text-teal-500/70 dark:text-teal-400/70 hover:text-teal-700 dark:hover:text-teal-200",
+    tagActive:
+      "text-teal-700 dark:text-teal-300 ring-1 ring-teal-400 dark:ring-teal-500",
+    dot: "bg-teal-400 dark:bg-teal-500",
+  },
+];
+
+function getPaletteForCategory(
+  categoryId: number | null,
+  categories: ImageryCategory[],
+): (typeof COLOR_PALETTES)[number] {
+  if (!categoryId) return COLOR_PALETTES[0];
+  // Walk up to top-level parent
+  let current: ImageryCategory | undefined = categories.find((c) => c.id === categoryId);
+  while (current?.parent_id) {
+    const parentId = current.parent_id;
+    current = categories.find((c) => c.id === parentId);
+  }
+  if (!current) return COLOR_PALETTES[0];
+  // Stable index: use sorted top-level category index
+  const topLevel = categories
+    .filter((c) => !c.parent_id)
+    .sort((a, b) => a.id - b.id);
+  const resolvedCurrent = current;
+  const idx = topLevel.findIndex((c) => c.id === resolvedCurrent.id);
+  return COLOR_PALETTES[(idx % (COLOR_PALETTES.length - 1)) + 1];
+}
+
+// ─── Font size tiers based on occurrence count ───────────────────────────────
+function getTagSizeClass(count: number, max: number): string {
+  if (max === 0) return "text-sm";
+  const ratio = count / max;
+  if (ratio >= 0.7) return "text-2xl font-semibold tracking-tight";
+  if (ratio >= 0.45) return "text-xl font-medium";
+  if (ratio >= 0.25) return "text-lg";
+  if (ratio >= 0.1) return "text-base";
+  return "text-sm font-light";
+}
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+interface Props {
+  items: ImageryItem[];
+  categories: ImageryCategory[];
+}
+
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+const NavBar: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+  const router = useRouter();
+  const [isBackActive, setIsBackActive] = useState(false);
+  const handleBack = () => {
+    setIsBackActive(true);
+    onBack();
+  };
+  return (
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
+      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1 -ml-2">
+            <button
+              onClick={handleBack}
+              className={cn(
+                "p-2 rounded-full transition-colors text-slate-600 dark:text-slate-400 group",
+                isBackActive
+                  ? "bg-slate-200/50 dark:bg-slate-800"
+                  : "hover:bg-slate-200/50 dark:hover:bg-slate-800",
+              )}
+              title="返回"
+            >
+              <ArrowLeft
+                size={20}
+                className={cn(
+                  "transition-transform",
+                  isBackActive
+                    ? "-translate-x-0.5"
+                    : "group-hover:-translate-x-0.5",
+                )}
+              />
+            </button>
+            <div className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-0.5" />
+            <button
+              onClick={() => router.push("/")}
+              className="p-2 rounded-full transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800 group"
+              title="回到主页"
+            >
+              <Home
+                size={20}
+                className="transition-transform group-hover:scale-105 group-active:scale-95"
+              />
+            </button>
+          </div>
+          <span className="text-xl font-bold text-slate-900 dark:text-white tracking-tight hidden sm:block font-serif">
+            意象
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+// A single imagery tag in the cloud
+const ImageryTag: React.FC<{
+  item: ImageryItem;
+  isSelected: boolean;
+  sizeClass: string;
+  palette: (typeof COLOR_PALETTES)[number];
+  onClick: () => void;
+}> = ({ item, isSelected, sizeClass, palette, onClick }) => (
+  <button
+    onClick={onClick}
+    className={cn(
+      "relative px-3 py-1.5 rounded-lg transition-all duration-200 font-serif leading-tight select-none",
+      sizeClass,
+      isSelected ? palette.tagActive : palette.tag,
+      "hover:scale-105 active:scale-95",
+    )}
+    title={`${item.name}（${item.count} 处）`}
+  >
+    {item.name}
+    {isSelected && (
+      <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-current opacity-60" />
+    )}
+  </button>
+);
+
+// Category filter pill
+const CategoryPill: React.FC<{
+  label: string;
+  active: boolean;
+  count?: number;
+  palette: (typeof COLOR_PALETTES)[number];
+  onClick: () => void;
+}> = ({ label, active, count, palette, onClick }) => (
+  <button
+    onClick={onClick}
+    className={cn(
+      "flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm border transition-all duration-200 whitespace-nowrap shrink-0 font-sans",
+      active ? palette.pillActive : palette.pill,
+    )}
+  >
+    <span>{label}</span>
+    {count !== undefined && (
+      <span
+        className={cn(
+          "text-xs tabular-nums",
+          active ? "opacity-80" : "opacity-60",
+        )}
+      >
+        {count}
+      </span>
+    )}
+  </button>
+);
+
+// Song chip inside the detail panel
+const SongChip: React.FC<{
+  songId: number;
+  title: string;
+  album: string | null;
+  occurrenceCount: number;
+}> = ({ songId, title, album, occurrenceCount }) => (
+  <Link
+    href={`/song/${songId}`}
+    className="group flex items-center justify-between gap-4 px-4 py-3 rounded-xl bg-white dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-sm transition-all duration-200"
+  >
+    <div className="min-w-0">
+      <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+        {title}
+      </p>
+      {album && (
+        <p className="text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5">
+          {album}
+        </p>
+      )}
+    </div>
+    <span className="shrink-0 text-xs tabular-nums text-slate-400 dark:text-slate-500">
+      ×{occurrenceCount}
+    </span>
+  </Link>
+);
+
+// ─── Main component ───────────────────────────────────────────────────────────
+const ImageryClient: React.FC<Props> = ({ items, categories }) => {
+  const router = useRouter();
+  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
+  const [selectedItem, setSelectedItem] = useState<ImageryItem | null>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const detailRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onScroll = () => setShowScrollTop(window.scrollY > 200);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const handleBack = useCallback(() => {
+    const navDepthStr = sessionStorage.getItem("__katoweb_nav_depth");
+    const navDepth = navDepthStr ? parseInt(navDepthStr, 10) : 0;
+    if (navDepth > 0) {
+      sessionStorage.setItem("__katoweb_nav_depth", String(navDepth - 1));
+      router.back();
+    } else {
+      router.push("/");
+    }
+  }, [router]);
+
+  // Only show top-level categories as filter pills
+  const topLevelCategories = useMemo(
+    () => categories.filter((c) => !c.parent_id).sort((a, b) => a.id - b.id),
+    [categories],
+  );
+
+  // Build a map: categoryId → all descendant categoryIds (including self)
+  const categoryDescendants = useMemo(() => {
+    const map = new Map<number, Set<number>>();
+    for (const cat of categories) {
+      const descendants = new Set<number>();
+      const queue = [cat.id];
+      while (queue.length) {
+        const id = queue.shift();
+        if (id === undefined) break;
+        descendants.add(id);
+        categories
+          .filter((c) => c.parent_id === id)
+          .forEach((c) => queue.push(c.id));
+      }
+      map.set(cat.id, descendants);
+    }
+    return map;
+  }, [categories]);
+
+  // Filtered items based on active category
+  const filteredItems = useMemo(() => {
+    if (!activeCategoryId) return items;
+    const descendants = categoryDescendants.get(activeCategoryId);
+    if (!descendants) return items;
+    return items.filter((item) =>
+      item.categoryIds.some((cid) => descendants.has(cid)),
+    );
+  }, [items, activeCategoryId, categoryDescendants]);
+
+  // Sort: by count descending, then alphabetically
+  const sortedItems = useMemo(
+    () => [...filteredItems].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "zh")),
+    [filteredItems],
+  );
+
+  const maxCount = useMemo(
+    () => Math.max(...items.map((i) => i.count), 0),
+    [items],
+  );
+
+  // Songs for selected item — pre-computed from occurrences embedded in items
+  // Since we don't have song details on the client, we'll show placeholder
+  // that links to the song page. (Full detail fetch is deferred to the server route.)
+  const handleTagClick = useCallback(
+    (item: ImageryItem) => {
+      if (selectedItem?.id === item.id) {
+        setSelectedItem(null);
+      } else {
+        setSelectedItem(item);
+        // Scroll detail panel into view on mobile
+        setTimeout(() => {
+          detailRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+          });
+        }, 50);
+      }
+    },
+    [selectedItem],
+  );
+
+  // Count items per top-level category
+  const categoryCountMap = useMemo(() => {
+    const map = new Map<number, number>();
+    for (const cat of topLevelCategories) {
+      const descendants = categoryDescendants.get(cat.id);
+      if (!descendants) continue;
+      const count = items.filter((item) =>
+        item.categoryIds.some((cid) => descendants.has(cid)),
+      ).length;
+      map.set(cat.id, count);
+    }
+    return map;
+  }, [topLevelCategories, items, categoryDescendants]);
+
+  // (palette computed inline at usage sites)
+
+  return (
+    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500">
+      <NavBar onBack={handleBack} />
+
+      <main className="pt-28 pb-24 max-w-7xl mx-auto px-6">
+        {/* ── Hero ── */}
+        <section className="mb-14 mt-6 space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50 italic">
+            意象{" "}
+            <span className="text-[0.6em] not-italic font-light text-slate-400 dark:text-slate-500 tabular-nums">
+              {items.length}
+            </span>
+          </h1>
+          <p className="text-slate-400 dark:text-slate-500 font-light max-w-md text-sm leading-relaxed">
+            山川日月，草木时令——词语在这里化为星点，各自成诗。
+          </p>
+        </section>
+
+        {/* ── Category filter bar ── */}
+        <section className="sticky top-20 z-40 bg-[#FAFAFA]/95 dark:bg-[#0B0F19]/95 backdrop-blur-sm py-3 mb-10 -mx-6 px-6 border-b border-slate-100/80 dark:border-slate-800/80">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <CategoryPill
+              label="全部"
+              active={activeCategoryId === null}
+              count={items.length}
+              palette={COLOR_PALETTES[0]}
+              onClick={() => {
+                setActiveCategoryId(null);
+                setSelectedItem(null);
+              }}
+            />
+            {topLevelCategories.map((cat, idx) => {
+              const palette = COLOR_PALETTES[(idx % (COLOR_PALETTES.length - 1)) + 1];
+              return (
+                <CategoryPill
+                  key={cat.id}
+                  label={cat.name}
+                  active={activeCategoryId === cat.id}
+                  count={categoryCountMap.get(cat.id)}
+                  palette={palette}
+                  onClick={() => {
+                    setActiveCategoryId(activeCategoryId === cat.id ? null : cat.id);
+                    setSelectedItem(null);
+                  }}
+                />
+              );
+            })}
+          </div>
+        </section>
+
+        {/* ── Main layout: cloud + detail ── */}
+        <div className="flex flex-col lg:flex-row gap-10 lg:items-start">
+          {/* ── Tag cloud ── */}
+          <section className="flex-1 animate-in fade-in duration-500">
+            {sortedItems.length === 0 ? (
+              <p className="text-slate-400 dark:text-slate-500 text-sm py-12 text-center">
+                暂无数据
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-x-3 gap-y-4 items-baseline">
+                {sortedItems.map((item) => {
+                  const primaryCatId = item.categoryIds[0] ?? null;
+                  const palette = getPaletteForCategory(primaryCatId, categories);
+                  const sizeClass = getTagSizeClass(item.count, maxCount);
+                  return (
+                    <ImageryTag
+                      key={item.id}
+                      item={item}
+                      isSelected={selectedItem?.id === item.id}
+                      sizeClass={sizeClass}
+                      palette={palette}
+                      onClick={() => handleTagClick(item)}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
+          {/* ── Detail panel ── */}
+          <aside
+            ref={detailRef}
+            className={cn(
+              "lg:w-72 xl:w-80 shrink-0 lg:sticky lg:top-36 transition-all duration-300",
+              selectedItem
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 pointer-events-none translate-y-2 lg:translate-y-0",
+            )}
+          >
+            {selectedItem && (
+              <div className="rounded-2xl border border-slate-200/80 dark:border-slate-700/60 bg-white/60 dark:bg-slate-800/30 backdrop-blur-sm overflow-hidden shadow-sm">
+                {/* Panel header */}
+                <div
+                  className={cn(
+                    "flex items-start justify-between gap-3 px-5 pt-5 pb-4",
+                  )}
+                >
+                  <div className="space-y-1 min-w-0">
+                    <h2 className="text-2xl font-bold font-serif text-slate-900 dark:text-white">
+                      {selectedItem.name}
+                    </h2>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {selectedItem.categoryIds.map((cid) => {
+                        const cat = categories.find((c) => c.id === cid);
+                        if (!cat) return null;
+                        const pal = getPaletteForCategory(cid, categories);
+                        return (
+                          <span
+                            key={cid}
+                            className={cn(
+                              "text-xs px-2 py-0.5 rounded-full border font-sans",
+                              pal.pill,
+                            )}
+                          >
+                            {cat.name}
+                          </span>
+                        );
+                      })}
+                      <span className="text-xs text-slate-400 dark:text-slate-500 tabular-nums">
+                        出现 {selectedItem.count} 处
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedItem(null)}
+                    className="mt-0.5 p-1.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shrink-0"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                <div className="h-px bg-slate-100 dark:bg-slate-700/60 mx-5" />
+
+                {/* Song list placeholder — client-side we only have ids */}
+                <div className="px-5 py-4 space-y-2">
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mb-3 font-sans">
+                    出现于以下作品
+                  </p>
+                  <ImageryDetailSongs
+                    key={selectedItem.id}
+                    imageryId={selectedItem.id}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Empty state hint when nothing selected */}
+            {!selectedItem && (
+              <div className="hidden lg:flex flex-col items-center justify-center text-center py-16 px-6 text-slate-300 dark:text-slate-600">
+                <div className="text-4xl mb-3 opacity-40 font-serif">詞</div>
+                <p className="text-sm font-light">点击左侧意象查看详情</p>
+              </div>
+            )}
+          </aside>
+        </div>
+      </main>
+
+      <FloatingActionButtons
+        showScrollTop={showScrollTop}
+        onScrollToTop={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      />
+    </div>
+  );
+};
+
+// ─── Detail songs: client-side fetch ─────────────────────────────────────────
+// Fetch song details for the selected imagery via a lightweight API call
+const ImageryDetailSongs: React.FC<{ imageryId: number }> = ({ imageryId }) => {
+  const [songs, setSongs] = React.useState<
+    Array<{
+      song: { id: number; title: string; album: string | null };
+      occurrenceCount: number;
+    }> | null
+  >(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    setLoading(true);
+    fetch(`/api/imagery/${imageryId}/songs`)
+      .then((r) => r.json())
+      .then((data) => {
+        setSongs(data.songs ?? []);
+        setLoading(false);
+      })
+      .catch(() => {
+        setSongs([]);
+        setLoading(false);
+      });
+  }, [imageryId]);
+
+  if (loading) {
+    return (
+      <div className="space-y-2">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="h-12 rounded-xl bg-slate-100 dark:bg-slate-700/40 animate-pulse"
+          />
+        ))}
+      </div>
+    );
+  }
+
+  if (!songs || songs.length === 0) {
+    return (
+      <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-4">
+        暂无关联作品
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {songs.map(({ song, occurrenceCount }) => (
+        <SongChip
+          key={song.id}
+          songId={song.id}
+          title={song.title}
+          album={song.album}
+          occurrenceCount={occurrenceCount}
+        />
+      ))}
+    </div>
+  );
+};
+
+export default ImageryClient;
