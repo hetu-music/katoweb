@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Check, ChevronDown, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
@@ -36,6 +36,16 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   disabled = false,
 }) => {
   const [open, setOpen] = useState(false);
+
+  // Sort selected options to the top for easy access
+  const sortedOptions = useMemo(() => {
+    return [...options].sort((a, b) => {
+      const aSelected = value.includes(a.value);
+      const bSelected = value.includes(b.value);
+      if (aSelected === bSelected) return 0;
+      return aSelected ? -1 : 1;
+    });
+  }, [options, value]);
 
   const toggleOption = (optionValue: string) => {
     if (value.includes(optionValue)) {
@@ -76,14 +86,18 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "flex h-10 w-full items-center justify-between gap-2 rounded-lg border border-slate-200 dark:border-slate-800",
-            "bg-white/50 dark:bg-slate-900/50 px-3 text-sm",
+            // Match the design system: solid bg, clean border, like search bar & advanced filter button
+            "flex h-9 w-full items-center justify-between gap-2 rounded-lg",
+            "border border-slate-200 dark:border-slate-800",
+            "bg-white dark:bg-slate-900",
+            "px-3 text-sm",
             "text-slate-600 dark:text-slate-300",
             "transition-all duration-200",
-            "hover:bg-white dark:hover:bg-slate-900",
-            "focus:outline-none focus:ring-1 focus:ring-blue-500/20",
+            "hover:border-blue-400 dark:hover:border-blue-400 hover:bg-blue-50/30 dark:hover:bg-blue-900/10",
+            "focus:outline-none",
+            open && "border-blue-400 dark:border-blue-500",
+            hasSelection && !open && "border-blue-400/60 dark:border-blue-600/60",
             "disabled:cursor-not-allowed disabled:opacity-50",
-            hasSelection && "border-blue-300 dark:border-blue-700/50 bg-blue-50/30 dark:bg-blue-900/10",
             className,
           )}
         >
@@ -136,7 +150,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           <CommandList>
             <CommandEmpty>无匹配结果</CommandEmpty>
             <CommandGroup>
-              {options.map((option) => {
+              {sortedOptions.map((option) => {
                 const isSelected = value.includes(option.value);
                 return (
                   <CommandItem

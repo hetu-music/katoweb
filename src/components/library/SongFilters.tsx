@@ -234,7 +234,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
           <CustomSelect
             value={selectedLyricist}
             onChange={setSelectedLyricist}
-            placeholder="Lyricist"
+            placeholder="全部作词"
             options={filterOptions.allLyricists
               .filter((l) => l !== "全部")
               .map((lyricist) => ({ value: lyricist, label: lyricist }))}
@@ -248,7 +248,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
           <CustomSelect
             value={selectedComposer}
             onChange={setSelectedComposer}
-            placeholder="Composer"
+            placeholder="全部作曲"
             options={filterOptions.allComposers
               .filter((c) => c !== "全部")
               .map((composer) => ({ value: composer, label: composer }))}
@@ -262,7 +262,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
           <CustomSelect
             value={selectedArranger}
             onChange={setSelectedArranger}
-            placeholder="Arranger"
+            placeholder="全部编曲"
             options={filterOptions.allArrangers
               .filter((a) => a !== "全部")
               .map((arranger) => ({ value: arranger, label: arranger }))}
