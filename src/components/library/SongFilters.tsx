@@ -5,12 +5,12 @@ interface SongFiltersProps {
   yearRangeIndices: [number, number];
   setYearRangeIndices: (range: [number, number]) => void;
   sliderYears: (string | number)[];
-  selectedLyricist: string;
-  setSelectedLyricist: (lyricist: string) => void;
-  selectedComposer: string;
-  setSelectedComposer: (composer: string) => void;
-  selectedArranger: string;
-  setSelectedArranger: (arranger: string) => void;
+  selectedLyricist: string[];
+  setSelectedLyricist: (lyricist: string[]) => void;
+  selectedComposer: string[];
+  setSelectedComposer: (composer: string[]) => void;
+  selectedArranger: string[];
+  setSelectedArranger: (arranger: string[]) => void;
   filterOptions: {
     allTypes: string[];
     allYears: (string | number | null)[];
@@ -210,12 +210,6 @@ const SongFilters: React.FC<SongFiltersProps> = ({
   const labelStyle =
     "text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest";
 
-  const triggerStyle =
-    "!bg-white/50 dark:!bg-slate-900/50 hover:!bg-white dark:hover:!bg-slate-900 !border !border-slate-200 dark:!border-slate-800 !rounded-lg !text-slate-600 dark:!text-slate-300 !h-10 !px-3 !mx-0 transition-all duration-200 focus:!ring-1 focus:!ring-blue-500/20";
-
-  const optionsStyle =
-    "!bg-white dark:!bg-slate-900 !border !border-slate-100 dark:!border-slate-800 !rounded-xl !shadow-2xl !p-1";
-
   // If no years loaded yet, use dummy
   const displayYears =
     sliderYears.length > 0 ? sliderYears : [new Date().getFullYear(), "未知"];
@@ -241,13 +235,10 @@ const SongFilters: React.FC<SongFiltersProps> = ({
             value={selectedLyricist}
             onChange={setSelectedLyricist}
             placeholder="Lyricist"
-            options={filterOptions.allLyricists.map((lyricist) => ({
-              value: lyricist,
-              label: lyricist,
-            }))}
+            options={filterOptions.allLyricists
+              .filter((l) => l !== "全部")
+              .map((lyricist) => ({ value: lyricist, label: lyricist }))}
             className="flex-1 w-full min-w-0"
-            triggerClassName={triggerStyle}
-            optionsClassName={optionsStyle}
           />
         </div>
 
@@ -258,13 +249,10 @@ const SongFilters: React.FC<SongFiltersProps> = ({
             value={selectedComposer}
             onChange={setSelectedComposer}
             placeholder="Composer"
-            options={filterOptions.allComposers.map((composer) => ({
-              value: composer,
-              label: composer,
-            }))}
+            options={filterOptions.allComposers
+              .filter((c) => c !== "全部")
+              .map((composer) => ({ value: composer, label: composer }))}
             className="flex-1 w-full min-w-0"
-            triggerClassName={triggerStyle}
-            optionsClassName={optionsStyle}
           />
         </div>
 
@@ -275,13 +263,10 @@ const SongFilters: React.FC<SongFiltersProps> = ({
             value={selectedArranger}
             onChange={setSelectedArranger}
             placeholder="Arranger"
-            options={filterOptions.allArrangers.map((arranger) => ({
-              value: arranger,
-              label: arranger,
-            }))}
+            options={filterOptions.allArrangers
+              .filter((a) => a !== "全部")
+              .map((arranger) => ({ value: arranger, label: arranger }))}
             className="flex-1 w-full min-w-0"
-            triggerClassName={triggerStyle}
-            optionsClassName={optionsStyle}
           />
         </div>
       </div>

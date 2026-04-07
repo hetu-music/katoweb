@@ -661,9 +661,9 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                     const isAnyFilterActive =
                       searchQuery !== "" ||
                       filterType !== "全部" ||
-                      filterLyricist !== "全部" ||
-                      filterComposer !== "全部" ||
-                      filterArranger !== "全部" ||
+                      filterLyricist.length > 0 ||
+                      filterComposer.length > 0 ||
+                      filterArranger.length > 0 ||
                       (sliderYears.length > 0 &&
                         (yearRangeIndices[0] !== 0 ||
                           yearRangeIndices[1] !== sliderYears.length - 1));

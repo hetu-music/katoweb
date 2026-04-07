@@ -188,9 +188,9 @@ export function filterSongs(
   searchTerm: string,
   selectedType: string,
   selectedYear: string | (string | number)[],
-  selectedLyricist: string,
-  selectedComposer: string,
-  selectedArranger: string,
+  selectedLyricist: string[],
+  selectedComposer: string[],
+  selectedArranger: string[],
   fuseInstance?: Fuse<Song & { searchableContent: string }>,
 ): Song[] {
   let filteredBySearch = songsData;
@@ -230,23 +230,28 @@ export function filterSongs(
     }
 
     const matchesLyricist =
-      selectedLyricist === "全部" ||
-      (selectedLyricist === "未知"
-        ? !song.lyricist || song.lyricist.length === 0
-        : song.lyricist && song.lyricist.includes(selectedLyricist));
+      selectedLyricist.length === 0 ||
+      selectedLyricist.some((sel) =>
+        sel === "未知"
+          ? !song.lyricist || song.lyricist.length === 0
+          : song.lyricist && song.lyricist.includes(sel),
+      );
 
     const matchesComposer =
-      selectedComposer === "全部" ||
-      (selectedComposer === "未知"
-        ? !song.composer || song.composer.length === 0
-        : song.composer && song.composer.includes(selectedComposer));
+      selectedComposer.length === 0 ||
+      selectedComposer.some((sel) =>
+        sel === "未知"
+          ? !song.composer || song.composer.length === 0
+          : song.composer && song.composer.includes(sel),
+      );
 
     const matchesArranger =
-      selectedArranger === "全部" ||
-      (selectedArranger === "未知"
-        ? !songDetail.arranger || songDetail.arranger.length === 0
-        : songDetail.arranger &&
-          songDetail.arranger.includes(selectedArranger));
+      selectedArranger.length === 0 ||
+      selectedArranger.some((sel) =>
+        sel === "未知"
+          ? !songDetail.arranger || songDetail.arranger.length === 0
+          : songDetail.arranger && songDetail.arranger.includes(sel),
+      );
 
     return (
       matchesType &&
