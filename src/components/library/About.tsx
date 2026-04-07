@@ -118,7 +118,9 @@ const fallbackColors = {
 const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [contributorsLoading, setContributorsLoading] = useState(false);
-  const [contributorsError, setContributorsError] = useState<string | null>(null);
+  const [contributorsError, setContributorsError] = useState<string | null>(
+    null,
+  );
 
   const fetchContributors = useCallback(async () => {
     setContributorsLoading(true);
@@ -126,7 +128,9 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     try {
       const res = await fetch("/api/public/contributors");
       const data = await res.json();
-      setContributors(Array.isArray(data.contributors) ? data.contributors : []);
+      setContributors(
+        Array.isArray(data.contributors) ? data.contributors : [],
+      );
     } catch {
       setContributorsError("获取贡献者失败");
     } finally {
@@ -138,7 +142,12 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
   return (
     // Dialog handles scroll-lock, focus-trap, Escape key, and backdrop automatically
-    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
       <DialogContent className="overflow-hidden">
         <DialogHeader>
           <DialogTitle>关于</DialogTitle>
@@ -157,7 +166,11 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           defaultValue="about"
           className="flex flex-col"
           onValueChange={(value) => {
-            if (value === "maintainer" && contributors.length === 0 && !contributorsLoading) {
+            if (
+              value === "maintainer" &&
+              contributors.length === 0 &&
+              !contributorsLoading
+            ) {
               fetchContributors();
             }
           }}
@@ -169,60 +182,65 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </TabsList>
 
           <AnimatedHeight>
-          {/* About Tab */}
-          <TabsContent value="about" className="max-h-[65vh]">
-            <div className="space-y-6 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-              <div className="space-y-2">
-                <h3 className="font-semibold text-slate-900 dark:text-white">简介</h3>
-                <p>
-                  本项目为
-                  <span className="font-medium text-slate-900 dark:text-white">
-                    河图作品勘鉴
-                  </span>
-                  ，致力于收录整理河图的音乐作品资料，为听众提供便捷的筛选与搜索服务。
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <h3 className="font-semibold text-slate-900 dark:text-white">数据与反馈</h3>
-                <p>
-                  数据来源于创作者微博及各大音乐平台。若发现误漏或有意共同维护数据，欢迎邮件联系。
-                </p>
-                <a
-                  href="mailto:feedback@hetu-music.com"
-                  className="inline-flex items-center gap-2 px-4 py-2 mt-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-blue-600 dark:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200 dark:border-slate-700"
-                >
-                  <Mail size={16} />
-                  <span>feedback@hetu-music.com</span>
-                </a>
-              </div>
-
-              <div className="p-5 rounded-xl bg-linear-to-br from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 border border-amber-100 dark:border-amber-900/20 text-sm">
-                <div className="flex items-center gap-2 mb-2 text-amber-700 dark:text-amber-500 font-bold">
-                  <Award size={18} />
-                  <span>特别鸣谢</span>
+            {/* About Tab */}
+            <TabsContent value="about" className="max-h-[65vh]">
+              <div className="space-y-6 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-slate-900 dark:text-white">
+                    简介
+                  </h3>
+                  <p>
+                    本项目为
+                    <span className="font-medium text-slate-900 dark:text-white">
+                      河图作品勘鉴
+                    </span>
+                    ，致力于收录整理河图的音乐作品资料，为听众提供便捷的筛选与搜索服务。
+                  </p>
                 </div>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  正版河图吧吧主{" "}
-                  <span className="font-semibold text-slate-900 dark:text-white">
-                    {mainContributor ? mainContributor.name : "顾大一"}
-                  </span>{" "}
-                  及众位网友整理的《歌手河图作品发布勘鉴》，为本项目提供了宝贵参考资料。
-                </p>
-              </div>
-            </div>
-          </TabsContent>
 
-          {/* Types Tab */}
-          <TabsContent value="types" className="max-h-[65vh] px-6 py-4">
-            <div className="grid grid-cols-1 gap-3">
-              {TYPE_ORDER.filter((t) => typeDescriptions[t]).map((type, idx) => {
-                const colors = typeColors[type] ?? fallbackColors;
-                return (
-                  <div
-                    key={type}
-                    style={{ animationDelay: `${idx * 40}ms` }}
-                    className={`
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-slate-900 dark:text-white">
+                    数据与反馈
+                  </h3>
+                  <p>
+                    数据来源于创作者微博及各大音乐平台。若发现误漏或有意共同维护数据，欢迎邮件联系。
+                  </p>
+                  <a
+                    href="mailto:feedback@hetu-music.com"
+                    className="inline-flex items-center gap-2 px-4 py-2 mt-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-blue-600 dark:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200 dark:border-slate-700"
+                  >
+                    <Mail size={16} />
+                    <span>feedback@hetu-music.com</span>
+                  </a>
+                </div>
+
+                <div className="p-5 rounded-xl bg-linear-to-br from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 border border-amber-100 dark:border-amber-900/20 text-sm">
+                  <div className="flex items-center gap-2 mb-2 text-amber-700 dark:text-amber-500 font-bold">
+                    <Award size={18} />
+                    <span>特别鸣谢</span>
+                  </div>
+                  <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
+                    正版河图吧吧主{" "}
+                    <span className="font-semibold text-slate-900 dark:text-white">
+                      {mainContributor ? mainContributor.name : "顾大一"}
+                    </span>{" "}
+                    及众位网友整理的《歌手河图作品发布勘鉴》，为本项目提供了宝贵参考资料。
+                  </p>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Types Tab */}
+            <TabsContent value="types" className="max-h-[65vh] px-6 py-4">
+              <div className="grid grid-cols-1 gap-3">
+                {TYPE_ORDER.filter((t) => typeDescriptions[t]).map(
+                  (type, idx) => {
+                    const colors = typeColors[type] ?? fallbackColors;
+                    return (
+                      <div
+                        key={type}
+                        style={{ animationDelay: `${idx * 40}ms` }}
+                        className={`
                       animate-in fade-in slide-in-from-right-4 duration-500 fill-mode-both
                       relative overflow-hidden rounded-xl
                       border-l-[3px] ${colors.border}
@@ -231,68 +249,73 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                       ${colors.hoverBorder}
                       transition-colors duration-200
                     `}
-                  >
-                    <div className="px-4 py-3">
-                      <div className={`text-sm font-semibold ${colors.text} mb-1`}>
-                        {type}
-                      </div>
-                      <div className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-                        {typeDescriptions[type]}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </TabsContent>
-
-          {/* Maintainer Tab */}
-          <TabsContent value="maintainer" className="max-h-[65vh]">
-            <div className="space-y-4">
-              {contributorsLoading ? (
-                <div className="flex flex-col items-center justify-center py-12 text-slate-400 gap-3">
-                  <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  <span className="text-sm">加载数据中...</span>
-                </div>
-              ) : contributorsError ? (
-                <div className="flex flex-col items-center justify-center py-12 text-red-500 gap-2">
-                  <span className="text-xl">⚠️</span>
-                  <span className="text-sm">{contributorsError}</span>
-                </div>
-              ) : contributors.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-slate-400 gap-2">
-                  <User size={32} className="opacity-20" />
-                  <span className="text-sm">暂无贡献者信息</span>
-                </div>
-              ) : (
-                  <div className="space-y-3">
-                  {[...contributors]
-                    .sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999))
-                    .map((contributor, idx) => (
-                      <div
-                        key={idx}
-                        style={{ animationDelay: `${idx * 40}ms` }}
-                        className="animate-in fade-in slide-in-from-right-4 duration-500 fill-mode-both flex items-start gap-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-slate-700 transition-colors"
                       >
-                        <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 text-sm font-bold shrink-0">
-                          {contributor.name?.charAt(0).toUpperCase() ?? "?"}
-                        </div>
-                        <div className="flex-1 min-w-0 pt-0.5">
-                          <div className="font-semibold text-slate-900 dark:text-white text-sm">
-                            {contributor.name ?? "未知贡献者"}
+                        <div className="px-4 py-3">
+                          <div
+                            className={`text-sm font-semibold ${colors.text} mb-1`}
+                          >
+                            {type}
                           </div>
-                          {contributor.intro && (
-                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                              {contributor.intro}
-                            </div>
-                          )}
+                          <div className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                            {typeDescriptions[type]}
+                          </div>
                         </div>
                       </div>
-                    ))}
-                </div>
-              )}
-            </div>
-          </TabsContent>
+                    );
+                  },
+                )}
+              </div>
+            </TabsContent>
+
+            {/* Maintainer Tab */}
+            <TabsContent value="maintainer" className="max-h-[65vh]">
+              <div className="space-y-4">
+                {contributorsLoading ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-slate-400 gap-3">
+                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm">加载数据中...</span>
+                  </div>
+                ) : contributorsError ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-red-500 gap-2">
+                    <span className="text-xl">⚠️</span>
+                    <span className="text-sm">{contributorsError}</span>
+                  </div>
+                ) : contributors.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-slate-400 gap-2">
+                    <User size={32} className="opacity-20" />
+                    <span className="text-sm">暂无贡献者信息</span>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {[...contributors]
+                      .sort(
+                        (a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999),
+                      )
+                      .map((contributor, idx) => (
+                        <div
+                          key={idx}
+                          style={{ animationDelay: `${idx * 40}ms` }}
+                          className="animate-in fade-in slide-in-from-right-4 duration-500 fill-mode-both flex items-start gap-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-slate-700 transition-colors"
+                        >
+                          <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 text-sm font-bold shrink-0">
+                            {contributor.name?.charAt(0).toUpperCase() ?? "?"}
+                          </div>
+                          <div className="flex-1 min-w-0 pt-0.5">
+                            <div className="font-semibold text-slate-900 dark:text-white text-sm">
+                              {contributor.name ?? "未知贡献者"}
+                            </div>
+                            {contributor.intro && (
+                              <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                                {contributor.intro}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            </TabsContent>
           </AnimatedHeight>
         </Tabs>
       </DialogContent>

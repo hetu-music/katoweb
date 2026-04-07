@@ -1,8 +1,12 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useId, useState } from "react";
 import { Check, ChevronDown, X } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -35,18 +39,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   className = "",
   disabled = false,
 }) => {
+  const contentId = useId();
   const [open, setOpen] = useState(false);
   // Snapshot of sorted options taken at open time — doesn't re-sort while dropdown is open
   const [stableOptions, setStableOptions] = useState<Option[]>([...options]);
-
-  // Sync when the options prop changes while dropdown is closed (e.g., initial data load)
-  const prevOptionsRef = useRef(options);
-  useEffect(() => {
-    if (!open && prevOptionsRef.current !== options) {
-      prevOptionsRef.current = options;
-      setStableOptions([...options]);
-    }
-  }, [options, open]);
 
   const handleOpenChange = (next: boolean) => {
     if (disabled) return;
@@ -96,6 +92,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           type="button"
           role="combobox"
           aria-expanded={open}
+          aria-controls={contentId}
           disabled={disabled}
           className={cn(
             "flex h-10 w-full items-center justify-between gap-2 rounded-lg",
@@ -107,7 +104,9 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             "hover:border-blue-400 dark:hover:border-blue-400 hover:bg-blue-50/30 dark:hover:bg-blue-900/10",
             "focus:outline-none",
             open && "border-blue-400 dark:border-blue-500",
-            hasSelection && !open && "border-blue-400/60 dark:border-blue-600/60",
+            hasSelection &&
+              !open &&
+              "border-blue-400/60 dark:border-blue-600/60",
             "disabled:cursor-not-allowed disabled:opacity-50",
             className,
           )}
@@ -159,19 +158,22 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         style={{
           width: "var(--radix-popover-trigger-width)",
           minWidth: "160px",
-          maxHeight: "calc(var(--radix-popover-content-available-height) - 8px)",
+          maxHeight:
+            "calc(var(--radix-popover-content-available-height) - 8px)",
         }}
       >
         <Command
           className="flex-1 min-h-0"
           filter={(itemValue, search) => {
             if (!search) return 1;
-            return itemValue.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
+            return itemValue.toLowerCase().includes(search.toLowerCase())
+              ? 1
+              : 0;
           }}
         >
           <CommandInput placeholder="搜索…" />
           {/* flex-1 min-h-0 fills remaining height; max-h-none removes the fixed cap from command.tsx */}
-          <CommandList className="flex-1 min-h-0 max-h-none">
+          <CommandList id={contentId} className="flex-1 min-h-0 max-h-none">
             <CommandEmpty>无匹配结果</CommandEmpty>
             <CommandGroup>
               {stableOptions.map((option) => {

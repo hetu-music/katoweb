@@ -106,9 +106,12 @@ export function useMusicLibraryState(
       // Only add non-default params to URL
       if (searchQuery) params.set("q", searchQuery);
       if (filterType !== "全部") params.set("type", filterType);
-      if (filterLyricist.length > 0) params.set("lyricist", filterLyricist.join(","));
-      if (filterComposer.length > 0) params.set("composer", filterComposer.join(","));
-      if (filterArranger.length > 0) params.set("arranger", filterArranger.join(","));
+      if (filterLyricist.length > 0)
+        params.set("lyricist", filterLyricist.join(","));
+      if (filterComposer.length > 0)
+        params.set("composer", filterComposer.join(","));
+      if (filterArranger.length > 0)
+        params.set("arranger", filterArranger.join(","));
       if (viewMode !== defaultViewMode) params.set("view", viewMode);
       if (currentPage > 1) params.set("page", currentPage.toString());
       if (showAdvancedFilters) params.set("advanced", "true");

@@ -32,9 +32,9 @@ export function useSongs(
       debouncedSearchTerm,
       "全部", // selectedType
       "全部", // selectedYear
-      [],     // selectedLyricist
-      [],     // selectedComposer
-      [],     // selectedArranger
+      [], // selectedLyricist
+      [], // selectedComposer
+      [], // selectedArranger
       fuseInstance, // 使用缓存的 Fuse 实例
     );
   }, [songs, debouncedSearchTerm, fuseInstance]);
