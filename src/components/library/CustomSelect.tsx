@@ -87,7 +87,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           disabled={disabled}
           className={cn(
             // Match the design system: solid bg, clean border, like search bar & advanced filter button
-            "flex h-9 w-full items-center justify-between gap-2 rounded-lg",
+            "flex h-10 w-full items-center justify-between gap-2 rounded-lg",
             "border border-slate-200 dark:border-slate-800",
             "bg-white dark:bg-slate-900",
             "px-3 text-sm",
@@ -141,13 +141,15 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         style={{ width: "var(--radix-popover-trigger-width)", minWidth: "160px" }}
       >
         <Command
+          className="max-h-[min(400px,70vh)]"
           filter={(itemValue, search) => {
             if (!search) return 1;
             return itemValue.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
           }}
         >
           <CommandInput placeholder="搜索…" />
-          <CommandList>
+          {/* flex-1 min-h-0 lets the list fill remaining height inside the capped Command */}
+          <CommandList className="flex-1 min-h-0 max-h-none">
             <CommandEmpty>无匹配结果</CommandEmpty>
             <CommandGroup>
               {sortedOptions.map((option) => {

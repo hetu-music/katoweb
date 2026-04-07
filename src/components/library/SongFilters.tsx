@@ -227,47 +227,46 @@ const SongFilters: React.FC<SongFiltersProps> = ({
       </div>
 
       {/* Bottom Row: Other Filters */}
-      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-3">
-        {/* Lyricist Filter */}
-        <div className="flex flex-col gap-1">
-          <label className={`${labelStyle} ml-1`}>作词</label>
-          <CustomSelect
-            value={selectedLyricist}
-            onChange={setSelectedLyricist}
-            placeholder="全部作词"
-            options={filterOptions.allLyricists
-              .filter((l) => l !== "全部")
-              .map((lyricist) => ({ value: lyricist, label: lyricist }))}
-            className="flex-1 w-full min-w-0"
-          />
-        </div>
+      <div className="w-full bg-white/30 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800/50 rounded-xl p-3">
+        <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-3">
+          {/* Lyricist Filter */}
+          <div className="flex flex-col gap-1">
+            <label className={`${labelStyle} ml-1`}>作词</label>
+            <CustomSelect
+              value={selectedLyricist}
+              onChange={setSelectedLyricist}
+              placeholder="全部作词"
+              options={filterOptions.allLyricists
+                .filter((l) => l !== "全部")
+                .map((lyricist) => ({ value: lyricist, label: lyricist }))}
+            />
+          </div>
 
-        {/* Composer Filter */}
-        <div className="flex flex-col gap-1">
-          <label className={`${labelStyle} ml-1`}>作曲</label>
-          <CustomSelect
-            value={selectedComposer}
-            onChange={setSelectedComposer}
-            placeholder="全部作曲"
-            options={filterOptions.allComposers
-              .filter((c) => c !== "全部")
-              .map((composer) => ({ value: composer, label: composer }))}
-            className="flex-1 w-full min-w-0"
-          />
-        </div>
+          {/* Composer Filter */}
+          <div className="flex flex-col gap-1">
+            <label className={`${labelStyle} ml-1`}>作曲</label>
+            <CustomSelect
+              value={selectedComposer}
+              onChange={setSelectedComposer}
+              placeholder="全部作曲"
+              options={filterOptions.allComposers
+                .filter((c) => c !== "全部")
+                .map((composer) => ({ value: composer, label: composer }))}
+            />
+          </div>
 
-        {/* Arranger Filter */}
-        <div className="flex flex-col gap-1">
-          <label className={`${labelStyle} ml-1`}>编曲</label>
-          <CustomSelect
-            value={selectedArranger}
-            onChange={setSelectedArranger}
-            placeholder="全部编曲"
-            options={filterOptions.allArrangers
-              .filter((a) => a !== "全部")
-              .map((arranger) => ({ value: arranger, label: arranger }))}
-            className="flex-1 w-full min-w-0"
-          />
+          {/* Arranger Filter */}
+          <div className="flex flex-col gap-1">
+            <label className={`${labelStyle} ml-1`}>编曲</label>
+            <CustomSelect
+              value={selectedArranger}
+              onChange={setSelectedArranger}
+              placeholder="全部编曲"
+              options={filterOptions.allArrangers
+                .filter((a) => a !== "全部")
+                .map((arranger) => ({ value: arranger, label: arranger }))}
+            />
+          </div>
         </div>
       </div>
     </div>
