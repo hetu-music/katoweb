@@ -25,6 +25,7 @@ import {
   Edit,
   Eye,
   EyeOff,
+  Info,
   Plus,
   Save,
   Search,
@@ -39,6 +40,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import CoverUpload from "./CoverUpload";
 import Notification from "./Notification";
 import ScoreUpload from "./ScoreUpload";
+import Link from "next/link";
 
 // Force simpler classNames utility
 function cn(...classes: (string | undefined | null | false)[]) {
