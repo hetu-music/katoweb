@@ -129,8 +129,8 @@ button {
 
 /* 词云词语呼吸浮动动画 */
 @keyframes word-breathe {
-  0%, 100% { transform: translateY(0) rotate(var(--word-rotation, 0deg)); }
-  50%       { transform: translateY(-5px) rotate(var(--word-rotation, 0deg)); }
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-5px); }
 }
 
 .word-breathe-anim {

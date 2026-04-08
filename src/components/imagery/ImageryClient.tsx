@@ -12,11 +12,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import type { ImageryCategory, ImageryItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const FOREGROUND_COUNT = 65;
+const FOREGROUND_COUNT = 150;
 
 // ─── Category color palette ───────────────────────────────────────────────────
 const COLOR_PALETTES = [
@@ -163,11 +164,6 @@ function getWordVisual(count: number, max: number): WordVisual {
 /** Deterministic vertical offset (px) for organic wave-like layout rhythm. */
 function getYOffset(index: number): number {
   return Math.sin(index * 1.618 + index * 0.31) * 12;
-}
-
-/** Deterministic subtle rotation for organic feel. */
-function getRotation(index: number): number {
-  return Math.sin(index * 2.39 + 1.5) * 1.6;
 }
 
 /** Deterministic breathing animation timing per word, creating a ripple effect. */
@@ -397,6 +393,14 @@ const ImageryClient: React.FC<Props> = ({ items, categories }) => {
   const [activeL2Id, setActiveL2Id] = useState<number | null>(null);
   const [selectedItem, setSelectedItem] = useState<ImageryItem | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setShowScrollTop(window.scrollY > 200);
@@ -617,191 +621,157 @@ const ImageryClient: React.FC<Props> = ({ items, categories }) => {
           </AnimatePresence>
         </section>
 
-        {/* ── Main layout: cloud + detail ── */}
-        <div className="flex flex-col lg:flex-row gap-12 lg:items-start">
-          {/* ── Word cloud ── */}
-          <section className="flex-1 min-w-0">
-            {foregroundWords.length === 0 ? (
-              <p className="text-slate-400 dark:text-slate-500 text-sm py-16 text-center">
-                暂无数据
-              </p>
-            ) : (
-              <TooltipProvider delayDuration={350} skipDelayDuration={150}>
-                <motion.div
-                  key={`cloud-${activeL1Id ?? "all"}-${activeL2Id ?? "all"}`}
-                  variants={cloudContainerVariants}
-                  initial="hidden"
-                  animate="show"
-                  className="flex flex-wrap justify-center gap-y-5 sm:gap-y-7 py-6"
-                >
-                  {foregroundWords.map((item, index) => {
-                    const primaryCatId = item.categoryIds[0] ?? null;
-                    const palette = getPaletteForCategory(primaryCatId, categories);
-                    const visual = getWordVisual(item.count, maxCount);
-                    const yOffset = getYOffset(index);
-                    const rotation = getRotation(index);
-                    const breath = getBreathTiming(index);
-                    const isSelected = selectedItem?.id === item.id;
+        {/* ── Word cloud — full width ── */}
+        <section>
+          {foregroundWords.length === 0 ? (
+            <p className="text-slate-400 dark:text-slate-500 text-sm py-16 text-center">
+              暂无数据
+            </p>
+          ) : (
+            <TooltipProvider delayDuration={350} skipDelayDuration={150}>
+              <motion.div
+                key={`cloud-${activeL1Id ?? "all"}-${activeL2Id ?? "all"}`}
+                variants={cloudContainerVariants}
+                initial="hidden"
+                animate="show"
+                className="flex flex-wrap justify-center gap-y-5 sm:gap-y-7 py-6 pb-40"
+              >
+                {foregroundWords.map((item, index) => {
+                  const primaryCatId = item.categoryIds[0] ?? null;
+                  const palette = getPaletteForCategory(primaryCatId, categories);
+                  const visual = getWordVisual(item.count, maxCount);
+                  const yOffset = getYOffset(index);
+                  const breath = getBreathTiming(index);
+                  const isSelected = selectedItem?.id === item.id;
 
-                    return (
-                      <motion.div
-                        key={item.id}
-                        variants={cloudWordVariants}
-                        whileHover={{ scale: 1.08 }}
-                        whileTap={{ scale: 0.93 }}
-                        style={{
-                          marginTop: yOffset,
-                          marginLeft: visual.mx,
-                          marginRight: visual.mx,
-                        }}
+                  return (
+                    <motion.div
+                      key={item.id}
+                      variants={cloudWordVariants}
+                      whileHover={{ scale: 1.08 }}
+                      whileTap={{ scale: 0.93 }}
+                      style={{
+                        marginTop: yOffset,
+                        marginLeft: visual.mx,
+                        marginRight: visual.mx,
+                      }}
+                    >
+                      {/* Breathing wrapper — isolated element keeps CSS transform separate from framer-motion */}
+                      <span
+                        className={cn(
+                          "word-breathe-anim inline-flex",
+                          isSelected && "word-breathe-paused",
+                        )}
+                        style={
+                          {
+                            "--word-breathe-duration": `${breath.duration}s`,
+                            "--word-breathe-delay": `${breath.delay}s`,
+                          } as React.CSSProperties
+                        }
                       >
-                        {/* Breathing wrapper — separate element so CSS transform doesn't fight framer-motion */}
-                        <span
-                          className={cn(
-                            "word-breathe-anim inline-flex",
-                            isSelected && "word-breathe-paused",
-                          )}
-                          style={
-                            {
-                              "--word-breathe-duration": `${breath.duration}s`,
-                              "--word-breathe-delay": `${breath.delay}s`,
-                              "--word-rotation": `${rotation}deg`,
-                            } as React.CSSProperties
-                          }
-                        >
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <button
-                                type="button"
-                                onClick={() => handleTagClick(item)}
-                                className={cn(
-                                  "relative font-serif leading-none select-none cursor-pointer",
-                                  "px-2 py-1.5 rounded-xl outline-none",
-                                  "transition-colors duration-200",
-                                  visual.sizeClass,
-                                  isSelected ? palette.tagActive : palette.tag,
-                                )}
-                                style={{ opacity: isSelected ? 1 : visual.opacityBase }}
-                              >
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={() => handleTagClick(item)}
+                              className={cn(
+                                "relative font-serif leading-none select-none cursor-pointer",
+                                "px-2 py-1.5 rounded-xl outline-none",
+                                "transition-colors duration-200",
+                                visual.sizeClass,
+                                isSelected ? palette.tagActive : palette.tag,
+                              )}
+                              style={{ opacity: isSelected ? 1 : visual.opacityBase }}
+                            >
+                              {item.name}
+                              {isSelected && (
+                                <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-current opacity-70" />
+                              )}
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-serif text-sm text-slate-800 dark:text-slate-200">
                                 {item.name}
-                                {isSelected && (
-                                  <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-current opacity-70" />
-                                )}
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent side="top">
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-serif text-sm text-slate-800 dark:text-slate-200">
-                                  {item.name}
-                                </span>
-                                <span className="text-slate-400 dark:text-slate-500 tabular-nums text-xs">
-                                  · {item.count} 处
-                                </span>
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
-                        </span>
-                      </motion.div>
-                    );
-                  })}
-                </motion.div>
-              </TooltipProvider>
-            )}
-          </section>
+                              </span>
+                              <span className="text-slate-400 dark:text-slate-500 tabular-nums text-xs">
+                                · {item.count} 处
+                              </span>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </span>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+            </TooltipProvider>
+          )}
+        </section>
+      </main>
 
-          {/* ── Detail panel — desktop sticky sidebar ── */}
-          <aside
-            className={cn(
-              "hidden lg:block lg:w-72 xl:w-80 shrink-0",
-              "lg:sticky lg:top-32",
-              "lg:max-h-[calc(100vh-9rem)] lg:overflow-y-auto no-scrollbar",
-            )}
-          >
-            <AnimatePresence mode="wait">
-              {selectedItem ? (
-                <motion.div
-                  key={selectedItem.id}
-                  initial={{ opacity: 0, x: 14, scale: 0.97 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: 14, scale: 0.97 }}
-                  transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-                  className="rounded-2xl border border-slate-200/80 dark:border-slate-700/50 bg-white/75 dark:bg-slate-800/40 backdrop-blur-md overflow-hidden shadow-lg shadow-slate-200/40 dark:shadow-black/30"
-                >
+      {/* ── Desktop: floating bottom-centre detail card ── */}
+      <AnimatePresence>
+        {selectedItem && !isMobile && (
+          <>
+            {/* Very subtle backdrop — dims cloud slightly, click to dismiss */}
+            <motion.div
+              className="fixed inset-0 z-40"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              style={{ backgroundColor: "rgba(0,0,0,0.06)" }}
+              onClick={() => setSelectedItem(null)}
+            />
+            {/* Floating card */}
+            <motion.div
+              key={selectedItem.id}
+              className="fixed bottom-10 left-1/2 z-50 w-[460px] max-w-[92vw]"
+              style={{ x: "-50%" }}
+              initial={{ y: 28, opacity: 0, scale: 0.96 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 16, opacity: 0, scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 400, damping: 30, mass: 0.85 }}
+            >
+              <div className="rounded-2xl border border-slate-200/70 dark:border-slate-700/50 bg-white/92 dark:bg-slate-900/92 backdrop-blur-2xl shadow-2xl shadow-slate-300/30 dark:shadow-black/50 overflow-hidden">
+                {/* Slim top accent bar using category colour */}
+                <div className="h-[3px] bg-gradient-to-r from-transparent via-slate-300/50 to-transparent dark:via-slate-600/50" />
+                <div className="max-h-[58vh] overflow-y-auto no-scrollbar">
                   <DetailPanelInner
                     item={selectedItem}
                     categories={categories}
                     onClose={() => setSelectedItem(null)}
                   />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="panel-empty"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.35 }}
-                  className="flex flex-col items-center justify-center text-center py-20 px-6"
-                >
-                  <div className="w-16 h-16 rounded-2xl bg-slate-100/60 dark:bg-slate-800/40 flex items-center justify-center mb-4">
-                    <span className="text-3xl font-serif text-slate-300 dark:text-slate-600">
-                      詞
-                    </span>
-                  </div>
-                  <p className="text-sm text-slate-300 dark:text-slate-600 font-light tracking-wide">
-                    点击意象，探索关联
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </aside>
-        </div>
-      </main>
-
-      {/* ── Mobile bottom sheet backdrop ── */}
-      <motion.div
-        className={cn(
-          "fixed inset-0 z-40 lg:hidden",
-          selectedItem ? "pointer-events-auto" : "pointer-events-none",
+                </div>
+              </div>
+            </motion.div>
+          </>
         )}
-        animate={{ opacity: selectedItem ? 1 : 0 }}
-        transition={{ duration: 0.25 }}
-        style={{ backgroundColor: "rgba(0,0,0,0.28)", backdropFilter: "blur(2px)" }}
-        onClick={() => setSelectedItem(null)}
-      />
+      </AnimatePresence>
 
-      {/* ── Mobile bottom sheet ── */}
-      <motion.div
-        className={cn(
-          "fixed inset-x-0 bottom-0 z-50 lg:hidden",
-          "rounded-t-2xl",
-          "bg-[#FAFAFA]/95 dark:bg-[#111827]/95 backdrop-blur-xl",
-          "border-t border-slate-200/70 dark:border-slate-700/50",
-          "shadow-2xl shadow-black/20",
-        )}
-        initial={false}
-        animate={{ y: selectedItem ? 0 : "100%" }}
-        transition={{ type: "spring", stiffness: 320, damping: 32, mass: 0.9 }}
+      {/* ── Mobile: vaul drawer ── */}
+      <Drawer
+        open={!!selectedItem && isMobile}
+        onOpenChange={(open) => {
+          if (!open) setSelectedItem(null);
+        }}
+        onDrag={() => {
+          if ("vibrate" in navigator) navigator.vibrate(4);
+        }}
       >
-        {/* Drag handle */}
-        <div className="flex w-full justify-center pt-3 pb-1">
-          <div className="w-9 h-1 rounded-full bg-slate-300/70 dark:bg-slate-600/70" />
-        </div>
-        <button
-          type="button"
-          className="sr-only"
-          onClick={() => setSelectedItem(null)}
-          aria-label="关闭"
-        />
-        <div className="max-h-[72vh] overflow-y-auto pb-10">
-          {selectedItem && (
-            <DetailPanelInner
-              item={selectedItem}
-              categories={categories}
-              onClose={() => setSelectedItem(null)}
-            />
-          )}
-        </div>
-      </motion.div>
+        <DrawerContent>
+          <div className="overflow-y-auto no-scrollbar pb-10 flex-1">
+            {selectedItem && (
+              <DetailPanelInner
+                item={selectedItem}
+                categories={categories}
+                onClose={() => setSelectedItem(null)}
+              />
+            )}
+          </div>
+        </DrawerContent>
+      </Drawer>
 
       <FloatingActionButtons
         showScrollTop={showScrollTop}
