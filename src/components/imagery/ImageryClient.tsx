@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { X, ChevronDown, ChevronRight } from "lucide-react";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import {
@@ -16,8 +16,17 @@ import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import type { ImageryCategory, ImageryItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-const FOREGROUND_COUNT = 150;
+// ─── Island glow palette (RGB triplets matching palette indices 0–7) ──────────
+const ISLAND_GLOW_RGB: (string | null)[] = [
+  null,
+  "99,102,241",
+  "245,158,11",
+  "16,185,129",
+  "244,63,94",
+  "14,165,233",
+  "139,92,246",
+  "20,184,166",
+];
 
 // ─── Category color palette ───────────────────────────────────────────────────
 const COLOR_PALETTES = [
@@ -175,16 +184,6 @@ function getBreathTiming(index: number): { duration: number; delay: number } {
 }
 
 // ─── Framer Motion variants ───────────────────────────────────────────────────
-const cloudContainerVariants = {
-  hidden: {},
-  show: {
-    transition: {
-      staggerChildren: 0.014,
-      delayChildren: 0.06,
-    },
-  },
-};
-
 const cloudWordVariants = {
   hidden: {
     opacity: 0,
@@ -204,10 +203,28 @@ const cloudWordVariants = {
   },
 };
 
+const staggerContainer = {
+  hidden: {},
+  show: {
+    transition: { staggerChildren: 0.01, delayChildren: 0.04 },
+  },
+};
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Props {
   items: ImageryItem[];
   categories: ImageryCategory[];
+}
+
+interface IslandData {
+  l1: ImageryCategory;
+  l1idx: number;
+  paletteIdx: number;
+  palette: (typeof COLOR_PALETTES)[number];
+  glowRgb: string | null;
+  clusters: { l2: ImageryCategory; words: ImageryItem[] }[];
+  leftover: ImageryItem[];
+  totalCount: number;
 }
 
 // ─── Background Marquee ───────────────────────────────────────────────────────
@@ -331,33 +348,159 @@ const NavBar: React.FC = () => (
   </nav>
 );
 
-// ─── Category filter pill ─────────────────────────────────────────────────────
-const CategoryPill: React.FC<{
-  label: string;
-  active: boolean;
-  count?: number;
-  palette: (typeof COLOR_PALETTES)[number];
-  onClick: () => void;
-}> = ({ label, active, count, palette, onClick }) => (
-  <motion.button
-    type="button"
-    onClick={onClick}
-    whileHover={{ scale: 1.04 }}
-    whileTap={{ scale: 0.95 }}
-    transition={{ duration: 0.15, ease: "easeOut" }}
-    className={cn(
-      "flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm border transition-colors duration-200 whitespace-nowrap shrink-0 font-sans",
-      active ? palette.pillActive : palette.pill,
-    )}
-  >
-    <span>{label}</span>
-    {count !== undefined && (
-      <span className={cn("text-xs tabular-nums", active ? "opacity-75" : "opacity-50")}>
-        {count}
-      </span>
-    )}
-  </motion.button>
-);
+// ─── Archipelago left nav panel (desktop only) ────────────────────────────────
+const ArchipelagoNav: React.FC<{
+  categories: ImageryCategory[];
+  topLevel: ImageryCategory[];
+  navCountMap: Map<number, number>;
+  totalCount: number;
+  lockedCatId: number | null;
+  onSpotlightEnter: (id: number) => void;
+  onSpotlightLeave: () => void;
+  onLockToggle: (id: number) => void;
+  onReset: () => void;
+}> = ({
+  categories,
+  topLevel,
+  navCountMap,
+  totalCount,
+  lockedCatId,
+  onSpotlightEnter,
+  onSpotlightLeave,
+  onLockToggle,
+  onReset,
+}) => {
+  const [expanded, setExpanded] = useState<Set<number>>(() => new Set());
+
+  const toggleExpand = (id: number) => {
+    setExpanded((prev) => {
+      const s = new Set(prev);
+      s.has(id) ? s.delete(id) : s.add(id);
+      return s;
+    });
+  };
+
+  return (
+    <aside
+      className="fixed left-0 top-0 bottom-0 w-52 z-30 pt-20 hidden lg:flex flex-col border-r border-slate-100/80 dark:border-slate-800/70 bg-[#FAFAFA]/95 dark:bg-[#0B0F19]/95 backdrop-blur-md"
+      onMouseLeave={onSpotlightLeave}
+    >
+      <div className="flex-1 overflow-y-auto no-scrollbar px-3 py-4">
+        {/* Reset / "All" row */}
+        <motion.button
+          type="button"
+          whileHover={{ x: 2 }}
+          transition={{ duration: 0.12 }}
+          onClick={() => {
+            onReset();
+            onSpotlightLeave();
+          }}
+          className={cn(
+            "w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-sans transition-colors duration-150 mb-1",
+            lockedCatId === null
+              ? "bg-slate-900/90 text-white dark:bg-slate-100/90 dark:text-slate-900"
+              : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50",
+          )}
+        >
+          <span className="w-2 h-2 rounded-full shrink-0 bg-slate-400 dark:bg-slate-500" />
+          <span className="flex-1 text-left">全部意象</span>
+          <span className="text-xs tabular-nums opacity-60">{totalCount}</span>
+        </motion.button>
+
+        <div className="h-px bg-slate-100 dark:bg-slate-800/60 my-2 mx-1" />
+
+        {topLevel.map((l1, l1idx) => {
+          const paletteIdx = (l1idx % (COLOR_PALETTES.length - 1)) + 1;
+          const palette = COLOR_PALETTES[paletteIdx];
+          const l2s = categories
+            .filter((c) => c.parent_id === l1.id)
+            .sort((a, b) => a.id - b.id);
+          const isExpanded = expanded.has(l1.id);
+          const isLocked = lockedCatId === l1.id;
+          const count = navCountMap.get(l1.id) ?? 0;
+
+          return (
+            <div key={l1.id} className="mb-0.5">
+              {/* L1 row */}
+              <motion.div
+                whileHover={{ x: 2 }}
+                transition={{ duration: 0.12 }}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer transition-colors duration-150",
+                  isLocked
+                    ? cn(palette.pillActive, "border-0 shadow-sm")
+                    : "text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/50",
+                )}
+                onMouseEnter={() => onSpotlightEnter(l1.id)}
+                onClick={() => {
+                  onLockToggle(l1.id);
+                  if (l2s.length > 0) toggleExpand(l1.id);
+                }}
+              >
+                <span className={cn("w-2 h-2 rounded-full shrink-0", palette.dot)} />
+                <span className="flex-1 text-sm font-medium truncate">{l1.name}</span>
+                <span className="text-xs tabular-nums opacity-50 mr-0.5">{count}</span>
+                {l2s.length > 0 && (
+                  <span className="opacity-40 shrink-0">
+                    {isExpanded ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
+                  </span>
+                )}
+              </motion.div>
+
+              {/* L2 rows */}
+              <AnimatePresence initial={false}>
+                {isExpanded && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pl-5 pt-0.5 pb-1.5 space-y-0.5">
+                      {l2s.map((l2) => {
+                        const l2Locked = lockedCatId === l2.id;
+                        const l2Count = navCountMap.get(l2.id) ?? 0;
+                        return (
+                          <motion.div
+                            key={l2.id}
+                            whileHover={{ x: 2 }}
+                            transition={{ duration: 0.1 }}
+                            className={cn(
+                              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg cursor-pointer transition-colors duration-100",
+                              l2Locked
+                                ? cn(palette.pill, "!border-0")
+                                : "text-slate-500 dark:text-slate-400 hover:bg-slate-100/60 dark:hover:bg-slate-800/40",
+                            )}
+                            onMouseEnter={() => onSpotlightEnter(l2.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onLockToggle(l2.id);
+                            }}
+                          >
+                            <span className="flex-1 text-xs truncate">{l2.name}</span>
+                            <span className="text-xs tabular-nums opacity-40">{l2Count}</span>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Footer hint */}
+      <div className="shrink-0 px-4 py-3.5 border-t border-slate-100 dark:border-slate-800/60">
+        <p className="text-[10px] text-slate-300 dark:text-slate-600 leading-relaxed tracking-wide">
+          悬浮高亮 · 点击锁定
+        </p>
+      </div>
+    </aside>
+  );
+};
 
 // ─── Song chip inside the detail panel ───────────────────────────────────────
 const SongChip: React.FC<{
@@ -376,9 +519,7 @@ const SongChip: React.FC<{
         {title}
       </p>
       <p className="text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5">
-        {lyricist && lyricist.length > 0
-          ? `词：${lyricist.join("、")}`
-          : (album ?? "")}
+        {lyricist && lyricist.length > 0 ? `词：${lyricist.join("、")}` : (album ?? "")}
       </p>
     </div>
     <span className="shrink-0 text-xs tabular-nums text-slate-400 dark:text-slate-500">
@@ -387,19 +528,207 @@ const SongChip: React.FC<{
   </Link>
 );
 
+// ─── Island section (one per L1 category) ─────────────────────────────────────
+const IslandSection: React.FC<{
+  island: IslandData;
+  maxCount: number;
+  effectiveSpotlight: number | null;
+  categoryDescendants: Map<number, Set<number>>;
+  selectedItemId: number | null;
+  categories: ImageryCategory[];
+  onWordClick: (item: ImageryItem) => void;
+}> = ({
+  island,
+  maxCount,
+  effectiveSpotlight,
+  categoryDescendants,
+  selectedItemId,
+  categories,
+  onWordClick,
+}) => {
+  const { l1, palette, glowRgb, clusters, leftover } = island;
+
+  // Is at least one word in this island within the current spotlight?
+  const anyHighlighted =
+    !effectiveSpotlight ||
+    [...clusters.flatMap((c) => c.words), ...leftover].some((item) =>
+      item.categoryIds.some(
+        (cid) => (categoryDescendants.get(effectiveSpotlight) ?? new Set()).has(cid),
+      ),
+    );
+
+  const renderCluster = (label: string, words: ImageryItem[], keyPrefix: string) => {
+    if (words.length === 0) return null;
+    return (
+      <div key={keyPrefix} className="mb-10 sm:mb-12 last:mb-0">
+        <p className="text-[11px] font-sans text-slate-300 dark:text-slate-600 tracking-[0.16em] uppercase mb-4 px-1">
+          {label}
+        </p>
+        <div className="flex flex-wrap gap-y-4 sm:gap-y-5">
+          {words.map((item, index) => {
+            const visual = getWordVisual(item.count, maxCount);
+            const yOffset = getYOffset(index);
+            const breath = getBreathTiming(index);
+            const isSelected = selectedItemId === item.id;
+            const highlighted =
+              !effectiveSpotlight ||
+              item.categoryIds.some(
+                (cid) => (categoryDescendants.get(effectiveSpotlight) ?? new Set()).has(cid),
+              );
+            const wordPalette = getPaletteForCategory(item.categoryIds[0] ?? null, categories);
+
+            return (
+              <motion.div
+                key={item.id}
+                variants={cloudWordVariants}
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.93 }}
+                style={{
+                  marginTop: yOffset,
+                  marginLeft: visual.mx,
+                  marginRight: visual.mx,
+                }}
+              >
+                <span
+                  className={cn(
+                    "word-breathe-anim inline-flex",
+                    isSelected && "word-breathe-paused",
+                  )}
+                  style={
+                    {
+                      "--word-breathe-duration": `${breath.duration}s`,
+                      "--word-breathe-delay": `${breath.delay}s`,
+                      transition: "opacity 0.38s ease, filter 0.38s ease",
+                      opacity: isSelected ? 1 : highlighted ? visual.opacityBase : 0.06,
+                      filter: highlighted ? "none" : "blur(1.5px)",
+                    } as React.CSSProperties
+                  }
+                >
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => onWordClick(item)}
+                        className={cn(
+                          "relative font-serif leading-none select-none cursor-pointer",
+                          "px-2 py-1.5 rounded-xl outline-none",
+                          "transition-colors duration-200",
+                          visual.sizeClass,
+                          isSelected ? wordPalette.tagActive : wordPalette.tag,
+                        )}
+                      >
+                        {item.name}
+                        {isSelected && (
+                          <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-current opacity-70" />
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-serif text-sm text-slate-800 dark:text-slate-200">
+                          {item.name}
+                        </span>
+                        <span className="text-slate-400 dark:text-slate-500 tabular-nums text-xs">
+                          · {item.count} 处
+                        </span>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </span>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <motion.section
+      id={`island-${l1.id}`}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+      className="relative py-16 sm:py-20"
+      style={{
+        transition: "opacity 0.4s ease",
+        opacity: anyHighlighted ? 1 : 0.4,
+      }}
+    >
+      {/* Per-island radial colour glow */}
+      {glowRgb && (
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `radial-gradient(ellipse 85% 65% at 50% 42%, rgba(${glowRgb},0.06) 0%, transparent 70%)`,
+          }}
+        />
+      )}
+
+      {/* Large faint watermark character */}
+      <div
+        aria-hidden
+        className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
+      >
+        <span
+          className="font-bold font-serif leading-none whitespace-nowrap"
+          style={{
+            fontSize: "clamp(56px, 18vw, 220px)",
+            color: glowRgb ? `rgba(${glowRgb},0.05)` : "rgba(150,150,150,0.04)",
+            letterSpacing: "-0.05em",
+          }}
+        >
+          {l1.name.slice(0, 2)}
+        </span>
+      </div>
+
+      {/* Island header */}
+      <div className="relative flex items-center gap-3 mb-12 sm:mb-16">
+        <span className={cn("w-3 h-3 rounded-full shrink-0", palette.dot)} />
+        <h2 className="text-lg sm:text-xl font-semibold font-serif text-slate-700 dark:text-slate-300 tracking-wide">
+          {l1.name}
+        </h2>
+        <span className="text-xs text-slate-300 dark:text-slate-600 tabular-nums font-sans ml-1">
+          {island.totalCount} 枚
+        </span>
+        <div className="flex-1 h-px bg-gradient-to-r from-slate-200/70 to-transparent dark:from-slate-700/50" />
+      </div>
+
+      {/* Word clusters (stagger on viewport entry) */}
+      <TooltipProvider delayDuration={350} skipDelayDuration={150}>
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-60px" }}
+        >
+          {clusters.map(({ l2, words }) => renderCluster(l2.name, words, `l2-${l2.id}`))}
+          {leftover.length > 0 && renderCluster("其他", leftover, "leftover")}
+        </motion.div>
+      </TooltipProvider>
+    </motion.section>
+  );
+};
+
 // ─── Main component ───────────────────────────────────────────────────────────
 const ImageryClient: React.FC<Props> = ({ items, categories }) => {
-  const [activeL1Id, setActiveL1Id] = useState<number | null>(null);
-  const [activeL2Id, setActiveL2Id] = useState<number | null>(null);
+  /** Transient spotlight (hover) — higher priority than locked */
+  const [spotlightCatId, setSpotlightCatId] = useState<number | null>(null);
+  /** Persistent spotlight (click-locked) */
+  const [lockedCatId, setLockedCatId] = useState<number | null>(null);
   const [selectedItem, setSelectedItem] = useState<ImageryItem | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
+  const effectiveSpotlight = spotlightCatId ?? lockedCatId;
+
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+    const check = () => setIsMobile(window.innerWidth < 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
   }, []);
 
   useEffect(() => {
@@ -413,308 +742,209 @@ const ImageryClient: React.FC<Props> = ({ items, categories }) => {
     [categories],
   );
 
-  const l2Categories = useMemo(
-    () =>
-      activeL1Id
-        ? categories
-            .filter((c) => c.parent_id === activeL1Id)
-            .sort((a, b) => a.id - b.id)
-        : [],
-    [categories, activeL1Id],
-  );
-
   const categoryDescendants = useMemo(() => {
     const map = new Map<number, Set<number>>();
     for (const cat of categories) {
-      const descendants = new Set<number>();
+      const desc = new Set<number>();
       const queue = [cat.id];
       while (queue.length) {
-        const id = queue.shift();
-        if (id === undefined) break;
-        descendants.add(id);
-        categories
-          .filter((c) => c.parent_id === id)
-          .forEach((c) => queue.push(c.id));
+        const id = queue.shift()!;
+        desc.add(id);
+        categories.filter((c) => c.parent_id === id).forEach((c) => queue.push(c.id));
       }
-      map.set(cat.id, descendants);
+      map.set(cat.id, desc);
     }
     return map;
   }, [categories]);
 
-  const filteredItems = useMemo(() => {
-    const activeId = activeL2Id ?? activeL1Id;
-    if (!activeId) return items;
-    const descendants = categoryDescendants.get(activeId);
-    if (!descendants) return items;
-    return items.filter((item) =>
-      item.categoryIds.some((cid) => descendants.has(cid)),
-    );
-  }, [items, activeL1Id, activeL2Id, categoryDescendants]);
+  const allSorted = useMemo(() => [...items].sort((a, b) => b.count - a.count), [items]);
+  const maxCount = useMemo(() => Math.max(...items.map((i) => i.count), 0), [items]);
 
-  const sortedItems = useMemo(
-    () =>
-      [...filteredItems].sort(
-        (a, b) => b.count - a.count || a.name.localeCompare(b.name, "zh"),
-      ),
-    [filteredItems],
-  );
+  // Ambient marquee: use the long tail (least frequent items)
+  const backgroundWords = useMemo(() => allSorted.slice(60), [allSorted]);
 
-  const maxCount = useMemo(
-    () => Math.max(...items.map((i) => i.count), 0),
-    [items],
-  );
+  // Build archipelago islands: group all items by L1, then cluster by L2
+  const islands = useMemo((): IslandData[] => {
+    return topLevelCategories
+      .map((l1, l1idx) => {
+        const l1Desc = categoryDescendants.get(l1.id) ?? new Set<number>();
+        const paletteIdx = (l1idx % (COLOR_PALETTES.length - 1)) + 1;
+        const l2s = categories
+          .filter((c) => c.parent_id === l1.id)
+          .sort((a, b) => a.id - b.id);
 
-  const handleTagClick = useCallback((item: ImageryItem) => {
-    setSelectedItem((prev) => (prev?.id === item.id ? null : item));
-  }, []);
+        // Words whose primary category traces to this L1
+        const l1Items = allSorted.filter((item) => {
+          const pid = item.categoryIds[0];
+          return pid !== undefined && l1Desc.has(pid);
+        });
 
-  const categoryCountMap = useMemo(() => {
+        // Group by L2 via primary category
+        const assignedIds = new Set<number>();
+        const clusters = l2s
+          .map((l2) => {
+            const l2Desc = categoryDescendants.get(l2.id) ?? new Set<number>();
+            const words = l1Items.filter((item) => {
+              const pid = item.categoryIds[0];
+              return pid !== undefined && l2Desc.has(pid);
+            });
+            words.forEach((w) => assignedIds.add(w.id));
+            return { l2, words };
+          })
+          .filter((c) => c.words.length > 0);
+
+        const leftover = l1Items.filter((item) => !assignedIds.has(item.id));
+
+        return {
+          l1,
+          l1idx,
+          paletteIdx,
+          palette: COLOR_PALETTES[paletteIdx],
+          glowRgb: ISLAND_GLOW_RGB[paletteIdx],
+          clusters,
+          leftover,
+          totalCount: l1Items.length,
+        };
+      })
+      .filter((island) => island.totalCount > 0);
+  }, [topLevelCategories, categories, categoryDescendants, allSorted]);
+
+  // Count map for nav panel (every category → item count)
+  const navCountMap = useMemo(() => {
     const map = new Map<number, number>();
-    for (const cat of [...topLevelCategories, ...l2Categories]) {
-      const descendants = categoryDescendants.get(cat.id);
-      if (!descendants) continue;
-      map.set(
-        cat.id,
-        items.filter((item) =>
-          item.categoryIds.some((cid) => descendants.has(cid)),
-        ).length,
-      );
+    for (const cat of categories) {
+      const desc = categoryDescendants.get(cat.id);
+      if (!desc) continue;
+      map.set(cat.id, items.filter((item) => item.categoryIds.some((cid) => desc.has(cid))).length);
     }
     return map;
-  }, [topLevelCategories, l2Categories, items, categoryDescendants]);
+  }, [categories, items, categoryDescendants]);
 
-  const activeL1Palette = useMemo(() => {
-    if (!activeL1Id) return COLOR_PALETTES[0];
-    const idx = topLevelCategories.findIndex((c) => c.id === activeL1Id);
-    return COLOR_PALETTES[(idx % (COLOR_PALETTES.length - 1)) + 1];
-  }, [activeL1Id, topLevelCategories]);
-
-  // Globally sorted by frequency descending
-  const allSorted = useMemo(
-    () => [...items].sort((a, b) => b.count - a.count),
-    [items],
+  const handleWordClick = useCallback(
+    (item: ImageryItem) => setSelectedItem((prev) => (prev?.id === item.id ? null : item)),
+    [],
   );
-
-  // Ambient background: the long tail beyond the foreground cap (static pool)
-  const backgroundWords = useMemo(
-    () => allSorted.slice(FOREGROUND_COUNT),
-    [allSorted],
+  const handleSpotlightEnter = useCallback((id: number) => setSpotlightCatId(id), []);
+  const handleSpotlightLeave = useCallback(() => setSpotlightCatId(null), []);
+  const handleLockToggle = useCallback(
+    (id: number) => setLockedCatId((prev) => (prev === id ? null : id)),
+    [],
   );
-
-  // Foreground: show all when a filter is active; top N otherwise
-  const foregroundWords = useMemo(() => {
-    if (activeL1Id !== null || activeL2Id !== null) return sortedItems;
-    return sortedItems.slice(0, FOREGROUND_COUNT);
-  }, [sortedItems, activeL1Id, activeL2Id]);
+  const handleReset = useCallback(() => setLockedCatId(null), []);
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500">
-      {/* ── Ambient background layer (fixed, z-0) ── */}
       <BackgroundMarquee words={backgroundWords} />
-
       <NavBar />
 
-      <main className="relative z-10 pt-28 pb-24 max-w-7xl mx-auto px-4 md:px-6">
-        {/* ── Hero ── */}
-        <motion.section
-          className="mb-14 mt-6 space-y-3"
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <div className="flex items-baseline gap-3">
-            <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50 italic">
-              意象
-            </h1>
-            <motion.span
-              className="text-sm text-slate-400 dark:text-slate-500 tabular-nums font-sans font-light"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-            >
-              共 {items.length} 枚
-            </motion.span>
-          </div>
-          <p className="text-slate-400 dark:text-slate-500 font-light max-w-md text-sm leading-relaxed">
-            山川日月，草木时令——词语在这里化为星点，各自成诗。
-          </p>
-          {backgroundWords.length > 0 && (
-            <p className="text-xs text-slate-300 dark:text-slate-600 font-sans">
-              另有 {backgroundWords.length} 个意象在背景中流动
-            </p>
-          )}
-        </motion.section>
+      {/* ── Left nav panel (desktop) ── */}
+      <ArchipelagoNav
+        categories={categories}
+        topLevel={topLevelCategories}
+        navCountMap={navCountMap}
+        totalCount={items.length}
+        lockedCatId={lockedCatId}
+        onSpotlightEnter={handleSpotlightEnter}
+        onSpotlightLeave={handleSpotlightLeave}
+        onLockToggle={handleLockToggle}
+        onReset={handleReset}
+      />
 
-        {/* ── Category filter bar ── */}
-        <section className="sticky top-20 z-40 bg-[#FAFAFA]/95 dark:bg-[#0B0F19]/95 backdrop-blur-sm pt-3 pb-2 mb-12 -mx-4 md:-mx-6 px-4 md:px-6 border-b border-slate-100/80 dark:border-slate-800/80">
-          {/* L1 row */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2">
-            <CategoryPill
-              label="全部"
-              active={activeL1Id === null}
-              count={items.length}
-              palette={COLOR_PALETTES[0]}
-              onClick={() => {
-                setActiveL1Id(null);
-                setActiveL2Id(null);
-                setSelectedItem(null);
-              }}
-            />
-            {topLevelCategories.map((cat, idx) => {
-              const palette = COLOR_PALETTES[(idx % (COLOR_PALETTES.length - 1)) + 1];
-              return (
-                <CategoryPill
-                  key={cat.id}
-                  label={cat.name}
-                  active={activeL1Id === cat.id}
-                  count={categoryCountMap.get(cat.id)}
-                  palette={palette}
-                  onClick={() => {
-                    const next = activeL1Id === cat.id ? null : cat.id;
-                    setActiveL1Id(next);
-                    setActiveL2Id(null);
-                    setSelectedItem(null);
-                  }}
-                />
-              );
-            })}
-          </div>
-
-          {/* L2 drill-down row — animates in/out */}
-          <AnimatePresence>
-            {activeL1Id && l2Categories.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.22, ease: "easeOut" }}
-                className="overflow-hidden"
+      {/* ── Main canvas ── */}
+      <main className="relative z-10 lg:ml-52">
+        <div className="max-w-5xl mx-auto px-4 md:px-8 pt-28 pb-32">
+          {/* Hero */}
+          <motion.section
+            className="mb-12 mt-6 space-y-3"
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="flex items-baseline gap-3">
+              <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50 italic font-serif">
+                意象
+              </h1>
+              <motion.span
+                className="text-sm text-slate-400 dark:text-slate-500 tabular-nums font-sans font-light"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
               >
-                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 pt-1">
-                  {l2Categories.map((cat) => (
-                    <motion.button
-                      type="button"
-                      key={cat.id}
-                      whileHover={{ scale: 1.04 }}
-                      whileTap={{ scale: 0.95 }}
-                      transition={{ duration: 0.15 }}
-                      onClick={() => {
-                        setActiveL2Id(activeL2Id === cat.id ? null : cat.id);
-                        setSelectedItem(null);
-                      }}
-                      className={cn(
-                        "flex items-center gap-1 px-3 py-1 rounded-full text-xs border transition-colors duration-200 whitespace-nowrap shrink-0 font-sans",
-                        activeL2Id === cat.id
-                          ? activeL1Palette.pillActive
-                          : activeL1Palette.pill,
-                      )}
-                    >
-                      {cat.name}
-                      <span className="tabular-nums opacity-55">
-                        {categoryCountMap.get(cat.id)}
-                      </span>
-                    </motion.button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </section>
-
-        {/* ── Word cloud — full width ── */}
-        <section>
-          {foregroundWords.length === 0 ? (
-            <p className="text-slate-400 dark:text-slate-500 text-sm py-16 text-center">
-              暂无数据
+                共 {items.length} 枚
+              </motion.span>
+            </div>
+            <p className="text-slate-400 dark:text-slate-500 font-light max-w-md text-sm leading-relaxed">
+              山川日月，草木时令——词语在这里化为星点，各自成诗。
             </p>
-          ) : (
-            <TooltipProvider delayDuration={350} skipDelayDuration={150}>
-              <motion.div
-                key={`cloud-${activeL1Id ?? "all"}-${activeL2Id ?? "all"}`}
-                variants={cloudContainerVariants}
-                initial="hidden"
-                animate="show"
-                className="flex flex-wrap justify-center gap-y-5 sm:gap-y-7 py-6 pb-40"
-              >
-                {foregroundWords.map((item, index) => {
-                  const primaryCatId = item.categoryIds[0] ?? null;
-                  const palette = getPaletteForCategory(primaryCatId, categories);
-                  const visual = getWordVisual(item.count, maxCount);
-                  const yOffset = getYOffset(index);
-                  const breath = getBreathTiming(index);
-                  const isSelected = selectedItem?.id === item.id;
+          </motion.section>
 
-                  return (
-                    <motion.div
-                      key={item.id}
-                      variants={cloudWordVariants}
-                      whileHover={{ scale: 1.08 }}
-                      whileTap={{ scale: 0.93 }}
-                      style={{
-                        marginTop: yOffset,
-                        marginLeft: visual.mx,
-                        marginRight: visual.mx,
-                      }}
-                    >
-                      {/* Breathing wrapper — isolated element keeps CSS transform separate from framer-motion */}
-                      <span
-                        className={cn(
-                          "word-breathe-anim inline-flex",
-                          isSelected && "word-breathe-paused",
-                        )}
-                        style={
-                          {
-                            "--word-breathe-duration": `${breath.duration}s`,
-                            "--word-breathe-delay": `${breath.delay}s`,
-                          } as React.CSSProperties
-                        }
-                      >
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button
-                              type="button"
-                              onClick={() => handleTagClick(item)}
-                              className={cn(
-                                "relative font-serif leading-none select-none cursor-pointer",
-                                "px-2 py-1.5 rounded-xl outline-none",
-                                "transition-colors duration-200",
-                                visual.sizeClass,
-                                isSelected ? palette.tagActive : palette.tag,
-                              )}
-                              style={{ opacity: isSelected ? 1 : visual.opacityBase }}
-                            >
-                              {item.name}
-                              {isSelected && (
-                                <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-current opacity-70" />
-                              )}
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent side="top">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-serif text-sm text-slate-800 dark:text-slate-200">
-                                {item.name}
-                              </span>
-                              <span className="text-slate-400 dark:text-slate-500 tabular-nums text-xs">
-                                · {item.count} 处
-                              </span>
-                            </div>
-                          </TooltipContent>
-                        </Tooltip>
-                      </span>
-                    </motion.div>
-                  );
-                })}
-              </motion.div>
-            </TooltipProvider>
-          )}
-        </section>
+          {/* Mobile spotlight pills (L1 only) */}
+          <div className="lg:hidden sticky top-20 z-40 bg-[#FAFAFA]/95 dark:bg-[#0B0F19]/95 backdrop-blur-sm pt-3 pb-2 mb-10 -mx-4 px-4 border-b border-slate-100/80 dark:border-slate-800/80">
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+              <motion.button
+                type="button"
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+                onClick={handleReset}
+                className={cn(
+                  "flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm border transition-colors duration-200 whitespace-nowrap shrink-0 font-sans",
+                  lockedCatId === null
+                    ? COLOR_PALETTES[0].pillActive
+                    : COLOR_PALETTES[0].pill,
+                )}
+              >
+                全部
+              </motion.button>
+              {topLevelCategories.map((cat, idx) => {
+                const pal = COLOR_PALETTES[(idx % (COLOR_PALETTES.length - 1)) + 1];
+                return (
+                  <motion.button
+                    type="button"
+                    key={cat.id}
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    onClick={() => {
+                      handleLockToggle(cat.id);
+                      document
+                        .getElementById(`island-${cat.id}`)
+                        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                    className={cn(
+                      "flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm border transition-colors duration-200 whitespace-nowrap shrink-0 font-sans",
+                      lockedCatId === cat.id ? pal.pillActive : pal.pill,
+                    )}
+                  >
+                    {cat.name}
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Islands */}
+          <div className="divide-y divide-slate-100/50 dark:divide-slate-800/40">
+            {islands.map((island) => (
+              <IslandSection
+                key={island.l1.id}
+                island={island}
+                maxCount={maxCount}
+                effectiveSpotlight={effectiveSpotlight}
+                categoryDescendants={categoryDescendants}
+                selectedItemId={selectedItem?.id ?? null}
+                categories={categories}
+                onWordClick={handleWordClick}
+              />
+            ))}
+          </div>
+        </div>
       </main>
 
       {/* ── Desktop: floating bottom-centre detail card ── */}
       <AnimatePresence>
         {selectedItem && !isMobile && (
           <>
-            {/* Very subtle backdrop — dims cloud slightly, click to dismiss */}
             <motion.div
               className="fixed inset-0 z-40"
               initial={{ opacity: 0 }}
@@ -724,7 +954,6 @@ const ImageryClient: React.FC<Props> = ({ items, categories }) => {
               style={{ backgroundColor: "rgba(0,0,0,0.06)" }}
               onClick={() => setSelectedItem(null)}
             />
-            {/* Floating card */}
             <motion.div
               key={selectedItem.id}
               className="fixed bottom-10 left-1/2 z-50 w-[460px] max-w-[92vw]"
@@ -735,7 +964,6 @@ const ImageryClient: React.FC<Props> = ({ items, categories }) => {
               transition={{ type: "spring", stiffness: 400, damping: 30, mass: 0.85 }}
             >
               <div className="rounded-2xl border border-slate-200/70 dark:border-slate-700/50 bg-white/92 dark:bg-slate-900/92 backdrop-blur-2xl shadow-2xl shadow-slate-300/30 dark:shadow-black/50 overflow-hidden">
-                {/* Slim top accent bar using category colour */}
                 <div className="h-[3px] bg-gradient-to-r from-transparent via-slate-300/50 to-transparent dark:via-slate-600/50" />
                 <div className="max-h-[58vh] overflow-y-auto no-scrollbar">
                   <DetailPanelInner
