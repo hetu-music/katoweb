@@ -9,6 +9,14 @@ export const POST = withAuth(
       return NextResponse.json({ error: "缺少参数" }, { status: 400 });
     }
 
+    // 校验新密码强度
+    if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(newPassword)) {
+      return NextResponse.json(
+        { error: "新密码要求至少8位，并包含字母和数字" },
+        { status: 400 },
+      );
+    }
+
     try {
       const supabase = await createSupabaseServerClient();
 

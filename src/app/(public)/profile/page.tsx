@@ -93,6 +93,7 @@ function ProfileContent() {
   // Password Form State
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [pwdSaving, setPwdSaving] = useState(false);
   const [pwdMsg, setPwdMsg] = useState<string | null>(null);
 
@@ -138,7 +139,25 @@ function ProfileContent() {
   }, [csrfToken, saving, name, intro]);
 
   const handleChangePassword = useCallback(async () => {
-    if (!csrfToken || pwdSaving || !currentPassword || !newPassword) return;
+    if (
+      !csrfToken ||
+      pwdSaving ||
+      !currentPassword ||
+      !newPassword ||
+      !confirmNewPassword
+    )
+      return;
+
+    if (newPassword !== confirmNewPassword) {
+      setPwdMsg("两个新密码不一致");
+      return;
+    }
+
+    if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(newPassword)) {
+      setPwdMsg("新密码要求至少8位，包含字母和数字");
+      return;
+    }
+
     setPwdSaving(true);
     setPwdMsg(null);
     try {
@@ -148,12 +167,13 @@ function ProfileContent() {
           "Content-Type": "application/json",
           "x-csrf-token": csrfToken,
         },
-        body: JSON.stringify({ currentPassword, newPassword }),
+        body: JSON.stringify({ oldPassword: currentPassword, newPassword }),
       });
       if (res.ok) {
         setPwdMsg("密码修改成功");
         setCurrentPassword("");
         setNewPassword("");
+        setConfirmNewPassword("");
       } else {
         const d = await res.json();
         setPwdMsg(d.error || "修改失败");
@@ -164,7 +184,7 @@ function ProfileContent() {
       setPwdSaving(false);
       setTimeout(() => setPwdMsg(null), 3500);
     }
-  }, [csrfToken, pwdSaving, currentPassword, newPassword]);
+  }, [csrfToken, pwdSaving, currentPassword, newPassword, confirmNewPassword]);
 
   const handleBack = useCallback(() => {
     const navDepthStr = sessionStorage.getItem("__katoweb_nav_depth");
@@ -562,7 +582,7 @@ function ProfileContent() {
                           </p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
                               当前密码
@@ -584,7 +604,20 @@ function ProfileContent() {
                               type="password"
                               value={newPassword}
                               onChange={(e) => setNewPassword(e.target.value)}
-                              placeholder="至少8位，包含字母和数字"
+                              placeholder="至少8位，包含字母数字"
+                              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:bg-white dark:focus:bg-[#111] focus:border-blue-500/50 outline-none transition-all text-sm text-slate-800 dark:text-slate-200"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
+                              确认新密码
+                            </label>
+                            <input
+                              type="password"
+                              value={confirmNewPassword}
+                              onChange={(e) =>
+                                setConfirmNewPassword(e.target.value)
+                              }
                               className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:bg-white dark:focus:bg-[#111] focus:border-blue-500/50 outline-none transition-all text-sm text-slate-800 dark:text-slate-200"
                             />
                           </div>
@@ -593,11 +626,17 @@ function ProfileContent() {
                           <button
                             onClick={handleChangePassword}
                             disabled={
-                              pwdSaving || !currentPassword || !newPassword
+                              pwdSaving ||
+                              !currentPassword ||
+                              !newPassword ||
+                              !confirmNewPassword
                             }
                             className={cn(
                               "px-6 py-2.5 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2",
-                              pwdSaving || !currentPassword || !newPassword
+                              pwdSaving ||
+                                !currentPassword ||
+                                !newPassword ||
+                                !confirmNewPassword
                                 ? "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
                                 : "bg-rose-600 text-white hover:bg-rose-700 shadow-md shadow-rose-500/10 active:scale-95",
                             )}
