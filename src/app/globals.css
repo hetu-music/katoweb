@@ -126,3 +126,23 @@ button {
   from { transform: translateX(-50%); }
   to   { transform: translateX(0); }
 }
+
+/* 词云词语呼吸浮动动画 */
+@keyframes word-breathe {
+  0%, 100% { transform: translateY(0) rotate(var(--word-rotation, 0deg)); }
+  50%       { transform: translateY(-5px) rotate(var(--word-rotation, 0deg)); }
+}
+
+.word-breathe-anim {
+  animation-name: word-breathe;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-duration: var(--word-breathe-duration, 4s);
+  animation-delay: var(--word-breathe-delay, 0s);
+  animation-fill-mode: both;
+}
+
+.word-breathe-anim:hover,
+.word-breathe-paused {
+  animation-play-state: paused;
+}
