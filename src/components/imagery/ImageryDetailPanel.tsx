@@ -30,6 +30,7 @@ export interface SongResult {
 
 export interface DetailPanelProps {
   open: boolean;
+  panelSide?: "left" | "right";
   selectedItem: ImageryItem | null;
   selectedPalette: PaletteEntry;
   selectedCategoryPath: string[];
@@ -286,6 +287,7 @@ function PanelHeader({
 export default function ImageryDetailPanel(props: DetailPanelProps) {
   const {
     open,
+    panelSide = "right",
     selectedItem,
     selectedPalette,
     selectedCategoryPath,
@@ -323,12 +325,17 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()} modal={!isDesktop}>
       <SheetContent
-        side={isDesktop ? "right" : "bottom"}
+        side={isDesktop ? panelSide : "bottom"}
         hideClose={!isDesktop}
         showOverlay={!isDesktop}
         className={
           isDesktop
-            ? "top-[49px] h-[calc(100vh-49px)] w-[min(440px,42vw)] border-slate-200/50 dark:border-slate-700/25 shadow-[-32px_0_80px_rgba(0,0,0,0.06)] dark:shadow-[-32px_0_80px_rgba(0,0,0,0.45)] p-0"
+            ? [
+                "top-[49px] h-[calc(100vh-49px)] w-[min(440px,42vw)] p-0",
+                panelSide === "right"
+                  ? "border-l border-slate-200/50 dark:border-slate-700/25 shadow-[-32px_0_80px_rgba(0,0,0,0.06)] dark:shadow-[-32px_0_80px_rgba(0,0,0,0.45)]"
+                  : "border-r border-slate-200/50 dark:border-slate-700/25 shadow-[32px_0_80px_rgba(0,0,0,0.06)] dark:shadow-[32px_0_80px_rgba(0,0,0,0.45)]",
+              ].join(" ")
             : "max-h-[85dvh] p-0"
         }
       >

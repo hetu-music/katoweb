@@ -114,12 +114,17 @@ const WordItem = memo(function WordItem({
   selectedItemId,
 }: {
   data: WordDisplayData;
-  onClick: (item: ImageryItem) => void;
+  onClick: (item: ImageryItem, clickX: number) => void;
   localIdx: number;
   selectedItemId: number | null;
 }) {
   const btnRef = useRef<HTMLButtonElement>(null);
-  const handleClick = useCallback(() => onClick(data.item), [onClick, data.item]);
+
+  const handleClick = useCallback(() => {
+    const rect = btnRef.current?.getBoundingClientRect();
+    const cx = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
+    onClick(data.item, cx);
+  }, [onClick, data.item]);
 
   useEffect(() => {
     const el = btnRef.current;
@@ -130,58 +135,60 @@ const WordItem = memo(function WordItem({
   }, []);
 
   const unfurlDelay = `${Math.min(localIdx, 30) * 30}ms`;
-
   const isSelected = selectedItemId === data.item.id;
   const hasSelection = selectedItemId !== null;
 
-  // Glow: layered text-shadow in the word's own accent color
+  // Layered glow in the word's own accent color
   const glow = isSelected
-    ? `0 0 12px ${data.paletteAccent}cc, 0 0 28px ${data.paletteAccent}66, 0 0 60px ${data.paletteAccent}22`
+    ? `0 0 10px ${data.paletteAccent}cc, 0 0 26px ${data.paletteAccent}66, 0 0 55px ${data.paletteAccent}22`
     : undefined;
 
   return (
+    // ── Outer: controls opacity + scale — NEVER animated (so selection state works) ──
     <div
-      className="relative group/word leading-none word-unfurl-anim"
-      style={
-        {
-          "--unfurl-delay": unfurlDelay,
-          // dim/brighten the whole word cell
-          opacity: hasSelection ? (isSelected ? 1 : 0.1) : undefined,
-          transform: isSelected ? "scale(1.14)" : undefined,
-          zIndex: isSelected ? 10 : undefined,
-          transition: "opacity 0.45s ease, transform 0.45s cubic-bezier(0.22,1,0.36,1)",
-          willChange: "opacity, transform",
-        } as React.CSSProperties
-      }
+      className="relative"
+      style={{
+        opacity: hasSelection ? (isSelected ? 1 : 0.08) : 1,
+        transform: isSelected ? "scale(1.15)" : "scale(1)",
+        zIndex: isSelected ? 10 : undefined,
+        transition: "opacity 0.5s ease, transform 0.5s cubic-bezier(0.22,1,0.36,1)",
+      }}
     >
-      <button
-        ref={btnRef}
-        onClick={handleClick}
-        className={`font-serif leading-none transition-opacity duration-200 word-breathe-anim ${data.paletteText} ${isSelected ? "opacity-100" : "opacity-70 hover:opacity-100"}`}
-        style={
-          {
-            fontSize: `${data.fontSize}rem`,
-            "--word-breathe-duration": `${data.breatheDuration}s`,
-            "--word-breathe-delay": `${data.breatheDelay}s`,
-            animationPlayState: "paused",
-            textShadow: glow,
-          } as React.CSSProperties
-        }
+      {/* ── Inner: carries the one-shot unfurl animation (separate from selection state) ── */}
+      <div
+        className="relative group/word leading-none word-unfurl-anim"
+        style={{ "--unfurl-delay": unfurlDelay } as React.CSSProperties}
       >
-        {data.item.name}
-      </button>
-      {/* CSS-only tooltip — suppress when something is selected */}
-      {!hasSelection && (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 shadow-md whitespace-nowrap opacity-0 group-hover/word:opacity-100 transition-opacity duration-150 z-20"
+        <button
+          ref={btnRef}
+          onClick={handleClick}
+          className={`font-serif leading-none transition-opacity duration-200 word-breathe-anim ${data.paletteText} ${isSelected ? "opacity-100" : "opacity-70 hover:opacity-100"}`}
+          style={
+            {
+              fontSize: `${data.fontSize}rem`,
+              "--word-breathe-duration": `${data.breatheDuration}s`,
+              "--word-breathe-delay": `${data.breatheDelay}s`,
+              animationPlayState: "paused",
+              textShadow: glow,
+              transition: "text-shadow 0.4s ease",
+            } as React.CSSProperties
+          }
         >
-          <p className="text-xs text-slate-600 dark:text-slate-300 tracking-wide">
-            {data.tooltip}
-          </p>
-          <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-200/80 dark:border-t-slate-700/60" />
-        </div>
-      )}
+          {data.item.name}
+        </button>
+        {/* CSS-only tooltip — hidden while any word is selected */}
+        {!hasSelection && (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 shadow-md whitespace-nowrap opacity-0 group-hover/word:opacity-100 transition-opacity duration-150 z-20"
+          >
+            <p className="text-xs text-slate-600 dark:text-slate-300 tracking-wide">
+              {data.tooltip}
+            </p>
+            <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-200/80 dark:border-t-slate-700/60" />
+          </div>
+        )}
+      </div>
     </div>
   );
 });
@@ -232,6 +239,7 @@ export default function ImageryClient({ items, categories }: Props) {
   const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH);
   const [selectedItem, setSelectedItem] = useState<ImageryItem | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [panelSide, setPanelSide] = useState<"left" | "right">("right");
   const [songs, setSongs] = useState<SongResult[]>([]);
   const [songsLoading, setSongsLoading] = useState(false);
 
@@ -357,8 +365,10 @@ export default function ImageryClient({ items, categories }: Props) {
   }, [selectedItem, panelOpen]);
 
   // ── handlers ─────────────────────────────────────────────────────────────
-  const handleWordClick = useCallback((item: ImageryItem) => {
+  const handleWordClick = useCallback((item: ImageryItem, clickX: number) => {
     triggerHaptic();
+    // Panel opens from the side opposite the clicked word, so it won't cover it
+    setPanelSide(clickX > window.innerWidth / 2 ? "left" : "right");
     setSelectedItem(item);
     setPanelOpen(true);
   }, []);
@@ -366,9 +376,6 @@ export default function ImageryClient({ items, categories }: Props) {
   const handleClose = useCallback(() => setPanelOpen(false), []);
 
   // ── render ────────────────────────────────────────────────────────────────
-  // On desktop with panel open, shift content left to make room for the panel
-  const contentShift = isDesktop && panelOpen;
-
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] text-slate-800 dark:text-slate-200">
       {/* ── nav ── */}
@@ -383,13 +390,6 @@ export default function ImageryClient({ items, categories }: Props) {
         <ThemeToggle />
       </nav>
 
-      {/* Content shifts left on desktop when panel is open */}
-      <div
-        style={{
-          paddingRight: contentShift ? "min(440px, 42vw)" : undefined,
-          transition: "padding-right 0.5s cubic-bezier(0.22, 1, 0.36, 1)",
-        }}
-      >
       {/* ── hero ── */}
       <header className="relative overflow-hidden pt-16 pb-12 px-6 text-center">
         <div
@@ -552,11 +552,11 @@ export default function ImageryClient({ items, categories }: Props) {
           </div>
         </div>
       )}
-      </div>{/* end content-shift wrapper */}
 
       {/* ── Detail panel (desktop slide-in / mobile drawer) ── */}
       <ImageryDetailPanel
         open={panelOpen}
+        panelSide={panelSide}
         selectedItem={selectedItem}
         selectedPalette={selectedPalette}
         selectedCategoryPath={selectedCategoryPath}
