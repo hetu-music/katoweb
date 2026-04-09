@@ -505,12 +505,13 @@ export default function ImageryClient({ items, categories }: Props) {
         >
           {(
             [
-              { duration: "12s", dir: "imagery-marquee-ltr", size: "text-2xl md:text-4xl" },
-              { duration: "18s", dir: "imagery-marquee-rtl", size: "text-xl md:text-3xl" },
-              { duration: "24s", dir: "imagery-marquee-ltr", size: "text-lg md:text-2xl" },
+              { d: "42s", m: "10s", dir: "imagery-marquee-ltr", size: "text-2xl md:text-4xl" },
+              { d: "60s", m: "15s", dir: "imagery-marquee-rtl", size: "text-xl md:text-3xl" },
+              { d: "78s", m: "20s", dir: "imagery-marquee-ltr", size: "text-lg md:text-2xl" },
             ] as const
-          ).map(({ duration, dir, size }, ri) => {
+          ).map(({ d, m, dir, size }, ri) => {
             const rowWords = marqueeRows[ri % marqueeRows.length] || [];
+            const duration = isDesktop ? d : m;
             return (
               <div
                 key={ri}
