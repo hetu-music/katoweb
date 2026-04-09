@@ -1,6 +1,13 @@
 "use client";
 
-import React, { useState, useMemo, useCallback, useEffect, memo } from "react";
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+  memo,
+} from "react";
 import Link from "next/link";
 import { ArrowLeft, X } from "lucide-react";
 import type { ImageryItem, ImageryCategory, SongRef } from "@/lib/types";
@@ -24,16 +31,39 @@ interface WordDisplayData {
   item: ImageryItem;
   paletteText: string;
   fontSize: number;
+  breatheDuration: number;
+  breatheDelay: number;
   tooltip: string;
 }
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
+// ─── constants ────────────────────────────────────────────────────────────────
 
-function calcFontSize(count: number, maxCount: number): number {
-  if (maxCount <= 1) return 1.2;
-  const ratio = Math.log(count + 1) / Math.log(maxCount + 1);
-  return 0.85 + ratio * 1.75;
+const INITIAL_BATCH = 150;
+const BATCH_SIZE = 100;
+
+// ─── shared animation IntersectionObserver ───────────────────────────────────
+// One observer for all word buttons; pauses animation when off-screen.
+// Lives outside React to avoid re-creation on render.
+
+let animObserver: IntersectionObserver | null = null;
+
+function getAnimObserver(): IntersectionObserver | null {
+  if (typeof window === "undefined") return null;
+  if (!animObserver) {
+    animObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          (entry.target as HTMLElement).style.animationPlayState =
+            entry.isIntersecting ? "running" : "paused";
+        }
+      },
+      { rootMargin: "120px" },
+    );
+  }
+  return animObserver;
 }
+
+// ─── palette ──────────────────────────────────────────────────────────────────
 
 const PALETTE_TEXT = [
   "text-teal-700 dark:text-teal-400",
@@ -47,14 +77,14 @@ const PALETTE_TEXT = [
 ] as const;
 
 const PALETTE_FULL = [
-  { text: PALETTE_TEXT[0], ring: "ring-teal-500/50",    dot: "bg-teal-500",    activeBg: "bg-teal-50 dark:bg-teal-900/20"    },
-  { text: PALETTE_TEXT[1], ring: "ring-amber-500/50",   dot: "bg-amber-500",   activeBg: "bg-amber-50 dark:bg-amber-900/20"  },
-  { text: PALETTE_TEXT[2], ring: "ring-indigo-500/50",  dot: "bg-indigo-500",  activeBg: "bg-indigo-50 dark:bg-indigo-900/20"},
-  { text: PALETTE_TEXT[3], ring: "ring-rose-500/50",    dot: "bg-rose-500",    activeBg: "bg-rose-50 dark:bg-rose-900/20"    },
-  { text: PALETTE_TEXT[4], ring: "ring-emerald-500/50", dot: "bg-emerald-600", activeBg: "bg-emerald-50 dark:bg-emerald-900/20" },
-  { text: PALETTE_TEXT[5], ring: "ring-violet-500/50",  dot: "bg-violet-500",  activeBg: "bg-violet-50 dark:bg-violet-900/20"},
-  { text: PALETTE_TEXT[6], ring: "ring-orange-500/50",  dot: "bg-orange-500",  activeBg: "bg-orange-50 dark:bg-orange-900/20"},
-  { text: PALETTE_TEXT[7], ring: "ring-cyan-500/50",    dot: "bg-cyan-500",    activeBg: "bg-cyan-50 dark:bg-cyan-900/20"    },
+  { text: PALETTE_TEXT[0], ring: "ring-teal-500/50",    dot: "bg-teal-500",    activeBg: "bg-teal-50 dark:bg-teal-900/20"      },
+  { text: PALETTE_TEXT[1], ring: "ring-amber-500/50",   dot: "bg-amber-500",   activeBg: "bg-amber-50 dark:bg-amber-900/20"    },
+  { text: PALETTE_TEXT[2], ring: "ring-indigo-500/50",  dot: "bg-indigo-500",  activeBg: "bg-indigo-50 dark:bg-indigo-900/20"  },
+  { text: PALETTE_TEXT[3], ring: "ring-rose-500/50",    dot: "bg-rose-500",    activeBg: "bg-rose-50 dark:bg-rose-900/20"      },
+  { text: PALETTE_TEXT[4], ring: "ring-emerald-500/50", dot: "bg-emerald-600", activeBg: "bg-emerald-50 dark:bg-emerald-900/20"},
+  { text: PALETTE_TEXT[5], ring: "ring-violet-500/50",  dot: "bg-violet-500",  activeBg: "bg-violet-50 dark:bg-violet-900/20"  },
+  { text: PALETTE_TEXT[6], ring: "ring-orange-500/50",  dot: "bg-orange-500",  activeBg: "bg-orange-50 dark:bg-orange-900/20"  },
+  { text: PALETTE_TEXT[7], ring: "ring-cyan-500/50",    dot: "bg-cyan-500",    activeBg: "bg-cyan-50 dark:bg-cyan-900/20"      },
 ] as const;
 
 const GRAY_PALETTE = {
@@ -64,7 +94,15 @@ const GRAY_PALETTE = {
   activeBg: "bg-slate-100 dark:bg-slate-800/40",
 };
 
-// ─── WordItem – memoised to skip re-render when parent state changes ──────────
+// ─── helpers ──────────────────────────────────────────────────────────────────
+
+function calcFontSize(count: number, maxCount: number): number {
+  if (maxCount <= 1) return 1.2;
+  const ratio = Math.log(count + 1) / Math.log(maxCount + 1);
+  return 0.85 + ratio * 1.75;
+}
+
+// ─── WordItem ─────────────────────────────────────────────────────────────────
 
 const WordItem = memo(function WordItem({
   data,
@@ -73,17 +111,37 @@ const WordItem = memo(function WordItem({
   data: WordDisplayData;
   onClick: (item: ImageryItem) => void;
 }) {
+  const btnRef = useRef<HTMLButtonElement>(null);
   const handleClick = useCallback(() => onClick(data.item), [onClick, data.item]);
+
+  // Register with shared observer; imperatively toggle animationPlayState
+  useEffect(() => {
+    const el = btnRef.current;
+    const obs = getAnimObserver();
+    if (!el || !obs) return;
+    obs.observe(el);
+    return () => obs.unobserve(el);
+  }, []);
+
   return (
     <div className="relative group/word leading-none">
       <button
+        ref={btnRef}
         onClick={handleClick}
-        className={`font-serif leading-none opacity-70 hover:opacity-100 transition-[opacity,transform] duration-200 hover:-translate-y-0.5 ${data.paletteText}`}
-        style={{ fontSize: `${data.fontSize}rem` }}
+        className={`font-serif leading-none opacity-70 hover:opacity-100 transition-opacity duration-200 word-breathe-anim ${data.paletteText}`}
+        style={
+          {
+            fontSize: `${data.fontSize}rem`,
+            "--word-breathe-duration": `${data.breatheDuration}s`,
+            "--word-breathe-delay": `${data.breatheDelay}s`,
+            // Start paused; observer will resume when in view
+            animationPlayState: "paused",
+          } as React.CSSProperties
+        }
       >
         {data.item.name}
       </button>
-      {/* CSS-only tooltip — no JS portals, no React state */}
+      {/* CSS-only tooltip – zero JS overhead */}
       <div
         aria-hidden
         className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 shadow-md whitespace-nowrap opacity-0 group-hover/word:opacity-100 transition-opacity duration-150 z-20"
@@ -140,17 +198,21 @@ export default function ImageryClient({ items, categories }: Props) {
 
   // ── state ────────────────────────────────────────────────────────────────
   const [activeL1Id, setActiveL1Id] = useState<number | null>(null);
+  const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH);
   const [selectedItem, setSelectedItem] = useState<ImageryItem | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [songs, setSongs] = useState<SongResult[]>([]);
   const [songsLoading, setSongsLoading] = useState(false);
 
-  // ── precomputed display lists ─────────────────────────────────────────────
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // ── precomputed display data ──────────────────────────────────────────────
   const maxCount = useMemo(
     () => Math.max(...items.map((i) => i.count), 1),
     [items],
   );
 
+  // Full sorted+filtered list (not sliced)
   const wordDisplayList = useMemo((): WordDisplayData[] => {
     const list =
       activeL1Id === null
@@ -158,7 +220,7 @@ export default function ImageryClient({ items, categories }: Props) {
         : items.filter((item) => itemToL1.get(item.id)?.id === activeL1Id);
     return [...list]
       .sort((a, b) => b.count - a.count)
-      .map((item) => {
+      .map((item, idx) => {
         const l1 = itemToL1.get(item.id) ?? null;
         const colorIdx = l1 ? (l1ColorIndex.get(l1.id) ?? 0) : -1;
         const paletteText =
@@ -167,11 +229,22 @@ export default function ImageryClient({ items, categories }: Props) {
           item,
           paletteText,
           fontSize: calcFontSize(item.count, maxCount),
+          breatheDuration: 3.5 + (idx % 7) * 0.6,
+          breatheDelay: (idx % 13) * 0.35,
           tooltip: `${item.name} · ${item.count} 次${l1 ? ` · ${l1.name}` : ""}`,
         };
       });
   }, [items, activeL1Id, itemToL1, l1ColorIndex, maxCount]);
 
+  // Slice to currently visible batch
+  const visibleWords = useMemo(
+    () => wordDisplayList.slice(0, visibleCount),
+    [wordDisplayList, visibleCount],
+  );
+
+  const hasMore = visibleCount < wordDisplayList.length;
+
+  // Marquee words
   const marqueeWords = useMemo(
     () => [...items].sort((a, b) => b.count - a.count).slice(0, 30),
     [items],
@@ -207,6 +280,32 @@ export default function ImageryClient({ items, categories }: Props) {
   }, [selectedItem, itemToL1, l1ColorIndex]);
 
   // ── effects ──────────────────────────────────────────────────────────────
+
+  // Reset batch when filter changes
+  useEffect(() => {
+    setVisibleCount(INITIAL_BATCH);
+  }, [activeL1Id]);
+
+  // Sentinel observer for lazy loading
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisibleCount((prev) =>
+            Math.min(prev + BATCH_SIZE, wordDisplayList.length),
+          );
+        }
+      },
+      { rootMargin: "300px" },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [wordDisplayList.length]);
+
+  // Fetch songs for selected item
   useEffect(() => {
     if (!selectedItem || !drawerOpen) return;
     setSongsLoading(true);
@@ -331,11 +430,28 @@ export default function ImageryClient({ items, categories }: Props) {
             暂无数据
           </div>
         ) : (
-          <div className="flex flex-wrap justify-center gap-x-10 gap-y-6">
-            {wordDisplayList.map((data) => (
-              <WordItem key={data.item.id} data={data} onClick={handleWordClick} />
-            ))}
-          </div>
+          <>
+            <div className="flex flex-wrap justify-center gap-x-10 gap-y-6">
+              {visibleWords.map((data) => (
+                <WordItem key={data.item.id} data={data} onClick={handleWordClick} />
+              ))}
+            </div>
+
+            {/* Sentinel + status */}
+            <div ref={sentinelRef} className="mt-12 flex flex-col items-center gap-3">
+              {hasMore ? (
+                <p className="text-xs text-slate-300 dark:text-slate-700 tracking-[0.2em] tabular-nums select-none">
+                  {visibleCount} / {wordDisplayList.length}
+                </p>
+              ) : (
+                wordDisplayList.length > INITIAL_BATCH && (
+                  <p className="text-xs text-slate-300 dark:text-slate-700 tracking-[0.2em] select-none">
+                    共 {wordDisplayList.length} 个意象
+                  </p>
+                )
+              )}
+            </div>
+          </>
         )}
       </main>
 
