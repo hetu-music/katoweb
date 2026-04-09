@@ -81,9 +81,7 @@ const PanelBody = memo(function PanelBody({
   const filtered = useMemo(
     () =>
       activeLyricist
-        ? songs.filter(({ song }) =>
-          song.lyricist?.includes(activeLyricist),
-        )
+        ? songs.filter(({ song }) => song.lyricist?.includes(activeLyricist))
         : songs,
     [songs, activeLyricist],
   );
@@ -102,10 +100,11 @@ const PanelBody = memo(function PanelBody({
   if (songs.length === 0) {
     return (
       <p
-        className={`text-center text-sm tracking-[0.25em] py-16 ${isDesktop
-          ? "text-slate-300 dark:text-slate-700"
-          : "text-slate-400 dark:text-slate-600"
-          }`}
+        className={`text-center text-sm tracking-[0.25em] py-16 ${
+          isDesktop
+            ? "text-slate-300 dark:text-slate-700"
+            : "text-slate-400 dark:text-slate-600"
+        }`}
       >
         暂无相关词作
       </p>
@@ -125,10 +124,11 @@ const PanelBody = memo(function PanelBody({
                 <button
                   key={name}
                   onClick={() => onLyricistClick(name)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs border transition-all duration-150 ${isActive
-                    ? "text-white border-transparent shadow-sm"
-                    : "bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 border-slate-200/70 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600"
-                    }`}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs border transition-all duration-150 ${
+                    isActive
+                      ? "text-white border-transparent shadow-sm"
+                      : "bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 border-slate-200/70 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600"
+                  }`}
                   style={
                     isActive
                       ? { backgroundColor: selectedPalette.accent }
@@ -299,7 +299,9 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
 
   // Clear lyricist filter when selection changes
   useEffect(() => {
-    setActiveLyricist(null);
+    requestAnimationFrame(() => {
+      setActiveLyricist(null);
+    });
   }, [selectedItem]);
 
   const handleLyricistClick = useCallback((name: string) => {
@@ -325,13 +327,13 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
         showOverlay={!isDesktop}
         className={
           isDesktop
-              ? [
-                  "top-(--nav-h,48px) h-[calc(100vh-var(--nav-h,48px))] w-[min(440px,42vw)] p-0 border-none shadow-2xl",
-                  panelSide === "right"
-                    ? "border-l border-slate-200/50 dark:border-white/5"
-                    : "border-r border-slate-200/50 dark:border-white/5",
-                ].join(" ")
-              : "max-h-[85dvh] p-0 border-t-0 shadow-2xl"
+            ? [
+                "top-(--nav-h,48px) h-[calc(100vh-var(--nav-h,48px))] w-[min(440px,42vw)] p-0 border-none shadow-2xl",
+                panelSide === "right"
+                  ? "border-l border-slate-200/50 dark:border-white/5"
+                  : "border-r border-slate-200/50 dark:border-white/5",
+              ].join(" ")
+            : "max-h-[85dvh] p-0 border-t-0 shadow-2xl"
         }
       >
         {/* Accessible title/description (visually hidden) */}

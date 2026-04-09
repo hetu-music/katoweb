@@ -16,7 +16,6 @@ import {
   getCoverUrl,
 } from "@/lib/utils-song";
 import {
-  ArrowUpRight,
   Calendar,
   Clock,
   Disc,
@@ -33,7 +32,6 @@ import {
   XCircle,
 } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, {
   useCallback,
@@ -881,9 +879,9 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       lyricsSnippet={
                         debouncedSearchQuery && lyricsState === "ready"
                           ? extractLyricsSnippet(
-                            lyricsMap.get(work.id) || "",
-                            debouncedSearchQuery,
-                          )
+                              lyricsMap.get(work.id) || "",
+                              debouncedSearchQuery,
+                            )
                           : undefined
                       }
                       onClick={() => {
@@ -930,9 +928,9 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       lyricsSnippet={
                         debouncedSearchQuery && lyricsState === "ready"
                           ? extractLyricsSnippet(
-                            lyricsMap.get(work.id) || "",
-                            debouncedSearchQuery,
-                          )
+                              lyricsMap.get(work.id) || "",
+                              debouncedSearchQuery,
+                            )
                           : undefined
                       }
                       onClick={() => {

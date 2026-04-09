@@ -8,7 +8,10 @@ const Drawer = ({
   shouldScaleBackground = false,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Root>) => (
-  <DrawerPrimitive.Root shouldScaleBackground={shouldScaleBackground} {...props} />
+  <DrawerPrimitive.Root
+    shouldScaleBackground={shouldScaleBackground}
+    {...props}
+  />
 );
 Drawer.displayName = "Drawer";
 
@@ -51,7 +54,10 @@ const DrawerContent = React.forwardRef<
       {...props}
     >
       {/* Visual drag handle */}
-      <div className="flex justify-center pt-[14px] pb-1 shrink-0" aria-hidden="true">
+      <div
+        className="flex justify-center pt-[14px] pb-1 shrink-0"
+        aria-hidden="true"
+      >
         <div className="w-9 h-[4px] rounded-full bg-slate-300/80 dark:bg-slate-600/70" />
       </div>
       {children}
@@ -60,4 +66,11 @@ const DrawerContent = React.forwardRef<
 ));
 DrawerContent.displayName = "DrawerContent";
 
-export { Drawer, DrawerTrigger, DrawerPortal, DrawerOverlay, DrawerClose, DrawerContent };
+export {
+  Drawer,
+  DrawerTrigger,
+  DrawerPortal,
+  DrawerOverlay,
+  DrawerClose,
+  DrawerContent,
+};

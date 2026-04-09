@@ -38,8 +38,9 @@ const sideVariants: Record<SheetSide, string> = {
     "inset-y-0 right-0 h-full border-l border-slate-200/60 dark:border-slate-800/50 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
 };
 
-interface SheetContentProps
-  extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
+interface SheetContentProps extends React.ComponentPropsWithoutRef<
+  typeof DialogPrimitive.Content
+> {
   side?: SheetSide;
   hideClose?: boolean;
   /** Set false to skip rendering the overlay (e.g. non-modal desktop panels). Default true. */
@@ -49,37 +50,52 @@ interface SheetContentProps
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   SheetContentProps
->(({ side = "right", hideClose = false, showOverlay = true, className, children, ...props }, ref) => (
-  <SheetPortal>
-    {showOverlay && <SheetOverlay />}
-    <DialogPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed z-50 flex flex-col",
-        "bg-white dark:bg-[#0c0f1a]",
-        "shadow-2xl",
-        "transition ease-[cubic-bezier(0.22,1,0.36,1)]",
-        "duration-500",
-        "data-[state=open]:animate-in data-[state=closed]:animate-out",
-        "data-[state=closed]:duration-300",
-        "focus:outline-none",
-        sideVariants[side],
-        className,
-      )}
-      {...props}
-    >
-      {children}
-      {!hideClose && (
-        <DialogPrimitive.Close className="absolute right-4 top-4 p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none">
-          <X size={16} />
-        </DialogPrimitive.Close>
-      )}
-    </DialogPrimitive.Content>
-  </SheetPortal>
-));
+>(
+  (
+    {
+      side = "right",
+      hideClose = false,
+      showOverlay = true,
+      className,
+      children,
+      ...props
+    },
+    ref,
+  ) => (
+    <SheetPortal>
+      {showOverlay && <SheetOverlay />}
+      <DialogPrimitive.Content
+        ref={ref}
+        className={cn(
+          "fixed z-50 flex flex-col",
+          "bg-white dark:bg-[#0c0f1a]",
+          "shadow-2xl",
+          "transition ease-[cubic-bezier(0.22,1,0.36,1)]",
+          "duration-500",
+          "data-[state=open]:animate-in data-[state=closed]:animate-out",
+          "data-[state=closed]:duration-300",
+          "focus:outline-none",
+          sideVariants[side],
+          className,
+        )}
+        {...props}
+      >
+        {children}
+        {!hideClose && (
+          <DialogPrimitive.Close className="absolute right-4 top-4 p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none">
+            <X size={16} />
+          </DialogPrimitive.Close>
+        )}
+      </DialogPrimitive.Content>
+    </SheetPortal>
+  ),
+);
 SheetContent.displayName = "SheetContent";
 
-const SheetHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+const SheetHeader = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
   <div className={cn("flex flex-col space-y-1.5", className)} {...props} />
 );
 SheetHeader.displayName = "SheetHeader";

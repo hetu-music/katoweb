@@ -34,7 +34,6 @@ import {
   XCircle,
 } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Account from "./Account";
 import CoverUpload from "./CoverUpload";

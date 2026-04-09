@@ -43,7 +43,10 @@ async function fetchAll<T>(
     const { data, error } = await query;
 
     if (error) {
-      console.error(`Failed to fetch ${table} (range ${from}–${from + PAGE_SIZE - 1}):`, error);
+      console.error(
+        `Failed to fetch ${table} (range ${from}–${from + PAGE_SIZE - 1}):`,
+        error,
+      );
       break;
     }
 
@@ -90,7 +93,10 @@ export async function getImageryWithCounts(): Promise<ImageryItem[]> {
   >(supabase, "imagery_occurrences", "imagery_id, category_id");
 
   // Group occurrences by imagery_id
-  const countMap = new Map<number, { count: number; categoryIds: Set<number> }>();
+  const countMap = new Map<
+    number,
+    { count: number; categoryIds: Set<number> }
+  >();
   for (const occ of occurrences) {
     const existing = countMap.get(occ.imagery_id);
     if (existing) {

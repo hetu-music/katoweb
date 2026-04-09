@@ -40,27 +40,6 @@ interface WordDisplayData {
   tooltip: string;
 }
 
-// ─── shared animation observer (module-level singleton) ──────────────────────
-
-let animObserver: IntersectionObserver | null = null;
-
-function getAnimObserver(): IntersectionObserver | null {
-  if (typeof window === "undefined") return null;
-  if (!animObserver) {
-    animObserver = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          (e.target as HTMLElement).style.animationPlayState = e.isIntersecting
-            ? "running"
-            : "paused";
-        }
-      },
-      { rootMargin: "600px" },
-    );
-  }
-  return animObserver;
-}
-
 // ─── palette ──────────────────────────────────────────────────────────────────
 
 const PALETTE_TEXT = [
@@ -75,14 +54,62 @@ const PALETTE_TEXT = [
 ] as const;
 
 const PALETTE_FULL: PaletteEntry[] = [
-  { text: PALETTE_TEXT[0], ring: "ring-teal-500/50", dot: "bg-teal-500", activeBg: "bg-teal-50 dark:bg-teal-900/20", accent: "#0d9488" },
-  { text: PALETTE_TEXT[1], ring: "ring-amber-500/50", dot: "bg-amber-500", activeBg: "bg-amber-50 dark:bg-amber-900/20", accent: "#d97706" },
-  { text: PALETTE_TEXT[2], ring: "ring-indigo-500/50", dot: "bg-indigo-500", activeBg: "bg-indigo-50 dark:bg-indigo-900/20", accent: "#4f46e5" },
-  { text: PALETTE_TEXT[3], ring: "ring-rose-500/50", dot: "bg-rose-500", activeBg: "bg-rose-50 dark:bg-rose-900/20", accent: "#e11d48" },
-  { text: PALETTE_TEXT[4], ring: "ring-emerald-500/50", dot: "bg-emerald-600", activeBg: "bg-emerald-50 dark:bg-emerald-900/20", accent: "#059669" },
-  { text: PALETTE_TEXT[5], ring: "ring-violet-500/50", dot: "bg-violet-500", activeBg: "bg-violet-50 dark:bg-violet-900/20", accent: "#7c3aed" },
-  { text: PALETTE_TEXT[6], ring: "ring-orange-500/50", dot: "bg-orange-500", activeBg: "bg-orange-50 dark:bg-orange-900/20", accent: "#ea580c" },
-  { text: PALETTE_TEXT[7], ring: "ring-cyan-500/50", dot: "bg-cyan-500", activeBg: "bg-cyan-50 dark:bg-cyan-900/20", accent: "#0891b2" },
+  {
+    text: PALETTE_TEXT[0],
+    ring: "ring-teal-500/50",
+    dot: "bg-teal-500",
+    activeBg: "bg-teal-50 dark:bg-teal-900/20",
+    accent: "#0d9488",
+  },
+  {
+    text: PALETTE_TEXT[1],
+    ring: "ring-amber-500/50",
+    dot: "bg-amber-500",
+    activeBg: "bg-amber-50 dark:bg-amber-900/20",
+    accent: "#d97706",
+  },
+  {
+    text: PALETTE_TEXT[2],
+    ring: "ring-indigo-500/50",
+    dot: "bg-indigo-500",
+    activeBg: "bg-indigo-50 dark:bg-indigo-900/20",
+    accent: "#4f46e5",
+  },
+  {
+    text: PALETTE_TEXT[3],
+    ring: "ring-rose-500/50",
+    dot: "bg-rose-500",
+    activeBg: "bg-rose-50 dark:bg-rose-900/20",
+    accent: "#e11d48",
+  },
+  {
+    text: PALETTE_TEXT[4],
+    ring: "ring-emerald-500/50",
+    dot: "bg-emerald-600",
+    activeBg: "bg-emerald-50 dark:bg-emerald-900/20",
+    accent: "#059669",
+  },
+  {
+    text: PALETTE_TEXT[5],
+    ring: "ring-violet-500/50",
+    dot: "bg-violet-500",
+    activeBg: "bg-violet-50 dark:bg-violet-900/20",
+    accent: "#7c3aed",
+  },
+  {
+    text: PALETTE_TEXT[6],
+    ring: "ring-orange-500/50",
+    dot: "bg-orange-500",
+    activeBg: "bg-orange-50 dark:bg-orange-900/20",
+    accent: "#ea580c",
+  },
+  {
+    text: PALETTE_TEXT[7],
+    ring: "ring-cyan-500/50",
+    dot: "bg-cyan-500",
+    activeBg: "bg-cyan-50 dark:bg-cyan-900/20",
+    accent: "#0891b2",
+  },
 ];
 
 const GRAY_PALETTE: PaletteEntry = {
@@ -166,7 +193,8 @@ const WordItem = memo(function WordItem({
         opacity: hasSelection ? (isSelected ? 1 : 0.08) : 1,
         transform: isSelected ? "scale(1.1)" : "scale(1)",
         zIndex: isSelected ? 30 : undefined, // 提高层级
-        transition: "opacity 0.8s ease, transform 0.8s cubic-bezier(0.16,1,0.3,1)",
+        transition:
+          "opacity 0.8s ease, transform 0.8s cubic-bezier(0.16,1,0.3,1)",
         // 选中时彻底取消可能导致切边的限制
         overflow: isSelected ? "visible" : undefined,
       }}
@@ -174,19 +202,24 @@ const WordItem = memo(function WordItem({
       {/* ── Inner: carries the one-shot unfurl animation triggered on screen entry ── */}
       <div
         className={`relative group/word leading-none ${hasEntered ? "word-unfurl-anim" : "opacity-0"}`}
-        style={{
-          "--unfurl-delay": unfurlDelay,
-          // 当被选中时，完全解除性能加速相关的限制，防止合成层切边
-          contentVisibility: isSelected ? "visible" : undefined,
-          contain: isSelected ? "none" : undefined,
-          willChange: isSelected ? "auto" : "transform, opacity",
-          overflow: isSelected ? "visible" : undefined,
-        } as React.CSSProperties}
+        style={
+          {
+            "--unfurl-delay": unfurlDelay,
+            // 当被选中时，完全解除性能加速相关的限制，防止合成层切边
+            contentVisibility: isSelected ? "visible" : undefined,
+            contain: isSelected ? "none" : undefined,
+            willChange: isSelected ? "auto" : "transform, opacity",
+            overflow: isSelected ? "visible" : undefined,
+          } as React.CSSProperties
+        }
       >
         <button
           ref={btnRef}
           onClick={handleClick}
-          onMouseEnter={() => !hasSelection && onHover(data, btnRef.current?.getBoundingClientRect())}
+          onMouseEnter={() =>
+            !hasSelection &&
+            onHover(data, btnRef.current?.getBoundingClientRect())
+          }
           onMouseLeave={() => onHover(null)}
           className={`font-serif leading-none transition-opacity duration-200 word-breathe-anim ${data.paletteText} ${isSelected ? "opacity-100" : "opacity-70 hover:opacity-100"}`}
           style={
@@ -209,7 +242,6 @@ const WordItem = memo(function WordItem({
   );
 });
 
-
 // ─── main component ───────────────────────────────────────────────────────────
 
 export default function ImageryClient({ items, categories }: Props) {
@@ -229,7 +261,9 @@ export default function ImageryClient({ items, categories }: Props) {
 
   const l1ColorIndex = useMemo(() => {
     const m = new Map<number, number>();
-    level1Categories.forEach((cat, i) => m.set(cat.id, i % PALETTE_FULL.length));
+    level1Categories.forEach((cat, i) =>
+      m.set(cat.id, i % PALETTE_FULL.length),
+    );
     return m;
   }, [level1Categories]);
 
@@ -243,7 +277,10 @@ export default function ImageryClient({ items, categories }: Props) {
         const l2 = catMap.get(l3.parent_id);
         if (!l2?.parent_id) continue;
         const l1 = catMap.get(l2.parent_id);
-        if (l1) { found = l1; break; }
+        if (l1) {
+          found = l1;
+          break;
+        }
       }
       m.set(item.id, found);
     }
@@ -258,7 +295,11 @@ export default function ImageryClient({ items, categories }: Props) {
   const [panelSide, setPanelSide] = useState<"left" | "right">("right");
   const [songs, setSongs] = useState<SongResult[]>([]);
   const [songsLoading, setSongsLoading] = useState(false);
-  const [hoveredData, setHoveredData] = useState<{ text: string; x: number; y: number } | null>(null);
+  const [hoveredData, setHoveredData] = useState<{
+    text: string;
+    x: number;
+    y: number;
+  } | null>(null);
   const [showAbout, setShowAbout] = useState(false);
 
   const router = useRouter();
@@ -272,22 +313,31 @@ export default function ImageryClient({ items, categories }: Props) {
   const [headerVisible, setHeaderVisible] = useState(true);
 
   // Trigger entrance animation after first paint
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      setMounted(true);
+    });
+  }, []);
 
   // Track header visibility to pause infinite marquee animations
   const headerRef = useRef<HTMLElement>(null);
   useEffect(() => {
     const el = headerRef.current;
     if (!el) return;
-    const obs = new IntersectionObserver(([entry]) => {
-      setHeaderVisible(entry.isIntersecting);
-    }, { threshold: 0.05 });
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        setHeaderVisible(entry.isIntersecting);
+      },
+      { threshold: 0.05 },
+    );
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
 
   // Sync ref with state
-  useEffect(() => { visibleCountRef.current = visibleCount; }, [visibleCount]);
+  useEffect(() => {
+    visibleCountRef.current = visibleCount;
+  }, [visibleCount]);
 
   // Track nav height → CSS variable --nav-h for the panel to consume
   useEffect(() => {
@@ -345,11 +395,7 @@ export default function ImageryClient({ items, categories }: Props) {
 
   const marqueeRows = useMemo(() => {
     const sorted = [...items].sort((a, b) => b.count - a.count);
-    return [
-      sorted.slice(0, 30),
-      sorted.slice(30, 60),
-      sorted.slice(60, 90),
-    ];
+    return [sorted.slice(0, 30), sorted.slice(30, 60), sorted.slice(60, 90)];
   }, [items]);
 
   // ── selected item helpers ─────────────────────────────────────────────────
@@ -385,7 +431,9 @@ export default function ImageryClient({ items, categories }: Props) {
 
   // Reset visible count on filter change
   useEffect(() => {
-    setVisibleCount(INITIAL_BATCH);
+    requestAnimationFrame(() => {
+      setVisibleCount(INITIAL_BATCH);
+    });
   }, [activeL1Id]);
 
   // Sentinel observer for lazy loading
@@ -409,8 +457,11 @@ export default function ImageryClient({ items, categories }: Props) {
   // Fetch songs
   useEffect(() => {
     if (!selectedItem || !panelOpen) return;
-    setSongsLoading(true);
-    setSongs([]);
+    requestAnimationFrame(() => {
+      setSongsLoading(true);
+      setSongs([]);
+    });
+
     fetch(`/api/imagery/${selectedItem.id}/songs`)
       .then((r) => r.json())
       .then((d) => setSongs(d.songs ?? []))
@@ -425,24 +476,27 @@ export default function ImageryClient({ items, categories }: Props) {
     // Prefer right: only switch to left when word is in the rightmost quarter of the cloud area
     const cloudRect = cloudRef.current?.getBoundingClientRect();
     const cloudRight = cloudRect ? cloudRect.right : window.innerWidth;
-    setPanelSide(clickX > cloudRight * 3 / 4 ? "left" : "right");
+    setPanelSide(clickX > (cloudRight * 3) / 4 ? "left" : "right");
     setSelectedItem(item);
     setPanelOpen(true);
   }, []);
 
   const handleClose = useCallback(() => setPanelOpen(false), []);
 
-  const handleWordHover = useCallback((data: WordDisplayData | null, rect?: DOMRect) => {
-    if (!data || !rect) {
-      setHoveredData(null);
-      return;
-    }
-    setHoveredData({
-      text: data.tooltip,
-      x: rect.left + rect.width / 2,
-      y: rect.top,
-    });
-  }, []);
+  const handleWordHover = useCallback(
+    (data: WordDisplayData | null, rect?: DOMRect) => {
+      if (!data || !rect) {
+        setHoveredData(null);
+        return;
+      }
+      setHoveredData({
+        text: data.tooltip,
+        x: rect.left + rect.width / 2,
+        y: rect.top,
+      });
+    },
+    [],
+  );
 
   const handleTitleReset = useCallback(() => {
     window.location.href = "/";
@@ -463,7 +517,10 @@ export default function ImageryClient({ items, categories }: Props) {
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] text-slate-800 dark:text-slate-200">
       {/* ── nav ── */}
-      <nav ref={navRef} className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 transition-colors duration-500">
+      <nav
+        ref={navRef}
+        className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 transition-colors duration-500"
+      >
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <button
             onClick={handleTitleReset}
@@ -498,16 +555,34 @@ export default function ImageryClient({ items, categories }: Props) {
       </nav>
 
       {/* ── hero ── */}
-      <header ref={headerRef} className="relative overflow-hidden pt-32 pb-12 px-6 text-center">
+      <header
+        ref={headerRef}
+        className="relative overflow-hidden pt-32 pb-12 px-6 text-center"
+      >
         <div
           aria-hidden
           className="absolute inset-0 pointer-events-none select-none overflow-hidden flex flex-col justify-center gap-5 opacity-[0.045] dark:opacity-[0.055]"
         >
           {(
             [
-              { d: "42s", m: "10s", dir: "imagery-marquee-ltr", size: "text-2xl md:text-4xl" },
-              { d: "60s", m: "15s", dir: "imagery-marquee-rtl", size: "text-xl md:text-3xl" },
-              { d: "78s", m: "20s", dir: "imagery-marquee-ltr", size: "text-lg md:text-2xl" },
+              {
+                d: "42s",
+                m: "10s",
+                dir: "imagery-marquee-ltr",
+                size: "text-2xl md:text-4xl",
+              },
+              {
+                d: "60s",
+                m: "15s",
+                dir: "imagery-marquee-rtl",
+                size: "text-xl md:text-3xl",
+              },
+              {
+                d: "78s",
+                m: "20s",
+                dir: "imagery-marquee-ltr",
+                size: "text-lg md:text-2xl",
+              },
             ] as const
           ).map(({ d, m, dir, size }, ri) => {
             const rowWords = marqueeRows[ri % marqueeRows.length] || [];
@@ -522,7 +597,10 @@ export default function ImageryClient({ items, categories }: Props) {
                 }}
               >
                 {[...rowWords, ...rowWords].map((w, i) => (
-                  <span key={i} className={`${size} mx-5 text-slate-900 dark:text-white`}>
+                  <span
+                    key={i}
+                    className={`${size} mx-5 text-slate-900 dark:text-white`}
+                  >
                     {w.name}
                   </span>
                 ))}
@@ -532,9 +610,7 @@ export default function ImageryClient({ items, categories }: Props) {
         </div>
 
         <div className="relative z-10">
-          <h1
-            className="font-serif text-5xl sm:text-7xl md:text-9xl font-normal text-slate-800 dark:text-slate-100 mb-6 flex justify-center items-center gap-4 sm:gap-10 drop-shadow-[0_0_30px_rgba(255,255,255,0.05)]"
-          >
+          <h1 className="font-serif text-5xl sm:text-7xl md:text-9xl font-normal text-slate-800 dark:text-slate-100 mb-6 flex justify-center items-center gap-4 sm:gap-10 drop-shadow-[0_0_30px_rgba(255,255,255,0.05)]">
             {"意象词云".split("").map((char, i) => (
               <span
                 key={i}
@@ -570,10 +646,11 @@ export default function ImageryClient({ items, categories }: Props) {
           <div className="flex items-center gap-1 py-4 w-max">
             <button
               onClick={() => setActiveL1Id(null)}
-              className={`px-3.5 py-1.5 text-sm rounded-full transition-all duration-200 tracking-wide ${activeL1Id === null
-                ? "bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 font-medium shadow-sm"
-                : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
-                }`}
+              className={`px-3.5 py-1.5 text-sm rounded-full transition-all duration-200 tracking-wide ${
+                activeL1Id === null
+                  ? "bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 font-medium shadow-sm"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
+              }`}
             >
               全部
             </button>
@@ -584,10 +661,11 @@ export default function ImageryClient({ items, categories }: Props) {
                 <button
                   key={cat.id}
                   onClick={() => setActiveL1Id(isActive ? null : cat.id)}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 text-sm rounded-full transition-all duration-200 tracking-wide ring-inset ${isActive
-                    ? `${palette.text} ${palette.activeBg} font-medium ring-1 ${palette.ring}`
-                    : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
-                    }`}
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 text-sm rounded-full transition-all duration-200 tracking-wide ring-inset ${
+                    isActive
+                      ? `${palette.text} ${palette.activeBg} font-medium ring-1 ${palette.ring}`
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
+                  }`}
                 >
                   <span
                     className={`w-1.5 h-1.5 rounded-full transition-colors duration-200 ${isActive ? palette.dot : "bg-slate-300 dark:bg-slate-600"}`}
@@ -603,7 +681,14 @@ export default function ImageryClient({ items, categories }: Props) {
       {/* ── word cloud ── */}
       <main
         className={`max-w-5xl mx-auto px-8 py-16 min-h-[40vh] ${mounted ? "" : "opacity-0"}`}
-        style={mounted ? { animation: "main-fade-in 1s ease-out both", animationDelay: "200ms" } : undefined}
+        style={
+          mounted
+            ? {
+                animation: "main-fade-in 1s ease-out both",
+                animationDelay: "200ms",
+              }
+            : undefined
+        }
       >
         {wordDisplayList.length === 0 ? (
           <div className="text-center text-slate-400 dark:text-slate-600 text-sm py-24 tracking-[0.3em]">
@@ -611,7 +696,11 @@ export default function ImageryClient({ items, categories }: Props) {
           </div>
         ) : (
           <>
-            <div ref={cloudRef} key={activeL1Id ?? "all"} className="flex flex-wrap justify-center gap-x-10 gap-y-6">
+            <div
+              ref={cloudRef}
+              key={activeL1Id ?? "all"}
+              className="flex flex-wrap justify-center gap-x-10 gap-y-6"
+            >
               {visibleWords.map((data, idx) => {
                 return (
                   <WordItem
@@ -619,7 +708,9 @@ export default function ImageryClient({ items, categories }: Props) {
                     data={data}
                     onClick={handleWordClick}
                     localIdx={idx}
-                    selectedItemId={panelOpen ? (selectedItem?.id ?? null) : null}
+                    selectedItemId={
+                      panelOpen ? (selectedItem?.id ?? null) : null
+                    }
                     onHover={handleWordHover}
                   />
                 );
@@ -660,7 +751,6 @@ export default function ImageryClient({ items, categories }: Props) {
           </>
         )}
       </main>
-
 
       {/* ── footer ── */}
       <footer className="max-w-5xl mx-auto px-8 pb-12">
