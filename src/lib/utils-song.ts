@@ -191,7 +191,9 @@ export function filterSongs(
   selectedLyricist: string[],
   selectedComposer: string[],
   selectedArranger: string[],
-  fuseInstance?: Fuse<Song & { searchableContent: string }>,
+  // 接受基础索引或含歌词的扩展索引
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  fuseInstance?: Fuse<any>,
 ): Song[] {
   let filteredBySearch = songsData;
 
