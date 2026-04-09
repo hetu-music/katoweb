@@ -5,6 +5,7 @@ import { verifyCSRFToken } from "./server-utils";
 export interface AuthenticatedUser {
   id: string;
   email?: string;
+  is_admin?: boolean;
   [key: string]: unknown;
 }
 
@@ -121,6 +122,21 @@ export async function authenticateUserWithCSRF(
 }
 
 /**
+ * 检查用户是否为管理员
+ */
+export async function checkIsAdmin(userId: string): Promise<boolean> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("users")
+    .select("is_admin")
+    .eq("id", userId)
+    .single();
+
+  if (error || !data) return false;
+  return !!data.is_admin;
+}
+
+/**
  * 高阶函数：为 API 路由添加身份验证
  */
 export function withAuth(
@@ -128,7 +144,7 @@ export function withAuth(
     request: NextRequest,
     user: AuthenticatedUser,
   ) => Promise<NextResponse>,
-  options: { requireCSRF?: boolean } = {},
+  options: { requireCSRF?: boolean; requireAdmin?: boolean } = {},
 ) {
   return async (request: NextRequest): Promise<NextResponse> => {
     const authResult = options.requireCSRF
@@ -144,6 +160,17 @@ export function withAuth(
 
     if (!authResult.user) {
       return NextResponse.json({ error: "User not found" }, { status: 401 });
+    }
+
+    // 管理员权限检查
+    if (options.requireAdmin) {
+      const isAdmin = await checkIsAdmin(authResult.user.id);
+      if (!isAdmin) {
+        return NextResponse.json(
+          { error: "Forbidden: Admin access required" },
+          { status: 403 },
+        );
+      }
     }
 
     return handler(request, authResult.user);

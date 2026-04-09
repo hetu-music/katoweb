@@ -50,5 +50,5 @@ export const GET = withAuth(
       );
     }
   },
-  { requireCSRF: true },
+  { requireCSRF: true, requireAdmin: true },
 );

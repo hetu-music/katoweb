@@ -21,6 +21,7 @@ import {
   RotateCcw,
   Heart,
   User,
+  Mic2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -44,6 +45,7 @@ import { useFavorites } from "@/context/FavoritesContext";
 import { useUserContext } from "@/context/UserContext";
 import ThemeToggle from "../shared/ThemeToggle";
 import MultiTagDisplay from "./MultiTagDisplay";
+import { useLyricsIndex, extractLyricsSnippet } from "@/hooks/useLyricsIndex";
 
 // 简易 classNames 工具 (替代 clsx/tailwind-merge)
 function cn(...classes: (string | undefined | null | false)[]) {
@@ -99,12 +101,14 @@ const GridCard = ({
   style,
   className,
   isActive,
+  lyricsSnippet,
 }: {
   song: Song;
   onClick: () => void;
   style?: React.CSSProperties;
   className?: string;
   isActive?: boolean;
+  lyricsSnippet?: string;
 }) => {
   const { isFavorite, toggleFavorite, isLoggedIn } = useFavorites();
   const active = isFavorite(song.id);
@@ -191,6 +195,14 @@ const GridCard = ({
             </>
           )}
         </p>
+        {/* 歌词命中片段 */}
+        {lyricsSnippet && (
+          <div className="mt-1.5 pl-2 border-l-2 border-slate-200 dark:border-slate-700">
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate leading-relaxed">
+              {lyricsSnippet}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -203,12 +215,14 @@ const ListRow = ({
   style,
   className,
   isActive,
+  lyricsSnippet,
 }: {
   song: Song;
   onClick: () => void;
   style?: React.CSSProperties;
   className?: string;
   isActive?: boolean;
+  lyricsSnippet?: string;
 }) => {
   const { isFavorite, toggleFavorite, isLoggedIn } = useFavorites();
   const active = isFavorite(song.id);
@@ -247,6 +261,14 @@ const ListRow = ({
           <span className="opacity-50 mx-1">/</span>{" "}
           {song.composer?.join(" ") || "-"}
         </p>
+        {/* 歌词命中片段 */}
+        {lyricsSnippet && (
+          <div className="mt-1 pl-2 border-l-2 border-slate-200 dark:border-slate-700">
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate leading-relaxed">
+              {lyricsSnippet}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* 辅助信息 (在大屏幕显示) */}
@@ -417,10 +439,18 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     (val) => val[0] === 0 && val[1] === sliderYears.length - 1,
   );
 
-  // Memoize Fuse instance only when data changes
+  // 基础 Fuse 实例（不含歌词，首屏立即可用）
   const fuseInstance = useMemo(() => {
     return createFuseInstance(initialSongsData);
   }, [initialSongsData]);
+
+  // 后台异步拉取歌词索引
+  const { lyricsFuseInstance, lyricsMap, state: lyricsState } = useLyricsIndex(initialSongsData);
+
+  // 搜索活跃时使用的 Fuse 实例：歌词索引就绪后自动升级
+  const activeFuseInstance = debouncedSearchQuery
+    ? (lyricsFuseInstance ?? fuseInstance)
+    : fuseInstance;
 
   // 数据过滤 (使用 fuse.js 模糊搜索)
   const filteredWorks = useMemo(() => {
@@ -444,7 +474,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       filterLyricist,
       filterComposer,
       filterArranger,
-      fuseInstance,
+      activeFuseInstance,
     );
   }, [
     initialSongsData,
@@ -455,7 +485,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     filterLyricist,
     filterComposer,
     filterArranger,
-    fuseInstance,
+    activeFuseInstance,
   ]);
 
   // Notify hook when data is ready for scroll restoration
@@ -713,7 +743,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   />
                   <input
                     type="text"
-                    placeholder="搜索歌曲、创作者..."
+                    placeholder={lyricsState === "ready" ? "搜索歌曲、创作者、歌词..." : "搜索歌曲、创作者..."}
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
@@ -721,7 +751,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                     }}
                     className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full py-2 pl-9 pr-8 text-sm outline-none focus:border-blue-500 transition-colors"
                   />
-                  {searchQuery && (
+                  {searchQuery ? (
                     <button
                       onClick={() => {
                         setSearchQuery("");
@@ -731,7 +761,13 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                     >
                       <XCircle size={14} />
                     </button>
-                  )}
+                  ) : lyricsState === "loading" ? (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <span className="block w-3 h-3 rounded-full border border-indigo-400/60 border-t-indigo-500 animate-spin" />
+                    </span>
+                  ) : lyricsState === "ready" ? (
+                    <Mic2 size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-400/60" />
+                  ) : null}
                 </div>
 
                 {/* Advanced Filter Button */}
@@ -824,6 +860,14 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       key={work.id}
                       song={work}
                       isActive={activeSongId === work.id}
+                      lyricsSnippet={
+                        debouncedSearchQuery && lyricsState === "ready"
+                          ? extractLyricsSnippet(
+                              lyricsMap.get(work.id) || "",
+                              debouncedSearchQuery,
+                            )
+                          : undefined
+                      }
                       onClick={() => {
                         setActiveSongId(work.id);
                         handleSongClick();
@@ -865,6 +909,14 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       key={work.id}
                       song={work}
                       isActive={activeSongId === work.id}
+                      lyricsSnippet={
+                        debouncedSearchQuery && lyricsState === "ready"
+                          ? extractLyricsSnippet(
+                              lyricsMap.get(work.id) || "",
+                              debouncedSearchQuery,
+                            )
+                          : undefined
+                      }
                       onClick={() => {
                         setActiveSongId(work.id);
                         handleSongClick();

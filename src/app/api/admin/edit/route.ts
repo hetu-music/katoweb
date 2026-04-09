@@ -57,6 +57,7 @@ export const GET = withAuth(
       );
     }
   },
+  { requireAdmin: true },
 );
 
 export const POST = withAuth(
@@ -99,7 +100,7 @@ export const POST = withAuth(
       );
     }
   },
-  { requireCSRF: true },
+  { requireCSRF: true, requireAdmin: true },
 );
 
 export const PUT = withAuth(
@@ -161,5 +162,5 @@ export const PUT = withAuth(
       );
     }
   },
-  { requireCSRF: true },
+  { requireCSRF: true, requireAdmin: true },
 );
