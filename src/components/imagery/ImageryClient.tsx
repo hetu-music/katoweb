@@ -439,19 +439,27 @@ export default function ImageryClient({ items, categories }: Props) {
 
         <div className="relative z-10">
           <h1
-            className={`font-serif text-7xl md:text-9xl font-normal tracking-[0.35em] pl-[0.35em] text-slate-800 dark:text-slate-100 mb-5 ${mounted ? "hero-unroll" : "opacity-0"}`}
+            className="font-serif text-7xl md:text-9xl font-normal text-slate-800 dark:text-slate-100 mb-6 flex justify-center items-center drop-shadow-[0_0_30px_rgba(255,255,255,0.05)]"
           >
-            意象词云
+            {"意象词云".split("").map((char, i) => (
+              <span
+                key={i}
+                className={`hero-title-char inline-block tracking-[0.3em] pl-[0.3em] ${mounted ? "" : "opacity-0"}`}
+                style={{ animationDelay: `${i * 300}ms` }}
+              >
+                {char}
+              </span>
+            ))}
           </h1>
           <p
             className={`text-sm text-slate-400 dark:text-slate-500 tracking-[0.25em] pl-[0.25em] mb-3 ${mounted ? "hero-unroll" : "opacity-0"}`}
-            style={{ animationDelay: "150ms" }}
+            style={{ animationDelay: "1600ms" }}
           >
             河图作品中的意象索引
           </p>
           <p
             className={`text-xs text-slate-400 dark:text-slate-600 tracking-wide ${mounted ? "hero-unroll" : "opacity-0"}`}
-            style={{ animationDelay: "300ms" }}
+            style={{ animationDelay: "1900ms" }}
           >
             共收录{" "}
             <span className="text-slate-600 dark:text-slate-400 font-medium tabular-nums">
