@@ -1,16 +1,15 @@
 "use client";
 
-import React, { memo, useEffect, useState, useMemo, useCallback } from "react";
-import Link from "next/link";
-import { X } from "lucide-react";
 import {
   Sheet,
   SheetContent,
-  SheetTitle,
   SheetDescription,
+  SheetTitle,
 } from "@/components/ui/sheet";
-import type { ImageryItem, SongRef } from "@/lib/types";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
+import type { ImageryItem, SongRef } from "@/lib/types";
+import Link from "next/link";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 // ─── shared types ─────────────────────────────────────────────────────────────
 
@@ -82,8 +81,8 @@ const PanelBody = memo(function PanelBody({
     () =>
       activeLyricist
         ? songs.filter(({ song }) =>
-            song.lyricist?.includes(activeLyricist),
-          )
+          song.lyricist?.includes(activeLyricist),
+        )
         : songs,
     [songs, activeLyricist],
   );
@@ -102,11 +101,10 @@ const PanelBody = memo(function PanelBody({
   if (songs.length === 0) {
     return (
       <p
-        className={`text-center text-sm tracking-[0.25em] py-16 ${
-          isDesktop
-            ? "text-slate-300 dark:text-slate-700"
-            : "text-slate-400 dark:text-slate-600"
-        }`}
+        className={`text-center text-sm tracking-[0.25em] py-16 ${isDesktop
+          ? "text-slate-300 dark:text-slate-700"
+          : "text-slate-400 dark:text-slate-600"
+          }`}
       >
         暂无相关词作
       </p>
@@ -118,7 +116,7 @@ const PanelBody = memo(function PanelBody({
       {/* Lyricist filter badges */}
       {lyricistCounts.length > 0 && (
         <>
-          <SectionLabel label="词作者" accent={selectedPalette.accent} />
+          <SectionLabel label="词作" accent={selectedPalette.accent} />
           <div className="flex flex-wrap gap-2 mb-1">
             {lyricistCounts.map(([name, count]) => {
               const isActive = activeLyricist === name;
@@ -126,11 +124,10 @@ const PanelBody = memo(function PanelBody({
                 <button
                   key={name}
                   onClick={() => onLyricistClick(name)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs border transition-all duration-150 ${
-                    isActive
-                      ? "text-white border-transparent shadow-sm"
-                      : "bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 border-slate-200/70 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600"
-                  }`}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs border transition-all duration-150 ${isActive
+                    ? "text-white border-transparent shadow-sm"
+                    : "bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 border-slate-200/70 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600"
+                    }`}
                   style={
                     isActive
                       ? { backgroundColor: selectedPalette.accent }
@@ -154,36 +151,29 @@ const PanelBody = memo(function PanelBody({
       <SectionLabel
         label={
           activeLyricist
-            ? `${activeLyricist}的词作 ${filtered.length}`
-            : `相关词作 ${songs.length}`
+            ? `${activeLyricist}的曲目 ${filtered.length}`
+            : `相关曲目 ${songs.length}`
         }
         accent={selectedPalette.accent}
       />
-      <div className="space-y-0">
-        {filtered.map(({ song, occurrenceCount }) => (
+      <div className="flex flex-col -mx-3">
+        {filtered.map(({ song }) => (
           <Link
             key={song.id}
             href={`/song/${song.id}`}
             onClick={onLinkClick}
-            className="flex items-center justify-between py-3.5 px-3 -mx-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group"
+            className="flex items-center justify-between py-4 px-3 border-b border-slate-100/80 dark:border-slate-800/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group"
           >
             <div className="min-w-0">
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors truncate tracking-wide">
+              <div className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors truncate tracking-wide">
                 {song.title}
-              </p>
-              {(song.album || song.lyricist?.length) && (
-                <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 truncate tracking-wide">
-                  {[song.album, song.lyricist?.join("、")]
-                    .filter(Boolean)
-                    .join("  ·  ")}
-                </p>
+              </div>
+              {song.lyricist?.length && (
+                <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 truncate tracking-wide">
+                  {song.lyricist.join("  ·  ")}
+                </div>
               )}
             </div>
-            {occurrenceCount > 1 && (
-              <span className="ml-3 shrink-0 text-xs text-slate-300 dark:text-slate-700 tabular-nums">
-                ×{occurrenceCount}
-              </span>
-            )}
           </Link>
         ))}
       </div>
@@ -331,11 +321,11 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
         className={
           isDesktop
             ? [
-                "top-[var(--nav-h,49px)] h-[calc(100vh-var(--nav-h,49px))] w-[min(440px,42vw)] p-0",
-                panelSide === "right"
-                  ? "border-l border-slate-200/50 dark:border-slate-700/25 shadow-[-32px_0_80px_rgba(0,0,0,0.06)] dark:shadow-[-32px_0_80px_rgba(0,0,0,0.45)]"
-                  : "border-r border-slate-200/50 dark:border-slate-700/25 shadow-[32px_0_80px_rgba(0,0,0,0.06)] dark:shadow-[32px_0_80px_rgba(0,0,0,0.45)]",
-              ].join(" ")
+              "top-(--nav-h,49px) h-[calc(100vh-var(--nav-h,49px))] w-[min(440px,42vw)] p-0",
+              panelSide === "right"
+                ? "border-l border-slate-200/50 dark:border-slate-700/25 shadow-[-32px_0_80px_rgba(0,0,0,0.06)] dark:shadow-[-32px_0_80px_rgba(0,0,0,0.45)]"
+                : "border-r border-slate-200/50 dark:border-slate-700/25 shadow-[32px_0_80px_rgba(0,0,0,0.06)] dark:shadow-[32px_0_80px_rgba(0,0,0,0.45)]",
+            ].join(" ")
             : "max-h-[85dvh] p-0"
         }
       >
