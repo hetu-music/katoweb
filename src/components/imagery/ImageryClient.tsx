@@ -14,6 +14,7 @@ import type { ImageryItem, ImageryCategory } from "@/lib/types";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import ImageryDetailPanel from "./ImageryDetailPanel";
 import type { SongResult, PaletteEntry } from "./ImageryDetailPanel";
+import { useIsDesktop } from "@/hooks/useIsDesktop";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
@@ -30,6 +31,7 @@ interface Props {
 interface WordDisplayData {
   item: ImageryItem;
   paletteText: string;
+  paletteAccent: string;
   fontSize: number;
   breatheDuration: number;
   breatheDelay: number;
@@ -109,10 +111,12 @@ const WordItem = memo(function WordItem({
   data,
   onClick,
   localIdx,
+  selectedItemId,
 }: {
   data: WordDisplayData;
   onClick: (item: ImageryItem) => void;
   localIdx: number;
+  selectedItemId: number | null;
 }) {
   const btnRef = useRef<HTMLButtonElement>(null);
   const handleClick = useCallback(() => onClick(data.item), [onClick, data.item]);
@@ -125,39 +129,59 @@ const WordItem = memo(function WordItem({
     return () => obs.unobserve(el);
   }, []);
 
-  // Limit delay so large batches don't take forever to appear
   const unfurlDelay = `${Math.min(localIdx, 30) * 20}ms`;
+
+  const isSelected = selectedItemId === data.item.id;
+  const hasSelection = selectedItemId !== null;
+
+  // Glow: layered text-shadow in the word's own accent color
+  const glow = isSelected
+    ? `0 0 12px ${data.paletteAccent}cc, 0 0 28px ${data.paletteAccent}66, 0 0 60px ${data.paletteAccent}22`
+    : undefined;
 
   return (
     <div
       className="relative group/word leading-none word-unfurl-anim"
-      style={{ "--unfurl-delay": unfurlDelay } as React.CSSProperties}
+      style={
+        {
+          "--unfurl-delay": unfurlDelay,
+          // dim/brighten the whole word cell
+          opacity: hasSelection ? (isSelected ? 1 : 0.1) : undefined,
+          transform: isSelected ? "scale(1.14)" : undefined,
+          zIndex: isSelected ? 10 : undefined,
+          transition: "opacity 0.45s ease, transform 0.45s cubic-bezier(0.22,1,0.36,1)",
+          willChange: "opacity, transform",
+        } as React.CSSProperties
+      }
     >
       <button
         ref={btnRef}
         onClick={handleClick}
-        className={`font-serif leading-none opacity-70 hover:opacity-100 transition-opacity duration-200 word-breathe-anim ${data.paletteText}`}
+        className={`font-serif leading-none transition-opacity duration-200 word-breathe-anim ${data.paletteText} ${isSelected ? "opacity-100" : "opacity-70 hover:opacity-100"}`}
         style={
           {
             fontSize: `${data.fontSize}rem`,
             "--word-breathe-duration": `${data.breatheDuration}s`,
             "--word-breathe-delay": `${data.breatheDelay}s`,
             animationPlayState: "paused",
+            textShadow: glow,
           } as React.CSSProperties
         }
       >
         {data.item.name}
       </button>
-      {/* CSS-only tooltip */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 shadow-md whitespace-nowrap opacity-0 group-hover/word:opacity-100 transition-opacity duration-150 z-20"
-      >
-        <p className="text-xs text-slate-600 dark:text-slate-300 tracking-wide">
-          {data.tooltip}
-        </p>
-        <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-200/80 dark:border-t-slate-700/60" />
-      </div>
+      {/* CSS-only tooltip — suppress when something is selected */}
+      {!hasSelection && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 shadow-md whitespace-nowrap opacity-0 group-hover/word:opacity-100 transition-opacity duration-150 z-20"
+        >
+          <p className="text-xs text-slate-600 dark:text-slate-300 tracking-wide">
+            {data.tooltip}
+          </p>
+          <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-200/80 dark:border-t-slate-700/60" />
+        </div>
+      )}
     </div>
   );
 });
@@ -211,6 +235,7 @@ export default function ImageryClient({ items, categories }: Props) {
   const [songs, setSongs] = useState<SongResult[]>([]);
   const [songsLoading, setSongsLoading] = useState(false);
 
+  const isDesktop = useIsDesktop();
   const sentinelRef = useRef<HTMLDivElement>(null);
   const visibleCountRef = useRef(INITIAL_BATCH);
   const [mounted, setMounted] = useState(false);
@@ -239,9 +264,12 @@ export default function ImageryClient({ items, categories }: Props) {
         const colorIdx = l1 ? (l1ColorIndex.get(l1.id) ?? 0) : -1;
         const paletteText =
           colorIdx >= 0 ? PALETTE_TEXT[colorIdx] : GRAY_PALETTE.text;
+        const paletteAccent =
+          colorIdx >= 0 ? PALETTE_FULL[colorIdx].accent : GRAY_PALETTE.accent;
         return {
           item,
           paletteText,
+          paletteAccent,
           fontSize: calcFontSize(item.count, maxCount),
           breatheDuration: 3.5 + (idx % 7) * 0.6,
           breatheDelay: (idx % 13) * 0.35,
@@ -338,6 +366,9 @@ export default function ImageryClient({ items, categories }: Props) {
   const handleClose = useCallback(() => setPanelOpen(false), []);
 
   // ── render ────────────────────────────────────────────────────────────────
+  // On desktop with panel open, shift content left to make room for the panel
+  const contentShift = isDesktop && panelOpen;
+
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] text-slate-800 dark:text-slate-200">
       {/* ── nav ── */}
@@ -352,6 +383,13 @@ export default function ImageryClient({ items, categories }: Props) {
         <ThemeToggle />
       </nav>
 
+      {/* Content shifts left on desktop when panel is open */}
+      <div
+        style={{
+          paddingRight: contentShift ? "min(440px, 42vw)" : undefined,
+          transition: "padding-right 0.5s cubic-bezier(0.22, 1, 0.36, 1)",
+        }}
+      >
       {/* ── hero ── */}
       <header className="relative overflow-hidden pt-16 pb-12 px-6 text-center">
         <div
@@ -462,6 +500,7 @@ export default function ImageryClient({ items, categories }: Props) {
                     data={data}
                     onClick={handleWordClick}
                     localIdx={localIdx}
+                    selectedItemId={panelOpen ? (selectedItem?.id ?? null) : null}
                   />
                 );
               })}
@@ -513,6 +552,7 @@ export default function ImageryClient({ items, categories }: Props) {
           </div>
         </div>
       )}
+      </div>{/* end content-shift wrapper */}
 
       {/* ── Detail panel (desktop slide-in / mobile drawer) ── */}
       <ImageryDetailPanel

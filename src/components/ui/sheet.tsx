@@ -42,14 +42,16 @@ interface SheetContentProps
   extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
   side?: SheetSide;
   hideClose?: boolean;
+  /** Set false to skip rendering the overlay (e.g. non-modal desktop panels). Default true. */
+  showOverlay?: boolean;
 }
 
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   SheetContentProps
->(({ side = "right", hideClose = false, className, children, ...props }, ref) => (
+>(({ side = "right", hideClose = false, showOverlay = true, className, children, ...props }, ref) => (
   <SheetPortal>
-    <SheetOverlay />
+    {showOverlay && <SheetOverlay />}
     <DialogPrimitive.Content
       ref={ref}
       className={cn(

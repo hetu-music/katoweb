@@ -10,6 +10,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import type { ImageryItem, SongRef } from "@/lib/types";
+import { useIsDesktop } from "@/hooks/useIsDesktop";
 
 // ─── shared types ─────────────────────────────────────────────────────────────
 
@@ -294,17 +295,10 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
     onClose,
   } = props;
 
-  const [isDesktop, setIsDesktop] = useState(false);
+  const isDesktop = useIsDesktop();
   const [activeLyricist, setActiveLyricist] = useState<string | null>(null);
 
-  // Detect viewport
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 768px)");
-    setIsDesktop(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
+  // (removed manual matchMedia — now via useIsDesktop hook)
 
   // Clear lyricist filter when selection changes
   useEffect(() => {
@@ -327,10 +321,11 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
   };
 
   return (
-    <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
+    <Sheet open={open} onOpenChange={(v) => !v && onClose()} modal={!isDesktop}>
       <SheetContent
         side={isDesktop ? "right" : "bottom"}
         hideClose={!isDesktop}
+        showOverlay={!isDesktop}
         className={
           isDesktop
             ? "top-[49px] h-[calc(100vh-49px)] w-[min(440px,42vw)] border-slate-200/50 dark:border-slate-700/25 shadow-[-32px_0_80px_rgba(0,0,0,0.06)] dark:shadow-[-32px_0_80px_rgba(0,0,0,0.45)] p-0"
