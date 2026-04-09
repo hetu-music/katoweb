@@ -99,5 +99,5 @@ export const GET = withAuth(
       return NextResponse.json({ error: "自动补全请求失败" }, { status: 500 });
     }
   },
-  { requireCSRF: true, requireAdmin: true },
+  { requireCSRF: true },
 );
