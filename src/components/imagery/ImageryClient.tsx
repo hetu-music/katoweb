@@ -129,7 +129,7 @@ const WordItem = memo(function WordItem({
     return () => obs.unobserve(el);
   }, []);
 
-  const unfurlDelay = `${Math.min(localIdx, 30) * 20}ms`;
+  const unfurlDelay = `${Math.min(localIdx, 30) * 30}ms`;
 
   const isSelected = selectedItemId === data.item.id;
   const hasSelection = selectedItemId !== null;
