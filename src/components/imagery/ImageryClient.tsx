@@ -18,8 +18,8 @@ import ImageryDetailPanel from "./ImageryDetailPanel";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
-const INITIAL_BATCH = 80;
-const BATCH_SIZE = 60;
+const INITIAL_BATCH = 200;
+const BATCH_SIZE = 150;
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -53,7 +53,7 @@ function getAnimObserver(): IntersectionObserver | null {
             : "paused";
         }
       },
-      { rootMargin: "120px" },
+      { rootMargin: "600px" },
     );
   }
   return animObserver;
@@ -120,6 +120,7 @@ const WordItem = memo(function WordItem({
   selectedItemId: number | null;
   onHover: (data: WordDisplayData | null, rect?: DOMRect) => void;
 }) {
+  const [hasEntered, setHasEntered] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
 
   const handleClick = useCallback(() => {
@@ -130,10 +131,20 @@ const WordItem = memo(function WordItem({
 
   useEffect(() => {
     const el = btnRef.current;
-    const obs = getAnimObserver();
-    if (!el || !obs) return;
+    if (!el || typeof window === "undefined") return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setHasEntered(true);
+          el.style.animationPlayState = "running";
+        } else {
+          el.style.animationPlayState = "paused";
+        }
+      },
+      { rootMargin: "400px" },
+    );
     obs.observe(el);
-    return () => obs.unobserve(el);
+    return () => obs.disconnect();
   }, []);
 
   const unfurlDelay = `${Math.min(localIdx, 100) * 40}ms`;
@@ -156,9 +167,9 @@ const WordItem = memo(function WordItem({
         transition: "opacity 0.8s ease, transform 0.8s cubic-bezier(0.16,1,0.3,1)",
       }}
     >
-      {/* ── Inner: carries the one-shot unfurl animation (separate from selection state) ── */}
+      {/* ── Inner: carries the one-shot unfurl animation triggered on screen entry ── */}
       <div
-        className="relative group/word leading-none word-unfurl-anim"
+        className={`relative group/word leading-none ${hasEntered ? "word-unfurl-anim" : "opacity-0"}`}
         style={{ "--unfurl-delay": unfurlDelay } as React.CSSProperties}
       >
         <button
@@ -242,9 +253,22 @@ export default function ImageryClient({ items, categories }: Props) {
   const cloudRef = useRef<HTMLDivElement>(null);
   const visibleCountRef = useRef(INITIAL_BATCH);
   const [mounted, setMounted] = useState(false);
+  const [headerVisible, setHeaderVisible] = useState(true);
 
   // Trigger entrance animation after first paint
   useEffect(() => { setMounted(true); }, []);
+
+  // Track header visibility to pause infinite marquee animations
+  const headerRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([entry]) => {
+      setHeaderVisible(entry.isIntersecting);
+    }, { threshold: 0.05 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   // Sync ref with state
   useEffect(() => { visibleCountRef.current = visibleCount; }, [visibleCount]);
@@ -356,7 +380,7 @@ export default function ImageryClient({ items, categories }: Props) {
           );
         }
       },
-      { rootMargin: "300px" },
+      { rootMargin: "1000px" },
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
@@ -416,7 +440,7 @@ export default function ImageryClient({ items, categories }: Props) {
       </nav>
 
       {/* ── hero ── */}
-      <header className="relative overflow-hidden pt-16 pb-12 px-6 text-center">
+      <header ref={headerRef} className="relative overflow-hidden pt-16 pb-12 px-6 text-center">
         <div
           aria-hidden
           className="absolute inset-0 pointer-events-none select-none overflow-hidden flex flex-col justify-center gap-5 opacity-[0.045] dark:opacity-[0.055]"
@@ -431,7 +455,10 @@ export default function ImageryClient({ items, categories }: Props) {
             <div
               key={ri}
               className="flex whitespace-nowrap font-serif"
-              style={{ animation: `${dir} ${duration} linear infinite` }}
+              style={{
+                animation: `${dir} ${duration} linear infinite`,
+                animationPlayState: headerVisible ? "running" : "paused",
+              }}
             >
               {[...marqueeWords, ...marqueeWords].map((w, i) => (
                 <span key={i} className={`${size} mx-5 text-slate-900 dark:text-white`}>
@@ -482,8 +509,8 @@ export default function ImageryClient({ items, categories }: Props) {
             <button
               onClick={() => setActiveL1Id(null)}
               className={`px-3.5 py-1.5 text-sm rounded-full transition-all duration-200 tracking-wide ${activeL1Id === null
-                  ? "bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 font-medium shadow-sm"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
+                ? "bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 font-medium shadow-sm"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
                 }`}
             >
               全部
@@ -496,8 +523,8 @@ export default function ImageryClient({ items, categories }: Props) {
                   key={cat.id}
                   onClick={() => setActiveL1Id(isActive ? null : cat.id)}
                   className={`flex items-center gap-1.5 px-3.5 py-1.5 text-sm rounded-full transition-all duration-200 tracking-wide ring-inset ${isActive
-                      ? `${palette.text} ${palette.activeBg} font-medium ring-1 ${palette.ring}`
-                      : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
+                    ? `${palette.text} ${palette.activeBg} font-medium ring-1 ${palette.ring}`
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
                     }`}
                 >
                   <span
@@ -540,7 +567,7 @@ export default function ImageryClient({ items, categories }: Props) {
             {/* Singleton Tooltip */}
             {hoveredData && (
               <div
-                className="fixed z-[100] pointer-events-none px-2.5 py-1.5 rounded-lg bg-white/95 dark:bg-slate-900/95 border border-slate-200/80 dark:border-slate-700/60 shadow-lg whitespace-nowrap transition-opacity duration-150"
+                className="fixed z-100 pointer-events-none px-2.5 py-1.5 rounded-lg bg-white/95 dark:bg-slate-900/95 border border-slate-200/80 dark:border-slate-700/60 shadow-lg whitespace-nowrap transition-opacity duration-150"
                 style={{
                   left: hoveredData.x,
                   top: hoveredData.y - 10,
@@ -572,34 +599,15 @@ export default function ImageryClient({ items, categories }: Props) {
         )}
       </main>
 
-      {/* ── legend ── */}
-      {level1Categories.length > 0 && (
-        <div className="max-w-5xl mx-auto px-8 pb-20">
-          <div className="border-t border-slate-100 dark:border-slate-800 pt-8">
-            <p className="text-xs text-slate-400 dark:text-slate-600 tracking-[0.25em] mb-4">
-              意象分类
-            </p>
-            <div className="flex flex-wrap gap-x-8 gap-y-3">
-              {level1Categories.map((cat, i) => {
-                const palette = PALETTE_FULL[i % PALETTE_FULL.length];
-                const isOther = activeL1Id !== null && activeL1Id !== cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    onClick={() =>
-                      setActiveL1Id(activeL1Id === cat.id ? null : cat.id)
-                    }
-                    className={`flex items-center gap-2 text-xs tracking-wide transition-opacity duration-200 ${isOther ? "opacity-25" : "opacity-100"}`}
-                  >
-                    <span className={`w-2 h-2 rounded-full ${palette.dot}`} />
-                    <span className={palette.text}>{cat.name}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+
+      {/* ── footer ── */}
+      <footer className="max-w-5xl mx-auto px-8 pb-12">
+        <div className="border-t border-slate-100 dark:border-slate-800 pt-8 text-center">
+          <p className="text-xs text-slate-400 dark:text-slate-600 font-mono">
+            &copy; {new Date().getFullYear()} 河图作品勘鉴
+          </p>
         </div>
-      )}
+      </footer>
 
       {/* ── Detail panel (desktop slide-in / mobile drawer) ── */}
       <ImageryDetailPanel
