@@ -204,6 +204,10 @@ button {
   animation: word-fade-in 2.2s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: var(--unfurl-delay, 0ms);
   will-change: transform, opacity;
+  /* 性能优化：限制样式计算范围并允许屏外内容跳过渲染 */
+  contain: layout style paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 2rem; /* 给定大概的占位尺寸防止滚动跳动 */
 }
 
 /* 页面主内容淡入 */

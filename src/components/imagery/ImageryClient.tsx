@@ -112,11 +112,13 @@ const WordItem = memo(function WordItem({
   onClick,
   localIdx,
   selectedItemId,
+  onHover,
 }: {
   data: WordDisplayData;
   onClick: (item: ImageryItem, clickX: number) => void;
   localIdx: number;
   selectedItemId: number | null;
+  onHover: (data: WordDisplayData | null, rect?: DOMRect) => void;
 }) {
   const btnRef = useRef<HTMLButtonElement>(null);
 
@@ -162,6 +164,8 @@ const WordItem = memo(function WordItem({
         <button
           ref={btnRef}
           onClick={handleClick}
+          onMouseEnter={() => !hasSelection && onHover(data, btnRef.current?.getBoundingClientRect())}
+          onMouseLeave={() => onHover(null)}
           className={`font-serif leading-none transition-opacity duration-200 word-breathe-anim ${data.paletteText} ${isSelected ? "opacity-100" : "opacity-70 hover:opacity-100"}`}
           style={
             {
@@ -176,18 +180,6 @@ const WordItem = memo(function WordItem({
         >
           {data.item.name}
         </button>
-        {/* CSS-only tooltip — hidden while any word is selected */}
-        {!hasSelection && (
-          <div
-            aria-hidden
-            className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 shadow-md whitespace-nowrap opacity-0 group-hover/word:opacity-100 transition-opacity duration-150 z-20"
-          >
-            <p className="text-xs text-slate-600 dark:text-slate-300 tracking-wide">
-              {data.tooltip}
-            </p>
-            <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-200/80 dark:border-t-slate-700/60" />
-          </div>
-        )}
       </div>
     </div>
   );
@@ -242,6 +234,7 @@ export default function ImageryClient({ items, categories }: Props) {
   const [panelSide, setPanelSide] = useState<"left" | "right">("right");
   const [songs, setSongs] = useState<SongResult[]>([]);
   const [songsLoading, setSongsLoading] = useState(false);
+  const [hoveredData, setHoveredData] = useState<{ text: string; x: number; y: number } | null>(null);
 
   const isDesktop = useIsDesktop();
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -395,6 +388,18 @@ export default function ImageryClient({ items, categories }: Props) {
 
   const handleClose = useCallback(() => setPanelOpen(false), []);
 
+  const handleWordHover = useCallback((data: WordDisplayData | null, rect?: DOMRect) => {
+    if (!data || !rect) {
+      setHoveredData(null);
+      return;
+    }
+    setHoveredData({
+      text: data.tooltip,
+      x: rect.left + rect.width / 2,
+      y: rect.top,
+    });
+  }, []);
+
   // ── render ────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] text-slate-800 dark:text-slate-200">
@@ -526,10 +531,28 @@ export default function ImageryClient({ items, categories }: Props) {
                     onClick={handleWordClick}
                     localIdx={idx}
                     selectedItemId={panelOpen ? (selectedItem?.id ?? null) : null}
+                    onHover={handleWordHover}
                   />
                 );
               })}
             </div>
+
+            {/* Singleton Tooltip */}
+            {hoveredData && (
+              <div
+                className="fixed z-[100] pointer-events-none px-2.5 py-1.5 rounded-lg bg-white/95 dark:bg-slate-900/95 border border-slate-200/80 dark:border-slate-700/60 shadow-lg whitespace-nowrap transition-opacity duration-150"
+                style={{
+                  left: hoveredData.x,
+                  top: hoveredData.y - 10,
+                  transform: "translate(-50%, -100%)",
+                }}
+              >
+                <p className="text-xs text-slate-600 dark:text-slate-300 tracking-wide">
+                  {hoveredData.text}
+                </p>
+                <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-200/80 dark:border-t-slate-700/60" />
+              </div>
+            )}
 
             {/* Sentinel + progress */}
             <div ref={sentinelRef} className="mt-12 flex justify-center">
