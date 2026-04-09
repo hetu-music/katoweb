@@ -1,10 +1,12 @@
 "use client";
 
+import About from "@/components/library/About";
 import ThemeToggle from "@/components/shared/ThemeToggle";
+import { useUserContext } from "@/context/UserContext";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import type { ImageryCategory, ImageryItem } from "@/lib/types";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { Info, User } from "lucide-react";
+import { useRouter } from "next/navigation";
 import React, {
   memo,
   useCallback,
@@ -257,7 +259,10 @@ export default function ImageryClient({ items, categories }: Props) {
   const [songs, setSongs] = useState<SongResult[]>([]);
   const [songsLoading, setSongsLoading] = useState(false);
   const [hoveredData, setHoveredData] = useState<{ text: string; x: number; y: number } | null>(null);
+  const [showAbout, setShowAbout] = useState(false);
 
+  const router = useRouter();
+  const { user } = useUserContext();
   const isDesktop = useIsDesktop();
   const sentinelRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
@@ -435,23 +440,61 @@ export default function ImageryClient({ items, categories }: Props) {
     });
   }, []);
 
+  const handleTitleReset = useCallback(() => {
+    window.location.href = "/";
+  }, []);
+
+  const openUserPanel = (tab: "account" | "favorites" = "favorites") => {
+    if (!user) {
+      const next = encodeURIComponent(
+        window.location.pathname + window.location.search,
+      );
+      router.push(`/login?next=${next}`);
+      return;
+    }
+    router.push(`/profile?tab=${tab}`);
+  };
+
   // ── render ────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] text-slate-800 dark:text-slate-200">
       {/* ── nav ── */}
-      <nav ref={navRef} className="sticky top-0 z-30 border-b border-slate-100/80 dark:border-slate-800/80 bg-[#FAFAFA]/90 dark:bg-[#0B0F19]/90 backdrop-blur-md px-6 py-3 flex items-center justify-between">
-        <Link
-          href="/"
-          className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors"
-        >
-          <ArrowLeft size={15} />
-          <span className="tracking-wider">返回</span>
-        </Link>
-        <ThemeToggle />
+      <nav ref={navRef} className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 transition-colors duration-500">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          <button
+            onClick={handleTitleReset}
+            className="text-2xl font-bold tracking-tight flex items-center gap-1 cursor-pointer transition-colors font-serif text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
+            title="返回首页"
+          >
+            河图
+            <span className="w-[2px] h-5 bg-blue-600 mx-2 rounded-full translate-y-[1.5px]" />
+            作品勘鉴
+          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowAbout(true)}
+              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+              title="关于"
+            >
+              <Info size={20} />
+            </button>
+            <button
+              onClick={() => openUserPanel("favorites")}
+              className="relative p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+              title={user ? user.name : "登录"}
+            >
+              <User
+                size={20}
+                className={user ? "text-blue-500 dark:text-blue-400" : ""}
+              />
+            </button>
+            <ThemeToggle />
+          </div>
+        </div>
       </nav>
 
       {/* ── hero ── */}
-      <header ref={headerRef} className="relative overflow-hidden pt-16 pb-12 px-6 text-center">
+      <header ref={headerRef} className="relative overflow-hidden pt-32 pb-12 px-6 text-center">
         <div
           aria-hidden
           className="absolute inset-0 pointer-events-none select-none overflow-hidden flex flex-col justify-center gap-5 opacity-[0.045] dark:opacity-[0.055]"
@@ -514,9 +557,9 @@ export default function ImageryClient({ items, categories }: Props) {
       </header>
 
       {/* ── category filter ── */}
-      <div className="sticky top-[49px] z-20 bg-[#FAFAFA]/95 dark:bg-[#0B0F19]/95 backdrop-blur-md border-b border-slate-100/80 dark:border-slate-800/80">
+      <div className="sticky top-(--nav-h,48px) z-20 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-100/80 dark:border-slate-800/80 transition-all duration-300">
         <div className="max-w-5xl mx-auto px-5 overflow-x-auto no-scrollbar">
-          <div className="flex items-center gap-1 py-2.5 w-max">
+          <div className="flex items-center gap-1 py-4 w-max">
             <button
               onClick={() => setActiveL1Id(null)}
               className={`px-3.5 py-1.5 text-sm rounded-full transition-all duration-200 tracking-wide ${activeL1Id === null
@@ -632,6 +675,8 @@ export default function ImageryClient({ items, categories }: Props) {
         lyricistCounts={lyricistCounts}
         onClose={handleClose}
       />
+
+      {showAbout && <About onClose={() => setShowAbout(false)} />}
     </div>
   );
 }

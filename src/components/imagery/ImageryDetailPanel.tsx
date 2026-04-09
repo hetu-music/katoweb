@@ -321,7 +321,7 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
         className={
           isDesktop
             ? [
-              "top-(--nav-h,49px) h-[calc(100vh-var(--nav-h,49px))] w-[min(440px,42vw)] p-0",
+              "top-(--nav-h,48px) h-[calc(100vh-var(--nav-h,48px))] w-[min(440px,42vw)] p-0",
               panelSide === "right"
                 ? "border-l border-slate-200/50 dark:border-slate-700/25 shadow-[-32px_0_80px_rgba(0,0,0,0.06)] dark:shadow-[-32px_0_80px_rgba(0,0,0,0.45)]"
                 : "border-r border-slate-200/50 dark:border-slate-700/25 shadow-[32px_0_80px_rgba(0,0,0,0.06)] dark:shadow-[32px_0_80px_rgba(0,0,0,0.45)]",
