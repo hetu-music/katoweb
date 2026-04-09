@@ -108,13 +108,11 @@ function triggerHaptic(ms = 8) {
 const WordItem = memo(function WordItem({
   data,
   onClick,
-  isNew,
-  batchIdx,
+  localIdx,
 }: {
   data: WordDisplayData;
   onClick: (item: ImageryItem) => void;
-  isNew: boolean;
-  batchIdx: number;
+  localIdx: number;
 }) {
   const btnRef = useRef<HTMLButtonElement>(null);
   const handleClick = useCallback(() => onClick(data.item), [onClick, data.item]);
@@ -127,15 +125,13 @@ const WordItem = memo(function WordItem({
     return () => obs.unobserve(el);
   }, []);
 
-  // Only first MAX_UNFURL items per batch actually animate; the rest appear instantly
-  const MAX_UNFURL = 20;
-  const shouldAnimate = isNew && batchIdx < MAX_UNFURL;
-  const unfurlDelay = shouldAnimate ? `${batchIdx * 45}ms` : "0ms";
+  // Limit delay so large batches don't take forever to appear
+  const unfurlDelay = `${Math.min(localIdx, 30) * 20}ms`;
 
   return (
     <div
-      className={`relative group/word leading-none${shouldAnimate ? " word-unfurl-anim" : ""}`}
-      style={shouldAnimate ? ({ "--unfurl-delay": unfurlDelay } as React.CSSProperties) : undefined}
+      className="relative group/word leading-none word-unfurl-anim"
+      style={{ "--unfurl-delay": unfurlDelay } as React.CSSProperties}
     >
       <button
         ref={btnRef}
@@ -210,7 +206,6 @@ export default function ImageryClient({ items, categories }: Props) {
   // ── state ────────────────────────────────────────────────────────────────
   const [activeL1Id, setActiveL1Id] = useState<number | null>(null);
   const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH);
-  const [batchStart, setBatchStart] = useState(INITIAL_BATCH); // words below this index are NOT new
   const [selectedItem, setSelectedItem] = useState<ImageryItem | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [songs, setSongs] = useState<SongResult[]>([]);
@@ -298,10 +293,9 @@ export default function ImageryClient({ items, categories }: Props) {
 
   // ── effects ──────────────────────────────────────────────────────────────
 
-  // Reset batch on filter change
+  // Reset visible count on filter change
   useEffect(() => {
     setVisibleCount(INITIAL_BATCH);
-    setBatchStart(INITIAL_BATCH); // no unfurl for fresh filter results
   }, [activeL1Id]);
 
   // Sentinel observer for lazy loading
@@ -311,8 +305,6 @@ export default function ImageryClient({ items, categories }: Props) {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          const current = visibleCountRef.current;
-          setBatchStart(current); // words from 'current' onward are new
           setVisibleCount((prev) =>
             Math.min(prev + BATCH_SIZE, wordDisplayList.length),
           );
@@ -389,17 +381,19 @@ export default function ImageryClient({ items, categories }: Props) {
 
         <div className="relative z-10">
           <h1
-            className={`font-serif text-7xl md:text-9xl font-normal tracking-[0.35em] text-slate-800 dark:text-slate-100 mb-5 transition-all duration-700 ease-out ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+            className={`font-serif text-7xl md:text-9xl font-normal tracking-[0.35em] text-slate-800 dark:text-slate-100 mb-5 ${mounted ? "hero-unroll" : "opacity-0"}`}
           >
             意象
           </h1>
           <p
-            className={`text-sm text-slate-400 dark:text-slate-500 tracking-[0.25em] mb-3 transition-all duration-700 delay-150 ease-out ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+            className={`text-sm text-slate-400 dark:text-slate-500 tracking-[0.25em] mb-3 ${mounted ? "hero-unroll" : "opacity-0"}`}
+            style={{ animationDelay: "150ms" }}
           >
             河图作品中的意象索引
           </p>
           <p
-            className={`text-xs text-slate-400 dark:text-slate-600 tracking-wide transition-all duration-700 delay-300 ease-out ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"}`}
+            className={`text-xs text-slate-400 dark:text-slate-600 tracking-wide ${mounted ? "hero-unroll" : "opacity-0"}`}
+            style={{ animationDelay: "300ms" }}
           >
             共收录{" "}
             <span className="text-slate-600 dark:text-slate-400 font-medium tabular-nums">
@@ -450,7 +444,8 @@ export default function ImageryClient({ items, categories }: Props) {
 
       {/* ── word cloud ── */}
       <main
-        className={`max-w-5xl mx-auto px-8 py-16 min-h-[40vh] transition-all duration-700 delay-[450ms] ease-out ${panelOpen ? "md:opacity-40" : ""} ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+        className={`max-w-5xl mx-auto px-8 py-16 min-h-[40vh] ${mounted ? "" : "opacity-0"}`}
+        style={mounted ? { animation: "word-fade-in 1s cubic-bezier(0.2, 0.8, 0.2, 1) both", animationDelay: "200ms" } : undefined}
       >
         {wordDisplayList.length === 0 ? (
           <div className="text-center text-slate-400 dark:text-slate-600 text-sm py-24 tracking-[0.3em]">
@@ -458,16 +453,18 @@ export default function ImageryClient({ items, categories }: Props) {
           </div>
         ) : (
           <>
-            <div className="flex flex-wrap justify-center gap-x-10 gap-y-6">
-              {visibleWords.map((data, idx) => (
-                <WordItem
-                  key={data.item.id}
-                  data={data}
-                  onClick={handleWordClick}
-                  isNew={idx >= batchStart}
-                  batchIdx={idx - batchStart}
-                />
-              ))}
+            <div key={activeL1Id ?? "all"} className="flex flex-wrap justify-center gap-x-10 gap-y-6">
+              {visibleWords.map((data, idx) => {
+                const localIdx = idx < INITIAL_BATCH ? idx : (idx - INITIAL_BATCH) % BATCH_SIZE;
+                return (
+                  <WordItem
+                    key={data.item.id}
+                    data={data}
+                    onClick={handleWordClick}
+                    localIdx={localIdx}
+                  />
+                );
+              })}
             </div>
 
             {/* Sentinel + progress */}
