@@ -134,7 +134,7 @@ const WordItem = memo(function WordItem({
     return () => obs.unobserve(el);
   }, []);
 
-  const unfurlDelay = `${Math.min(localIdx, 30) * 80}ms`;
+  const unfurlDelay = `${Math.min(localIdx, 100) * 40}ms`;
   const isSelected = selectedItemId === data.item.id;
   const hasSelection = selectedItemId !== null;
 
@@ -519,13 +519,12 @@ export default function ImageryClient({ items, categories }: Props) {
           <>
             <div ref={cloudRef} key={activeL1Id ?? "all"} className="flex flex-wrap justify-center gap-x-10 gap-y-6">
               {visibleWords.map((data, idx) => {
-                const localIdx = idx < INITIAL_BATCH ? idx : (idx - INITIAL_BATCH) % BATCH_SIZE;
                 return (
                   <WordItem
                     key={data.item.id}
                     data={data}
                     onClick={handleWordClick}
-                    localIdx={localIdx}
+                    localIdx={idx}
                     selectedItemId={panelOpen ? (selectedItem?.id ?? null) : null}
                   />
                 );
