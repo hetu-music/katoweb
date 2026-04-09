@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronRight } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -164,7 +165,7 @@ const PanelBody = memo(function PanelBody({
             onClick={onLinkClick}
             className="flex items-center justify-between py-4 px-3 border-b border-slate-100/80 dark:border-slate-800/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group"
           >
-            <div className="min-w-0">
+            <div className="min-w-0 pr-4">
               <div className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors truncate tracking-wide">
                 {song.title}
               </div>
@@ -174,6 +175,10 @@ const PanelBody = memo(function PanelBody({
                 </div>
               )}
             </div>
+            <ChevronRight
+              size={14}
+              className="text-slate-300 dark:text-slate-600 group-hover:text-slate-400 dark:group-hover:text-slate-400 transition-all duration-300 transform group-hover:translate-x-0.5"
+            />
           </Link>
         ))}
       </div>

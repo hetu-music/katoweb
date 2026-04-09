@@ -96,9 +96,9 @@ const GRAY_PALETTE: PaletteEntry = {
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
 function calcFontSize(count: number, maxCount: number): number {
-  if (maxCount <= 1) return 1.2;
+  if (maxCount <= 1) return 1.0;
   const ratio = Math.log(count + 1) / Math.log(maxCount + 1);
-  return 0.85 + ratio * 1.75;
+  return 0.75 + ratio * 1.5;
 }
 
 function triggerHaptic(ms = 8) {
@@ -343,10 +343,14 @@ export default function ImageryClient({ items, categories }: Props) {
 
   const hasMore = visibleCount < wordDisplayList.length;
 
-  const marqueeWords = useMemo(
-    () => [...items].sort((a, b) => b.count - a.count).slice(0, 30),
-    [items],
-  );
+  const marqueeRows = useMemo(() => {
+    const sorted = [...items].sort((a, b) => b.count - a.count);
+    return [
+      sorted.slice(0, 30),
+      sorted.slice(30, 60),
+      sorted.slice(60, 90),
+    ];
+  }, [items]);
 
   // ── selected item helpers ─────────────────────────────────────────────────
   const selectedCategoryPath = useMemo(() => {
@@ -505,22 +509,25 @@ export default function ImageryClient({ items, categories }: Props) {
               { duration: "60s", dir: "imagery-marquee-rtl", size: "text-3xl" },
               { duration: "78s", dir: "imagery-marquee-ltr", size: "text-2xl" },
             ] as const
-          ).map(({ duration, dir, size }, ri) => (
-            <div
-              key={ri}
-              className="flex whitespace-nowrap font-serif"
-              style={{
-                animation: `${dir} ${duration} linear infinite`,
-                animationPlayState: headerVisible ? "running" : "paused",
-              }}
-            >
-              {[...marqueeWords, ...marqueeWords].map((w, i) => (
-                <span key={i} className={`${size} mx-5 text-slate-900 dark:text-white`}>
-                  {w.name}
-                </span>
-              ))}
-            </div>
-          ))}
+          ).map(({ duration, dir, size }, ri) => {
+            const rowWords = marqueeRows[ri % marqueeRows.length] || [];
+            return (
+              <div
+                key={ri}
+                className="flex whitespace-nowrap font-serif"
+                style={{
+                  animation: `${dir} ${duration} linear infinite`,
+                  animationPlayState: headerVisible ? "running" : "paused",
+                }}
+              >
+                {[...rowWords, ...rowWords].map((w, i) => (
+                  <span key={i} className={`${size} mx-5 text-slate-900 dark:text-white`}>
+                    {w.name}
+                  </span>
+                ))}
+              </div>
+            );
+          })}
         </div>
 
         <div className="relative z-10">
