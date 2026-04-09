@@ -10,7 +10,9 @@ export type LyricsSearchState = "idle" | "loading" | "ready" | "error";
 
 export interface UseLyricsIndexResult {
   // 扩充了歌词后的 Fuse 实例（ready 后替代初始实例）
-  lyricsFuseInstance: Fuse<Song & { searchableContent: string; lyricContent: string }> | null;
+  lyricsFuseInstance: Fuse<
+    Song & { searchableContent: string; lyricContent: string }
+  > | null;
   // 按 id 映射的歌词索引 Map，供展示搜索命中片段用
   lyricsMap: Map<number, string>;
   state: LyricsSearchState;
@@ -19,7 +21,9 @@ export interface UseLyricsIndexResult {
 // 模块级缓存：在同一浏览器会话中跨组件重挂载保留，避免返回页面时重新 fetch
 let _cachedEntries: LyricsEntry[] | null = null;
 
-type FuseExtended = Fuse<Song & { searchableContent: string; lyricContent: string }>;
+type FuseExtended = Fuse<
+  Song & { searchableContent: string; lyricContent: string }
+>;
 
 function buildFromEntries(
   songs: Song[],
@@ -70,7 +74,8 @@ function buildFromEntries(
 export function useLyricsIndex(songs: Song[]): UseLyricsIndexResult {
   const [state, setState] = useState<LyricsSearchState>("idle");
   const [lyricsMap, setLyricsMap] = useState<Map<number, string>>(new Map());
-  const [lyricsFuseInstance, setLyricsFuseInstance] = useState<FuseExtended | null>(null);
+  const [lyricsFuseInstance, setLyricsFuseInstance] =
+    useState<FuseExtended | null>(null);
   const hasFetched = useRef(false);
 
   useEffect(() => {

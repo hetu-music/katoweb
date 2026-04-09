@@ -445,7 +445,11 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   }, [initialSongsData]);
 
   // 后台异步拉取歌词索引
-  const { lyricsFuseInstance, lyricsMap, state: lyricsState } = useLyricsIndex(initialSongsData);
+  const {
+    lyricsFuseInstance,
+    lyricsMap,
+    state: lyricsState,
+  } = useLyricsIndex(initialSongsData);
 
   // 搜索活跃时使用的 Fuse 实例：歌词索引就绪后自动升级
   const activeFuseInstance = debouncedSearchQuery
@@ -743,7 +747,11 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                   />
                   <input
                     type="text"
-                    placeholder={lyricsState === "ready" ? "搜索歌曲、创作者、歌词..." : "搜索歌曲、创作者..."}
+                    placeholder={
+                      lyricsState === "ready"
+                        ? "搜索歌曲、创作者、歌词..."
+                        : "搜索歌曲、创作者..."
+                    }
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
@@ -766,7 +774,10 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       <span className="block w-3 h-3 rounded-full border border-indigo-400/60 border-t-indigo-500 animate-spin" />
                     </span>
                   ) : lyricsState === "ready" ? (
-                    <Mic2 size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-400/60" />
+                    <Mic2
+                      size={13}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-400/60"
+                    />
                   ) : null}
                 </div>
 

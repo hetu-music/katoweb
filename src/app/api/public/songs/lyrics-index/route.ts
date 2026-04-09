@@ -9,7 +9,10 @@ export const GET = async () => {
   const table = TABLE_NAMES.MAIN;
   const supabase = createSupabaseDataClient(table);
   if (!supabase) {
-    return NextResponse.json({ error: "Supabase not available" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Supabase not available" },
+      { status: 500 },
+    );
   }
 
   const { data, error } = await supabase
@@ -18,7 +21,10 @@ export const GET = async () => {
     .not("lyrics", "is", null);
 
   if (error) {
-    return NextResponse.json({ error: "Failed to fetch lyrics" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch lyrics" },
+      { status: 500 },
+    );
   }
 
   // 处理 LRC 歌词为纯文本
