@@ -505,9 +505,9 @@ export default function ImageryClient({ items, categories }: Props) {
         >
           {(
             [
-              { duration: "25s", dir: "imagery-marquee-ltr", size: "text-2xl md:text-4xl" },
-              { duration: "35s", dir: "imagery-marquee-rtl", size: "text-xl md:text-3xl" },
-              { duration: "45s", dir: "imagery-marquee-ltr", size: "text-lg md:text-2xl" },
+              { duration: "12s", dir: "imagery-marquee-ltr", size: "text-2xl md:text-4xl" },
+              { duration: "18s", dir: "imagery-marquee-rtl", size: "text-xl md:text-3xl" },
+              { duration: "24s", dir: "imagery-marquee-ltr", size: "text-lg md:text-2xl" },
             ] as const
           ).map(({ duration, dir, size }, ri) => {
             const rowWords = marqueeRows[ri % marqueeRows.length] || [];
@@ -532,12 +532,12 @@ export default function ImageryClient({ items, categories }: Props) {
 
         <div className="relative z-10">
           <h1
-            className="font-serif text-5xl sm:text-7xl md:text-9xl font-normal text-slate-800 dark:text-slate-100 mb-6 flex justify-center items-center drop-shadow-[0_0_30px_rgba(255,255,255,0.05)]"
+            className="font-serif text-5xl sm:text-7xl md:text-9xl font-normal text-slate-800 dark:text-slate-100 mb-6 flex justify-center items-center gap-4 sm:gap-10 drop-shadow-[0_0_30px_rgba(255,255,255,0.05)]"
           >
             {"意象词云".split("").map((char, i) => (
               <span
                 key={i}
-                className={`hero-title-char inline-block tracking-[0.1em] sm:tracking-[0.3em] pl-[0.1em] sm:pl-[0.3em] ${mounted ? "" : "opacity-0"}`}
+                className={`hero-title-char inline-block ${mounted ? "" : "opacity-0"}`}
                 style={{ animationDelay: `${i * 300}ms` }}
               >
                 {char}
