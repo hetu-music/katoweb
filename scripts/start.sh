@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# 启动 Next.js 应用
-node_modules/.bin/next start &
+# 启动 Next.js 应用 (Standalone 模式)
+node server.js &
 
 # 获取 Next.js 进程 PID
 NEXT_PID=$!

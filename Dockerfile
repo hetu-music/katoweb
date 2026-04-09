@@ -21,27 +21,22 @@ WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# 只复制生产环境需要的文件
-COPY --from=builder /app/.next ./.next
+# 只复制独立构建所需的文件
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/next.config.ts ./next.config.ts
 COPY --from=builder /app/scripts ./scripts
-COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
-COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
-COPY --from=builder /app/eslint.config.mjs ./eslint.config.mjs
 
-# 只安装生产依赖，减少内存占用
-RUN pnpm install --prod --frozen-lockfile && pnpm store prune
-
-# 安装 curl
+# 安装 curl (用于 start.sh 中的 revalidate 请求)
 RUN apk add --no-cache curl
 
 # 给启动脚本执行权限
 RUN chmod +x ./scripts/start.sh
 
-# 设置内存限制相关的环境变量
+# 设置环境变量
 ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
 EXPOSE 3000
 
