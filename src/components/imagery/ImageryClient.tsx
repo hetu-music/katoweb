@@ -14,6 +14,11 @@ import type { ImageryItem, ImageryCategory, SongRef } from "@/lib/types";
 import { Drawer, DrawerClose, DrawerContent } from "@/components/ui/drawer";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 
+// ─── constants ────────────────────────────────────────────────────────────────
+
+const INITIAL_BATCH = 150;
+const BATCH_SIZE = 100;
+
 // ─── types ────────────────────────────────────────────────────────────────────
 
 interface Props {
@@ -36,14 +41,15 @@ interface WordDisplayData {
   tooltip: string;
 }
 
-// ─── constants ────────────────────────────────────────────────────────────────
+interface PaletteEntry {
+  text: string;
+  ring: string;
+  dot: string;
+  activeBg: string;
+  accent: string; // solid color for decorative elements
+}
 
-const INITIAL_BATCH = 150;
-const BATCH_SIZE = 100;
-
-// ─── shared animation IntersectionObserver ───────────────────────────────────
-// One observer for all word buttons; pauses animation when off-screen.
-// Lives outside React to avoid re-creation on render.
+// ─── shared animation observer (module-level singleton) ──────────────────────
 
 let animObserver: IntersectionObserver | null = null;
 
@@ -52,9 +58,10 @@ function getAnimObserver(): IntersectionObserver | null {
   if (!animObserver) {
     animObserver = new IntersectionObserver(
       (entries) => {
-        for (const entry of entries) {
-          (entry.target as HTMLElement).style.animationPlayState =
-            entry.isIntersecting ? "running" : "paused";
+        for (const e of entries) {
+          (e.target as HTMLElement).style.animationPlayState = e.isIntersecting
+            ? "running"
+            : "paused";
         }
       },
       { rootMargin: "120px" },
@@ -76,22 +83,23 @@ const PALETTE_TEXT = [
   "text-cyan-700 dark:text-cyan-400",
 ] as const;
 
-const PALETTE_FULL = [
-  { text: PALETTE_TEXT[0], ring: "ring-teal-500/50",    dot: "bg-teal-500",    activeBg: "bg-teal-50 dark:bg-teal-900/20"      },
-  { text: PALETTE_TEXT[1], ring: "ring-amber-500/50",   dot: "bg-amber-500",   activeBg: "bg-amber-50 dark:bg-amber-900/20"    },
-  { text: PALETTE_TEXT[2], ring: "ring-indigo-500/50",  dot: "bg-indigo-500",  activeBg: "bg-indigo-50 dark:bg-indigo-900/20"  },
-  { text: PALETTE_TEXT[3], ring: "ring-rose-500/50",    dot: "bg-rose-500",    activeBg: "bg-rose-50 dark:bg-rose-900/20"      },
-  { text: PALETTE_TEXT[4], ring: "ring-emerald-500/50", dot: "bg-emerald-600", activeBg: "bg-emerald-50 dark:bg-emerald-900/20"},
-  { text: PALETTE_TEXT[5], ring: "ring-violet-500/50",  dot: "bg-violet-500",  activeBg: "bg-violet-50 dark:bg-violet-900/20"  },
-  { text: PALETTE_TEXT[6], ring: "ring-orange-500/50",  dot: "bg-orange-500",  activeBg: "bg-orange-50 dark:bg-orange-900/20"  },
-  { text: PALETTE_TEXT[7], ring: "ring-cyan-500/50",    dot: "bg-cyan-500",    activeBg: "bg-cyan-50 dark:bg-cyan-900/20"      },
-] as const;
+const PALETTE_FULL: PaletteEntry[] = [
+  { text: PALETTE_TEXT[0], ring: "ring-teal-500/50",    dot: "bg-teal-500",    activeBg: "bg-teal-50 dark:bg-teal-900/20",    accent: "#0d9488" },
+  { text: PALETTE_TEXT[1], ring: "ring-amber-500/50",   dot: "bg-amber-500",   activeBg: "bg-amber-50 dark:bg-amber-900/20",  accent: "#d97706" },
+  { text: PALETTE_TEXT[2], ring: "ring-indigo-500/50",  dot: "bg-indigo-500",  activeBg: "bg-indigo-50 dark:bg-indigo-900/20",accent: "#4f46e5" },
+  { text: PALETTE_TEXT[3], ring: "ring-rose-500/50",    dot: "bg-rose-500",    activeBg: "bg-rose-50 dark:bg-rose-900/20",    accent: "#e11d48" },
+  { text: PALETTE_TEXT[4], ring: "ring-emerald-500/50", dot: "bg-emerald-600", activeBg: "bg-emerald-50 dark:bg-emerald-900/20", accent: "#059669" },
+  { text: PALETTE_TEXT[5], ring: "ring-violet-500/50",  dot: "bg-violet-500",  activeBg: "bg-violet-50 dark:bg-violet-900/20", accent: "#7c3aed" },
+  { text: PALETTE_TEXT[6], ring: "ring-orange-500/50",  dot: "bg-orange-500",  activeBg: "bg-orange-50 dark:bg-orange-900/20", accent: "#ea580c" },
+  { text: PALETTE_TEXT[7], ring: "ring-cyan-500/50",    dot: "bg-cyan-500",    activeBg: "bg-cyan-50 dark:bg-cyan-900/20",    accent: "#0891b2" },
+];
 
-const GRAY_PALETTE = {
+const GRAY_PALETTE: PaletteEntry = {
   text: "text-slate-500 dark:text-slate-400",
   ring: "ring-slate-400/40",
   dot: "bg-slate-400",
   activeBg: "bg-slate-100 dark:bg-slate-800/40",
+  accent: "#94a3b8",
 };
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -102,19 +110,28 @@ function calcFontSize(count: number, maxCount: number): number {
   return 0.85 + ratio * 1.75;
 }
 
+function triggerHaptic(ms = 8) {
+  if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+    navigator.vibrate(ms);
+  }
+}
+
 // ─── WordItem ─────────────────────────────────────────────────────────────────
 
 const WordItem = memo(function WordItem({
   data,
   onClick,
+  isNew,
+  batchIdx,
 }: {
   data: WordDisplayData;
   onClick: (item: ImageryItem) => void;
+  isNew: boolean;
+  batchIdx: number;
 }) {
   const btnRef = useRef<HTMLButtonElement>(null);
   const handleClick = useCallback(() => onClick(data.item), [onClick, data.item]);
 
-  // Register with shared observer; imperatively toggle animationPlayState
   useEffect(() => {
     const el = btnRef.current;
     const obs = getAnimObserver();
@@ -123,8 +140,14 @@ const WordItem = memo(function WordItem({
     return () => obs.unobserve(el);
   }, []);
 
+  // Stagger capped at 15 positions × 55 ms = 825 ms max
+  const unfurlDelay = isNew ? `${(batchIdx % 15) * 55}ms` : "0ms";
+
   return (
-    <div className="relative group/word leading-none">
+    <div
+      className={`relative group/word leading-none${isNew ? " word-unfurl-anim" : ""}`}
+      style={isNew ? ({ "--unfurl-delay": unfurlDelay } as React.CSSProperties) : undefined}
+    >
       <button
         ref={btnRef}
         onClick={handleClick}
@@ -134,14 +157,13 @@ const WordItem = memo(function WordItem({
             fontSize: `${data.fontSize}rem`,
             "--word-breathe-duration": `${data.breatheDuration}s`,
             "--word-breathe-delay": `${data.breatheDelay}s`,
-            // Start paused; observer will resume when in view
             animationPlayState: "paused",
           } as React.CSSProperties
         }
       >
         {data.item.name}
       </button>
-      {/* CSS-only tooltip – zero JS overhead */}
+      {/* CSS-only tooltip */}
       <div
         aria-hidden
         className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 shadow-md whitespace-nowrap opacity-0 group-hover/word:opacity-100 transition-opacity duration-150 z-20"
@@ -152,6 +174,206 @@ const WordItem = memo(function WordItem({
         <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-200/80 dark:border-t-slate-700/60" />
       </div>
     </div>
+  );
+});
+
+// ─── Section divider with centred label ──────────────────────────────────────
+
+function SectionLabel({ label, accent }: { label: string; accent: string }) {
+  return (
+    <div className="flex items-center gap-3 my-5">
+      <div className="flex-1 h-px bg-slate-100 dark:bg-slate-800" />
+      <span
+        className="text-[10px] tracking-[0.3em] font-medium shrink-0"
+        style={{ color: accent }}
+      >
+        {label}
+      </span>
+      <div className="flex-1 h-px bg-slate-100 dark:bg-slate-800" />
+    </div>
+  );
+}
+
+// ─── Desktop detail panel ─────────────────────────────────────────────────────
+
+const DesktopPanel = memo(function DesktopPanel({
+  open,
+  selectedItem,
+  selectedPalette,
+  selectedCategoryPath,
+  songs,
+  songsLoading,
+  lyricistCounts,
+  onClose,
+}: {
+  open: boolean;
+  selectedItem: ImageryItem | null;
+  selectedPalette: PaletteEntry;
+  selectedCategoryPath: string[];
+  songs: SongResult[];
+  songsLoading: boolean;
+  lyricistCounts: [string, number][];
+  onClose: () => void;
+}) {
+  return (
+    <>
+      {/* Click-outside overlay */}
+      {open && (
+        <div
+          className="fixed inset-0 z-30 hidden md:block"
+          onClick={onClose}
+        />
+      )}
+
+      {/* Panel */}
+      <aside
+        className={`
+          fixed right-0 top-[49px] z-40
+          w-[min(440px,42vw)] h-[calc(100vh-49px)]
+          hidden md:flex flex-col
+          bg-white dark:bg-[#0c0f1a]
+          border-l border-slate-200/50 dark:border-slate-700/25
+          shadow-[-32px_0_80px_rgba(0,0,0,0.06)] dark:shadow-[-32px_0_80px_rgba(0,0,0,0.45)]
+          transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]
+          ${open ? "translate-x-0" : "translate-x-full"}
+        `}
+      >
+        {/* ── Header ── */}
+        <div className="relative shrink-0 px-9 pt-10 pb-7 overflow-hidden">
+          {/* Decorative background character */}
+          {selectedItem && (
+            <span
+              aria-hidden
+              className="pointer-events-none select-none absolute -bottom-6 -right-3 font-serif leading-none"
+              style={{
+                fontSize: "11rem",
+                opacity: 0.035,
+                color: selectedPalette.accent,
+                letterSpacing: "-0.05em",
+              }}
+            >
+              {selectedItem.name[0]}
+            </span>
+          )}
+
+          {/* Close */}
+          <button
+            onClick={onClose}
+            className="absolute top-5 right-5 p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          >
+            <X size={16} />
+          </button>
+
+          {selectedItem && (
+            <>
+              {/* Word title */}
+              <h2
+                className={`font-serif text-[3.2rem] leading-none font-normal tracking-[0.2em] mb-4 ${selectedPalette.text}`}
+              >
+                {selectedItem.name}
+              </h2>
+
+              {/* Meta row */}
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span className="text-xs text-slate-500 dark:text-slate-400 tracking-widest">
+                  出现{" "}
+                  <span className="text-slate-700 dark:text-slate-200 font-semibold tabular-nums">
+                    {selectedItem.count}
+                  </span>{" "}
+                  次
+                </span>
+                {selectedCategoryPath.length > 0 && (
+                  <>
+                    <span className="text-slate-200 dark:text-slate-700">·</span>
+                    <span className="text-xs text-slate-400 dark:text-slate-500 tracking-wide">
+                      {selectedCategoryPath.join(" › ")}
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {/* Accent line */}
+              <div
+                className="mt-5 h-[1.5px] w-12 rounded-full"
+                style={{ backgroundColor: selectedPalette.accent, opacity: 0.6 }}
+              />
+            </>
+          )}
+        </div>
+
+        {/* ── Scrollable body ── */}
+        <div className="flex-1 overflow-y-auto px-9 pb-10">
+          {songsLoading ? (
+            <div className="flex items-center justify-center py-16">
+              <div
+                className="inline-block h-5 w-5 animate-spin rounded-full border-[1.5px] border-solid border-r-transparent"
+                style={{ borderColor: `${selectedPalette.accent} transparent` }}
+              />
+            </div>
+          ) : songs.length === 0 ? (
+            <p className="text-center text-sm text-slate-300 dark:text-slate-700 tracking-[0.25em] py-16">
+              暂无相关词作
+            </p>
+          ) : (
+            <>
+              {/* Lyricists */}
+              {lyricistCounts.length > 0 && (
+                <>
+                  <SectionLabel label="词作者" accent={selectedPalette.accent} />
+                  <div className="flex flex-wrap gap-2 mb-1">
+                    {lyricistCounts.map(([name, count]) => (
+                      <span
+                        key={name}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-slate-700/50"
+                      >
+                        {name}
+                        <span className="tabular-nums text-slate-400 dark:text-slate-500">
+                          {count}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* Songs */}
+              <SectionLabel
+                label={`相关词作 ${songs.length}`}
+                accent={selectedPalette.accent}
+              />
+              <div className="space-y-0">
+                {songs.map(({ song, occurrenceCount }) => (
+                  <Link
+                    key={song.id}
+                    href={`/song/${song.id}`}
+                    onClick={onClose}
+                    className="flex items-center justify-between py-3.5 px-3 -mx-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors truncate tracking-wide">
+                        {song.title}
+                      </p>
+                      {(song.album || song.lyricist?.length) && (
+                        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 truncate tracking-wide">
+                          {[song.album, song.lyricist?.join("、")]
+                            .filter(Boolean)
+                            .join("  ·  ")}
+                        </p>
+                      )}
+                    </div>
+                    {occurrenceCount > 1 && (
+                      <span className="ml-3 shrink-0 text-xs text-slate-300 dark:text-slate-700 tabular-nums">
+                        ×{occurrenceCount}
+                      </span>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </aside>
+    </>
   );
 });
 
@@ -178,7 +400,6 @@ export default function ImageryClient({ items, categories }: Props) {
     return m;
   }, [level1Categories]);
 
-  // Precompute imagery id → level-1 category once
   const itemToL1 = useMemo(() => {
     const m = new Map<number, ImageryCategory | null>();
     for (const item of items) {
@@ -199,12 +420,17 @@ export default function ImageryClient({ items, categories }: Props) {
   // ── state ────────────────────────────────────────────────────────────────
   const [activeL1Id, setActiveL1Id] = useState<number | null>(null);
   const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH);
+  const [batchStart, setBatchStart] = useState(INITIAL_BATCH); // words below this index are NOT new
   const [selectedItem, setSelectedItem] = useState<ImageryItem | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(false);
   const [songs, setSongs] = useState<SongResult[]>([]);
   const [songsLoading, setSongsLoading] = useState(false);
 
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const visibleCountRef = useRef(INITIAL_BATCH);
+
+  // Sync ref with state
+  useEffect(() => { visibleCountRef.current = visibleCount; }, [visibleCount]);
 
   // ── precomputed display data ──────────────────────────────────────────────
   const maxCount = useMemo(
@@ -212,8 +438,7 @@ export default function ImageryClient({ items, categories }: Props) {
     [items],
   );
 
-  // Full sorted+filtered list (not sliced)
-  const wordDisplayList = useMemo((): WordDisplayData[] => {
+  const wordDisplayList = useMemo(() => {
     const list =
       activeL1Id === null
         ? items
@@ -236,7 +461,6 @@ export default function ImageryClient({ items, categories }: Props) {
       });
   }, [items, activeL1Id, itemToL1, l1ColorIndex, maxCount]);
 
-  // Slice to currently visible batch
   const visibleWords = useMemo(
     () => wordDisplayList.slice(0, visibleCount),
     [wordDisplayList, visibleCount],
@@ -244,13 +468,12 @@ export default function ImageryClient({ items, categories }: Props) {
 
   const hasMore = visibleCount < wordDisplayList.length;
 
-  // Marquee words
   const marqueeWords = useMemo(
     () => [...items].sort((a, b) => b.count - a.count).slice(0, 30),
     [items],
   );
 
-  // ── selected item derived data ────────────────────────────────────────────
+  // ── selected item helpers ─────────────────────────────────────────────────
   const selectedCategoryPath = useMemo(() => {
     if (!selectedItem) return [];
     const catId = selectedItem.categoryIds[0];
@@ -281,19 +504,21 @@ export default function ImageryClient({ items, categories }: Props) {
 
   // ── effects ──────────────────────────────────────────────────────────────
 
-  // Reset batch when filter changes
+  // Reset batch on filter change
   useEffect(() => {
     setVisibleCount(INITIAL_BATCH);
+    setBatchStart(INITIAL_BATCH); // no unfurl for fresh filter results
   }, [activeL1Id]);
 
   // Sentinel observer for lazy loading
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
-
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
+          const current = visibleCountRef.current;
+          setBatchStart(current); // words from 'current' onward are new
           setVisibleCount((prev) =>
             Math.min(prev + BATCH_SIZE, wordDisplayList.length),
           );
@@ -305,9 +530,9 @@ export default function ImageryClient({ items, categories }: Props) {
     return () => observer.disconnect();
   }, [wordDisplayList.length]);
 
-  // Fetch songs for selected item
+  // Fetch songs
   useEffect(() => {
-    if (!selectedItem || !drawerOpen) return;
+    if (!selectedItem || !panelOpen) return;
     setSongsLoading(true);
     setSongs([]);
     fetch(`/api/imagery/${selectedItem.id}/songs`)
@@ -315,13 +540,16 @@ export default function ImageryClient({ items, categories }: Props) {
       .then((d) => setSongs(d.songs ?? []))
       .catch(() => setSongs([]))
       .finally(() => setSongsLoading(false));
-  }, [selectedItem, drawerOpen]);
+  }, [selectedItem, panelOpen]);
 
   // ── handlers ─────────────────────────────────────────────────────────────
   const handleWordClick = useCallback((item: ImageryItem) => {
+    triggerHaptic();
     setSelectedItem(item);
-    setDrawerOpen(true);
+    setPanelOpen(true);
   }, []);
+
+  const handleClose = useCallback(() => setPanelOpen(false), []);
 
   // ── render ────────────────────────────────────────────────────────────────
   return (
@@ -340,7 +568,6 @@ export default function ImageryClient({ items, categories }: Props) {
 
       {/* ── hero ── */}
       <header className="relative overflow-hidden pt-16 pb-12 px-6 text-center">
-        {/* Decorative marquees */}
         <div
           aria-hidden
           className="absolute inset-0 pointer-events-none select-none overflow-hidden flex flex-col justify-center gap-5 opacity-[0.045] dark:opacity-[0.055]"
@@ -366,7 +593,6 @@ export default function ImageryClient({ items, categories }: Props) {
           ))}
         </div>
 
-        {/* Title */}
         <div className="relative z-10">
           <h1 className="font-serif text-7xl md:text-9xl font-normal tracking-[0.35em] text-slate-800 dark:text-slate-100 mb-5">
             意象
@@ -398,7 +624,6 @@ export default function ImageryClient({ items, categories }: Props) {
             >
               全部
             </button>
-
             {level1Categories.map((cat, i) => {
               const palette = PALETTE_FULL[i % PALETTE_FULL.length];
               const isActive = activeL1Id === cat.id;
@@ -424,7 +649,9 @@ export default function ImageryClient({ items, categories }: Props) {
       </div>
 
       {/* ── word cloud ── */}
-      <main className="max-w-5xl mx-auto px-8 py-16 min-h-[40vh]">
+      <main
+        className={`max-w-5xl mx-auto px-8 py-16 min-h-[40vh] transition-opacity duration-300 ${panelOpen ? "md:opacity-40" : ""}`}
+      >
         {wordDisplayList.length === 0 ? (
           <div className="text-center text-slate-400 dark:text-slate-600 text-sm py-24 tracking-[0.3em]">
             暂无数据
@@ -432,13 +659,19 @@ export default function ImageryClient({ items, categories }: Props) {
         ) : (
           <>
             <div className="flex flex-wrap justify-center gap-x-10 gap-y-6">
-              {visibleWords.map((data) => (
-                <WordItem key={data.item.id} data={data} onClick={handleWordClick} />
+              {visibleWords.map((data, idx) => (
+                <WordItem
+                  key={data.item.id}
+                  data={data}
+                  onClick={handleWordClick}
+                  isNew={idx >= batchStart}
+                  batchIdx={idx - batchStart}
+                />
               ))}
             </div>
 
-            {/* Sentinel + status */}
-            <div ref={sentinelRef} className="mt-12 flex flex-col items-center gap-3">
+            {/* Sentinel + progress */}
+            <div ref={sentinelRef} className="mt-12 flex justify-center">
               {hasMore ? (
                 <p className="text-xs text-slate-300 dark:text-slate-700 tracking-[0.2em] tabular-nums select-none">
                   {visibleCount} / {wordDisplayList.length}
@@ -484,119 +717,144 @@ export default function ImageryClient({ items, categories }: Props) {
         </div>
       )}
 
-      {/* ── detail drawer ── */}
-      <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
-        <DrawerContent>
-          {/* Drawer header */}
-          <div className="flex items-start justify-between px-6 pt-3 pb-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
-            <div className="min-w-0">
-              {selectedItem && (
+      {/* ── Desktop panel (≥md) ── */}
+      <DesktopPanel
+        open={panelOpen}
+        selectedItem={selectedItem}
+        selectedPalette={selectedPalette}
+        selectedCategoryPath={selectedCategoryPath}
+        songs={songs}
+        songsLoading={songsLoading}
+        lyricistCounts={lyricistCounts}
+        onClose={handleClose}
+      />
+
+      {/* ── Mobile drawer (<md) ── */}
+      <div className="md:hidden">
+        <Drawer open={panelOpen} onOpenChange={setPanelOpen}>
+          <DrawerContent>
+            {/* Decorative background char */}
+            {selectedItem && (
+              <span
+                aria-hidden
+                className="pointer-events-none select-none absolute bottom-0 right-2 font-serif leading-none"
+                style={{
+                  fontSize: "9rem",
+                  opacity: 0.03,
+                  color: selectedPalette.accent,
+                }}
+              >
+                {selectedItem.name[0]}
+              </span>
+            )}
+
+            {/* Header */}
+            <div className="flex items-start justify-between px-6 pt-3 pb-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
+              <div className="min-w-0">
+                {selectedItem && (
+                  <>
+                    <h2
+                      className={`font-serif text-3xl font-normal tracking-[0.2em] mb-1 ${selectedPalette.text}`}
+                    >
+                      {selectedItem.name}
+                    </h2>
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-400 dark:text-slate-500 tracking-wide">
+                      <span>
+                        出现{" "}
+                        <span className="font-semibold text-slate-600 dark:text-slate-300 tabular-nums">
+                          {selectedItem.count}
+                        </span>{" "}
+                        次
+                      </span>
+                      {selectedCategoryPath.length > 0 && (
+                        <>
+                          <span className="text-slate-200 dark:text-slate-700">·</span>
+                          <span>{selectedCategoryPath.join(" › ")}</span>
+                        </>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+              <DrawerClose asChild>
+                <button className="p-2 ml-3 shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+                  <X size={18} />
+                </button>
+              </DrawerClose>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              {songsLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div
+                    className="inline-block h-5 w-5 animate-spin rounded-full border-[1.5px] border-solid border-r-transparent"
+                    style={{ borderColor: `${selectedPalette.accent} transparent` }}
+                  />
+                </div>
+              ) : songs.length === 0 ? (
+                <p className="text-center text-sm text-slate-400 dark:text-slate-600 tracking-[0.2em] py-12">
+                  暂无相关词作
+                </p>
+              ) : (
                 <>
-                  <h2
-                    className={`font-serif text-3xl font-normal tracking-[0.25em] ${selectedPalette.text} mb-1`}
-                  >
-                    {selectedItem.name}
-                  </h2>
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-400 dark:text-slate-500 tracking-wide">
-                    <span>
-                      出现{" "}
-                      <span className="font-medium text-slate-600 dark:text-slate-300 tabular-nums">
-                        {selectedItem.count}
-                      </span>{" "}
-                      次
-                    </span>
-                    {selectedCategoryPath.length > 0 && (
-                      <>
-                        <span className="text-slate-200 dark:text-slate-700">·</span>
-                        <span>{selectedCategoryPath.join(" › ")}</span>
-                      </>
-                    )}
+                  {lyricistCounts.length > 0 && (
+                    <>
+                      <SectionLabel label="词作者" accent={selectedPalette.accent} />
+                      <div className="flex flex-wrap gap-2 mb-1">
+                        {lyricistCounts.map(([name, count]) => (
+                          <span
+                            key={name}
+                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                          >
+                            {name}
+                            <span className="text-slate-400 dark:text-slate-500 tabular-nums">
+                              {count}
+                            </span>
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  )}
+
+                  <SectionLabel
+                    label={`相关词作 ${songs.length}`}
+                    accent={selectedPalette.accent}
+                  />
+                  <div className="space-y-0.5">
+                    {songs.map(({ song, occurrenceCount }) => (
+                      <Link
+                        key={song.id}
+                        href={`/song/${song.id}`}
+                        onClick={() => setPanelOpen(false)}
+                        className="flex items-center justify-between py-3 px-3 -mx-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors truncate tracking-wide">
+                            {song.title}
+                          </p>
+                          {(song.album || song.lyricist?.length) && (
+                            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 truncate">
+                              {[song.album, song.lyricist?.join("、")]
+                                .filter(Boolean)
+                                .join("  ·  ")}
+                            </p>
+                          )}
+                        </div>
+                        {occurrenceCount > 1 && (
+                          <span className="ml-3 shrink-0 text-xs text-slate-400 dark:text-slate-600 tabular-nums">
+                            ×{occurrenceCount}
+                          </span>
+                        )}
+                      </Link>
+                    ))}
                   </div>
                 </>
               )}
             </div>
-            <DrawerClose asChild>
-              <button className="p-2 ml-3 shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
-                <X size={18} />
-              </button>
-            </DrawerClose>
-          </div>
-
-          {/* Drawer body */}
-          <div className="flex-1 overflow-y-auto px-6 py-5">
-            {songsLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-solid border-slate-400 border-r-transparent" />
-              </div>
-            ) : songs.length === 0 ? (
-              <p className="text-center text-sm text-slate-400 dark:text-slate-600 tracking-[0.2em] py-12">
-                暂无相关词作
-              </p>
-            ) : (
-              <>
-                {/* Lyricist badges */}
-                {lyricistCounts.length > 0 && (
-                  <div className="mb-6">
-                    <p className="text-xs text-slate-400 dark:text-slate-500 tracking-[0.2em] mb-3">
-                      词作者
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {lyricistCounts.map(([name, count]) => (
-                        <span
-                          key={name}
-                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
-                        >
-                          {name}
-                          <span className="text-slate-400 dark:text-slate-500 tabular-nums">
-                            {count}
-                          </span>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Song list */}
-                <p className="text-xs text-slate-400 dark:text-slate-500 tracking-[0.2em] mb-3">
-                  相关词作{" "}
-                  <span className="text-slate-600 dark:text-slate-300 tabular-nums">
-                    {songs.length}
-                  </span>{" "}
-                  首
-                </p>
-                <div className="space-y-0.5">
-                  {songs.map(({ song, occurrenceCount }) => (
-                    <Link
-                      key={song.id}
-                      href={`/song/${song.id}`}
-                      onClick={() => setDrawerOpen(false)}
-                      className="flex items-center justify-between py-3 px-3 -mx-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group"
-                    >
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors truncate tracking-wide">
-                          {song.title}
-                        </p>
-                        {(song.album || song.lyricist?.length) && (
-                          <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 truncate">
-                            {[song.album, song.lyricist?.join("、")]
-                              .filter(Boolean)
-                              .join("  ·  ")}
-                          </p>
-                        )}
-                      </div>
-                      {occurrenceCount > 1 && (
-                        <span className="ml-3 shrink-0 text-xs text-slate-400 dark:text-slate-600 tabular-nums">
-                          ×{occurrenceCount}
-                        </span>
-                      )}
-                    </Link>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        </DrawerContent>
-      </Drawer>
+          </DrawerContent>
+        </Drawer>
+      </div>
     </div>
   );
 }
