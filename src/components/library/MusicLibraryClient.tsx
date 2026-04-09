@@ -197,10 +197,11 @@ const GridCard = ({
         </p>
         {/* 歌词命中片段 */}
         {lyricsSnippet && (
-          <p className="text-xs text-indigo-500/80 dark:text-indigo-400/70 font-light line-clamp-2 mt-1 flex items-start gap-1">
-            <Mic2 size={11} className="shrink-0 mt-0.5 opacity-70" />
-            <span className="italic">{lyricsSnippet}</span>
-          </p>
+          <div className="mt-1.5 pl-2 border-l-2 border-slate-200 dark:border-slate-700">
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate leading-relaxed">
+              {lyricsSnippet}
+            </p>
+          </div>
         )}
       </div>
     </div>
@@ -262,10 +263,11 @@ const ListRow = ({
         </p>
         {/* 歌词命中片段 */}
         {lyricsSnippet && (
-          <p className="text-xs text-indigo-500/80 dark:text-indigo-400/70 font-light mt-0.5 flex items-center gap-1 truncate">
-            <Mic2 size={11} className="shrink-0 opacity-70" />
-            <span className="italic truncate">{lyricsSnippet}</span>
-          </p>
+          <div className="mt-1 pl-2 border-l-2 border-slate-200 dark:border-slate-700">
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate leading-relaxed">
+              {lyricsSnippet}
+            </p>
+          </div>
         )}
       </div>
 
