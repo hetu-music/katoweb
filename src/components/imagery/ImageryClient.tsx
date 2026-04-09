@@ -1,20 +1,20 @@
 "use client";
 
+import ThemeToggle from "@/components/shared/ThemeToggle";
+import { useIsDesktop } from "@/hooks/useIsDesktop";
+import type { ImageryCategory, ImageryItem } from "@/lib/types";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import React, {
-  useState,
-  useMemo,
+  memo,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
-  memo,
+  useState,
 } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import type { ImageryItem, ImageryCategory } from "@/lib/types";
-import ThemeToggle from "@/components/shared/ThemeToggle";
+import type { PaletteEntry, SongResult } from "./ImageryDetailPanel";
 import ImageryDetailPanel from "./ImageryDetailPanel";
-import type { SongResult, PaletteEntry } from "./ImageryDetailPanel";
-import { useIsDesktop } from "@/hooks/useIsDesktop";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
@@ -73,14 +73,14 @@ const PALETTE_TEXT = [
 ] as const;
 
 const PALETTE_FULL: PaletteEntry[] = [
-  { text: PALETTE_TEXT[0], ring: "ring-teal-500/50",    dot: "bg-teal-500",    activeBg: "bg-teal-50 dark:bg-teal-900/20",    accent: "#0d9488" },
-  { text: PALETTE_TEXT[1], ring: "ring-amber-500/50",   dot: "bg-amber-500",   activeBg: "bg-amber-50 dark:bg-amber-900/20",  accent: "#d97706" },
-  { text: PALETTE_TEXT[2], ring: "ring-indigo-500/50",  dot: "bg-indigo-500",  activeBg: "bg-indigo-50 dark:bg-indigo-900/20",accent: "#4f46e5" },
-  { text: PALETTE_TEXT[3], ring: "ring-rose-500/50",    dot: "bg-rose-500",    activeBg: "bg-rose-50 dark:bg-rose-900/20",    accent: "#e11d48" },
+  { text: PALETTE_TEXT[0], ring: "ring-teal-500/50", dot: "bg-teal-500", activeBg: "bg-teal-50 dark:bg-teal-900/20", accent: "#0d9488" },
+  { text: PALETTE_TEXT[1], ring: "ring-amber-500/50", dot: "bg-amber-500", activeBg: "bg-amber-50 dark:bg-amber-900/20", accent: "#d97706" },
+  { text: PALETTE_TEXT[2], ring: "ring-indigo-500/50", dot: "bg-indigo-500", activeBg: "bg-indigo-50 dark:bg-indigo-900/20", accent: "#4f46e5" },
+  { text: PALETTE_TEXT[3], ring: "ring-rose-500/50", dot: "bg-rose-500", activeBg: "bg-rose-50 dark:bg-rose-900/20", accent: "#e11d48" },
   { text: PALETTE_TEXT[4], ring: "ring-emerald-500/50", dot: "bg-emerald-600", activeBg: "bg-emerald-50 dark:bg-emerald-900/20", accent: "#059669" },
-  { text: PALETTE_TEXT[5], ring: "ring-violet-500/50",  dot: "bg-violet-500",  activeBg: "bg-violet-50 dark:bg-violet-900/20", accent: "#7c3aed" },
-  { text: PALETTE_TEXT[6], ring: "ring-orange-500/50",  dot: "bg-orange-500",  activeBg: "bg-orange-50 dark:bg-orange-900/20", accent: "#ea580c" },
-  { text: PALETTE_TEXT[7], ring: "ring-cyan-500/50",    dot: "bg-cyan-500",    activeBg: "bg-cyan-50 dark:bg-cyan-900/20",    accent: "#0891b2" },
+  { text: PALETTE_TEXT[5], ring: "ring-violet-500/50", dot: "bg-violet-500", activeBg: "bg-violet-50 dark:bg-violet-900/20", accent: "#7c3aed" },
+  { text: PALETTE_TEXT[6], ring: "ring-orange-500/50", dot: "bg-orange-500", activeBg: "bg-orange-50 dark:bg-orange-900/20", accent: "#ea580c" },
+  { text: PALETTE_TEXT[7], ring: "ring-cyan-500/50", dot: "bg-cyan-500", activeBg: "bg-cyan-50 dark:bg-cyan-900/20", accent: "#0891b2" },
 ];
 
 const GRAY_PALETTE: PaletteEntry = {
@@ -441,7 +441,7 @@ export default function ImageryClient({ items, categories }: Props) {
           <h1
             className={`font-serif text-7xl md:text-9xl font-normal tracking-[0.35em] text-slate-800 dark:text-slate-100 mb-5 ${mounted ? "hero-unroll" : "opacity-0"}`}
           >
-            意象
+            意象词云
           </h1>
           <p
             className={`text-sm text-slate-400 dark:text-slate-500 tracking-[0.25em] mb-3 ${mounted ? "hero-unroll" : "opacity-0"}`}
@@ -468,11 +468,10 @@ export default function ImageryClient({ items, categories }: Props) {
           <div className="flex items-center gap-1 py-2.5 w-max">
             <button
               onClick={() => setActiveL1Id(null)}
-              className={`px-3.5 py-1.5 text-sm rounded-full transition-all duration-200 tracking-wide ${
-                activeL1Id === null
+              className={`px-3.5 py-1.5 text-sm rounded-full transition-all duration-200 tracking-wide ${activeL1Id === null
                   ? "bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 font-medium shadow-sm"
                   : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
-              }`}
+                }`}
             >
               全部
             </button>
@@ -483,11 +482,10 @@ export default function ImageryClient({ items, categories }: Props) {
                 <button
                   key={cat.id}
                   onClick={() => setActiveL1Id(isActive ? null : cat.id)}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 text-sm rounded-full transition-all duration-200 tracking-wide ring-inset ${
-                    isActive
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 text-sm rounded-full transition-all duration-200 tracking-wide ring-inset ${isActive
                       ? `${palette.text} ${palette.activeBg} font-medium ring-1 ${palette.ring}`
                       : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
-                  }`}
+                    }`}
                 >
                   <span
                     className={`w-1.5 h-1.5 rounded-full transition-colors duration-200 ${isActive ? palette.dot : "bg-slate-300 dark:bg-slate-600"}`}
