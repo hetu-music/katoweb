@@ -203,7 +203,7 @@ function PanelHeader({
 
   if (isDesktop) {
     return (
-      <div className="relative shrink-0 px-9 pt-10 pb-7 overflow-hidden border-b border-slate-100/60 dark:border-slate-800/60">
+      <div className="relative shrink-0 px-9 pt-10 pb-7 overflow-hidden border-b border-slate-100/40 dark:border-slate-800/40">
         {/* Decorative background character */}
         <span
           aria-hidden
@@ -250,7 +250,7 @@ function PanelHeader({
 
   // Mobile header (inside the sheet, below the drag handle)
   return (
-    <div className="flex items-start justify-between px-6 pt-3 pb-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
+    <div className="flex items-start justify-between px-6 pt-3 pb-4 border-b border-slate-100/40 dark:border-slate-800/40 shrink-0">
       <div className="min-w-0">
         <h2
           className={`font-serif text-3xl font-normal tracking-[0.2em] mb-1 ${selectedPalette.text}`}
@@ -325,13 +325,13 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
         showOverlay={!isDesktop}
         className={
           isDesktop
-            ? [
-              "top-(--nav-h,48px) h-[calc(100vh-var(--nav-h,48px))] w-[min(440px,42vw)] p-0",
-              panelSide === "right"
-                ? "border-l border-slate-200/50 dark:border-slate-700/25 shadow-[-32px_0_80px_rgba(0,0,0,0.06)] dark:shadow-[-32px_0_80px_rgba(0,0,0,0.45)]"
-                : "border-r border-slate-200/50 dark:border-slate-700/25 shadow-[32px_0_80px_rgba(0,0,0,0.06)] dark:shadow-[32px_0_80px_rgba(0,0,0,0.45)]",
-            ].join(" ")
-            : "max-h-[85dvh] p-0"
+              ? [
+                  "top-(--nav-h,48px) h-[calc(100vh-var(--nav-h,48px))] w-[min(440px,42vw)] p-0 border-none shadow-2xl",
+                  panelSide === "right"
+                    ? "border-l border-slate-200/50 dark:border-white/5"
+                    : "border-r border-slate-200/50 dark:border-white/5",
+                ].join(" ")
+              : "max-h-[85dvh] p-0 border-t-0 shadow-2xl"
         }
       >
         {/* Accessible title/description (visually hidden) */}

@@ -38,7 +38,7 @@ const DialogContent = React.forwardRef<
         "fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%]",
         "w-full max-w-md",
         "bg-white dark:bg-[#111]",
-        "rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl",
+        "rounded-2xl border border-black/5 dark:border-white/10 shadow-2xl",
         "flex flex-col max-h-[85vh]",
         "data-[state=open]:animate-in data-[state=closed]:animate-out",
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
