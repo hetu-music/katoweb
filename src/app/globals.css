@@ -69,7 +69,7 @@ h6 {
   font-weight: 700;
 
   /* 调整标题中数字的垂直对齐，使其与中文字符更好地对齐 */
-  & > span {
+  &>span {
     position: relative;
     top: 0.05em;
   }
@@ -110,3 +110,108 @@ button {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* ============================================================================
+   6. 业务动画 (Animations)
+   ============================================================================ */
+
+/* 功能入口字符浮动动画 */
+@keyframes feature-drift {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+/* 意象页背景滚动字幕 */
+@keyframes imagery-marquee-ltr {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes imagery-marquee-rtl {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
+
+/* 词云词语呼吸浮动动画 */
+@keyframes word-breathe {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-5px); }
+}
+
+.word-breathe-anim {
+  animation-name: word-breathe;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-duration: var(--word-breathe-duration, 4s);
+  animation-delay: var(--word-breathe-delay, 0s);
+  animation-fill-mode: both;
+  will-change: transform;
+}
+
+.word-breathe-anim:hover,
+.word-breathe-paused {
+  animation-play-state: paused;
+}
+
+/* 逐字展开动画 */
+@keyframes hero-title-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(15px) scale(0.92);
+    filter: blur(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.hero-title-char {
+  animation: hero-title-reveal 2.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* 描述文字淡入 */
+@keyframes hero-unroll {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.hero-unroll {
+  animation: hero-unroll 2s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* 词云柔和淡入动画 - 移除蓝光滤镜以优化滚动性能 */
+@keyframes word-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.word-unfurl-anim {
+  animation: word-fade-in 2.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--unfurl-delay, 0ms);
+  will-change: transform, opacity;
+  /* 性能优化：限制样式计算范围并允许屏外内容跳过渲染 */
+  contain: layout style; /* 移除 paint 以防止裁剪掉光效 (text-shadow) */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 42px; /* 设置更准确的估计高度有助于滚动条稳定 */
+}
+
+/* 页面主内容淡入 */
+@keyframes main-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

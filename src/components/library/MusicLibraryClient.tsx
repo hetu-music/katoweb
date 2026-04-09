@@ -1,51 +1,53 @@
 "use client";
 
-import React, {
-  useState,
-  useMemo,
-  useEffect,
-  useCallback,
-  useRef,
-} from "react";
-import {
-  Search,
-  LayoutGrid,
-  List,
-  Disc,
-  Calendar,
-  Clock,
-  SlidersHorizontal,
-  X,
-  XCircle,
-  Info,
-  RotateCcw,
-  Heart,
-  User,
-  Mic2,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { MusicLibraryClientProps, Song } from "@/lib/types";
-import {
-  getCoverUrl,
-  filterSongs,
-  calculateFilterOptions,
-  createFuseInstance,
-} from "@/lib/utils-song";
-import { formatTime } from "@/lib/utils-common";
-import { getTypeTagStyle } from "@/lib/constants";
-import { usePagination } from "@/hooks/usePagination";
-import { useDebounce } from "@/hooks/useDebounce";
-import { useMusicLibraryState } from "@/hooks/useMusicLibraryState";
-import Pagination from "../shared/Pagination";
-import SongFilters from "./SongFilters";
-import About from "./About";
-import FloatingActionButtons from "../shared/FloatingActionButtons";
 import { useFavorites } from "@/context/FavoritesContext";
 import { useUserContext } from "@/context/UserContext";
+import { useDebounce } from "@/hooks/useDebounce";
+import { extractLyricsSnippet, useLyricsIndex } from "@/hooks/useLyricsIndex";
+import { useMusicLibraryState } from "@/hooks/useMusicLibraryState";
+import { usePagination } from "@/hooks/usePagination";
+import { getTypeTagStyle } from "@/lib/constants";
+import { MusicLibraryClientProps, Song } from "@/lib/types";
+import { formatTime } from "@/lib/utils-common";
+import {
+  calculateFilterOptions,
+  createFuseInstance,
+  filterSongs,
+  getCoverUrl,
+} from "@/lib/utils-song";
+import {
+  ArrowUpRight,
+  Calendar,
+  Clock,
+  Disc,
+  Heart,
+  Info,
+  LayoutGrid,
+  List,
+  Mic2,
+  RotateCcw,
+  Search,
+  SlidersHorizontal,
+  User,
+  X,
+  XCircle,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import FloatingActionButtons from "../shared/FloatingActionButtons";
+import Pagination from "../shared/Pagination";
 import ThemeToggle from "../shared/ThemeToggle";
+import About from "./About";
 import MultiTagDisplay from "./MultiTagDisplay";
-import { useLyricsIndex, extractLyricsSnippet } from "@/hooks/useLyricsIndex";
+import SongFilters from "./SongFilters";
 
 // 简易 classNames 工具 (替代 clsx/tailwind-merge)
 function cn(...classes: (string | undefined | null | false)[]) {
@@ -664,17 +666,22 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
       </nav>
 
       <main className="pt-32 pb-20 max-w-7xl mx-auto px-6">
-        {/* Header */}
-        <section className="mb-16 space-y-4">
-          <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50 italic">
-            谣歌{" "}
-            <span className="text-[1.3em] font-semibold">
-              {filteredWorks.length}
-            </span>
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 font-light max-w-lg">
-            你一定想知道，戏里讲了什么故事。
-          </p>
+        {/* ── Hero ── */}
+        <section className="mb-16">
+          <div className="flex items-end justify-between gap-8">
+            {/* Left: current page identity */}
+            <div className="space-y-4">
+              <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50 italic">
+                谣歌{" "}
+                <span className="text-[1.3em] font-semibold">
+                  {filteredWorks.length}
+                </span>
+              </h1>
+              <p className="text-slate-500 dark:text-slate-400 font-light max-w-lg">
+                你一定想知道，戏里讲了什么故事。
+              </p>
+            </div>
+          </div>
         </section>
 
         {/* 控制栏 */}
@@ -874,9 +881,9 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       lyricsSnippet={
                         debouncedSearchQuery && lyricsState === "ready"
                           ? extractLyricsSnippet(
-                              lyricsMap.get(work.id) || "",
-                              debouncedSearchQuery,
-                            )
+                            lyricsMap.get(work.id) || "",
+                            debouncedSearchQuery,
+                          )
                           : undefined
                       }
                       onClick={() => {
@@ -923,9 +930,9 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       lyricsSnippet={
                         debouncedSearchQuery && lyricsState === "ready"
                           ? extractLyricsSnippet(
-                              lyricsMap.get(work.id) || "",
-                              debouncedSearchQuery,
-                            )
+                            lyricsMap.get(work.id) || "",
+                            debouncedSearchQuery,
+                          )
                           : undefined
                       }
                       onClick={() => {

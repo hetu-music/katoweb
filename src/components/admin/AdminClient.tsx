@@ -3,6 +3,7 @@
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import Pagination from "@/components/shared/Pagination";
 import ThemeToggle from "@/components/shared/ThemeToggle";
+import { useUserContext } from "@/context/UserContext";
 import {
   mergeAutoCompleteData,
   useAutoComplete,
@@ -28,7 +29,6 @@ import {
   Plus,
   Save,
   Search,
-  User,
   Wand2,
   X,
   XCircle,
@@ -36,6 +36,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import Account from "./Account";
 import CoverUpload from "./CoverUpload";
 import Notification from "./Notification";
 import ScoreUpload from "./ScoreUpload";
@@ -459,6 +460,7 @@ export default function AdminClientComponent({
   }, [searchTerm, currentPage, isClient, updateUrl]);
 
   // Auth & Actions
+  const { logout, loggingOut } = useUserContext();
   const [csrfToken, setCsrfToken] = useState("");
   useEffect(() => {
     fetch("/api/public/csrf-token")
@@ -637,22 +639,21 @@ export default function AdminClientComponent({
             <span className="w-[2px] h-5 bg-blue-600 mx-2 rounded-full translate-y-[1.5px]" />
             管理后台
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setShowNotification(true)}
-              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
               title="使用说明"
             >
               <Bell size={20} />
             </button>
-            <Link
-              href="/profile?tab=account"
-              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-blue-500 dark:text-blue-400"
-              title="个人中心"
-            >
-              <User size={20} />
-            </Link>
-            <ThemeToggle className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400" />
+            <ThemeToggle className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors" />
+            <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1" />
+            <Account
+              csrfToken={csrfToken}
+              handleLogout={logout}
+              logoutLoading={loggingOut}
+            />
           </div>
         </div>
       </nav>

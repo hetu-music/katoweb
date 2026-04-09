@@ -68,6 +68,38 @@ export interface SongInfo {
   basicInfo: Array<{ label: string; value: string }>;
 }
 
+// 意象相关类型
+export type ImageryCategory = {
+  id: number;
+  name: string;
+  parent_id: number | null;
+  level: number | null;
+  description: string | null;
+};
+
+export type ImageryItem = {
+  id: number;
+  name: string;
+  count: number;
+  // 出现在哪些分类（去重）
+  categoryIds: number[];
+};
+
+export type ImageryOccurrence = {
+  id: number;
+  song_id: number;
+  imagery_id: number;
+  category_id: number;
+  lyric_timetag: Record<string, unknown>[];
+};
+
+export type SongRef = {
+  id: number;
+  title: string;
+  album: string | null;
+  lyricist: string[] | null;
+};
+
 // 歌曲字段配置类型（用于管理页面表单渲染和校验）
 export type SongFieldConfig = {
   key: keyof SongDetail;
