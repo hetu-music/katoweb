@@ -127,13 +127,15 @@ const WordItem = memo(function WordItem({
     return () => obs.unobserve(el);
   }, []);
 
-  // Stagger capped at 15 positions × 55 ms = 825 ms max
-  const unfurlDelay = isNew ? `${(batchIdx % 15) * 55}ms` : "0ms";
+  // Only first MAX_UNFURL items per batch actually animate; the rest appear instantly
+  const MAX_UNFURL = 20;
+  const shouldAnimate = isNew && batchIdx < MAX_UNFURL;
+  const unfurlDelay = shouldAnimate ? `${batchIdx * 45}ms` : "0ms";
 
   return (
     <div
-      className={`relative group/word leading-none${isNew ? " word-unfurl-anim" : ""}`}
-      style={isNew ? ({ "--unfurl-delay": unfurlDelay } as React.CSSProperties) : undefined}
+      className={`relative group/word leading-none${shouldAnimate ? " word-unfurl-anim" : ""}`}
+      style={shouldAnimate ? ({ "--unfurl-delay": unfurlDelay } as React.CSSProperties) : undefined}
     >
       <button
         ref={btnRef}
@@ -216,6 +218,10 @@ export default function ImageryClient({ items, categories }: Props) {
 
   const sentinelRef = useRef<HTMLDivElement>(null);
   const visibleCountRef = useRef(INITIAL_BATCH);
+  const [mounted, setMounted] = useState(false);
+
+  // Trigger entrance animation after first paint
+  useEffect(() => { setMounted(true); }, []);
 
   // Sync ref with state
   useEffect(() => { visibleCountRef.current = visibleCount; }, [visibleCount]);
@@ -382,13 +388,19 @@ export default function ImageryClient({ items, categories }: Props) {
         </div>
 
         <div className="relative z-10">
-          <h1 className="font-serif text-7xl md:text-9xl font-normal tracking-[0.35em] text-slate-800 dark:text-slate-100 mb-5">
+          <h1
+            className={`font-serif text-7xl md:text-9xl font-normal tracking-[0.35em] text-slate-800 dark:text-slate-100 mb-5 transition-all duration-700 ease-out ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+          >
             意象
           </h1>
-          <p className="text-sm text-slate-400 dark:text-slate-500 tracking-[0.25em] mb-3">
+          <p
+            className={`text-sm text-slate-400 dark:text-slate-500 tracking-[0.25em] mb-3 transition-all duration-700 delay-150 ease-out ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+          >
             河图作品中的意象索引
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-600 tracking-wide">
+          <p
+            className={`text-xs text-slate-400 dark:text-slate-600 tracking-wide transition-all duration-700 delay-300 ease-out ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"}`}
+          >
             共收录{" "}
             <span className="text-slate-600 dark:text-slate-400 font-medium tabular-nums">
               {items.length}
@@ -438,7 +450,7 @@ export default function ImageryClient({ items, categories }: Props) {
 
       {/* ── word cloud ── */}
       <main
-        className={`max-w-5xl mx-auto px-8 py-16 min-h-[40vh] transition-opacity duration-300 ${panelOpen ? "md:opacity-40" : ""}`}
+        className={`max-w-5xl mx-auto px-8 py-16 min-h-[40vh] transition-all duration-700 delay-[450ms] ease-out ${panelOpen ? "md:opacity-40" : ""} ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
       >
         {wordDisplayList.length === 0 ? (
           <div className="text-center text-slate-400 dark:text-slate-600 text-sm py-24 tracking-[0.3em]">
