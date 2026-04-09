@@ -681,50 +681,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                 你一定想知道，戏里讲了什么故事。
               </p>
             </div>
-
-            {/* Right: feature entries — desktop */}
-            <div className="hidden md:flex flex-col items-end gap-6 pb-1 shrink-0">
-              <Link href="/imagery" className="group flex flex-col items-end gap-0.5">
-                <span
-                  aria-hidden
-                  className="text-[3.2rem] leading-none font-serif font-bold select-none
-                             text-slate-100 dark:text-slate-800
-                             group-hover:text-indigo-100 dark:group-hover:text-indigo-900/60
-                             transition-colors duration-500 mb-2"
-                  style={{ animation: "feature-drift 4.5s ease-in-out infinite" }}
-                >
-                  意
-                </span>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-bold font-serif text-slate-600 dark:text-slate-400
-                                   group-hover:text-indigo-600 dark:group-hover:text-indigo-400
-                                   transition-colors duration-300">
-                    意象图谱
-                  </span>
-                  <ArrowUpRight
-                    size={13}
-                    className="text-slate-400 dark:text-slate-500 group-hover:text-indigo-500
-                               transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                  />
-                </div>
-                <p className="text-[11px] text-slate-400 dark:text-slate-500 font-light tracking-wide">
-                  词中意境 · 诗词意象探索
-                </p>
-                <span className="mt-1 block h-px w-0 group-hover:w-full bg-indigo-300 dark:bg-indigo-700 transition-all duration-300 ease-out" />
-              </Link>
-            </div>
-          </div>
-
-          {/* Mobile: feature links below hero text */}
-          <div className="flex md:hidden items-center gap-5 mt-6 pt-5 border-t border-slate-100 dark:border-slate-800/60">
-            <Link
-              href="/imagery"
-              className="group flex items-center gap-1.5 text-slate-500 dark:text-slate-400
-                         hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-            >
-              <span className="text-sm font-bold font-serif">意象图谱</span>
-              <ArrowUpRight size={13} className="transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-            </Link>
           </div>
         </section>
 
