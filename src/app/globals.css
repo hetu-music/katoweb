@@ -205,7 +205,7 @@ button {
   animation-delay: var(--unfurl-delay, 0ms);
   will-change: transform, opacity;
   /* 性能优化：限制样式计算范围并允许屏外内容跳过渲染 */
-  contain: layout style paint;
+  contain: layout style; /* 移除 paint 以防止裁剪掉光效 (text-shadow) */
   content-visibility: auto;
   contain-intrinsic-size: auto 42px; /* 设置更准确的估计高度有助于滚动条稳定 */
 }

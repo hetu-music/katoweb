@@ -163,14 +163,23 @@ const WordItem = memo(function WordItem({
       style={{
         opacity: hasSelection ? (isSelected ? 1 : 0.08) : 1,
         transform: isSelected ? "scale(1.1)" : "scale(1)",
-        zIndex: isSelected ? 10 : undefined,
+        zIndex: isSelected ? 30 : undefined, // 提高层级
         transition: "opacity 0.8s ease, transform 0.8s cubic-bezier(0.16,1,0.3,1)",
+        // 选中时彻底取消可能导致切边的限制
+        overflow: isSelected ? "visible" : undefined,
       }}
     >
       {/* ── Inner: carries the one-shot unfurl animation triggered on screen entry ── */}
       <div
         className={`relative group/word leading-none ${hasEntered ? "word-unfurl-anim" : "opacity-0"}`}
-        style={{ "--unfurl-delay": unfurlDelay } as React.CSSProperties}
+        style={{
+          "--unfurl-delay": unfurlDelay,
+          // 当被选中时，完全解除性能加速相关的限制，防止合成层切边
+          contentVisibility: isSelected ? "visible" : undefined,
+          contain: isSelected ? "none" : undefined,
+          willChange: isSelected ? "auto" : "transform, opacity",
+          overflow: isSelected ? "visible" : undefined,
+        } as React.CSSProperties}
       >
         <button
           ref={btnRef}
@@ -183,9 +192,11 @@ const WordItem = memo(function WordItem({
               fontSize: `${data.fontSize}rem`,
               "--word-breathe-duration": `${data.breatheDuration}s`,
               "--word-breathe-delay": `${data.breatheDelay}s`,
-              animationPlayState: "paused",
+              animationPlayState: isSelected ? "running" : undefined, // 选中时强制运行
+              willChange: isSelected ? "auto" : "transform",
               textShadow: glow,
-              transition: "text-shadow 0.4s ease",
+              transition: "text-shadow 0.4s ease, opacity 0.4s ease",
+              overflow: isSelected ? "visible" : undefined,
             } as React.CSSProperties
           }
         >
