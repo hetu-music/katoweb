@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import AdminClientComponent from "@/components/admin/AdminClient";
 import { getSongs } from "@/lib/service-songs";
-import { TABLE_NAMES } from "@/lib/constants";
+import { TABLES } from "@/lib/supabase-server";
 import { createSupabaseServerClient } from "@/lib/supabase-auth";
 import type { Song } from "@/lib/types";
 
@@ -24,7 +24,7 @@ export default async function AdminPage() {
   let songs: Song[] = [];
   let error = null;
   try {
-    songs = await getSongs(TABLE_NAMES.ADMIN, session.access_token);
+    songs = await getSongs(TABLES.ADMIN, session.access_token);
   } catch (e: unknown) {
     if (
       e &&

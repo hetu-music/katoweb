@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSongs, createSong, updateSong } from "@/lib/service-songs";
-import { TABLE_NAMES } from "@/lib/constants";
+import { TABLES } from "@/lib/supabase-server";
 import { createSupabaseServerClient } from "@/lib/supabase-auth";
 import { z } from "zod";
 import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
@@ -38,7 +38,7 @@ export const GET = withAuth(
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      const songs = await getSongs(TABLE_NAMES.ADMIN, session?.access_token);
+      const songs = await getSongs(TABLES.ADMIN, session?.access_token);
       return NextResponse.json(songs);
     } catch (e: unknown) {
       if (
@@ -78,7 +78,7 @@ export const POST = withAuth(
       } = await supabase.auth.getSession();
       const song = await createSong(
         parseResult.data,
-        TABLE_NAMES.ADMIN,
+        TABLES.ADMIN,
         session?.access_token,
       );
       return NextResponse.json(song);
@@ -128,7 +128,7 @@ export const PUT = withAuth(
       const song = await updateSong(
         id,
         { ...parseResult.data, updated_at },
-        TABLE_NAMES.ADMIN,
+        TABLES.ADMIN,
         session?.access_token,
       );
       return NextResponse.json(song);

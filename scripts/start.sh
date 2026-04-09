@@ -9,8 +9,8 @@ NEXT_PID=$!
 # 等待应用启动（等待 10 秒）
 sleep 10
 
-# 执行 revalidate 请求（刷新主页和 sitemap）
-echo "执行 revalidate 请求..."
+# 执行 revalidate 请求（刷新主页、意象页和 sitemap）
+echo "执行 revalidate 请求 (首页 & 意象)..."
 if [ -n "$REVALIDATE_SECRET" ]; then
     if curl -X POST "127.0.0.1:3000/api/public/revalidate?secret=$REVALIDATE_SECRET" > /dev/null 2>&1; then
         echo "✅ Revalidate 请求执行成功"
