@@ -245,6 +245,8 @@ export default function ImageryClient({ items, categories }: Props) {
 
   const isDesktop = useIsDesktop();
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLElement>(null);
+  const cloudRef = useRef<HTMLDivElement>(null);
   const visibleCountRef = useRef(INITIAL_BATCH);
   const [mounted, setMounted] = useState(false);
 
@@ -253,6 +255,21 @@ export default function ImageryClient({ items, categories }: Props) {
 
   // Sync ref with state
   useEffect(() => { visibleCountRef.current = visibleCount; }, [visibleCount]);
+
+  // Track nav height → CSS variable --nav-h for the panel to consume
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    const update = () =>
+      document.documentElement.style.setProperty(
+        "--nav-h",
+        `${nav.getBoundingClientRect().height}px`,
+      );
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(nav);
+    return () => ro.disconnect();
+  }, []);
 
   // ── precomputed display data ──────────────────────────────────────────────
   const maxCount = useMemo(
@@ -368,7 +385,10 @@ export default function ImageryClient({ items, categories }: Props) {
   const handleWordClick = useCallback((item: ImageryItem, clickX: number) => {
     triggerHaptic();
     // Panel opens from the side opposite the clicked word, so it won't cover it
-    setPanelSide(clickX > window.innerWidth / 2 ? "left" : "right");
+    // Prefer right: only switch to left when word is in the rightmost quarter of the cloud area
+    const cloudRect = cloudRef.current?.getBoundingClientRect();
+    const cloudRight = cloudRect ? cloudRect.right : window.innerWidth;
+    setPanelSide(clickX > cloudRight * 3 / 4 ? "left" : "right");
     setSelectedItem(item);
     setPanelOpen(true);
   }, []);
@@ -379,7 +399,7 @@ export default function ImageryClient({ items, categories }: Props) {
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] text-slate-800 dark:text-slate-200">
       {/* ── nav ── */}
-      <nav className="sticky top-0 z-30 border-b border-slate-100/80 dark:border-slate-800/80 bg-[#FAFAFA]/90 dark:bg-[#0B0F19]/90 backdrop-blur-md px-6 py-3 flex items-center justify-between">
+      <nav ref={navRef} className="sticky top-0 z-30 border-b border-slate-100/80 dark:border-slate-800/80 bg-[#FAFAFA]/90 dark:bg-[#0B0F19]/90 backdrop-blur-md px-6 py-3 flex items-center justify-between">
         <Link
           href="/"
           className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors"
@@ -491,7 +511,7 @@ export default function ImageryClient({ items, categories }: Props) {
           </div>
         ) : (
           <>
-            <div key={activeL1Id ?? "all"} className="flex flex-wrap justify-center gap-x-10 gap-y-6">
+            <div ref={cloudRef} key={activeL1Id ?? "all"} className="flex flex-wrap justify-center gap-x-10 gap-y-6">
               {visibleWords.map((data, idx) => {
                 const localIdx = idx < INITIAL_BATCH ? idx : (idx - INITIAL_BATCH) % BATCH_SIZE;
                 return (

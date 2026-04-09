@@ -331,7 +331,7 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
         className={
           isDesktop
             ? [
-                "top-[49px] h-[calc(100vh-49px)] w-[min(440px,42vw)] p-0",
+                "top-[var(--nav-h,49px)] h-[calc(100vh-var(--nav-h,49px))] w-[min(440px,42vw)] p-0",
                 panelSide === "right"
                   ? "border-l border-slate-200/50 dark:border-slate-700/25 shadow-[-32px_0_80px_rgba(0,0,0,0.06)] dark:shadow-[-32px_0_80px_rgba(0,0,0,0.45)]"
                   : "border-r border-slate-200/50 dark:border-slate-700/25 shadow-[32px_0_80px_rgba(0,0,0,0.06)] dark:shadow-[32px_0_80px_rgba(0,0,0,0.45)]",
@@ -379,7 +379,7 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
         />
 
         <div
-          className={`flex-1 overflow-y-auto ${isDesktop ? "px-9 pb-10" : "px-6 py-4 pb-[env(safe-area-inset-bottom,1rem)]"}`}
+          className={`flex-1 overflow-y-auto no-scrollbar ${isDesktop ? "px-9 pb-10" : "px-6 py-4 pb-[env(safe-area-inset-bottom,1rem)]"}`}
         >
           <PanelBody {...sharedBodyProps} />
         </div>
