@@ -483,7 +483,7 @@ export default function ImageryClient({ items, categories }: Props) {
       {/* ── word cloud ── */}
       <main
         className={`max-w-5xl mx-auto px-8 py-16 min-h-[40vh] ${mounted ? "" : "opacity-0"}`}
-        style={mounted ? { animation: "word-fade-in 1s cubic-bezier(0.2, 0.8, 0.2, 1) both", animationDelay: "200ms" } : undefined}
+        style={mounted ? { animation: "main-fade-in 1s ease-out both", animationDelay: "200ms" } : undefined}
       >
         {wordDisplayList.length === 0 ? (
           <div className="text-center text-slate-400 dark:text-slate-600 text-sm py-24 tracking-[0.3em]">
