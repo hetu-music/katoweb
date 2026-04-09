@@ -144,6 +144,7 @@ button {
   animation-duration: var(--word-breathe-duration, 4s);
   animation-delay: var(--word-breathe-delay, 0s);
   animation-fill-mode: both;
+  will-change: transform;
 }
 
 .word-breathe-anim:hover,
@@ -187,23 +188,22 @@ button {
   animation: hero-unroll 2s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-/* 词云柔和淡入动画 */
+/* 词云柔和淡入动画 - 移除蓝光滤镜以优化滚动性能 */
 @keyframes word-fade-in {
   from {
     opacity: 0;
-    transform: translateY(24px);
-    filter: blur(6px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
-    filter: blur(0);
   }
 }
 
 .word-unfurl-anim {
-  animation: word-fade-in 1.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: word-fade-in 2.2s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: var(--unfurl-delay, 0ms);
+  will-change: transform, opacity;
 }
 
 /* 页面主内容淡入 */

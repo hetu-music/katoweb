@@ -18,8 +18,8 @@ import ImageryDetailPanel from "./ImageryDetailPanel";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
-const INITIAL_BATCH = 150;
-const BATCH_SIZE = 100;
+const INITIAL_BATCH = 80;
+const BATCH_SIZE = 60;
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -134,7 +134,7 @@ const WordItem = memo(function WordItem({
     return () => obs.unobserve(el);
   }, []);
 
-  const unfurlDelay = `${Math.min(localIdx, 30) * 30}ms`;
+  const unfurlDelay = `${Math.min(localIdx, 30) * 80}ms`;
   const isSelected = selectedItemId === data.item.id;
   const hasSelection = selectedItemId !== null;
 
@@ -149,9 +149,9 @@ const WordItem = memo(function WordItem({
       className="relative"
       style={{
         opacity: hasSelection ? (isSelected ? 1 : 0.08) : 1,
-        transform: isSelected ? "scale(1.15)" : "scale(1)",
+        transform: isSelected ? "scale(1.1)" : "scale(1)",
         zIndex: isSelected ? 10 : undefined,
-        transition: "opacity 0.5s ease, transform 0.5s cubic-bezier(0.22,1,0.36,1)",
+        transition: "opacity 0.8s ease, transform 0.8s cubic-bezier(0.16,1,0.3,1)",
       }}
     >
       {/* ── Inner: carries the one-shot unfurl animation (separate from selection state) ── */}
