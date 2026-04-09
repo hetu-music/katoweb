@@ -1,74 +1,166 @@
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import { TABLE_NAMES } from "./constants";
-
-// Server-side cache for Supabase clients
-const clientCache = new Map<string, SupabaseClient>();
-
 /**
- * 创建服务端数据访问 Supabase 客户端
+ * 📝 supabase-server.ts — 服务端 Supabase 数据客户端
  *
- * ⚠️ 警告：此函数只能在服务端使用（服务端组件、API 路由等）
+ * ⚠️ 警告：本文件只能在服务端使用（Server Component、API Route 等），
+ *    包含密钥，绝对不得暴露给客户端浏览器。
  *
- * @param table - 表名，如果是 MAIN_TABLE 将使用高权限密钥
- * @param accessToken - 可选的访问令牌，用于非 MAIN_TABLE 的认证请求
- * @returns Supabase 客户端实例
+ * === 两种权限客户端 ===
+ *
+ * getServiceClient()
+ *   使用 Service Role Key（SUPABASE_SECRET_API），绕过 RLS。
+ *   适用于：公共展示数据的全量读取（music、imagery 相关表）。
+ *
+ * getUserClient(accessToken?)
+ *   使用 Anon Key（NEXT_PUBLIC_SUPABASE_ANON_KEY），受 RLS 约束。
+ *   使用 accessToken 时以登录用户身份执行，适用于后台操作（temp 表、users 表）。
+ *
+ * === 表名常量 ===
+ *
+ * TABLES.MUSIC   — 公开歌曲表（只读，高权限访问）
+ * TABLES.ADMIN   — 后台暂存表（增删改，用户权限访问）
  */
-export function createSupabaseDataClient(table?: string, accessToken?: string) {
-  // 运行时检查：确保只在服务端使用
+
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+
+// ─── 表名常量（写死，不走环境变量）────────────────────────────────────────────
+
+export const TABLES = {
+  MUSIC: "music",
+  ADMIN: "temp",
+} as const;
+
+// ─── 服务端运行时检查 ──────────────────────────────────────────────────────
+
+function assertServerOnly() {
   if (typeof window !== "undefined") {
     throw new Error(
-      "createSupabaseDataClient can only be used on the server side. " +
-        "This function may use service role keys and must never be exposed to the client.",
+      "[supabase-server] 此模块只能在服务端使用，包含密钥，不得暴露给客户端。",
     );
   }
+}
 
-  let supabaseUrl: string | undefined;
-  let supabaseKey: string | undefined;
-  const options: { global?: { headers: { Authorization: string } } } = {};
+// ─── 客户端缓存（进程级单例，防止重复创建连接）─────────────────────────────
 
-  if (table === TABLE_NAMES.MAIN) {
-    // 使用高权限 API 密钥访问主表
-    supabaseUrl = process.env.SUPABASE_URL;
-    supabaseKey = process.env.SUPABASE_SECRET_API;
-    // 使用高权限API时不带token
-  } else {
-    // 使用普通 anon 密钥，配合可选的 access token
-    supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (accessToken) {
-      options.global = { headers: { Authorization: `Bearer ${accessToken}` } };
+const clientCache = new Map<string, SupabaseClient>();
+
+function getCachedClient(
+  url: string,
+  key: string,
+  options?: Parameters<typeof createClient>[2],
+  cacheKeySuffix = "",
+): SupabaseClient {
+  const cacheKey = `${url}::${key}::${cacheKeySuffix}`;
+  let client = clientCache.get(cacheKey);
+  if (!client) {
+    client = createClient(url, key, options);
+    clientCache.set(cacheKey, client);
+    // 限制缓存大小，防止内存泄漏
+    if (clientCache.size > 20) {
+      const firstKey = clientCache.keys().next().value;
+      if (firstKey) clientCache.delete(firstKey);
     }
   }
+  return client;
+}
 
-  if (
-    !supabaseUrl ||
-    !supabaseKey ||
-    supabaseUrl === "placeholder" ||
-    supabaseKey === "placeholder"
-  ) {
-    console.warn("Using placeholder environment variables");
+// ─── 公共 API ──────────────────────────────────────────────────────────────
+
+/**
+ * 高权限客户端（Service Role Key）
+ *
+ * 绕过 RLS，可读取所有数据，仅用于公共展示数据的服务端全量读取。
+ * 环境变量缺失时返回 null（构建时降级为空数据而不是抛异常）。
+ */
+export function getServiceClient(): SupabaseClient | null {
+  assertServerOnly();
+
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SECRET_API;
+
+  if (!url || !key || url === "placeholder" || key === "placeholder") {
+    console.warn("[supabase-server] SUPABASE_URL / SUPABASE_SECRET_API 未配置");
     return null;
   }
 
-  // 创建缓存键
-  const cacheKey = `${supabaseUrl}-${supabaseKey}-${accessToken || "no-token"}`;
+  return getCachedClient(url, key);
+}
 
-  // 检查缓存
-  if (clientCache.has(cacheKey)) {
-    return clientCache.get(cacheKey);
+/**
+ * 用户权限客户端（Anon Key + 可选 accessToken）
+ *
+ * 受 RLS 约束，用于后台操作（temp 表）和用户相关查询（users 表）。
+ * 传入 accessToken 时以该登录用户身份执行请求。
+ */
+export function getUserClient(accessToken?: string): SupabaseClient | null {
+  assertServerOnly();
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !key || url === "placeholder" || key === "placeholder") {
+    console.warn(
+      "[supabase-server] NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY 未配置",
+    );
+    return null;
   }
 
-  // 创建新客户端并缓存
-  const client = createClient(supabaseUrl, supabaseKey, options);
-  clientCache.set(cacheKey, client);
+  const options = accessToken
+    ? { global: { headers: { Authorization: `Bearer ${accessToken}` } } }
+    : undefined;
 
-  // 限制缓存大小，防止内存泄漏
-  if (clientCache.size > 10) {
-    const firstKey = clientCache.keys().next().value;
-    if (firstKey) {
-      clientCache.delete(firstKey);
+  return getCachedClient(url, key, options, accessToken ?? "anon");
+}
+
+// ─── 分页工具 ──────────────────────────────────────────────────────────────
+
+const PAGE_SIZE = 1000;
+
+/**
+ * 全量分页获取（Supabase/PostgREST 单次最多返回 1000 行）
+ *
+ * 循环 range 请求直到取完所有行，适用于超过 1000 行的大表。
+ *
+ * @param supabase     - Supabase 客户端实例
+ * @param table        - 要查询的表名
+ * @param selectFields - 查询字段（逗号分隔字符串）
+ * @param extraFilter  - 可选的额外过滤/排序条件函数
+ */
+export async function fetchAll<T>(
+  supabase: SupabaseClient,
+  table: string,
+  selectFields: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  extraFilter?: (query: any) => any,
+): Promise<T[]> {
+  const results: T[] = [];
+  let from = 0;
+
+  while (true) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let query: any = supabase
+      .from(table)
+      .select(selectFields)
+      .range(from, from + PAGE_SIZE - 1);
+
+    if (extraFilter) {
+      query = extraFilter(query);
     }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error(
+        `[fetchAll] 获取 "${table}" 失败 (range ${from}–${from + PAGE_SIZE - 1}):`,
+        error,
+      );
+      break;
+    }
+
+    if (!data || data.length === 0) break;
+    results.push(...(data as T[]));
+    if (data.length < PAGE_SIZE) break; // 最后一页
+    from += PAGE_SIZE;
   }
 
-  return client;
+  return results;
 }

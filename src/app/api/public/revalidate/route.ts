@@ -12,8 +12,9 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 重新验证音乐库页面和 sitemap
+    // 重新验证音乐库页面、意象页面和 sitemap
     revalidatePath("/");
+    revalidatePath("/imagery");
     revalidatePath("/sitemap.xml");
 
     const timestamp = new Date().toISOString();

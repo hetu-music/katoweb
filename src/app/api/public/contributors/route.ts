@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { createSupabaseDataClient } from "@/lib/supabase-server";
+import { getServiceClient } from "@/lib/supabase-server";
 
 export async function GET() {
-  const supabase = createSupabaseDataClient("music");
+  const supabase = getServiceClient();
   if (!supabase) {
     return NextResponse.json(
       { error: "Server configuration error" },

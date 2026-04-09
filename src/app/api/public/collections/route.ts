@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
 import { createSupabaseServerClient } from "@/lib/supabase-auth";
 import { getSongs } from "@/lib/service-songs";
-import { TABLE_NAMES } from "@/lib/constants";
 
 const TABLE = "collections";
 const TARGET_TYPE_FAVORITE = 0;
@@ -30,7 +29,7 @@ export const GET = withAuth(
     }
 
     // 服务端直接查歌曲数据，避免客户端二次请求
-    const allSongs = await getSongs(TABLE_NAMES.MAIN, undefined, true);
+    const allSongs = await getSongs(undefined, undefined, true);
 
     // 从数据行转为映射
     const idToCol = Object.fromEntries(

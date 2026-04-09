@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
-import { createSupabaseDataClient } from "@/lib/supabase-server";
+import { getServiceClient, TABLES } from "@/lib/supabase-server";
 import { processLyricsForSearch } from "@/lib/utils-song";
-import { TABLE_NAMES } from "@/lib/constants";
 
 // 歌词索引 API - 仅返回 id 和处理后的纯文本歌词
 // 供前端异步拉取，用于本地歌词全文搜索
 export const GET = async () => {
-  const table = TABLE_NAMES.MAIN;
-  const supabase = createSupabaseDataClient(table);
+  const supabase = getServiceClient();
   if (!supabase) {
     return NextResponse.json(
       { error: "Supabase not available" },
@@ -16,7 +14,7 @@ export const GET = async () => {
   }
 
   const { data, error } = await supabase
-    .from(table)
+    .from(TABLES.MUSIC)
     .select("id,lyrics")
     .not("lyrics", "is", null);
 
