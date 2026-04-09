@@ -439,12 +439,12 @@ export default function ImageryClient({ items, categories }: Props) {
 
         <div className="relative z-10">
           <h1
-            className={`font-serif text-7xl md:text-9xl font-normal tracking-[0.35em] text-slate-800 dark:text-slate-100 mb-5 ${mounted ? "hero-unroll" : "opacity-0"}`}
+            className={`font-serif text-7xl md:text-9xl font-normal tracking-[0.35em] pl-[0.35em] text-slate-800 dark:text-slate-100 mb-5 ${mounted ? "hero-unroll" : "opacity-0"}`}
           >
             意象词云
           </h1>
           <p
-            className={`text-sm text-slate-400 dark:text-slate-500 tracking-[0.25em] mb-3 ${mounted ? "hero-unroll" : "opacity-0"}`}
+            className={`text-sm text-slate-400 dark:text-slate-500 tracking-[0.25em] pl-[0.25em] mb-3 ${mounted ? "hero-unroll" : "opacity-0"}`}
             style={{ animationDelay: "150ms" }}
           >
             河图作品中的意象索引

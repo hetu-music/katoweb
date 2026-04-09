@@ -69,7 +69,7 @@ h6 {
   font-weight: 700;
 
   /* 调整标题中数字的垂直对齐，使其与中文字符更好地对齐 */
-  & > span {
+  &>span {
     position: relative;
     top: 0.05em;
   }
@@ -113,24 +113,49 @@ button {
 
 /* 功能入口字符浮动动画 */
 @keyframes feature-drift {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-7px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-7px);
+  }
 }
 
 /* 意象页背景滚动字幕 */
 @keyframes imagery-marquee-ltr {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
 }
+
 @keyframes imagery-marquee-rtl {
-  from { transform: translateX(-50%); }
-  to   { transform: translateX(0); }
+  from {
+    transform: translateX(-50%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
 }
 
 /* 词云词语呼吸浮动动画 */
 @keyframes word-breathe {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-5px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
 }
 
 .word-breathe-anim {
@@ -147,24 +172,27 @@ button {
   animation-play-state: paused;
 }
 
-/* Hero区横向展开动画 */
+/* Hero区从左向右展开动画 */
 @keyframes hero-unroll {
   from {
     opacity: 0;
-    clip-path: inset(0 50% 0 50%);
+    clip-path: inset(0 100% 0 0);
     transform: scaleX(0.92);
     filter: blur(12px);
+    transform-origin: left;
   }
+
   to {
     opacity: 1;
     clip-path: inset(0 0 0 0);
     transform: scaleX(1);
     filter: blur(0);
+    transform-origin: left;
   }
 }
 
 .hero-unroll {
-  animation: hero-unroll 1.2s cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: hero-unroll 2.6s cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 
 /* 词云柔和淡入动画 */
@@ -174,6 +202,7 @@ button {
     transform: translateY(24px);
     filter: blur(6px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -188,6 +217,11 @@ button {
 
 /* 页面主内容淡入 */
 @keyframes main-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
