@@ -35,8 +35,11 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
         <span className="text-[1.3em] font-semibold">{songCount}</span>
       </h1>
 
-      <div className="flex flex-col md:flex-row md:items-center gap-y-3 gap-x-0 md:gap-x-8 md:ml-16 transition-all duration-700 ease-in-out">
-        <div className="text-slate-500 dark:text-slate-400 pl-4 border-l border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col md:flex-row md:items-center gap-y-3 gap-x-0 md:gap-x-10 transition-all duration-700 ease-in-out">
+        <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
+          <span className="text-blue-600 dark:text-blue-500 font-mono text-lg leading-none relative -top-[1.5px] select-none">
+            &gt;
+          </span>
           <p className="font-light tracking-[0.15em] text-sm md:text-[15px] leading-relaxed">
             你一定想知道，戏里讲了什么故事
             {/* Breathing ellipsis — only on hover-capable devices when not hovered */}
@@ -72,7 +75,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
             <span className="relative pb-0.5 border-b border-slate-100 dark:border-slate-800/50">
               进入意象词云
             </span>
-            <ArrowRight className="h-4 w-4 opacity-70" />
+            <ArrowRight className="h-4 w-4 opacity-70 relative -top-[2px]" />
           </Link>
         </div>
 
@@ -85,11 +88,11 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 initial={{ opacity: 0, x: -12, filter: "blur(8px)" }}
                 animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
                 exit={{ opacity: 0, x: -8, filter: "blur(4px)" }}
-                transition={{ 
-                  duration: 0.8, 
-                  ease: [0.42, 0, 0.58, 1] 
+                transition={{
+                  duration: 0.8,
+                  ease: [0.42, 0, 0.58, 1]
                 }}
-                className="flex items-center before:content-[''] before:block before:w-12 before:h-px before:bg-slate-100 dark:before:bg-slate-800 before:mr-6"
+                className="flex items-center before:content-[''] before:block before:w-10 before:h-px before:bg-slate-200 dark:before:bg-slate-800 before:mr-6"
               >
                 <Link
                   href="/imagery"
@@ -99,7 +102,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                     进入意象词云
                     <span className="absolute bottom-0 left-0 h-px w-0 bg-current transition-all duration-500 ease-out group-hover:w-full" />
                   </span>
-                  <ArrowRight className="h-3.5 w-3.5 opacity-60 transition-transform duration-500 ease-out group-hover:translate-x-1.5 group-hover:opacity-100" />
+                  <ArrowRight className="h-3.5 w-3.5 opacity-60 transition-transform duration-500 ease-out group-hover:translate-x-1.5 group-hover:opacity-100 relative -top-[2px]" />
                 </Link>
               </motion.div>
             )}
