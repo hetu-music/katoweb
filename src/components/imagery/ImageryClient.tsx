@@ -210,7 +210,6 @@ const WordItem = memo(function WordItem({
       >
         <button
           data-item-id={data.item.id}
-          title={`${data.item.count}次`}
           className={`font-serif leading-none transition-opacity duration-200 word-breathe-anim ${isSelected ? "word-breathe-force-run" : ""} ${data.paletteText} ${isSelected ? "opacity-100" : "opacity-70 hover:opacity-100"}`}
           style={
             {
@@ -311,6 +310,12 @@ export default function ImageryClient({ items, categories }: Props) {
   const [panelSide, setPanelSide] = useState<"left" | "right">("right");
   const [songs, setSongs] = useState<SongResult[]>([]);
   const [songsLoading, setSongsLoading] = useState(false);
+  const [hoveredData, setHoveredData] = useState<{
+    count: number;
+    accent: string;
+    x: number;
+    y: number;
+  } | null>(null);
   const [showAbout, setShowAbout] = useState(false);
 
   const router = useRouter();
@@ -536,9 +541,48 @@ export default function ImageryClient({ items, categories }: Props) {
       setPanelSide(clickX > (cloudRight * 3) / 4 ? "left" : "right");
       setSelectedItem(d.item);
       setPanelOpen(true);
+      // Dismiss tooltip immediately when panel opens
+      hoveredBtnRef.current = null;
+      setHoveredData(null);
     },
     [itemLookup],
   );
+
+  // Keep a ref in sync with panelOpen so mouse handlers avoid stale closures
+  const panelOpenRef = useRef(panelOpen);
+  useEffect(() => {
+    panelOpenRef.current = panelOpen;
+  }, [panelOpen]);
+
+  const hoveredBtnRef = useRef<number | null>(null);
+
+  const handleCloudMouseOver = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (panelOpenRef.current) return;
+      const btn = (e.target as HTMLElement).closest<HTMLElement>(
+        "button[data-item-id]",
+      );
+      if (!btn) return;
+      const itemId = Number(btn.dataset.itemId);
+      if (hoveredBtnRef.current === itemId) return;
+      hoveredBtnRef.current = itemId;
+      const d = itemLookup.get(itemId);
+      if (!d) return;
+      const rect = btn.getBoundingClientRect();
+      setHoveredData({
+        count: d.item.count,
+        accent: d.paletteAccent,
+        x: rect.left + rect.width / 2,
+        y: rect.top,
+      });
+    },
+    [itemLookup],
+  );
+
+  const handleCloudMouseLeave = useCallback(() => {
+    hoveredBtnRef.current = null;
+    setHoveredData(null);
+  }, []);
 
   const handleClose = useCallback(() => setPanelOpen(false), []);
 
@@ -768,6 +812,8 @@ export default function ImageryClient({ items, categories }: Props) {
             <div
               ref={cloudRef}
               onClick={handleCloudClick}
+              onMouseOver={handleCloudMouseOver}
+              onMouseLeave={handleCloudMouseLeave}
               style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: "relative" }}
             >
               {rowVirtualizer.getVirtualItems().map((virtualRow) => {
@@ -801,6 +847,29 @@ export default function ImageryClient({ items, categories }: Props) {
                 );
               })}
             </div>
+
+            {/* Tooltip — count only, desktop only, tinted with the word's accent color */}
+            {hoveredData && isDesktop && (
+              <div
+                className="fixed z-50 pointer-events-none"
+                style={{
+                  left: hoveredData.x,
+                  top: hoveredData.y - 8,
+                  transform: "translate(-50%, -100%)",
+                }}
+              >
+                <div
+                  className="px-2.5 py-1 rounded-full text-xs tracking-wider font-light whitespace-nowrap shadow-sm backdrop-blur-sm tooltip-appear"
+                  style={{
+                    backgroundColor: `${hoveredData.accent}22`,
+                    color: hoveredData.accent,
+                    border: `1px solid ${hoveredData.accent}44`,
+                  }}
+                >
+                  {hoveredData.count} 次
+                </div>
+              </div>
+            )}
 
             {/* Total count */}
             <div className="mt-12 flex justify-center">
