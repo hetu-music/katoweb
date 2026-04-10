@@ -191,7 +191,6 @@ const PanelBody = memo(function PanelBody({
       )}
 
       {/* Songs */}
-      <div key={activeLyricist ?? "all"} className="animate-in fade-in duration-500">
       <SectionLabel
         label={
           activeLyricist
@@ -222,7 +221,6 @@ const PanelBody = memo(function PanelBody({
             />
           </Link>
         ))}
-      </div>
       </div>
     </>
   );
@@ -362,7 +360,7 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
   if (!isDesktop) {
     return (
       <Drawer open={open} onOpenChange={(v) => !v && onClose()}>
-        <DrawerContent className="h-[85dvh]">
+        <DrawerContent className="h-[50dvh]">
           {/* Accessible title/description (visually hidden) */}
           <DrawerTitle className="sr-only">
             {selectedItem?.name ?? "意象详情"}
