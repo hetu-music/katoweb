@@ -130,6 +130,14 @@ export async function apiCheckFileExists(
 
 // Auto-complete logic has been moved to src/lib/api-auto-complete.ts
 
+// ─── Songs Admin API ───────────────────────────────────────────────────────────
+
+export async function apiGetSongs(): Promise<{ id: number; title: string; album?: string | null }[]> {
+  const res = await fetch("/api/admin/edit");
+  if (!res.ok) throw new Error("获取歌曲列表失败");
+  return res.json();
+}
+
 // ─── Imagery Admin API ─────────────────────────────────────────────────────────
 
 export async function apiGetImageryItems() {

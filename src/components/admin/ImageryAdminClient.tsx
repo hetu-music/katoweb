@@ -2,34 +2,35 @@
 
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import { useUserContext } from "@/context/UserContext";
-import type { ImageryCategory, ImageryItem, ImageryMeaning } from "@/lib/types";
-import type { OccurrenceWithSong } from "@/lib/service-imagery";
 import {
-  apiGetImageryItems,
   apiCreateImagery,
-  apiUpdateImagery,
-  apiDeleteImagery,
   apiCreateImageryCategory,
-  apiUpdateImageryCategory,
-  apiDeleteImageryCategory,
-  apiGetImageryMeanings,
   apiCreateMeaning,
-  apiUpdateMeaning,
-  apiDeleteMeaning,
-  apiGetOccurrencesForImagery,
   apiCreateOccurrence,
-  apiUpdateOccurrence,
+  apiDeleteImagery,
+  apiDeleteImageryCategory,
+  apiDeleteMeaning,
   apiDeleteOccurrence,
+  apiGetImageryItems,
+  apiGetImageryMeanings,
+  apiGetOccurrencesForImagery,
+  apiGetSongs,
+  apiUpdateImagery,
+  apiUpdateImageryCategory,
+  apiUpdateMeaning,
+  apiUpdateOccurrence,
 } from "@/lib/client-api";
+import type { OccurrenceWithSong } from "@/lib/service-imagery";
+import type { ImageryCategory, ImageryItem, ImageryMeaning } from "@/lib/types";
 import {
   AlertCircle,
   ArrowLeft,
   BookOpen,
+  CheckCircle2,
   ChevronDown,
   ChevronRight,
   Edit2,
   FolderPlus,
-  Hash,
   Home,
   Layers,
   Link2,
@@ -41,8 +42,7 @@ import {
   Trash2,
   User,
   X,
-  CheckCircle2,
-  XCircle,
+  XCircle
 } from "lucide-react";
 import Link from "next/link";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -300,9 +300,10 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   const [showAddOcc, setShowAddOcc] = useState(false);
   const [editingOccId, setEditingOccId] = useState<number | null>(null);
   const [occForm, setOccForm] = useState({ category_id: 0, meaning_id: null as number | null, lyric_timetag: "[]" });
-  const [addOccForm, setAddOccForm] = useState({ imagery_id: 0, category_id: 0, meaning_id: null as number | null, lyric_timetag: "[]" });
+  const [addOccForm, setAddOccForm] = useState({ imagery_id: 0, song_id: 0, category_id: 0, meaning_id: null as number | null, lyric_timetag: "[]" });
   const [occMeanings, setOccMeanings] = useState<ImageryMeaning[]>([]);
   const [occSubmitting, setOccSubmitting] = useState(false);
+  const [allSongs, setAllSongs] = useState<{ id: number; title: string; album?: string | null }[]>([]);
 
   // ─── Init ─────────────────────────────────────────────────────────────────
 
@@ -310,6 +311,10 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     fetch("/api/public/csrf-token")
       .then((r) => r.json())
       .then((d) => setCsrfToken(d.csrfToken || ""));
+  }, []);
+
+  useEffect(() => {
+    apiGetSongs().then(setAllSongs).catch(console.error);
   }, []);
 
   useEffect(() => {
@@ -594,13 +599,13 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   };
 
   const handleAddOcc = async () => {
-    if (!selectedImageryForOcc || !addOccForm.imagery_id || !addOccForm.category_id || occSubmitting) return;
+    if (!selectedImageryForOcc || !addOccForm.song_id || !addOccForm.imagery_id || !addOccForm.category_id || occSubmitting) return;
     setOccSubmitting(true);
     try {
       let timetag: Record<string, unknown>[] = [];
       try { timetag = JSON.parse(addOccForm.lyric_timetag); } catch { timetag = []; }
       const created = await apiCreateOccurrence({
-        song_id: 0, // placeholder - occurrences from imagery tab don't need song_id
+        song_id: addOccForm.song_id,
         imagery_id: addOccForm.imagery_id,
         category_id: addOccForm.category_id,
         meaning_id: addOccForm.meaning_id,
@@ -608,7 +613,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
       }, csrfToken);
       setOccurrences((prev) => [...prev, created]);
       setShowAddOcc(false);
-      setAddOccForm({ imagery_id: selectedImageryForOcc.id, category_id: 0, meaning_id: null, lyric_timetag: "[]" });
+      setAddOccForm({ imagery_id: selectedImageryForOcc.id, song_id: 0, category_id: 0, meaning_id: null, lyric_timetag: "[]" });
     } catch (e) { console.error(e); } finally { setOccSubmitting(false); }
   };
 
@@ -862,7 +867,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
                         key={node.id}
                         node={node}
                         selectedId={null}
-                        onSelect={() => {}}
+                        onSelect={() => { }}
                         onEdit={openEditCategory}
                         onDelete={openDeleteCategory}
                         onAddChild={openAddCategory}
@@ -1064,7 +1069,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
               </select>
               {selectedImageryForOcc && (
                 <button
-                  onClick={() => { setShowAddOcc(true); setEditingOccId(null); setAddOccForm({ imagery_id: selectedImageryForOcc.id, category_id: 0, meaning_id: null, lyric_timetag: "[]" }); }}
+                  onClick={() => { setShowAddOcc(true); setEditingOccId(null); setAddOccForm({ imagery_id: selectedImageryForOcc.id, song_id: 0, category_id: 0, meaning_id: null, lyric_timetag: "[]" }); }}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors"
                 >
                   <Plus size={14} />新增关系
@@ -1082,14 +1087,16 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
                   {showAddOcc && (
                     <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2 mb-3">
                       <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">新增关系</p>
-                      <input
-                        type="number"
-                        value={addOccForm.imagery_id || ""}
-                        onChange={(e) => setAddOccForm((f) => ({ ...f, imagery_id: parseInt(e.target.value) || 0 }))}
-                        placeholder="Song ID（数字）"
+                      <select
+                        value={addOccForm.song_id}
+                        onChange={(e) => setAddOccForm((f) => ({ ...f, song_id: parseInt(e.target.value) || 0 }))}
                         className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"
-                        style={{ display: "none" }}
-                      />
+                      >
+                        <option value={0}>— 选择歌曲 —</option>
+                        {allSongs.map((s) => (
+                          <option key={s.id} value={s.id}>{s.title}{s.album ? ` · ${s.album}` : ""}</option>
+                        ))}
+                      </select>
                       <select
                         value={addOccForm.category_id}
                         onChange={(e) => setAddOccForm((f) => ({ ...f, category_id: parseInt(e.target.value) || 0 }))}
@@ -1117,7 +1124,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
                       />
                       <div className="flex justify-end gap-2">
                         <button type="button" onClick={() => setShowAddOcc(false)} className="px-3 py-1.5 rounded-lg text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">取消</button>
-                        <button type="button" onClick={handleAddOcc} disabled={occSubmitting || !addOccForm.category_id} className="px-3 py-1.5 rounded-lg text-xs bg-violet-600 text-white hover:bg-violet-500 disabled:opacity-50 flex items-center gap-1">
+                        <button type="button" onClick={handleAddOcc} disabled={occSubmitting || !addOccForm.song_id || !addOccForm.category_id} className="px-3 py-1.5 rounded-lg text-xs bg-violet-600 text-white hover:bg-violet-500 disabled:opacity-50 flex items-center gap-1">
                           {occSubmitting && <Loader2 size={11} className="animate-spin" />}确认添加
                         </button>
                       </div>
@@ -1425,7 +1432,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
       {/* Toast */}
       {toast && (
         <div className={cn(
-          "fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 px-5 py-3 rounded-2xl shadow-xl text-sm font-medium transition-all",
+          "fixed bottom-6 left-1/2 -translate-x-1/2 z-60 flex items-center gap-2 px-5 py-3 rounded-2xl shadow-xl text-sm font-medium transition-all",
           toast.type === "success" ? "bg-emerald-600 text-white" : "bg-red-600 text-white",
         )}>
           {toast.type === "success" ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
