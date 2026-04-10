@@ -666,7 +666,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
       <main className="pt-32 pb-20 max-w-7xl mx-auto px-6">
         {/* ── Hero ── */}
-        <section className="mb-16">
+        <section className="mb-8 md:mb-16">
           <div className="flex items-end justify-between gap-8">
             <HeroSection songCount={filteredWorks.length} />
           </div>

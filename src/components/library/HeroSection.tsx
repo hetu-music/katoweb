@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -12,7 +13,6 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
   // Detect pointer-capable (hover) devices
   const [isHoverDevice, setIsHoverDevice] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -23,83 +23,90 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
     return () => mq.removeEventListener("change", handler);
   }, []);
 
-  useEffect(() => {
-    if (isHoverDevice) return;
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [isHoverDevice]);
-
-  const showEntryLink = isHoverDevice ? isHovered : scrolled;
-
   return (
     <div
       ref={containerRef}
-      className="space-y-4"
+      className="space-y-4 md:space-y-10 pt-1 md:pt-4"
       onMouseEnter={() => isHoverDevice && setIsHovered(true)}
       onMouseLeave={() => isHoverDevice && setIsHovered(false)}
     >
-      <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50 italic">
+      <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50 italic tracking-tight">
         谣歌{" "}
         <span className="text-[1.3em] font-semibold">{songCount}</span>
       </h1>
 
-      <p className="text-slate-500 dark:text-slate-400 font-light max-w-lg">
-        你一定想知道，戏里讲了什么故事
-        {/* Breathing ellipsis — only on hover-capable devices when not hovered */}
-        {isHoverDevice && (
-          <motion.span
-            animate={{ opacity: isHovered ? 0 : [0.4, 0.8, 0.4] }}
-            transition={
-              isHovered
-                ? { duration: 0.3, ease: "easeOut" }
-                : {
-                    duration: 2.4,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    repeatDelay: 0.2,
-                  }
-            }
-            className="select-none"
-          >
-            ……
-          </motion.span>
-        )}
-        {/* On mobile there's no breathing cursor */}
-        {!isHoverDevice && "……"}
-      </p>
+      <div className="flex flex-col md:flex-row md:items-center gap-y-3 gap-x-0 md:gap-x-8 md:ml-16 transition-all duration-700 ease-in-out">
+        <div className="text-slate-500 dark:text-slate-400 pl-4 border-l border-slate-200 dark:border-slate-800">
+          <p className="font-light tracking-[0.15em] text-sm md:text-[15px] leading-relaxed">
+            你一定想知道，戏里讲了什么故事
+            {/* Breathing ellipsis — only on hover-capable devices when not hovered */}
+            {isHoverDevice && (
+              <motion.span
+                animate={{ opacity: isHovered ? 0 : [0.4, 1, 0.4] }}
+                transition={
+                  isHovered
+                    ? { duration: 0.3, ease: "easeOut" }
+                    : {
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      repeatDelay: 0.5,
+                    }
+                }
+                className="select-none inline-block ml-1 font-normal text-slate-400 dark:text-slate-500"
+              >
+                ……
+              </motion.span>
+            )}
+            {/* On mobile there's no breathing cursor */}
+            {!isHoverDevice && <span className="ml-1 text-slate-400 dark:text-slate-500">……</span>}
+          </p>
+        </div>
 
-      {/* Text C: 意象词云 entry link */}
-      <AnimatePresence>
-        {showEntryLink && (
-          <motion.div
-            key="imagery-entry"
-            initial={
-              isHoverDevice
-                ? { opacity: 0, x: -10 }
-                : { opacity: 0, y: 10 }
-            }
-            animate={
-              isHoverDevice
-                ? { opacity: 1, x: 0 }
-                : { opacity: 1, y: 0 }
-            }
-            exit={
-              isHoverDevice
-                ? { opacity: 0, x: -10 }
-                : { opacity: 0, y: 10 }
-            }
-            transition={{ duration: 0.8, ease: "easeOut" }}
+        {/* --- Mobile Entry Link --- */}
+        <div className="flex md:hidden justify-end hero-unroll" style={{ animationDelay: '0.4s' }}>
+          <Link
+            href="/imagery"
+            className="flex items-center gap-2 px-1 py-0.5 text-sm font-medium tracking-widest text-slate-600 dark:text-slate-400 active:opacity-60 transition-opacity"
           >
-            <Link
-              href="/imagery"
-              className="inline-flex items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors duration-300 text-sm font-light tracking-wide"
-            >
-              意象词云 ↗
-            </Link>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <span className="relative pb-0.5 border-b border-slate-100 dark:border-slate-800/50">
+              进入意象词云
+            </span>
+            <ArrowRight className="h-4 w-4 opacity-70" />
+          </Link>
+        </div>
+
+        {/* --- Desktop Entry Link --- */}
+        <div className="hidden md:flex">
+          <AnimatePresence>
+            {isHoverDevice && isHovered && (
+              <motion.div
+                key="imagery-entry-desktop"
+                initial={{ opacity: 0, x: -20, filter: "blur(8px)" }}
+                animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, x: -10, filter: "blur(4px)" }}
+                transition={{
+                  duration: 1.1,
+                  delay: 0.1,
+                  ease: [0.19, 1, 0.22, 1]
+                }}
+                className="flex items-center before:content-[''] before:block before:w-12 before:h-px before:bg-slate-100 dark:before:bg-slate-800 before:mr-6"
+              >
+                <Link
+                  href="/imagery"
+                  className="group flex items-center gap-2 text-sm font-medium tracking-widest text-slate-700 dark:text-slate-300 transition-colors hover:text-black dark:hover:text-white"
+                >
+                  <span className="relative pb-1">
+                    进入意象词云
+                    <span className="absolute bottom-0 left-0 h-px w-0 bg-current transition-all duration-500 ease-out group-hover:w-full" />
+                  </span>
+                  <ArrowRight className="h-3.5 w-3.5 opacity-60 transition-transform duration-500 ease-out group-hover:translate-x-1.5 group-hover:opacity-100" />
+                </Link>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
     </div>
   );
 }
