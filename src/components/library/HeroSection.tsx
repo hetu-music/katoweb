@@ -66,7 +66,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
         </div>
 
         {/* --- Mobile Entry Link --- */}
-        <div className="flex md:hidden justify-end hero-unroll" style={{ animationDelay: '0.4s' }}>
+        <div className="flex md:hidden justify-start hero-unroll" style={{ animationDelay: '0.4s' }}>
           <Link
             href="/imagery"
             className="flex items-center gap-2 px-1 py-0.5 text-sm font-medium tracking-widest text-slate-600 dark:text-slate-400 active:opacity-60 transition-opacity"
