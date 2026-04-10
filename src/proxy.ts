@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { createSupabaseMiddlewareClient } from "./lib/supabase-auth";
+import { TABLES } from "./lib/supabase-server";
 
 export async function proxy(request: NextRequest) {
   // Generate a random nonce for CSP
@@ -106,7 +107,7 @@ export async function proxy(request: NextRequest) {
 
       // Check is_admin flag in the users table
       const { data: userData } = await supabase
-        .from("users")
+        .from(TABLES.USERS)
         .select("is_admin")
         .eq("id", user.id)
         .maybeSingle();

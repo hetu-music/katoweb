@@ -5,12 +5,14 @@ import ThemeToggle from "@/components/shared/ThemeToggle";
 import { useUserContext } from "@/context/UserContext";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import type { ImageryCategory, ImageryItem } from "@/lib/types";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { Info, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, {
   memo,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -20,8 +22,8 @@ import ImageryDetailPanel from "./ImageryDetailPanel";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
-const INITIAL_BATCH = 200;
-const BATCH_SIZE = 150;
+const GAP_X_PX = 40; // gap-x-10 = 2.5rem = 40px
+const GAP_Y_PX = 24; // gap-y-6 = 1.5rem = 24px
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -38,6 +40,44 @@ interface WordDisplayData {
   breatheDuration: number;
   breatheDelay: number;
   tooltip: string;
+  globalIdx: number;
+}
+
+// ─── row-grouping helpers ─────────────────────────────────────────────────────
+
+function estimateWordWidthPx(data: WordDisplayData): number {
+  // Chinese chars are approximately 1em wide in serif fonts
+  return Math.ceil(data.item.name.length * data.fontSize * 16);
+}
+
+function groupIntoRows(
+  words: WordDisplayData[],
+  containerWidth: number,
+): WordDisplayData[][] {
+  if (containerWidth <= 0 || words.length === 0) return [words];
+  const rows: WordDisplayData[][] = [];
+  let row: WordDisplayData[] = [];
+  let rowW = 0;
+  for (const word of words) {
+    const w = estimateWordWidthPx(word);
+    const needed = row.length === 0 ? w : w + GAP_X_PX;
+    if (row.length > 0 && rowW + needed > containerWidth) {
+      rows.push(row);
+      row = [word];
+      rowW = w;
+    } else {
+      row.push(word);
+      rowW += needed;
+    }
+  }
+  if (row.length > 0) rows.push(row);
+  return rows;
+}
+
+function estimateRowHeightPx(row: WordDisplayData[]): number {
+  if (!row?.length) return 80;
+  const maxFontSize = Math.max(...row.map((w) => w.fontSize));
+  return Math.ceil(maxFontSize * 16) + GAP_Y_PX;
 }
 
 // ─── palette ──────────────────────────────────────────────────────────────────
@@ -139,17 +179,14 @@ function triggerHaptic(ms = 8) {
 const WordItem = memo(function WordItem({
   data,
   onClick,
-  localIdx,
   selectedItemId,
   onHover,
 }: {
   data: WordDisplayData;
   onClick: (item: ImageryItem, clickX: number) => void;
-  localIdx: number;
   selectedItemId: number | null;
   onHover: (data: WordDisplayData | null, rect?: DOMRect) => void;
 }) {
-  const [hasEntered, setHasEntered] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
 
   const handleClick = useCallback(() => {
@@ -158,25 +195,8 @@ const WordItem = memo(function WordItem({
     onClick(data.item, cx);
   }, [onClick, data.item]);
 
-  useEffect(() => {
-    const el = btnRef.current;
-    if (!el || typeof window === "undefined") return;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setHasEntered(true);
-          el.style.animationPlayState = "running";
-        } else {
-          el.style.animationPlayState = "paused";
-        }
-      },
-      { rootMargin: "400px" },
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-
-  const unfurlDelay = `${Math.min(localIdx, 100) * 40}ms`;
+  // Stagger only the first 100 visible words; subsequent rows appear instantly
+  const unfurlDelay = `${Math.min(data.globalIdx, 100) * 40}ms`;
   const isSelected = selectedItemId === data.item.id;
   const hasSelection = selectedItemId !== null;
 
@@ -192,21 +212,18 @@ const WordItem = memo(function WordItem({
       style={{
         opacity: hasSelection ? (isSelected ? 1 : 0.08) : 1,
         transform: isSelected ? "scale(1.1)" : "scale(1)",
-        zIndex: isSelected ? 30 : undefined, // 提高层级
+        zIndex: isSelected ? 30 : undefined,
         transition:
           "opacity 0.8s ease, transform 0.8s cubic-bezier(0.16,1,0.3,1)",
-        // 选中时彻底取消可能导致切边的限制
         overflow: isSelected ? "visible" : undefined,
       }}
     >
-      {/* ── Inner: carries the one-shot unfurl animation triggered on screen entry ── */}
+      {/* ── Inner: one-shot unfurl animation plays on mount (= when row scrolls into view) ── */}
       <div
-        className={`relative group/word leading-none ${hasEntered ? "word-unfurl-anim" : "opacity-0"}`}
+        className="relative group/word leading-none word-unfurl-anim"
         style={
           {
             "--unfurl-delay": unfurlDelay,
-            // 当被选中时，完全解除性能加速相关的限制，防止合成层切边
-            contentVisibility: isSelected ? "visible" : undefined,
             contain: isSelected ? "none" : undefined,
             willChange: isSelected ? "auto" : "transform, opacity",
             overflow: isSelected ? "visible" : undefined,
@@ -227,7 +244,7 @@ const WordItem = memo(function WordItem({
               fontSize: `${data.fontSize}rem`,
               "--word-breathe-duration": `${data.breatheDuration}s`,
               "--word-breathe-delay": `${data.breatheDelay}s`,
-              animationPlayState: isSelected ? "running" : undefined, // 选中时强制运行
+              animationPlayState: isSelected ? "running" : undefined,
               willChange: isSelected ? "auto" : "transform",
               textShadow: glow,
               transition: "text-shadow 0.4s ease, opacity 0.4s ease",
@@ -289,7 +306,6 @@ export default function ImageryClient({ items, categories }: Props) {
 
   // ── state ────────────────────────────────────────────────────────────────
   const [activeL1Id, setActiveL1Id] = useState<number | null>(null);
-  const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH);
   const [selectedItem, setSelectedItem] = useState<ImageryItem | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelSide, setPanelSide] = useState<"left" | "right">("right");
@@ -305,10 +321,10 @@ export default function ImageryClient({ items, categories }: Props) {
   const router = useRouter();
   const { user } = useUserContext();
   const isDesktop = useIsDesktop();
-  const sentinelRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const cloudRef = useRef<HTMLDivElement>(null);
-  const visibleCountRef = useRef(INITIAL_BATCH);
+  const [containerWidth, setContainerWidth] = useState(960);
+  const [scrollMargin, setScrollMargin] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [headerVisible, setHeaderVisible] = useState(true);
 
@@ -333,11 +349,6 @@ export default function ImageryClient({ items, categories }: Props) {
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
-
-  // Sync ref with state
-  useEffect(() => {
-    visibleCountRef.current = visibleCount;
-  }, [visibleCount]);
 
   // Track nav height → CSS variable --nav-h for the panel to consume
   useEffect(() => {
@@ -382,16 +393,10 @@ export default function ImageryClient({ items, categories }: Props) {
           breatheDuration: 3.5 + (idx % 7) * 0.6,
           breatheDelay: (idx % 13) * 0.35,
           tooltip: `${item.name} · ${item.count} 次${l1 ? ` · ${l1.name}` : ""}`,
+          globalIdx: idx,
         };
       });
   }, [items, activeL1Id, itemToL1, l1ColorIndex, maxCount]);
-
-  const visibleWords = useMemo(
-    () => wordDisplayList.slice(0, visibleCount),
-    [wordDisplayList, visibleCount],
-  );
-
-  const hasMore = visibleCount < wordDisplayList.length;
 
   const marqueeRows = useMemo(() => {
     const sorted = [...items].sort((a, b) => b.count - a.count);
@@ -429,30 +434,48 @@ export default function ImageryClient({ items, categories }: Props) {
 
   // ── effects ──────────────────────────────────────────────────────────────
 
-  // Reset visible count on filter change
+  // Measure cloud container width for row grouping
   useEffect(() => {
-    requestAnimationFrame(() => {
-      setVisibleCount(INITIAL_BATCH);
+    const el = cloudRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setContainerWidth(entry.contentRect.width);
     });
-  }, [activeL1Id]);
+    ro.observe(el);
+    setContainerWidth(el.getBoundingClientRect().width);
+    return () => ro.disconnect();
+  }, []);
 
-  // Sentinel observer for lazy loading
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisibleCount((prev) =>
-            Math.min(prev + BATCH_SIZE, wordDisplayList.length),
-          );
-        }
-      },
-      { rootMargin: "1000px" },
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
+  // Measure scroll margin (distance from doc top to cloud container top)
+  useLayoutEffect(() => {
+    const update = () => {
+      if (cloudRef.current) {
+        setScrollMargin(
+          cloudRef.current.getBoundingClientRect().top + window.scrollY,
+        );
+      }
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
   }, [wordDisplayList.length]);
+
+  // Scroll to cloud top when filter changes
+  const isFirstFilterRender = useRef(true);
+  useEffect(() => {
+    if (isFirstFilterRender.current) {
+      isFirstFilterRender.current = false;
+      return;
+    }
+    if (cloudRef.current) {
+      const top =
+        cloudRef.current.getBoundingClientRect().top +
+        window.scrollY -
+        // leave a bit of breathing room below the sticky filter bar
+        20;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
+  }, [activeL1Id]);
 
   // Fetch songs
   useEffect(() => {
@@ -468,6 +491,23 @@ export default function ImageryClient({ items, categories }: Props) {
       .catch(() => setSongs([]))
       .finally(() => setSongsLoading(false));
   }, [selectedItem, panelOpen]);
+
+  // ── virtualizer ──────────────────────────────────────────────────────────
+
+  const wordRows = useMemo(
+    () => groupIntoRows(wordDisplayList, containerWidth),
+    [wordDisplayList, containerWidth],
+  );
+
+  const rowVirtualizer = useWindowVirtualizer({
+    count: wordRows.length,
+    estimateSize: useCallback(
+      (i: number) => estimateRowHeightPx(wordRows[i] ?? []),
+      [wordRows],
+    ),
+    overscan: 4,
+    scrollMargin,
+  });
 
   // ── handlers ─────────────────────────────────────────────────────────────
   const handleWordClick = useCallback((item: ImageryItem, clickX: number) => {
@@ -696,23 +736,40 @@ export default function ImageryClient({ items, categories }: Props) {
           </div>
         ) : (
           <>
+            {/* Virtual word cloud: position:relative container whose height equals all rows */}
             <div
               ref={cloudRef}
-              key={activeL1Id ?? "all"}
-              className="flex flex-wrap justify-center gap-x-10 gap-y-6"
+              style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: "relative" }}
             >
-              {visibleWords.map((data, idx) => {
+              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                const row = wordRows[virtualRow.index];
+                if (!row) return null;
                 return (
-                  <WordItem
-                    key={data.item.id}
-                    data={data}
-                    onClick={handleWordClick}
-                    localIdx={idx}
-                    selectedItemId={
-                      panelOpen ? (selectedItem?.id ?? null) : null
-                    }
-                    onHover={handleWordHover}
-                  />
+                  <div
+                    key={virtualRow.key}
+                    data-index={virtualRow.index}
+                    ref={rowVirtualizer.measureElement}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      transform: `translateY(${virtualRow.start - rowVirtualizer.options.scrollMargin}px)`,
+                    }}
+                    className="flex justify-center items-center gap-x-10 pb-6"
+                  >
+                    {row.map((data) => (
+                      <WordItem
+                        key={data.item.id}
+                        data={data}
+                        onClick={handleWordClick}
+                        selectedItemId={
+                          panelOpen ? (selectedItem?.id ?? null) : null
+                        }
+                        onHover={handleWordHover}
+                      />
+                    ))}
+                  </div>
                 );
               })}
             </div>
@@ -734,19 +791,11 @@ export default function ImageryClient({ items, categories }: Props) {
               </div>
             )}
 
-            {/* Sentinel + progress */}
-            <div ref={sentinelRef} className="mt-12 flex justify-center">
-              {hasMore ? (
-                <p className="text-xs text-slate-300 dark:text-slate-700 tracking-[0.2em] tabular-nums select-none">
-                  {visibleCount} / {wordDisplayList.length}
-                </p>
-              ) : (
-                wordDisplayList.length > INITIAL_BATCH && (
-                  <p className="text-xs text-slate-300 dark:text-slate-700 tracking-[0.2em] select-none">
-                    共 {wordDisplayList.length} 个意象
-                  </p>
-                )
-              )}
+            {/* Total count */}
+            <div className="mt-12 flex justify-center">
+              <p className="text-xs text-slate-300 dark:text-slate-700 tracking-[0.2em] select-none">
+                共 {wordDisplayList.length} 个意象
+              </p>
             </div>
           </>
         )}

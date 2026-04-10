@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
 import { createSupabaseServerClient } from "@/lib/supabase-auth";
 import { getSongs } from "@/lib/service-songs";
+import { TABLES } from "@/lib/supabase-server";
 
-const TABLE = "collections";
 const TARGET_TYPE_FAVORITE = 0;
 
 // GET /api/public/collections — 获取当前用户的收藏，返回 songIds 和完整 songs 数据
@@ -11,7 +11,7 @@ export const GET = withAuth(
   async (_request: NextRequest, user: AuthenticatedUser) => {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
-      .from(TABLE)
+      .from(TABLES.COLLECTIONS)
       .select("song_id, created_at, review, snippet")
       .eq("user_id", user.id)
       .eq("target_type", TARGET_TYPE_FAVORITE)
@@ -65,7 +65,7 @@ export const POST = withAuth(
     }
 
     const supabase = await createSupabaseServerClient();
-    const { error } = await supabase.from(TABLE).insert({
+    const { error } = await supabase.from(TABLES.COLLECTIONS).insert({
       user_id: user.id,
       song_id: songId,
       target_type: TARGET_TYPE_FAVORITE,
@@ -96,7 +96,7 @@ export const DELETE = withAuth(
 
     const supabase = await createSupabaseServerClient();
     const { error } = await supabase
-      .from(TABLE)
+      .from(TABLES.COLLECTIONS)
       .delete()
       .eq("user_id", user.id)
       .eq("song_id", songId)

@@ -22,11 +22,31 @@
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-// ─── 表名常量（写死，不走环境变量）────────────────────────────────────────────
-
+// ─── 表名常量 — 全站唯一数据源，禁止在业务代码中硬编码表名字符串 ──────────────
+//
+// 权限说明：
+//   getServiceClient()  — 高权限 (绕过 RLS)，仅用于服务端公共数据的只读展示
+//   getUserClient()     — 用户权限 (受 RLS 约束)，所有写操作和用户关联读操作
+//
+// 各表对应的默认访问权限：
+//   MUSIC              → getServiceClient (公开只读)    ★ 写入时必须改用 getUserClient
+//   ADMIN              → getUserClient    (管理员读写)
+//   IMAGERY / _CAT / _OCC → getServiceClient (公开只读)
+//   USERS              → getUserClient    (用户本人读写，RLS 隔离)
+//   COLLECTIONS        → getUserClient    (用户本人读写，RLS 隔离)
 export const TABLES = {
-  MUSIC: "music",
-  ADMIN: "temp",
+  // 核心业务表
+  MUSIC: "music",           // 正式歌曲库
+  ADMIN: "temp",            // 管理员暂存/审核表
+
+  // 意象系统表
+  IMAGERY: "imagery",
+  IMAGERY_CAT: "imagery_categories",
+  IMAGERY_OCC: "imagery_occurrences",
+
+  // 用户与互动表
+  USERS: "users",
+  COLLECTIONS: "collections",
 } as const;
 
 // ─── 服务端运行时检查 ──────────────────────────────────────────────────────

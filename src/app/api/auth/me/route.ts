@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
 import { createSupabaseServerClient } from "@/lib/supabase-auth";
+import { TABLES } from "@/lib/supabase-server";
 
 export const GET = withAuth(
   async (_request: NextRequest, user: AuthenticatedUser) => {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
-      .from("users")
+      .from(TABLES.USERS)
       .select("name, display, intro, is_admin")
       .eq("id", user.id)
       .maybeSingle();
