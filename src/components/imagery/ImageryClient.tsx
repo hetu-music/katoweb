@@ -690,7 +690,7 @@ export default function ImageryClient({ items, categories }: Props) {
         </div>
 
         <div className="relative z-10">
-          <h1 className="font-serif text-5xl sm:text-7xl md:text-9xl font-normal text-slate-800 dark:text-slate-100 mb-6 flex justify-center items-center gap-4 sm:gap-10 drop-shadow-[0_0_30px_rgba(255,255,255,0.05)]">
+          <h1 className="font-serif text-5xl md:text-7xl font-normal text-slate-800 dark:text-slate-100 mb-4 flex justify-center items-center gap-4 sm:gap-10 drop-shadow-[0_0_30px_rgba(255,255,255,0.05)]">
             {"意象词云".split("").map((char, i) => (
               <span
                 key={i}
@@ -702,10 +702,10 @@ export default function ImageryClient({ items, categories }: Props) {
             ))}
           </h1>
           <p
-            className={`text-sm text-slate-400 dark:text-slate-500 tracking-[0.25em] pl-[0.25em] mb-3 ${mounted ? "hero-unroll" : "opacity-0"}`}
+            className={`text-base md:text-xl text-slate-500 dark:text-slate-400 tracking-[0.4em] pl-[0.4em] mb-3 ${mounted ? "hero-unroll" : "opacity-0"}`}
             style={{ animationDelay: "1600ms" }}
           >
-            场景{items.length}，长歌踏雪去何方
+            场景 {wordDisplayList.length} ，长歌踏雪去何方
           </p>
         </div>
       </header>
