@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
 import { createSupabaseServerClient } from "@/lib/supabase-auth";
+import { TABLES } from "@/lib/supabase-server";
 
 export const GET = withAuth(
   async (_request: NextRequest, user: AuthenticatedUser) => {
@@ -9,7 +10,7 @@ export const GET = withAuth(
 
       // 查询 public.users 表的 name、display 和 intro 字段
       const { data, error } = await supabase
-        .from("users")
+        .from(TABLES.USERS)
         .select("name, display, intro")
         .eq("id", user.id)
         .maybeSingle();
@@ -67,7 +68,7 @@ export const POST = withAuth(
       if (typeof display === "boolean") updateObj.display = display;
       if (typeof intro === "string" || intro === null) updateObj.intro = intro;
       const { error: updateError } = await supabase
-        .from("users")
+        .from(TABLES.USERS)
         .update(updateObj)
         .eq("id", user.id);
       if (updateError) {

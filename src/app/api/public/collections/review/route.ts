@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
 import { createSupabaseServerClient } from "@/lib/supabase-auth";
+import { TABLES } from "@/lib/supabase-server";
 
-const TABLE = "collections";
 const TARGET_TYPE_FAVORITE = 0;
 
 // GET /api/public/collections/review — 获取指定歌曲的评论
@@ -17,7 +17,7 @@ export const GET = withAuth(
 
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
-      .from(TABLE)
+      .from(TABLES.COLLECTIONS)
       .select("review")
       .eq("user_id", user.id)
       .eq("song_id", songId)
@@ -54,7 +54,7 @@ export const POST = withAuth(
 
     // 先尝试 update 已有行
     const { data: updated, error: updateError } = await supabase
-      .from(TABLE)
+      .from(TABLES.COLLECTIONS)
       .update({ review: review || null })
       .eq("user_id", user.id)
       .eq("song_id", songId)
@@ -71,7 +71,7 @@ export const POST = withAuth(
 
     // 如果没有命中任何行，说明还没有收藏记录，插入新行
     if (!updated || updated.length === 0) {
-      const { error: insertError } = await supabase.from(TABLE).insert({
+      const { error: insertError } = await supabase.from(TABLES.COLLECTIONS).insert({
         user_id: user.id,
         song_id: songId,
         target_type: TARGET_TYPE_FAVORITE,
@@ -82,7 +82,7 @@ export const POST = withAuth(
         // 唯一约束冲突说明并发插入，再次尝试 update
         if (insertError.code === "23505") {
           await supabase
-            .from(TABLE)
+            .from(TABLES.COLLECTIONS)
             .update({ review: review || null })
             .eq("user_id", user.id)
             .eq("song_id", songId)

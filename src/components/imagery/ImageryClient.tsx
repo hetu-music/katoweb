@@ -5,12 +5,15 @@ import ThemeToggle from "@/components/shared/ThemeToggle";
 import { useUserContext } from "@/context/UserContext";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import type { ImageryCategory, ImageryItem } from "@/lib/types";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { Info, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, {
   memo,
   useCallback,
+  useDeferredValue,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -20,8 +23,8 @@ import ImageryDetailPanel from "./ImageryDetailPanel";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
-const INITIAL_BATCH = 200;
-const BATCH_SIZE = 150;
+const GAP_X_PX = 40; // gap-x-10 = 2.5rem = 40px
+const GAP_Y_PX = 24; // gap-y-6 = 1.5rem = 24px
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -37,7 +40,43 @@ interface WordDisplayData {
   fontSize: number;
   breatheDuration: number;
   breatheDelay: number;
-  tooltip: string;
+}
+
+// ─── row-grouping helpers ─────────────────────────────────────────────────────
+
+function estimateWordWidthPx(data: WordDisplayData): number {
+  // Chinese chars are approximately 1em wide in serif fonts
+  return Math.ceil(data.item.name.length * data.fontSize * 16);
+}
+
+function groupIntoRows(
+  words: WordDisplayData[],
+  containerWidth: number,
+): WordDisplayData[][] {
+  if (containerWidth <= 0 || words.length === 0) return [words];
+  const rows: WordDisplayData[][] = [];
+  let row: WordDisplayData[] = [];
+  let rowW = 0;
+  for (const word of words) {
+    const w = estimateWordWidthPx(word);
+    const needed = row.length === 0 ? w : w + GAP_X_PX;
+    if (row.length > 0 && rowW + needed > containerWidth) {
+      rows.push(row);
+      row = [word];
+      rowW = w;
+    } else {
+      row.push(word);
+      rowW += needed;
+    }
+  }
+  if (row.length > 0) rows.push(row);
+  return rows;
+}
+
+function estimateRowHeightPx(row: WordDisplayData[]): number {
+  if (!row?.length) return 80;
+  const maxFontSize = Math.max(...row.map((w) => w.fontSize));
+  return Math.ceil(maxFontSize * 16) + GAP_Y_PX;
 }
 
 // ─── palette ──────────────────────────────────────────────────────────────────
@@ -138,100 +177,47 @@ function triggerHaptic(ms = 8) {
 
 const WordItem = memo(function WordItem({
   data,
-  onClick,
-  localIdx,
+  rowWordIdx,
   selectedItemId,
-  onHover,
 }: {
   data: WordDisplayData;
-  onClick: (item: ImageryItem, clickX: number) => void;
-  localIdx: number;
+  rowWordIdx: number;
   selectedItemId: number | null;
-  onHover: (data: WordDisplayData | null, rect?: DOMRect) => void;
 }) {
-  const [hasEntered, setHasEntered] = useState(false);
-  const btnRef = useRef<HTMLButtonElement>(null);
-
-  const handleClick = useCallback(() => {
-    const rect = btnRef.current?.getBoundingClientRect();
-    const cx = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
-    onClick(data.item, cx);
-  }, [onClick, data.item]);
-
-  useEffect(() => {
-    const el = btnRef.current;
-    if (!el || typeof window === "undefined") return;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setHasEntered(true);
-          el.style.animationPlayState = "running";
-        } else {
-          el.style.animationPlayState = "paused";
-        }
-      },
-      { rootMargin: "400px" },
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-
-  const unfurlDelay = `${Math.min(localIdx, 100) * 40}ms`;
+  // Stagger words within the same row for a cascade effect on each new batch
+  const unfurlDelay = `${rowWordIdx * 80}ms`;
   const isSelected = selectedItemId === data.item.id;
   const hasSelection = selectedItemId !== null;
 
-  // Layered glow in the word's own accent color
   const glow = isSelected
     ? `0 0 10px ${data.paletteAccent}cc, 0 0 26px ${data.paletteAccent}66, 0 0 55px ${data.paletteAccent}22`
     : undefined;
 
   return (
-    // ── Outer: controls opacity + scale — NEVER animated (so selection state works) ──
     <div
       className="relative"
       style={{
         opacity: hasSelection ? (isSelected ? 1 : 0.08) : 1,
         transform: isSelected ? "scale(1.1)" : "scale(1)",
-        zIndex: isSelected ? 30 : undefined, // 提高层级
+        zIndex: isSelected ? 30 : undefined,
         transition:
           "opacity 0.8s ease, transform 0.8s cubic-bezier(0.16,1,0.3,1)",
-        // 选中时彻底取消可能导致切边的限制
-        overflow: isSelected ? "visible" : undefined,
       }}
     >
-      {/* ── Inner: carries the one-shot unfurl animation triggered on screen entry ── */}
       <div
-        className={`relative group/word leading-none ${hasEntered ? "word-unfurl-anim" : "opacity-0"}`}
-        style={
-          {
-            "--unfurl-delay": unfurlDelay,
-            // 当被选中时，完全解除性能加速相关的限制，防止合成层切边
-            contentVisibility: isSelected ? "visible" : undefined,
-            contain: isSelected ? "none" : undefined,
-            willChange: isSelected ? "auto" : "transform, opacity",
-            overflow: isSelected ? "visible" : undefined,
-          } as React.CSSProperties
-        }
+        className="relative group/word leading-none word-unfurl-anim"
+        style={{ "--unfurl-delay": unfurlDelay } as React.CSSProperties}
       >
         <button
-          ref={btnRef}
-          onClick={handleClick}
-          onMouseEnter={() =>
-            !hasSelection &&
-            onHover(data, btnRef.current?.getBoundingClientRect())
-          }
-          onMouseLeave={() => onHover(null)}
-          className={`font-serif leading-none transition-opacity duration-200 word-breathe-anim ${data.paletteText} ${isSelected ? "opacity-100" : "opacity-70 hover:opacity-100"}`}
+          data-item-id={data.item.id}
+          className={`font-serif leading-none transition-opacity duration-200 word-breathe-anim ${isSelected ? "word-breathe-force-run" : ""} ${data.paletteText} ${isSelected ? "opacity-100" : "opacity-70 hover:opacity-100"}`}
           style={
             {
               fontSize: `${data.fontSize}rem`,
               "--word-breathe-duration": `${data.breatheDuration}s`,
               "--word-breathe-delay": `${data.breatheDelay}s`,
-              animationPlayState: isSelected ? "running" : undefined, // 选中时强制运行
-              willChange: isSelected ? "auto" : "transform",
               textShadow: glow,
               transition: "text-shadow 0.4s ease, opacity 0.4s ease",
-              overflow: isSelected ? "visible" : undefined,
             } as React.CSSProperties
           }
         >
@@ -251,13 +237,19 @@ export default function ImageryClient({ items, categories }: Props) {
     [categories],
   );
 
-  const level1Categories = useMemo(
-    () =>
-      categories
-        .filter((c) => c.level === 1)
-        .sort((a, b) => a.name.localeCompare(b.name, "zh")),
-    [categories],
-  );
+  const level1Categories = useMemo(() => {
+    const customOrder = ["自然事物", "人文社会", "身体人物", "文学艺术", "抽象概念"];
+    return categories
+      .filter((c) => c.level === 1)
+      .sort((a, b) => {
+        const idxA = customOrder.indexOf(a.name);
+        const idxB = customOrder.indexOf(b.name);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return a.name.localeCompare(b.name, "zh");
+      });
+  }, [categories]);
 
   const l1ColorIndex = useMemo(() => {
     const m = new Map<number, number>();
@@ -287,16 +279,47 @@ export default function ImageryClient({ items, categories }: Props) {
     return m;
   }, [items, catMap]);
 
+  const itemToL2 = useMemo(() => {
+    const m = new Map<number, ImageryCategory | null>();
+    for (const item of items) {
+      let found: ImageryCategory | null = null;
+      for (const catId of item.categoryIds) {
+        const l3 = catMap.get(catId);
+        if (!l3?.parent_id) continue;
+        const l2 = catMap.get(l3.parent_id);
+        if (l2) { found = l2; break; }
+      }
+      m.set(item.id, found);
+    }
+    return m;
+  }, [items, catMap]);
+
   // ── state ────────────────────────────────────────────────────────────────
   const [activeL1Id, setActiveL1Id] = useState<number | null>(null);
-  const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH);
+  // Deferred: filter button highlights immediately; cloud re-renders in background
+  const deferredActiveL1Id = useDeferredValue(activeL1Id);
+  const [activeL2Id, setActiveL2Id] = useState<number | null>(null);
+  const deferredActiveL2Id = useDeferredValue(activeL2Id);
+
+  // L2 sub-categories visible when a L1 is selected
+  const level2Categories = useMemo(
+    () =>
+      activeL1Id === null
+        ? []
+        : categories
+          .filter((c) => c.level === 2 && c.parent_id === activeL1Id)
+          .sort((a, b) => a.name.localeCompare(b.name, "zh")),
+    [categories, activeL1Id],
+  );
   const [selectedItem, setSelectedItem] = useState<ImageryItem | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelSide, setPanelSide] = useState<"left" | "right">("right");
   const [songs, setSongs] = useState<SongResult[]>([]);
   const [songsLoading, setSongsLoading] = useState(false);
   const [hoveredData, setHoveredData] = useState<{
-    text: string;
+    itemId: number;
+    count: number;
+    accent: string;
     x: number;
     y: number;
   } | null>(null);
@@ -305,10 +328,10 @@ export default function ImageryClient({ items, categories }: Props) {
   const router = useRouter();
   const { user } = useUserContext();
   const isDesktop = useIsDesktop();
-  const sentinelRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const cloudRef = useRef<HTMLDivElement>(null);
-  const visibleCountRef = useRef(INITIAL_BATCH);
+  const [containerWidth, setContainerWidth] = useState(960);
+  const [scrollMargin, setScrollMargin] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [headerVisible, setHeaderVisible] = useState(true);
 
@@ -334,11 +357,6 @@ export default function ImageryClient({ items, categories }: Props) {
     return () => obs.disconnect();
   }, []);
 
-  // Sync ref with state
-  useEffect(() => {
-    visibleCountRef.current = visibleCount;
-  }, [visibleCount]);
-
   // Track nav height → CSS variable --nav-h for the panel to consume
   useEffect(() => {
     const nav = navRef.current;
@@ -361,10 +379,14 @@ export default function ImageryClient({ items, categories }: Props) {
   );
 
   const wordDisplayList = useMemo(() => {
-    const list =
-      activeL1Id === null
-        ? items
-        : items.filter((item) => itemToL1.get(item.id)?.id === activeL1Id);
+    let list: ImageryItem[];
+    if (deferredActiveL2Id !== null) {
+      list = items.filter((item) => itemToL2.get(item.id)?.id === deferredActiveL2Id);
+    } else if (deferredActiveL1Id !== null) {
+      list = items.filter((item) => itemToL1.get(item.id)?.id === deferredActiveL1Id);
+    } else {
+      list = items;
+    }
     return [...list]
       .sort((a, b) => b.count - a.count)
       .map((item, idx) => {
@@ -381,17 +403,9 @@ export default function ImageryClient({ items, categories }: Props) {
           fontSize: calcFontSize(item.count, maxCount),
           breatheDuration: 3.5 + (idx % 7) * 0.6,
           breatheDelay: (idx % 13) * 0.35,
-          tooltip: `${item.name} · ${item.count} 次${l1 ? ` · ${l1.name}` : ""}`,
         };
       });
-  }, [items, activeL1Id, itemToL1, l1ColorIndex, maxCount]);
-
-  const visibleWords = useMemo(
-    () => wordDisplayList.slice(0, visibleCount),
-    [wordDisplayList, visibleCount],
-  );
-
-  const hasMore = visibleCount < wordDisplayList.length;
+  }, [items, deferredActiveL1Id, deferredActiveL2Id, itemToL1, itemToL2, l1ColorIndex, maxCount]);
 
   const marqueeRows = useMemo(() => {
     const sorted = [...items].sort((a, b) => b.count - a.count);
@@ -412,11 +426,14 @@ export default function ImageryClient({ items, categories }: Props) {
 
   const lyricistCounts = useMemo(() => {
     const counts = new Map<string, number>();
-    songs.forEach(({ song }) =>
-      (song.lyricist ?? []).forEach((l) =>
-        counts.set(l, (counts.get(l) ?? 0) + 1),
-      ),
-    );
+    songs.forEach(({ song }) => {
+      const lyricists = song.lyricist ?? [];
+      if (lyricists.length === 0) {
+        counts.set("未知", (counts.get("未知") ?? 0) + 1);
+      } else {
+        lyricists.forEach((l) => counts.set(l, (counts.get(l) ?? 0) + 1));
+      }
+    });
     return Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
   }, [songs]);
 
@@ -429,30 +446,36 @@ export default function ImageryClient({ items, categories }: Props) {
 
   // ── effects ──────────────────────────────────────────────────────────────
 
-  // Reset visible count on filter change
+  // Measure cloud container width for row grouping
   useEffect(() => {
-    requestAnimationFrame(() => {
-      setVisibleCount(INITIAL_BATCH);
+    const el = cloudRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setContainerWidth(entry.contentRect.width);
     });
-  }, [activeL1Id]);
+    ro.observe(el);
+    setContainerWidth(el.getBoundingClientRect().width);
+    return () => ro.disconnect();
+  }, []);
 
-  // Sentinel observer for lazy loading
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisibleCount((prev) =>
-            Math.min(prev + BATCH_SIZE, wordDisplayList.length),
-          );
-        }
-      },
-      { rootMargin: "1000px" },
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
+  // Measure scroll margin (distance from doc top to cloud container top)
+  useLayoutEffect(() => {
+    const update = () => {
+      if (cloudRef.current) {
+        setScrollMargin(
+          cloudRef.current.getBoundingClientRect().top + window.scrollY,
+        );
+      }
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
   }, [wordDisplayList.length]);
+
+  // Reset L2 when L1 changes
+  useEffect(() => {
+    setActiveL2Id(null);
+  }, [activeL1Id]);
 
   // Fetch songs
   useEffect(() => {
@@ -469,34 +492,94 @@ export default function ImageryClient({ items, categories }: Props) {
       .finally(() => setSongsLoading(false));
   }, [selectedItem, panelOpen]);
 
+  // ── virtualizer ──────────────────────────────────────────────────────────
+
+  const wordRows = useMemo(
+    () => groupIntoRows(wordDisplayList, containerWidth),
+    [wordDisplayList, containerWidth],
+  );
+
+  const rowVirtualizer = useWindowVirtualizer({
+    count: wordRows.length,
+    estimateSize: useCallback(
+      (i: number) => estimateRowHeightPx(wordRows[i] ?? []),
+      [wordRows],
+    ),
+    overscan: 8,
+    scrollMargin,
+  });
+
   // ── handlers ─────────────────────────────────────────────────────────────
-  const handleWordClick = useCallback((item: ImageryItem, clickX: number) => {
-    triggerHaptic();
-    // Panel opens from the side opposite the clicked word, so it won't cover it
-    // Prefer right: only switch to left when word is in the rightmost quarter of the cloud area
-    const cloudRect = cloudRef.current?.getBoundingClientRect();
-    const cloudRight = cloudRect ? cloudRect.right : window.innerWidth;
-    setPanelSide(clickX > (cloudRight * 3) / 4 ? "left" : "right");
-    setSelectedItem(item);
-    setPanelOpen(true);
-  }, []);
 
-  const handleClose = useCallback(() => setPanelOpen(false), []);
+  // O(1) lookup: item id → WordDisplayData, rebuilt when filtered list changes
+  const itemLookup = useMemo(() => {
+    const map = new Map<number, WordDisplayData>();
+    wordDisplayList.forEach((d) => map.set(d.item.id, d));
+    return map;
+  }, [wordDisplayList]);
 
-  const handleWordHover = useCallback(
-    (data: WordDisplayData | null, rect?: DOMRect) => {
-      if (!data || !rect) {
-        setHoveredData(null);
-        return;
-      }
+  const handleCloudClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const btn = (e.target as HTMLElement).closest<HTMLElement>(
+        "button[data-item-id]",
+      );
+      if (!btn) return;
+      const itemId = Number(btn.dataset.itemId);
+      const d = itemLookup.get(itemId);
+      if (!d) return;
+      triggerHaptic();
+      const rect = btn.getBoundingClientRect();
+      const clickX = rect.left + rect.width / 2;
+      const cloudRect = cloudRef.current?.getBoundingClientRect();
+      const cloudRight = cloudRect ? cloudRect.right : window.innerWidth;
+      setPanelSide(clickX > (cloudRight * 3) / 4 ? "left" : "right");
+      setSelectedItem(d.item);
+      setPanelOpen(true);
+      // Dismiss tooltip immediately when panel opens
+      hoveredBtnRef.current = null;
+      setHoveredData(null);
+    },
+    [itemLookup],
+  );
+
+  // Keep a ref in sync with panelOpen so mouse handlers avoid stale closures
+  const panelOpenRef = useRef(panelOpen);
+  useEffect(() => {
+    panelOpenRef.current = panelOpen;
+  }, [panelOpen]);
+
+  const hoveredBtnRef = useRef<number | null>(null);
+
+  const handleCloudMouseOver = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (panelOpenRef.current) return;
+      const btn = (e.target as HTMLElement).closest<HTMLElement>(
+        "button[data-item-id]",
+      );
+      if (!btn) return;
+      const itemId = Number(btn.dataset.itemId);
+      if (hoveredBtnRef.current === itemId) return;
+      hoveredBtnRef.current = itemId;
+      const d = itemLookup.get(itemId);
+      if (!d) return;
+      const rect = btn.getBoundingClientRect();
       setHoveredData({
-        text: data.tooltip,
+        itemId,
+        count: d.item.count,
+        accent: d.paletteAccent,
         x: rect.left + rect.width / 2,
         y: rect.top,
       });
     },
-    [],
+    [itemLookup],
   );
+
+  const handleCloudMouseLeave = useCallback(() => {
+    hoveredBtnRef.current = null;
+    setHoveredData(null);
+  }, []);
+
+  const handleClose = useCallback(() => setPanelOpen(false), []);
 
   const handleTitleReset = useCallback(() => {
     window.location.href = "/";
@@ -592,7 +675,10 @@ export default function ImageryClient({ items, categories }: Props) {
                 key={ri}
                 className="flex whitespace-nowrap font-serif will-change-transform"
                 style={{
-                  animation: `${dir} ${duration} linear infinite`,
+                  animationName: dir,
+                  animationDuration: duration,
+                  animationTimingFunction: "linear",
+                  animationIterationCount: "infinite",
                   animationPlayState: headerVisible ? "running" : "paused",
                 }}
               >
@@ -610,7 +696,7 @@ export default function ImageryClient({ items, categories }: Props) {
         </div>
 
         <div className="relative z-10">
-          <h1 className="font-serif text-5xl sm:text-7xl md:text-9xl font-normal text-slate-800 dark:text-slate-100 mb-6 flex justify-center items-center gap-4 sm:gap-10 drop-shadow-[0_0_30px_rgba(255,255,255,0.05)]">
+          <h1 className="font-serif text-5xl md:text-7xl font-normal text-slate-800 dark:text-slate-100 mb-4 flex justify-center items-center gap-4 sm:gap-10 drop-shadow-[0_0_30px_rgba(255,255,255,0.05)]">
             {"意象词云".split("").map((char, i) => (
               <span
                 key={i}
@@ -622,58 +708,113 @@ export default function ImageryClient({ items, categories }: Props) {
             ))}
           </h1>
           <p
-            className={`text-sm text-slate-400 dark:text-slate-500 tracking-[0.25em] pl-[0.25em] mb-3 ${mounted ? "hero-unroll" : "opacity-0"}`}
+            className={`font-serif text-base md:text-xl text-slate-500 dark:text-slate-400 tracking-[0.4em] pl-[0.4em] mb-3 ${mounted ? "hero-unroll" : "opacity-0"}`}
             style={{ animationDelay: "1600ms" }}
           >
-            河图作品中的意象索引
-          </p>
-          <p
-            className={`text-xs text-slate-400 dark:text-slate-600 tracking-wide ${mounted ? "hero-unroll" : "opacity-0"}`}
-            style={{ animationDelay: "1900ms" }}
-          >
-            共收录{" "}
-            <span className="text-slate-600 dark:text-slate-400 font-medium tabular-nums">
-              {items.length}
-            </span>{" "}
-            个意象
+            场景 {wordDisplayList.length} ，长歌踏雪去何方
           </p>
         </div>
       </header>
 
       {/* ── category filter ── */}
-      <div className="sticky top-(--nav-h,48px) z-20 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-100/80 dark:border-slate-800/80 transition-all duration-300">
-        <div className="max-w-5xl mx-auto px-5 overflow-x-auto no-scrollbar">
-          <div className="flex items-center gap-1 py-4 w-max">
+      <div className="sticky top-(--nav-h,48px) z-20 bg-[#FAFAFA]/40 dark:bg-[#0B0F19]/40 backdrop-blur-2xl border-b border-slate-200/10 dark:border-slate-800/20 transition-all duration-1000">
+        <div className="max-w-5xl mx-auto px-6 py-2.5">
+          {/* L1 filter row */}
+          <div className="flex items-center gap-8 overflow-x-auto no-scrollbar py-1 mask-linear-fade-edges">
+            {/* Start spacer for mask */}
+            <div className="min-w-[8px]" />
+
             <button
               onClick={() => setActiveL1Id(null)}
-              className={`px-3.5 py-1.5 text-sm rounded-full transition-all duration-200 tracking-wide ${
-                activeL1Id === null
-                  ? "bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 font-medium shadow-sm"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
-              }`}
+              className={`group relative py-1.5 text-[14px] transition-all duration-700 font-serif tracking-[0.2em] whitespace-nowrap ${activeL1Id === null
+                ? "text-slate-900 dark:text-white"
+                : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:tracking-[0.25em]"
+                }`}
             >
               全部
+              <span
+                className={`absolute bottom-0 left-0 h-px bg-slate-400/60 transition-all duration-1000 ease-out origin-left ${activeL1Id === null ? "w-full scale-x-100 opacity-100" : "w-full scale-x-0 opacity-0"
+                  }`}
+              />
             </button>
+
             {level1Categories.map((cat, i) => {
               const palette = PALETTE_FULL[i % PALETTE_FULL.length];
               const isActive = activeL1Id === cat.id;
               return (
-                <button
-                  key={cat.id}
-                  onClick={() => setActiveL1Id(isActive ? null : cat.id)}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 text-sm rounded-full transition-all duration-200 tracking-wide ring-inset ${
-                    isActive
-                      ? `${palette.text} ${palette.activeBg} font-medium ring-1 ${palette.ring}`
-                      : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
-                  }`}
-                >
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full transition-colors duration-200 ${isActive ? palette.dot : "bg-slate-300 dark:bg-slate-600"}`}
-                  />
-                  {cat.name}
-                </button>
+                <div key={cat.id} className="flex items-center gap-8">
+                  <div className="w-[0.5px] h-3 bg-slate-200/50 dark:bg-slate-800/30 rotate-12" />
+                  <button
+                    onClick={() => setActiveL1Id(isActive ? null : cat.id)}
+                    className={`group relative py-1.5 text-[14px] transition-all duration-700 font-serif tracking-[0.2em] whitespace-nowrap ${isActive
+                      ? "text-slate-900 dark:text-white"
+                      : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:tracking-[0.25em]"
+                      }`}
+                  >
+                    {cat.name}
+                    <span
+                      className="absolute bottom-0 left-0 h-[1.5px] transition-all duration-1000 ease-[cubic-bezier(0.19,1,0.22,1)] origin-left"
+                      style={{
+                        width: "100%",
+                        transform: isActive ? "scale-x-100" : "scale-x-0",
+                        opacity: isActive ? 0.8 : 0,
+                        backgroundColor: palette.accent,
+                        boxShadow: isActive ? `0 1px 10px ${palette.accent}22` : "none"
+                      }}
+                    />
+                  </button>
+                </div>
               );
             })}
+
+            {/* End spacer for mask */}
+            <div className="min-w-[8px]" />
+          </div>
+
+          {/* L2 sub-filter row — calligraphic list */}
+          <div
+            className={`grid transition-[grid-template-rows,opacity,margin] duration-1000 ease-[cubic-bezier(0.19,1,0.22,1)] ${level2Categories.length > 0 ? "grid-rows-[1fr] opacity-100 mt-2" : "grid-rows-[0fr] opacity-0 mt-0"}`}
+          >
+            <div className="overflow-hidden">
+              <div className="grid grid-cols-3 sm:flex sm:items-center gap-y-4 gap-x-6 sm:gap-6 sm:flex-wrap pt-3 border-t border-slate-200/20 dark:border-slate-800/10">
+                {/* On desktop, we keep the spacer; on mobile grid, we skip it or use it as a grid item if needed.
+                    Actually, let's keep it and adjust the grid flow. */}
+                <div className="hidden sm:block min-w-[8px]" />
+
+                {level2Categories.map((cat) => {
+                  const isActive = activeL2Id === cat.id;
+                  const l1Idx = activeL1Id !== null ? (l1ColorIndex.get(activeL1Id) ?? 0) : 0;
+                  const palette = PALETTE_FULL[l1Idx % PALETTE_FULL.length];
+
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => setActiveL2Id(isActive ? null : cat.id)}
+                      className={`group relative text-[12px] transition-all duration-700 font-serif tracking-widest whitespace-nowrap py-1 ${isActive
+                        ? "text-slate-700 dark:text-slate-300"
+                        : "text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-400 hover:tracking-[0.15em]"
+                        }`}
+                    >
+                      <span
+                        className={`inline-block transition-all duration-700 font-system ${isActive ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"} mr-1.5`}
+                        style={{ color: palette.accent }}
+                      >
+                        「
+                      </span>
+                      {cat.name}
+                      <span
+                        className={`inline-block transition-all duration-700 font-system ${isActive ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"} ml-1.5`}
+                        style={{ color: palette.accent }}
+                      >
+                        」
+                      </span>
+                      {/* Subtle hover indicator for L2 */}
+                      <span className={`absolute -bottom-1 left-0 w-full h-[0.5px] bg-slate-300 dark:bg-slate-700 scale-x-0 transition-transform duration-500 group-hover:scale-x-100`} />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -684,9 +825,9 @@ export default function ImageryClient({ items, categories }: Props) {
         style={
           mounted
             ? {
-                animation: "main-fade-in 1s ease-out both",
-                animationDelay: "200ms",
-              }
+              animation: "main-fade-in 1s ease-out both",
+              animationDelay: "200ms",
+            }
             : undefined
         }
       >
@@ -696,57 +837,75 @@ export default function ImageryClient({ items, categories }: Props) {
           </div>
         ) : (
           <>
+            {/* Virtual word cloud: position:relative container whose height equals all rows */}
             <div
               ref={cloudRef}
-              key={activeL1Id ?? "all"}
-              className="flex flex-wrap justify-center gap-x-10 gap-y-6"
+              onClick={handleCloudClick}
+              onMouseOver={handleCloudMouseOver}
+              onMouseLeave={handleCloudMouseLeave}
+              style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: "relative" }}
             >
-              {visibleWords.map((data, idx) => {
+              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                const row = wordRows[virtualRow.index];
+                if (!row) return null;
                 return (
-                  <WordItem
-                    key={data.item.id}
-                    data={data}
-                    onClick={handleWordClick}
-                    localIdx={idx}
-                    selectedItemId={
-                      panelOpen ? (selectedItem?.id ?? null) : null
-                    }
-                    onHover={handleWordHover}
-                  />
+                  <div
+                    key={virtualRow.key}
+                    data-index={virtualRow.index}
+                    ref={rowVirtualizer.measureElement}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      transform: `translateY(${virtualRow.start - rowVirtualizer.options.scrollMargin}px)`,
+                    }}
+                    className="flex justify-center items-center gap-x-10 pb-6"
+                  >
+                    {row.map((data, wordIdx) => (
+                      <WordItem
+                        key={data.item.id}
+                        data={data}
+                        rowWordIdx={wordIdx}
+                        selectedItemId={
+                          panelOpen ? (selectedItem?.id ?? null) : null
+                        }
+                      />
+                    ))}
+                  </div>
                 );
               })}
             </div>
 
-            {/* Singleton Tooltip */}
-            {hoveredData && (
+            {/* Tooltip — count only, desktop only, tinted with the word's accent color */}
+            {hoveredData && isDesktop && (
               <div
-                className="fixed z-100 pointer-events-none px-2.5 py-1.5 rounded-lg bg-white/95 dark:bg-slate-900/95 border border-slate-200/80 dark:border-slate-700/60 shadow-lg whitespace-nowrap transition-opacity duration-150"
+                key={hoveredData.itemId}
+                className="fixed z-50 pointer-events-none"
                 style={{
                   left: hoveredData.x,
-                  top: hoveredData.y - 10,
+                  top: hoveredData.y - 8,
                   transform: "translate(-50%, -100%)",
                 }}
               >
-                <p className="text-xs text-slate-600 dark:text-slate-300 tracking-wide">
-                  {hoveredData.text}
-                </p>
-                <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-200/80 dark:border-t-slate-700/60" />
+                <div
+                  className="px-2.5 py-1 rounded-full text-xs tracking-wider font-serif font-light whitespace-nowrap shadow-sm backdrop-blur-sm tooltip-appear"
+                  style={{
+                    backgroundColor: `${hoveredData.accent}22`,
+                    color: hoveredData.accent,
+                    border: `1px solid ${hoveredData.accent}44`,
+                  }}
+                >
+                  {hoveredData.count} 次
+                </div>
               </div>
             )}
 
-            {/* Sentinel + progress */}
-            <div ref={sentinelRef} className="mt-12 flex justify-center">
-              {hasMore ? (
-                <p className="text-xs text-slate-300 dark:text-slate-700 tracking-[0.2em] tabular-nums select-none">
-                  {visibleCount} / {wordDisplayList.length}
-                </p>
-              ) : (
-                wordDisplayList.length > INITIAL_BATCH && (
-                  <p className="text-xs text-slate-300 dark:text-slate-700 tracking-[0.2em] select-none">
-                    共 {wordDisplayList.length} 个意象
-                  </p>
-                )
-              )}
+            {/* Total count */}
+            <div className="mt-12 flex justify-center">
+              <p className="text-xs text-slate-300 dark:text-slate-700 tracking-[0.2em] select-none font-serif">
+                共 {wordDisplayList.length} 个意象
+              </p>
             </div>
           </>
         )}

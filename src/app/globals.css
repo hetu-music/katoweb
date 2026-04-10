@@ -162,12 +162,33 @@ button {
   animation-duration: var(--word-breathe-duration, 4s);
   animation-delay: var(--word-breathe-delay, 0s);
   animation-fill-mode: both;
-  will-change: transform;
 }
 
 .word-breathe-anim:hover,
 .word-breathe-paused {
   animation-play-state: paused;
+}
+
+/* Force the breathe animation to run even on hover (e.g. when word is selected) */
+.word-breathe-force-run {
+  animation-play-state: running !important;
+}
+
+@keyframes tooltip-appear {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.88);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.tooltip-appear {
+  animation: tooltip-appear 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* 逐字展开动画 */
@@ -221,11 +242,6 @@ button {
 .word-unfurl-anim {
   animation: word-fade-in 2.2s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: var(--unfurl-delay, 0ms);
-  will-change: transform, opacity;
-  /* 性能优化：限制样式计算范围并允许屏外内容跳过渲染 */
-  contain: layout style; /* 移除 paint 以防止裁剪掉光效 (text-shadow) */
-  content-visibility: auto;
-  contain-intrinsic-size: auto 42px; /* 设置更准确的估计高度有助于滚动条稳定 */
 }
 
 /* 页面主内容淡入 */
@@ -236,4 +252,15 @@ button {
   to {
     opacity: 1;
   }
+}
+
+/* 渐变遮罩，用于横向滚动指示 */
+.mask-linear-fade-edges {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 12px,
+    black calc(100% - 12px),
+    transparent
+  );
 }

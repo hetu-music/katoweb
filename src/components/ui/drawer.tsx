@@ -39,7 +39,6 @@ const DrawerContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
 >(({ className, children, ...props }, ref) => (
   <DrawerPortal>
-    <DrawerOverlay />
     <DrawerPrimitive.Content
       ref={ref}
       className={cn(
@@ -48,7 +47,7 @@ const DrawerContent = React.forwardRef<
         "bg-[#FAFAFA]/96 dark:bg-[#0d111e]/96 backdrop-blur-xl",
         "border-t border-slate-200/60 dark:border-slate-700/50",
         "shadow-2xl shadow-black/20",
-        "max-h-[80vh] outline-none",
+        "outline-none",
         className,
       )}
       {...props}
@@ -74,3 +73,21 @@ export {
   DrawerClose,
   DrawerContent,
 };
+
+const DrawerTitle = React.forwardRef<
+  React.ComponentRef<typeof DrawerPrimitive.Title>,
+  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Title>
+>(({ className, ...props }, ref) => (
+  <DrawerPrimitive.Title ref={ref} className={cn(className)} {...props} />
+));
+DrawerTitle.displayName = DrawerPrimitive.Title.displayName;
+
+const DrawerDescription = React.forwardRef<
+  React.ComponentRef<typeof DrawerPrimitive.Description>,
+  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Description>
+>(({ className, ...props }, ref) => (
+  <DrawerPrimitive.Description ref={ref} className={cn(className)} {...props} />
+));
+DrawerDescription.displayName = DrawerPrimitive.Description.displayName;
+
+export { DrawerTitle, DrawerDescription };

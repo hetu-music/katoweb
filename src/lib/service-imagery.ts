@@ -1,4 +1,4 @@
-import { getServiceClient, fetchAll } from "./supabase-server";
+import { getServiceClient, fetchAll, TABLES } from "./supabase-server";
 import type {
   ImageryCategory,
   ImageryItem,
@@ -12,7 +12,7 @@ export async function getImageryCategories(): Promise<ImageryCategory[]> {
 
   return fetchAll<ImageryCategory>(
     supabase,
-    "imagery_categories",
+    TABLES.IMAGERY_CAT,
     "id, name, parent_id, level, description",
   );
 }
@@ -23,7 +23,7 @@ export async function getImageryWithCounts(): Promise<ImageryItem[]> {
 
   const imageryData = await fetchAll<{ id: number; name: string }>(
     supabase,
-    "imagery",
+    TABLES.IMAGERY,
     "id, name",
   );
 
@@ -31,12 +31,9 @@ export async function getImageryWithCounts(): Promise<ImageryItem[]> {
 
   const occurrences = await fetchAll<
     Pick<ImageryOccurrence, "imagery_id" | "category_id">
-  >(supabase, "imagery_occurrences", "imagery_id, category_id");
+  >(supabase, TABLES.IMAGERY_OCC, "imagery_id, category_id");
 
-  const countMap = new Map<
-    number,
-    { count: number; categoryIds: Set<number> }
-  >();
+  const countMap = new Map<number, { count: number; categoryIds: Set<number> }>();
   for (const occ of occurrences) {
     const existing = countMap.get(occ.imagery_id);
     if (existing) {
@@ -61,9 +58,7 @@ export async function getImageryWithCounts(): Promise<ImageryItem[]> {
   });
 }
 
-export async function getSongsForImagery(
-  imageryId: number,
-): Promise<
+export async function getSongsForImagery(imageryId: number): Promise<
   Array<{ song: SongRef; categoryId: number; occurrenceCount: number }>
 > {
   const supabase = getServiceClient();
@@ -71,7 +66,7 @@ export async function getSongsForImagery(
 
   const occurrences = await fetchAll<
     Pick<ImageryOccurrence, "song_id" | "category_id">
-  >(supabase, "imagery_occurrences", "song_id, category_id", (q) =>
+  >(supabase, TABLES.IMAGERY_OCC, "song_id, category_id", (q) =>
     q.eq("imagery_id", imageryId),
   );
 
@@ -86,17 +81,14 @@ export async function getSongsForImagery(
     if (existing) {
       existing.occurrenceCount++;
     } else {
-      songCountMap.set(occ.song_id, {
-        categoryId: occ.category_id,
-        occurrenceCount: 1,
-      });
+      songCountMap.set(occ.song_id, { categoryId: occ.category_id, occurrenceCount: 1 });
     }
   }
 
   if (songCountMap.size === 0) return [];
 
   const { data: songs, error } = await supabase
-    .from("music")
+    .from(TABLES.MUSIC)
     .select("id, title, album, lyricist")
     .in("id", Array.from(songCountMap.keys()));
 

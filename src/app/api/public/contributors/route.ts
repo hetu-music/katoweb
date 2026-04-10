@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServiceClient } from "@/lib/supabase-server";
+import { getServiceClient, TABLES } from "@/lib/supabase-server";
 
 export async function GET() {
   const supabase = getServiceClient();
@@ -12,7 +12,7 @@ export async function GET() {
 
   // 查询 users 表
   const { data, error } = await supabase
-    .from("users")
+    .from(TABLES.USERS)
     .select("name, display, intro, sort_order")
     .eq("display", true)
     .order("sort_order", { ascending: true });
