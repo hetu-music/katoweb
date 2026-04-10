@@ -237,13 +237,19 @@ export default function ImageryClient({ items, categories }: Props) {
     [categories],
   );
 
-  const level1Categories = useMemo(
-    () =>
-      categories
-        .filter((c) => c.level === 1)
-        .sort((a, b) => a.name.localeCompare(b.name, "zh")),
-    [categories],
-  );
+  const level1Categories = useMemo(() => {
+    const customOrder = ["自然事物", "人文社会", "身体人物", "文学艺术", "抽象概念"];
+    return categories
+      .filter((c) => c.level === 1)
+      .sort((a, b) => {
+        const idxA = customOrder.indexOf(a.name);
+        const idxB = customOrder.indexOf(b.name);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return a.name.localeCompare(b.name, "zh");
+      });
+  }, [categories]);
 
   const l1ColorIndex = useMemo(() => {
     const m = new Map<number, number>();
