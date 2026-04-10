@@ -1,9 +1,6 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase-auth";
-import {
-  getImageryWithCounts,
-  getImageryCategories,
-} from "@/lib/service-imagery";
+import { getImageryCategories } from "@/lib/service-imagery";
 import ImageryAdminClient from "@/components/admin/ImageryAdminClient";
 import type { Metadata } from "next";
 
@@ -26,12 +23,6 @@ export default async function ImageryAdminPage() {
     redirect("/login");
   }
 
-  const [items, categories] = await Promise.all([
-    getImageryWithCounts().catch(() => []),
-    getImageryCategories().catch(() => []),
-  ]);
-
-  return (
-    <ImageryAdminClient initialItems={items} initialCategories={categories} />
-  );
+  const categories = await getImageryCategories().catch(() => []);
+  return <ImageryAdminClient initialCategories={categories} />;
 }

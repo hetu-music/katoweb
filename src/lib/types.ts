@@ -97,6 +97,7 @@ export type ImageryOccurrence = {
   song_id: number;
   imagery_id: number;
   category_id: number;
+  meaning_id: number | null;
   lyric_timetag: Record<string, unknown>[];
 };
 

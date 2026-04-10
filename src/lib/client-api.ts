@@ -265,25 +265,53 @@ export async function apiDeleteMeaning(
   return res.json();
 }
 
-// ─── Imagery category-map API ──────────────────────────────────────────────────
+// ─── Occurrences API ───────────────────────────────────────────────────────────
 
-export async function apiGetImageryCategoryMap(imageryId: number) {
-  const res = await fetch(`/api/admin/imagery/${imageryId}/category-map`);
-  if (!res.ok) throw new Error("获取分类映射失败");
+export async function apiGetOccurrencesForImagery(imageryId: number) {
+  const res = await fetch(`/api/admin/occurrences?imagery_id=${imageryId}`);
+  if (!res.ok) throw new Error("获取关系列表失败");
   return res.json();
 }
 
-export async function apiSetImageryCategories(
-  imageryId: number,
-  categoryIds: number[],
+export async function apiGetOccurrencesForSong(songId: number) {
+  const res = await fetch(`/api/admin/occurrences?song_id=${songId}`);
+  if (!res.ok) throw new Error("获取歌曲意象失败");
+  return res.json();
+}
+
+export async function apiCreateOccurrence(
+  data: { song_id: number; imagery_id: number; category_id: number; meaning_id?: number | null; lyric_timetag: Record<string, unknown>[] },
   csrfToken: string,
 ) {
-  const res = await fetch(`/api/admin/imagery/${imageryId}/category-map`, {
+  const res = await fetch("/api/admin/occurrences", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("新增关系失败");
+  return res.json();
+}
+
+export async function apiUpdateOccurrence(
+  id: number,
+  data: { category_id?: number; meaning_id?: number | null; lyric_timetag?: Record<string, unknown>[] },
+  csrfToken: string,
+) {
+  const res = await fetch(`/api/admin/occurrences/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
-    body: JSON.stringify({ categoryIds }),
+    body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("更新分类映射失败");
+  if (!res.ok) throw new Error("更新关系失败");
+  return res.json();
+}
+
+export async function apiDeleteOccurrence(id: number, csrfToken: string) {
+  const res = await fetch(`/api/admin/occurrences/${id}`, {
+    method: "DELETE",
+    headers: { "x-csrf-token": csrfToken },
+  });
+  if (!res.ok) throw new Error("删除关系失败");
   return res.json();
 }
 

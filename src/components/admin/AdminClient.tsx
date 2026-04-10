@@ -14,9 +14,11 @@ import {
   type MusicProviderType,
   type SearchResultItem,
 } from "@/lib/api-auto-complete";
-import { apiCreateSong, apiUpdateSong } from "@/lib/client-api";
+import { apiCreateSong, apiUpdateSong, apiGetOccurrencesForSong, apiGetImageryItems, apiGetImageryCategories, apiGetImageryMeanings, apiCreateOccurrence, apiUpdateOccurrence, apiDeleteOccurrence } from "@/lib/client-api";
 import { genreColorMap, songFields, typeColorMap } from "@/lib/constants";
 import type { Song, SongDetail, SongFieldConfig } from "@/lib/types";
+import type { OccurrenceWithSong } from "@/lib/service-imagery";
+import type { ImageryItem, ImageryCategory, ImageryMeaning } from "@/lib/types";
 import { convertEmptyStringToNull, formatField } from "@/lib/utils-common";
 import { getCoverUrl, validateField } from "@/lib/utils-song";
 import {
@@ -493,11 +495,48 @@ export default function AdminClientComponent({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
+  // ─── Occurrence state ─────────────────────────────────────────────────────
+  const [songOccurrences, setSongOccurrences] = useState<OccurrenceWithSong[]>([]);
+  const [occLoadingForSong, setOccLoadingForSong] = useState(false);
+  const [imageryItems, setImageryItems] = useState<ImageryItem[]>([]);
+  const [imageryCategories, setImageryCategories] = useState<ImageryCategory[]>([]);
+  const [showAddOcc, setShowAddOcc] = useState(false);
+  const [editingOccId, setEditingOccId] = useState<number | null>(null);
+  const [occForm, setOccForm] = useState({ imagery_id: 0, category_id: 0, meaning_id: null as number | null, lyric_timetag: "[]" });
+  const [occMeanings, setOccMeanings] = useState<ImageryMeaning[]>([]);
+  const [occSubmitting, setOccSubmitting] = useState(false);
+
   // 自动补全 Hook
   const autoComplete = useAutoComplete(csrfToken, (msg) => {
     setOperationMsg({ type: "error", text: msg });
     setTimeout(() => setOperationMsg(null), 3000);
   });
+
+  // Load occurrences when editSong changes
+  useEffect(() => {
+    if (!editSong) {
+      setSongOccurrences([]);
+      setShowAddOcc(false);
+      setEditingOccId(null);
+      return;
+    }
+    setOccLoadingForSong(true);
+    Promise.all([
+      apiGetOccurrencesForSong(editSong.id),
+      apiGetImageryItems(),
+      apiGetImageryCategories(),
+    ]).then(([occs, items, cats]) => {
+      setSongOccurrences(occs);
+      setImageryItems(items);
+      setImageryCategories(cats);
+    }).catch(console.error).finally(() => setOccLoadingForSong(false));
+  }, [editSong]);
+
+  // Load meanings when imagery changes in occurrence form
+  useEffect(() => {
+    if (!occForm.imagery_id) { setOccMeanings([]); return; }
+    apiGetImageryMeanings(occForm.imagery_id).then(setOccMeanings).catch(console.error);
+  }, [occForm.imagery_id]);
 
   // Scroll listener
   useEffect(() => {
@@ -629,6 +668,53 @@ export default function AdminClientComponent({
       setOperationMsg({ type: "success", text: "自动补全成功" });
       setTimeout(() => setOperationMsg(null), 3000);
     }
+  };
+
+  // ─── Occurrence handlers ─────────────────────────────────────────────────
+
+  const handleAddOcc = async () => {
+    if (!editSong || !occForm.imagery_id || !occForm.category_id || occSubmitting) return;
+    setOccSubmitting(true);
+    try {
+      let timetag: Record<string, unknown>[] = [];
+      try { timetag = JSON.parse(occForm.lyric_timetag); } catch { timetag = []; }
+      const created = await apiCreateOccurrence({
+        song_id: editSong.id,
+        imagery_id: occForm.imagery_id,
+        category_id: occForm.category_id,
+        meaning_id: occForm.meaning_id,
+        lyric_timetag: timetag,
+      }, csrfToken);
+      setSongOccurrences(prev => [...prev, created]);
+      setShowAddOcc(false);
+      setOccForm({ imagery_id: 0, category_id: 0, meaning_id: null, lyric_timetag: "[]" });
+    } catch (e) { console.error(e); } finally { setOccSubmitting(false); }
+  };
+
+  const handleUpdateOcc = async () => {
+    if (!editingOccId || occSubmitting) return;
+    setOccSubmitting(true);
+    try {
+      let timetag: Record<string, unknown>[] = [];
+      try { timetag = JSON.parse(occForm.lyric_timetag); } catch { timetag = []; }
+      const updated = await apiUpdateOccurrence(editingOccId, {
+        category_id: occForm.category_id || undefined,
+        meaning_id: occForm.meaning_id,
+        lyric_timetag: timetag,
+      }, csrfToken);
+      setSongOccurrences(prev => prev.map(o => o.id === editingOccId ? updated : o));
+      setEditingOccId(null);
+      setOccForm({ imagery_id: 0, category_id: 0, meaning_id: null, lyric_timetag: "[]" });
+    } catch (e) { console.error(e); } finally { setOccSubmitting(false); }
+  };
+
+  const handleDeleteOcc = async (occId: number) => {
+    if (occSubmitting) return;
+    setOccSubmitting(true);
+    try {
+      await apiDeleteOccurrence(occId, csrfToken);
+      setSongOccurrences(prev => prev.filter(o => o.id !== occId));
+    } catch (e) { console.error(e); } finally { setOccSubmitting(false); }
   };
 
   return (
@@ -949,6 +1035,136 @@ export default function AdminClientComponent({
                     </div>
                   ))}
                 </div>
+
+                {!showAdd && editSong && (
+                  <div className="border-t border-slate-200 dark:border-slate-800 mt-8 pt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        <Tag size={14} className="text-violet-500" />
+                        意象关系
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() => { setShowAddOcc(true); setEditingOccId(null); setOccForm({ imagery_id: 0, category_id: 0, meaning_id: null, lyric_timetag: "[]" }); }}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors"
+                      >
+                        <Plus size={12} /> 新增
+                      </button>
+                    </div>
+                    {occLoadingForSong ? (
+                      <div className="flex items-center gap-2 text-sm text-slate-400 py-4">
+                        <div className="w-4 h-4 border-2 border-slate-200 border-t-violet-500 rounded-full animate-spin" />
+                        加载中…
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {songOccurrences.map(occ => (
+                          editingOccId === occ.id ? (
+                            <div key={occ.id} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2">
+                              <select
+                                value={occForm.category_id}
+                                onChange={e => setOccForm(f => ({ ...f, category_id: parseInt(e.target.value) || 0 }))}
+                                className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"
+                              >
+                                <option value={0}>— 选择分类 —</option>
+                                {imageryCategories.filter(c => c.level === 3).map(c => (
+                                  <option key={c.id} value={c.id}>{c.name}</option>
+                                ))}
+                              </select>
+                              <select
+                                value={occForm.meaning_id ?? ""}
+                                onChange={e => setOccForm(f => ({ ...f, meaning_id: e.target.value ? parseInt(e.target.value) : null }))}
+                                className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"
+                              >
+                                <option value="">— 含义（可选）—</option>
+                                {occMeanings.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
+                              </select>
+                              <textarea
+                                value={occForm.lyric_timetag}
+                                onChange={e => setOccForm(f => ({ ...f, lyric_timetag: e.target.value }))}
+                                rows={2}
+                                placeholder="lyric_timetag JSON"
+                                className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-mono resize-none"
+                              />
+                              <div className="flex justify-end gap-2">
+                                <button type="button" onClick={() => setEditingOccId(null)} className="px-3 py-1.5 rounded-lg text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">取消</button>
+                                <button type="button" onClick={handleUpdateOcc} disabled={occSubmitting} className="px-3 py-1.5 rounded-lg text-xs bg-violet-600 text-white hover:bg-violet-500 disabled:opacity-50">保存</button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div key={occ.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700 group">
+                              <div className="flex-1 min-w-0 text-sm">
+                                <span className="font-medium text-slate-800 dark:text-slate-200">{occ.imagery_name ?? `ID:${occ.imagery_id}`}</span>
+                                {occ.category_name && <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800">{occ.category_name}</span>}
+                                {occ.meaning_label && <span className="ml-1 text-xs text-slate-500 dark:text-slate-400">· {occ.meaning_label}</span>}
+                              </div>
+                              <div className="hidden group-hover:flex items-center gap-1 shrink-0">
+                                <button type="button" onClick={() => {
+                                  setEditingOccId(occ.id);
+                                  setShowAddOcc(false);
+                                  setOccForm({ imagery_id: occ.imagery_id, category_id: occ.category_id, meaning_id: occ.meaning_id, lyric_timetag: JSON.stringify(occ.lyric_timetag, null, 2) });
+                                  apiGetImageryMeanings(occ.imagery_id).then(setOccMeanings).catch(console.error);
+                                }} className="p-1 rounded hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-emerald-600">
+                                  <Edit size={12} />
+                                </button>
+                                <button type="button" onClick={() => handleDeleteOcc(occ.id)} disabled={occSubmitting} className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500">
+                                  <X size={12} />
+                                </button>
+                              </div>
+                            </div>
+                          )
+                        ))}
+                        {songOccurrences.length === 0 && !showAddOcc && (
+                          <p className="text-xs text-slate-400 text-center py-3">暂无意象关系，点击「新增」添加</p>
+                        )}
+                        {showAddOcc && (
+                          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2">
+                            <select
+                              value={occForm.imagery_id}
+                              onChange={e => setOccForm(f => ({ ...f, imagery_id: parseInt(e.target.value) || 0 }))}
+                              className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"
+                            >
+                              <option value={0}>— 选择意象 —</option>
+                              {imageryItems.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+                            </select>
+                            <select
+                              value={occForm.category_id}
+                              onChange={e => setOccForm(f => ({ ...f, category_id: parseInt(e.target.value) || 0 }))}
+                              className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"
+                            >
+                              <option value={0}>— 选择分类 —</option>
+                              {imageryCategories.filter(c => c.level === 3).map(c => (
+                                <option key={c.id} value={c.id}>{c.name}</option>
+                              ))}
+                            </select>
+                            <select
+                              value={occForm.meaning_id ?? ""}
+                              onChange={e => setOccForm(f => ({ ...f, meaning_id: e.target.value ? parseInt(e.target.value) : null }))}
+                              className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"
+                            >
+                              <option value="">— 含义（可选）—</option>
+                              {occMeanings.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
+                            </select>
+                            <textarea
+                              value={occForm.lyric_timetag}
+                              onChange={e => setOccForm(f => ({ ...f, lyric_timetag: e.target.value }))}
+                              rows={2}
+                              placeholder="lyric_timetag JSON，如：[]"
+                              className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-mono resize-none"
+                            />
+                            <div className="flex justify-end gap-2">
+                              <button type="button" onClick={() => setShowAddOcc(false)} className="px-3 py-1.5 rounded-lg text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">取消</button>
+                              <button type="button" onClick={handleAddOcc} disabled={occSubmitting || !occForm.imagery_id || !occForm.category_id} className="px-3 py-1.5 rounded-lg text-xs bg-violet-600 text-white hover:bg-violet-500 disabled:opacity-50">
+                                {occSubmitting && <span className="inline-block w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin mr-1" />}
+                                确认添加
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </form>
             </div>
 
