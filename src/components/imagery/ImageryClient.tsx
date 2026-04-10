@@ -705,17 +705,7 @@ export default function ImageryClient({ items, categories }: Props) {
             className={`text-sm text-slate-400 dark:text-slate-500 tracking-[0.25em] pl-[0.25em] mb-3 ${mounted ? "hero-unroll" : "opacity-0"}`}
             style={{ animationDelay: "1600ms" }}
           >
-            河图作品中的意象索引
-          </p>
-          <p
-            className={`text-xs text-slate-400 dark:text-slate-600 tracking-wide ${mounted ? "hero-unroll" : "opacity-0"}`}
-            style={{ animationDelay: "1900ms" }}
-          >
-            共收录{" "}
-            <span className="text-slate-600 dark:text-slate-400 font-medium tabular-nums">
-              {items.length}
-            </span>{" "}
-            个意象
+            场景{items.length}，长歌踏雪去何方
           </p>
         </div>
       </header>
@@ -731,8 +721,8 @@ export default function ImageryClient({ items, categories }: Props) {
             <button
               onClick={() => setActiveL1Id(null)}
               className={`group relative py-1.5 text-[14px] transition-all duration-700 font-serif tracking-[0.2em] whitespace-nowrap ${activeL1Id === null
-                  ? "text-slate-900 dark:text-white"
-                  : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:tracking-[0.25em]"
+                ? "text-slate-900 dark:text-white"
+                : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:tracking-[0.25em]"
                 }`}
             >
               全部
@@ -751,8 +741,8 @@ export default function ImageryClient({ items, categories }: Props) {
                   <button
                     onClick={() => setActiveL1Id(isActive ? null : cat.id)}
                     className={`group relative py-1.5 text-[14px] transition-all duration-700 font-serif tracking-[0.2em] whitespace-nowrap ${isActive
-                        ? "text-slate-900 dark:text-white"
-                        : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:tracking-[0.25em]"
+                      ? "text-slate-900 dark:text-white"
+                      : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:tracking-[0.25em]"
                       }`}
                   >
                     {cat.name}
@@ -794,8 +784,8 @@ export default function ImageryClient({ items, categories }: Props) {
                       key={cat.id}
                       onClick={() => setActiveL2Id(isActive ? null : cat.id)}
                       className={`group relative text-[12px] transition-all duration-700 font-serif tracking-widest whitespace-nowrap py-1 ${isActive
-                          ? "text-slate-700 dark:text-slate-300"
-                          : "text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-400 hover:tracking-[0.15em]"
+                        ? "text-slate-700 dark:text-slate-300"
+                        : "text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-400 hover:tracking-[0.15em]"
                         }`}
                     >
                       <span
