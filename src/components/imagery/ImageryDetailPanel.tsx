@@ -10,7 +10,7 @@ import {
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import type { ImageryItem, SongRef } from "@/lib/types";
 import Link from "next/link";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 // ─── shared types ─────────────────────────────────────────────────────────────
 
@@ -295,6 +295,15 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
   const isDesktop = useIsDesktop();
   const [activeLyricist, setActiveLyricist] = useState<string | null>(null);
 
+  // Swipe-down to close on mobile
+  const touchStartY = useRef(0);
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+  const onTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (e.changedTouches[0].clientY - touchStartY.current > 72) onClose();
+  }, [onClose]);
+
   // (removed manual matchMedia — now via useIsDesktop hook)
 
   // Clear lyricist filter when selection changes
@@ -325,6 +334,8 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
         side={isDesktop ? panelSide : "bottom"}
         hideClose={!isDesktop}
         showOverlay={!isDesktop}
+        onTouchStart={!isDesktop ? onTouchStart : undefined}
+        onTouchEnd={!isDesktop ? onTouchEnd : undefined}
         className={
           isDesktop
             ? [

@@ -311,6 +311,7 @@ export default function ImageryClient({ items, categories }: Props) {
   const [songs, setSongs] = useState<SongResult[]>([]);
   const [songsLoading, setSongsLoading] = useState(false);
   const [hoveredData, setHoveredData] = useState<{
+    itemId: number;
     count: number;
     accent: string;
     x: number;
@@ -570,6 +571,7 @@ export default function ImageryClient({ items, categories }: Props) {
       if (!d) return;
       const rect = btn.getBoundingClientRect();
       setHoveredData({
+        itemId,
         count: d.item.count,
         accent: d.paletteAccent,
         x: rect.left + rect.width / 2,
@@ -851,6 +853,7 @@ export default function ImageryClient({ items, categories }: Props) {
             {/* Tooltip — count only, desktop only, tinted with the word's accent color */}
             {hoveredData && isDesktop && (
               <div
+                key={hoveredData.itemId}
                 className="fixed z-50 pointer-events-none"
                 style={{
                   left: hoveredData.x,
