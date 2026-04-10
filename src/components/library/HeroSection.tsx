@@ -73,7 +73,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
             className="flex items-center gap-2 px-1 py-0.5 text-sm font-medium tracking-widest text-slate-600 dark:text-slate-400 active:opacity-60 transition-opacity"
           >
             <span className="relative pb-0.5 border-b border-slate-100 dark:border-slate-800/50">
-              进入意象词云
+              意象词云
             </span>
             <ArrowRight className="h-4 w-4 opacity-70 relative -top-[2px]" />
           </Link>
@@ -99,10 +99,10 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                   className="group flex items-center gap-2 text-sm font-medium tracking-widest text-slate-700 dark:text-slate-300 transition-colors hover:text-black dark:hover:text-white"
                 >
                   <span className="relative pb-1">
-                    进入意象词云
+                    意象词云
                     <span className="absolute bottom-0 left-0 h-px w-0 bg-current transition-all duration-500 ease-out group-hover:w-full" />
                   </span>
-                  <ArrowRight className="h-3.5 w-3.5 opacity-60 transition-transform duration-500 ease-out group-hover:translate-x-1.5 group-hover:opacity-100 relative -top-[2px]" />
+                  <ArrowRight className="h-3.5 w-3.5 opacity-60 transition-transform duration-500 ease-out group-hover:translate-x-1.5 group-hover:opacity-100 relative -top-[2.5px]" />
                 </Link>
               </motion.div>
             )}
