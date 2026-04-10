@@ -3,10 +3,14 @@
 import {
   Sheet,
   SheetContent,
+  SheetTitle,
+  SheetDescription,
 } from "@/components/ui/sheet";
 import {
   Drawer,
   DrawerContent,
+  DrawerTitle,
+  DrawerDescription,
 } from "@/components/ui/drawer";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import type { ImageryItem, SongRef } from "@/lib/types";
@@ -187,6 +191,7 @@ const PanelBody = memo(function PanelBody({
       )}
 
       {/* Songs */}
+      <div key={activeLyricist ?? "all"} className="animate-in fade-in duration-500">
       <SectionLabel
         label={
           activeLyricist
@@ -217,6 +222,7 @@ const PanelBody = memo(function PanelBody({
             />
           </Link>
         ))}
+      </div>
       </div>
     </>
   );
@@ -356,16 +362,16 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
   if (!isDesktop) {
     return (
       <Drawer open={open} onOpenChange={(v) => !v && onClose()}>
-        <DrawerContent className="max-h-[85dvh]">
+        <DrawerContent className="h-[85dvh]">
           {/* Accessible title/description (visually hidden) */}
-          <h2 className="sr-only">
+          <DrawerTitle className="sr-only">
             {selectedItem?.name ?? "意象详情"}
-          </h2>
-          <p className="sr-only">
+          </DrawerTitle>
+          <DrawerDescription className="sr-only">
             {selectedItem
               ? `${selectedItem.name}在河图作品中出现${selectedItem.count}次`
               : "意象详情面板"}
-          </p>
+          </DrawerDescription>
 
           <PanelHeader
             selectedItem={selectedItem}
@@ -374,13 +380,8 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
             isDesktop={isDesktop}
           />
 
-          <div
-            className="flex-1 overflow-y-auto no-scrollbar px-8 py-4 pb-[env(safe-area-inset-bottom,1rem)] transition-all duration-500 ease-in-out"
-            style={{ interpolateSize: "allow-keywords" } as any}
-          >
-            <div className="animate-in fade-in duration-700">
-              <PanelBody {...sharedBodyProps} />
-            </div>
+          <div className="flex-1 overflow-y-auto no-scrollbar px-8 py-4 pb-[env(safe-area-inset-bottom,1rem)]">
+            <PanelBody {...sharedBodyProps} />
           </div>
         </DrawerContent>
       </Drawer>
@@ -399,14 +400,14 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
         ].join(" ")}
       >
         {/* Accessible title/description (visually hidden) */}
-        <h2 className="sr-only">
+        <SheetTitle className="sr-only">
           {selectedItem?.name ?? "意象详情"}
-        </h2>
-        <p className="sr-only">
+        </SheetTitle>
+        <SheetDescription className="sr-only">
           {selectedItem
             ? `${selectedItem.name}在河图作品中出现${selectedItem.count}次`
             : "意象详情面板"}
-        </p>
+        </SheetDescription>
 
         <PanelHeader
           selectedItem={selectedItem}
@@ -416,12 +417,9 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
         />
 
         <div
-          className="flex-1 overflow-y-auto no-scrollbar px-12 pb-10 transition-all duration-500 ease-in-out"
-          style={{ interpolateSize: "allow-keywords" } as any}
+          className="flex-1 overflow-y-auto no-scrollbar px-12 pb-10"
         >
-          <div className="animate-in fade-in duration-500">
-            <PanelBody {...sharedBodyProps} />
-          </div>
+          <PanelBody {...sharedBodyProps} />
         </div>
       </SheetContent>
     </Sheet>
