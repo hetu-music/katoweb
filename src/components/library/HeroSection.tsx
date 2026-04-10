@@ -82,13 +82,12 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
             {isHoverDevice && isHovered && (
               <motion.div
                 key="imagery-entry-desktop"
-                initial={{ opacity: 0, x: -20, filter: "blur(8px)" }}
+                initial={{ opacity: 0, x: -12, filter: "blur(8px)" }}
                 animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, x: -10, filter: "blur(4px)" }}
-                transition={{
-                  duration: 1.1,
-                  delay: 0.1,
-                  ease: [0.19, 1, 0.22, 1]
+                exit={{ opacity: 0, x: -8, filter: "blur(4px)" }}
+                transition={{ 
+                  duration: 0.8, 
+                  ease: [0.42, 0, 0.58, 1] 
                 }}
                 className="flex items-center before:content-[''] before:block before:w-12 before:h-px before:bg-slate-100 dark:before:bg-slate-800 before:mr-6"
               >
