@@ -191,36 +191,38 @@ const PanelBody = memo(function PanelBody({
       )}
 
       {/* Songs */}
-      <SectionLabel
-        label={
-          activeLyricist
-            ? `${activeLyricist}的曲目 ${filtered.length}`
-            : `相关曲目 ${songs.length}`
-        }
-        accent={selectedPalette.accent}
-      />
-      <div className="flex flex-col -mx-6">
-        {filtered.map(({ song }) => (
-          <Link
-            key={song.id}
-            href={`/song/${song.id}`}
-            onClick={onLinkClick}
-            className="flex items-center justify-between py-4 px-6 border-b border-slate-100/80 dark:border-slate-800/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group"
-          >
-            <div className="min-w-0 pr-4">
-              <div className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors truncate tracking-wide">
-                {song.title}
+      <div key={activeLyricist ?? "all"} className="animate-in fade-in duration-500">
+        <SectionLabel
+          label={
+            activeLyricist
+              ? `${activeLyricist}的曲目 ${filtered.length}`
+              : `相关曲目 ${songs.length}`
+          }
+          accent={selectedPalette.accent}
+        />
+        <div className="flex flex-col -mx-6">
+          {filtered.map(({ song }) => (
+            <Link
+              key={song.id}
+              href={`/song/${song.id}`}
+              onClick={onLinkClick}
+              className="flex items-center justify-between py-4 px-6 border-b border-slate-100/80 dark:border-slate-800/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group"
+            >
+              <div className="min-w-0 pr-4">
+                <div className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors truncate tracking-wide">
+                  {song.title}
+                </div>
+                <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 truncate tracking-wide">
+                  {song.lyricist?.length ? song.lyricist.join("  ·  ") : "未知"}
+                </div>
               </div>
-              <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 truncate tracking-wide">
-                {song.lyricist?.length ? song.lyricist.join("  ·  ") : "未知"}
-              </div>
-            </div>
-            <ChevronRight
-              size={14}
-              className="text-slate-300 dark:text-slate-600 group-hover:text-slate-400 dark:group-hover:text-slate-400 transition-all duration-300 transform group-hover:translate-x-0.5"
-            />
-          </Link>
-        ))}
+              <ChevronRight
+                size={14}
+                className="text-slate-300 dark:text-slate-600 group-hover:text-slate-400 dark:group-hover:text-slate-400 transition-all duration-300 transform group-hover:translate-x-0.5"
+              />
+            </Link>
+          ))}
+        </div>
       </div>
     </>
   );
@@ -341,6 +343,16 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
       setActiveLyricist(null);
     });
   }, [selectedItem]);
+
+  // Lock body scroll when panel is open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
 
   const handleLyricistClick = useCallback((name: string) => {
     setActiveLyricist((prev) => (name === "" || prev === name ? null : name));
