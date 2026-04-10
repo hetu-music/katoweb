@@ -9,14 +9,16 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ songCount }: HeroSectionProps) {
-  // Detect pointer-capable (hover) devices
-  const [isHoverDevice, setIsHoverDevice] = useState(false);
+  // Lazy initializer avoids synchronous setState inside an effect.
+  const [isHoverDevice, setIsHoverDevice] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  });
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const mq = window.matchMedia("(hover: hover) and (pointer: fine)");
-    setIsHoverDevice(mq.matches);
     const handler = (e: MediaQueryListEvent) => setIsHoverDevice(e.matches);
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
@@ -30,8 +32,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
       onMouseLeave={() => isHoverDevice && setIsHovered(false)}
     >
       <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50 italic tracking-tight">
-        谣歌{" "}
-        <span className="text-[1.3em] font-semibold">{songCount}</span>
+        谣歌 <span className="text-[1.3em] font-semibold">{songCount}</span>
       </h1>
 
       <div className="flex flex-col md:flex-row md:items-center gap-y-3 gap-x-0 md:gap-x-10 transition-all duration-700 ease-in-out">
@@ -49,11 +50,11 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                   isHovered
                     ? { duration: 0.3, ease: "easeOut" }
                     : {
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                      repeatDelay: 0.5,
-                    }
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        repeatDelay: 0.5,
+                      }
                 }
                 className="select-none inline-block ml-1 font-normal text-slate-400 dark:text-slate-500"
               >
@@ -61,12 +62,19 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
               </motion.span>
             )}
             {/* On mobile there's no breathing cursor */}
-            {!isHoverDevice && <span className="ml-1 text-slate-400 dark:text-slate-500">……</span>}
+            {!isHoverDevice && (
+              <span className="ml-1 text-slate-400 dark:text-slate-500">
+                ……
+              </span>
+            )}
           </p>
         </div>
 
         {/* --- Mobile Entry Link --- */}
-        <div className="flex md:hidden justify-start hero-unroll" style={{ animationDelay: '0.4s' }}>
+        <div
+          className="flex md:hidden justify-start hero-unroll"
+          style={{ animationDelay: "0.4s" }}
+        >
           <Link
             href="/imagery"
             className="flex items-center gap-2 px-1 py-0.5 text-sm font-medium tracking-widest text-slate-600 dark:text-slate-400 active:opacity-60 transition-opacity"
@@ -88,7 +96,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 exit={{ opacity: 0, x: -8, filter: "blur(4px)" }}
                 transition={{
                   duration: 0.8,
-                  ease: [0.42, 0, 0.58, 1]
+                  ease: [0.42, 0, 0.58, 1],
                 }}
                 className="flex items-center before:content-[''] before:block before:w-10 before:h-px before:bg-slate-200 dark:before:bg-slate-800 before:mr-6"
               >
@@ -98,11 +106,15 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 >
                   <span className="relative pb-1">
                     意象词云
-                    <motion.span 
+                    <motion.span
                       initial={{ width: 0 }}
                       animate={{ width: "100%" }}
-                      transition={{ duration: 1.2, ease: [0.42, 0, 0.58, 1], delay: 0.3 }}
-                      className="absolute bottom-0 left-0 h-px bg-current" 
+                      transition={{
+                        duration: 1.2,
+                        ease: [0.42, 0, 0.58, 1],
+                        delay: 0.3,
+                      }}
+                      className="absolute bottom-0 left-0 h-px bg-current"
                     />
                   </span>
                 </Link>

@@ -36,8 +36,8 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 //   COLLECTIONS        → getUserClient    (用户本人读写，RLS 隔离)
 export const TABLES = {
   // 核心业务表
-  MUSIC: "music",           // 正式歌曲库
-  ADMIN: "temp",            // 管理员暂存/审核表
+  MUSIC: "music", // 正式歌曲库
+  ADMIN: "temp", // 管理员暂存/审核表
 
   // 意象系统表
   IMAGERY: "imagery",

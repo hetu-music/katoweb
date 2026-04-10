@@ -71,12 +71,14 @@ export const POST = withAuth(
 
     // 如果没有命中任何行，说明还没有收藏记录，插入新行
     if (!updated || updated.length === 0) {
-      const { error: insertError } = await supabase.from(TABLES.COLLECTIONS).insert({
-        user_id: user.id,
-        song_id: songId,
-        target_type: TARGET_TYPE_FAVORITE,
-        review: review || null,
-      });
+      const { error: insertError } = await supabase
+        .from(TABLES.COLLECTIONS)
+        .insert({
+          user_id: user.id,
+          song_id: songId,
+          target_type: TARGET_TYPE_FAVORITE,
+          review: review || null,
+        });
 
       if (insertError) {
         // 唯一约束冲突说明并发插入，再次尝试 update

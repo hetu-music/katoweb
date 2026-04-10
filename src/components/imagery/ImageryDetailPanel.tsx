@@ -16,7 +16,7 @@ import { useIsDesktop } from "@/hooks/useIsDesktop";
 import type { ImageryItem, SongRef } from "@/lib/types";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 // ─── shared types ─────────────────────────────────────────────────────────────
 
@@ -88,10 +88,10 @@ const PanelBody = memo(function PanelBody({
     () =>
       activeLyricist
         ? songs.filter(({ song }) =>
-          activeLyricist === "未知"
-            ? !song.lyricist || song.lyricist.length === 0
-            : song.lyricist?.includes(activeLyricist),
-        )
+            activeLyricist === "未知"
+              ? !song.lyricist || song.lyricist.length === 0
+              : song.lyricist?.includes(activeLyricist),
+          )
         : songs,
     [songs, activeLyricist],
   );
@@ -110,10 +110,11 @@ const PanelBody = memo(function PanelBody({
   if (songs.length === 0) {
     return (
       <p
-        className={`text-center text-sm tracking-[0.25em] pl-[0.25em] py-16 ${isDesktop
+        className={`text-center text-sm tracking-[0.25em] pl-[0.25em] py-16 ${
+          isDesktop
             ? "text-slate-300 dark:text-slate-700"
             : "text-slate-400 dark:text-slate-600"
-          }`}
+        }`}
       >
         暂无相关词作
       </p>
@@ -137,7 +138,9 @@ const PanelBody = memo(function PanelBody({
             >
               <span
                 className={`inline-block transition-all duration-500 font-system ${
-                  !activeLyricist ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"
+                  !activeLyricist
+                    ? "opacity-100 translate-x-0"
+                    : "opacity-0 -translate-x-2"
                 } mr-1`}
                 style={{ color: selectedPalette.accent }}
               >
@@ -146,7 +149,9 @@ const PanelBody = memo(function PanelBody({
               全部
               <span
                 className={`inline-block transition-all duration-500 font-system ${
-                  !activeLyricist ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"
+                  !activeLyricist
+                    ? "opacity-100 translate-x-0"
+                    : "opacity-0 translate-x-2"
                 } ml-1`}
                 style={{ color: selectedPalette.accent }}
               >
@@ -160,22 +165,29 @@ const PanelBody = memo(function PanelBody({
                 <button
                   key={name}
                   onClick={() => onLyricistClick(name)}
-                  className={`group relative text-[13px] transition-all duration-500 font-serif tracking-widest whitespace-nowrap py-1 ${isActive
-                    ? "text-slate-900 dark:text-white"
-                    : "text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                    }`}
+                  className={`group relative text-[13px] transition-all duration-500 font-serif tracking-widest whitespace-nowrap py-1 ${
+                    isActive
+                      ? "text-slate-900 dark:text-white"
+                      : "text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                  }`}
                 >
                   <span
-                    className={`inline-block transition-all duration-500 font-system ${isActive ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"
-                      } mr-1`}
+                    className={`inline-block transition-all duration-500 font-system ${
+                      isActive
+                        ? "opacity-100 translate-x-0"
+                        : "opacity-0 -translate-x-2"
+                    } mr-1`}
                     style={{ color: selectedPalette.accent }}
                   >
                     「
                   </span>
                   {name}
                   <span
-                    className={`inline-block transition-all duration-500 font-system ${isActive ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"
-                      } ml-1`}
+                    className={`inline-block transition-all duration-500 font-system ${
+                      isActive
+                        ? "opacity-100 translate-x-0"
+                        : "opacity-0 translate-x-2"
+                    } ml-1`}
                     style={{ color: selectedPalette.accent }}
                   >
                     」
@@ -191,7 +203,10 @@ const PanelBody = memo(function PanelBody({
       )}
 
       {/* Songs */}
-      <div key={activeLyricist ?? "all"} className="animate-in fade-in duration-500">
+      <div
+        key={activeLyricist ?? "all"}
+        className="animate-in fade-in duration-500"
+      >
         <SectionLabel
           label={
             activeLyricist
@@ -351,7 +366,9 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
     } else {
       document.body.style.overflow = "";
     }
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [open]);
 
   const handleLyricistClick = useCallback((name: string) => {
@@ -426,9 +443,7 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
           isDesktop={isDesktop}
         />
 
-        <div
-          className="flex-1 overflow-y-auto no-scrollbar px-12 pb-10"
-        >
+        <div className="flex-1 overflow-y-auto no-scrollbar px-12 pb-10">
           <PanelBody {...sharedBodyProps} />
         </div>
       </SheetContent>

@@ -33,7 +33,10 @@ export async function getImageryWithCounts(): Promise<ImageryItem[]> {
     Pick<ImageryOccurrence, "imagery_id" | "category_id">
   >(supabase, TABLES.IMAGERY_OCC, "imagery_id, category_id");
 
-  const countMap = new Map<number, { count: number; categoryIds: Set<number> }>();
+  const countMap = new Map<
+    number,
+    { count: number; categoryIds: Set<number> }
+  >();
   for (const occ of occurrences) {
     const existing = countMap.get(occ.imagery_id);
     if (existing) {
@@ -58,7 +61,9 @@ export async function getImageryWithCounts(): Promise<ImageryItem[]> {
   });
 }
 
-export async function getSongsForImagery(imageryId: number): Promise<
+export async function getSongsForImagery(
+  imageryId: number,
+): Promise<
   Array<{ song: SongRef; categoryId: number; occurrenceCount: number }>
 > {
   const supabase = getServiceClient();
@@ -81,7 +86,10 @@ export async function getSongsForImagery(imageryId: number): Promise<
     if (existing) {
       existing.occurrenceCount++;
     } else {
-      songCountMap.set(occ.song_id, { categoryId: occ.category_id, occurrenceCount: 1 });
+      songCountMap.set(occ.song_id, {
+        categoryId: occ.category_id,
+        occurrenceCount: 1,
+      });
     }
   }
 

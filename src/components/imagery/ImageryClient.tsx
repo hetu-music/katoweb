@@ -238,7 +238,13 @@ export default function ImageryClient({ items, categories }: Props) {
   );
 
   const level1Categories = useMemo(() => {
-    const customOrder = ["自然事物", "人文社会", "身体人物", "文学艺术", "抽象概念"];
+    const customOrder = [
+      "自然事物",
+      "人文社会",
+      "身体人物",
+      "文学艺术",
+      "抽象概念",
+    ];
     return categories
       .filter((c) => c.level === 1)
       .sort((a, b) => {
@@ -287,7 +293,10 @@ export default function ImageryClient({ items, categories }: Props) {
         const l3 = catMap.get(catId);
         if (!l3?.parent_id) continue;
         const l2 = catMap.get(l3.parent_id);
-        if (l2) { found = l2; break; }
+        if (l2) {
+          found = l2;
+          break;
+        }
       }
       m.set(item.id, found);
     }
@@ -307,8 +316,8 @@ export default function ImageryClient({ items, categories }: Props) {
       activeL1Id === null
         ? []
         : categories
-          .filter((c) => c.level === 2 && c.parent_id === activeL1Id)
-          .sort((a, b) => a.name.localeCompare(b.name, "zh")),
+            .filter((c) => c.level === 2 && c.parent_id === activeL1Id)
+            .sort((a, b) => a.name.localeCompare(b.name, "zh")),
     [categories, activeL1Id],
   );
   const [selectedItem, setSelectedItem] = useState<ImageryItem | null>(null);
@@ -381,9 +390,13 @@ export default function ImageryClient({ items, categories }: Props) {
   const wordDisplayList = useMemo(() => {
     let list: ImageryItem[];
     if (deferredActiveL2Id !== null) {
-      list = items.filter((item) => itemToL2.get(item.id)?.id === deferredActiveL2Id);
+      list = items.filter(
+        (item) => itemToL2.get(item.id)?.id === deferredActiveL2Id,
+      );
     } else if (deferredActiveL1Id !== null) {
-      list = items.filter((item) => itemToL1.get(item.id)?.id === deferredActiveL1Id);
+      list = items.filter(
+        (item) => itemToL1.get(item.id)?.id === deferredActiveL1Id,
+      );
     } else {
       list = items;
     }
@@ -405,7 +418,15 @@ export default function ImageryClient({ items, categories }: Props) {
           breatheDelay: (idx % 13) * 0.35,
         };
       });
-  }, [items, deferredActiveL1Id, deferredActiveL2Id, itemToL1, itemToL2, l1ColorIndex, maxCount]);
+  }, [
+    items,
+    deferredActiveL1Id,
+    deferredActiveL2Id,
+    itemToL1,
+    itemToL2,
+    l1ColorIndex,
+    maxCount,
+  ]);
 
   const marqueeRows = useMemo(() => {
     const sorted = [...items].sort((a, b) => b.count - a.count);
@@ -559,6 +580,7 @@ export default function ImageryClient({ items, categories }: Props) {
       if (!btn) return;
       const itemId = Number(btn.dataset.itemId);
       if (hoveredBtnRef.current === itemId) return;
+      // eslint-disable-next-line react-hooks/immutability
       hoveredBtnRef.current = itemId;
       const d = itemLookup.get(itemId);
       if (!d) return;
@@ -575,6 +597,7 @@ export default function ImageryClient({ items, categories }: Props) {
   );
 
   const handleCloudMouseLeave = useCallback(() => {
+    // eslint-disable-next-line react-hooks/immutability
     hoveredBtnRef.current = null;
     setHoveredData(null);
   }, []);
@@ -726,15 +749,19 @@ export default function ImageryClient({ items, categories }: Props) {
 
             <button
               onClick={() => setActiveL1Id(null)}
-              className={`group relative py-1.5 text-[14px] transition-all duration-700 font-serif tracking-[0.2em] whitespace-nowrap ${activeL1Id === null
-                ? "text-slate-900 dark:text-white"
-                : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:tracking-[0.25em]"
-                }`}
+              className={`group relative py-1.5 text-[14px] transition-all duration-700 font-serif tracking-[0.2em] whitespace-nowrap ${
+                activeL1Id === null
+                  ? "text-slate-900 dark:text-white"
+                  : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:tracking-[0.25em]"
+              }`}
             >
               全部
               <span
-                className={`absolute bottom-0 left-0 h-px bg-slate-400/60 transition-all duration-1000 ease-out origin-left ${activeL1Id === null ? "w-full scale-x-100 opacity-100" : "w-full scale-x-0 opacity-0"
-                  }`}
+                className={`absolute bottom-0 left-0 h-px bg-slate-400/60 transition-all duration-1000 ease-out origin-left ${
+                  activeL1Id === null
+                    ? "w-full scale-x-100 opacity-100"
+                    : "w-full scale-x-0 opacity-0"
+                }`}
               />
             </button>
 
@@ -746,10 +773,11 @@ export default function ImageryClient({ items, categories }: Props) {
                   <div className="w-[0.5px] h-3 bg-slate-200/50 dark:bg-slate-800/30 rotate-12" />
                   <button
                     onClick={() => setActiveL1Id(isActive ? null : cat.id)}
-                    className={`group relative py-1.5 text-[14px] transition-all duration-700 font-serif tracking-[0.2em] whitespace-nowrap ${isActive
-                      ? "text-slate-900 dark:text-white"
-                      : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:tracking-[0.25em]"
-                      }`}
+                    className={`group relative py-1.5 text-[14px] transition-all duration-700 font-serif tracking-[0.2em] whitespace-nowrap ${
+                      isActive
+                        ? "text-slate-900 dark:text-white"
+                        : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:tracking-[0.25em]"
+                    }`}
                   >
                     {cat.name}
                     <span
@@ -759,7 +787,9 @@ export default function ImageryClient({ items, categories }: Props) {
                         transform: isActive ? "scale-x-100" : "scale-x-0",
                         opacity: isActive ? 0.8 : 0,
                         backgroundColor: palette.accent,
-                        boxShadow: isActive ? `0 1px 10px ${palette.accent}22` : "none"
+                        boxShadow: isActive
+                          ? `0 1px 10px ${palette.accent}22`
+                          : "none",
                       }}
                     />
                   </button>
@@ -783,17 +813,21 @@ export default function ImageryClient({ items, categories }: Props) {
 
                 {level2Categories.map((cat) => {
                   const isActive = activeL2Id === cat.id;
-                  const l1Idx = activeL1Id !== null ? (l1ColorIndex.get(activeL1Id) ?? 0) : 0;
+                  const l1Idx =
+                    activeL1Id !== null
+                      ? (l1ColorIndex.get(activeL1Id) ?? 0)
+                      : 0;
                   const palette = PALETTE_FULL[l1Idx % PALETTE_FULL.length];
 
                   return (
                     <button
                       key={cat.id}
                       onClick={() => setActiveL2Id(isActive ? null : cat.id)}
-                      className={`group relative text-[12px] transition-all duration-700 font-serif tracking-widest whitespace-nowrap py-1 ${isActive
-                        ? "text-slate-700 dark:text-slate-300"
-                        : "text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-400 hover:tracking-[0.15em]"
-                        }`}
+                      className={`group relative text-[12px] transition-all duration-700 font-serif tracking-widest whitespace-nowrap py-1 ${
+                        isActive
+                          ? "text-slate-700 dark:text-slate-300"
+                          : "text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-400 hover:tracking-[0.15em]"
+                      }`}
                     >
                       <span
                         className={`inline-block transition-all duration-700 font-system ${isActive ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"} mr-1.5`}
@@ -809,7 +843,9 @@ export default function ImageryClient({ items, categories }: Props) {
                         」
                       </span>
                       {/* Subtle hover indicator for L2 */}
-                      <span className={`absolute -bottom-1 left-0 w-full h-[0.5px] bg-slate-300 dark:bg-slate-700 scale-x-0 transition-transform duration-500 group-hover:scale-x-100`} />
+                      <span
+                        className={`absolute -bottom-1 left-0 w-full h-[0.5px] bg-slate-300 dark:bg-slate-700 scale-x-0 transition-transform duration-500 group-hover:scale-x-100`}
+                      />
                     </button>
                   );
                 })}
@@ -825,9 +861,9 @@ export default function ImageryClient({ items, categories }: Props) {
         style={
           mounted
             ? {
-              animation: "main-fade-in 1s ease-out both",
-              animationDelay: "200ms",
-            }
+                animation: "main-fade-in 1s ease-out both",
+                animationDelay: "200ms",
+              }
             : undefined
         }
       >
@@ -843,7 +879,10 @@ export default function ImageryClient({ items, categories }: Props) {
               onClick={handleCloudClick}
               onMouseOver={handleCloudMouseOver}
               onMouseLeave={handleCloudMouseLeave}
-              style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: "relative" }}
+              style={{
+                height: `${rowVirtualizer.getTotalSize()}px`,
+                position: "relative",
+              }}
             >
               {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                 const row = wordRows[virtualRow.index];
