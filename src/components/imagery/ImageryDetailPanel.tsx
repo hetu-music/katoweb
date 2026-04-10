@@ -360,7 +360,7 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
   if (!isDesktop) {
     return (
       <Drawer open={open} onOpenChange={(v) => !v && onClose()}>
-        <DrawerContent className="h-[50dvh]">
+        <DrawerContent className="h-[65dvh]">
           {/* Accessible title/description (visually hidden) */}
           <DrawerTitle className="sr-only">
             {selectedItem?.name ?? "意象详情"}
