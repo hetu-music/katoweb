@@ -32,8 +32,10 @@ import {
   Wand2,
   X,
   XCircle,
+  Tag,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Account from "./Account";
 import CoverUpload from "./CoverUpload";
@@ -677,6 +679,13 @@ export default function AdminClientComponent({
           </div>
 
           <div className="flex items-center gap-3">
+            <Link
+              href="/admin/imagery"
+              className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-full font-medium shadow-sm hover:shadow-md hover:border-violet-300 dark:hover:border-violet-700 transition-all hover:-translate-y-0.5"
+            >
+              <Tag size={18} className="text-violet-500" />
+              <span>意象管理</span>
+            </Link>
             <button
               onClick={() => setShowAdd(true)}
               className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-full font-medium shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"

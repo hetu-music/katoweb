@@ -129,3 +129,88 @@ export async function apiCheckFileExists(
 }
 
 // Auto-complete logic has been moved to src/lib/api-auto-complete.ts
+
+// ─── Imagery Admin API ─────────────────────────────────────────────────────────
+
+export async function apiGetImageryItems() {
+  const res = await fetch("/api/admin/imagery");
+  if (!res.ok) throw new Error("获取意象列表失败");
+  return res.json();
+}
+
+export async function apiCreateImagery(name: string, csrfToken: string) {
+  const res = await fetch("/api/admin/imagery", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
+    body: JSON.stringify({ name }),
+  });
+  if (!res.ok) throw new Error("新增意象失败");
+  return res.json();
+}
+
+export async function apiUpdateImagery(id: number, name: string, csrfToken: string) {
+  const res = await fetch(`/api/admin/imagery/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
+    body: JSON.stringify({ name }),
+  });
+  if (!res.ok) throw new Error("更新意象失败");
+  return res.json();
+}
+
+export async function apiDeleteImagery(id: number, csrfToken: string) {
+  const res = await fetch(`/api/admin/imagery/${id}`, {
+    method: "DELETE",
+    headers: { "x-csrf-token": csrfToken },
+  });
+  if (!res.ok) throw new Error("删除意象失败");
+  return res.json();
+}
+
+export async function apiGetImageryOccurrences(imageryId: number) {
+  const res = await fetch(`/api/admin/imagery/${imageryId}`);
+  if (!res.ok) throw new Error("获取出现记录失败");
+  return res.json();
+}
+
+export async function apiGetImageryCategories() {
+  const res = await fetch("/api/admin/imagery/categories");
+  if (!res.ok) throw new Error("获取分类失败");
+  return res.json();
+}
+
+export async function apiCreateImageryCategory(
+  data: { name: string; parent_id?: number | null; level?: number | null; description?: string | null },
+  csrfToken: string,
+) {
+  const res = await fetch("/api/admin/imagery/categories", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("新增分类失败");
+  return res.json();
+}
+
+export async function apiUpdateImageryCategory(
+  id: number,
+  data: { name?: string; parent_id?: number | null; level?: number | null; description?: string | null },
+  csrfToken: string,
+) {
+  const res = await fetch(`/api/admin/imagery/categories/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("更新分类失败");
+  return res.json();
+}
+
+export async function apiDeleteImageryCategory(id: number, csrfToken: string) {
+  const res = await fetch(`/api/admin/imagery/categories/${id}`, {
+    method: "DELETE",
+    headers: { "x-csrf-token": csrfToken },
+  });
+  if (!res.ok) throw new Error("删除分类失败");
+  return res.json();
+}
