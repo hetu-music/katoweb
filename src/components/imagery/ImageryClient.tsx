@@ -301,8 +301,8 @@ export default function ImageryClient({ items, categories }: Props) {
       activeL1Id === null
         ? []
         : categories
-            .filter((c) => c.level === 2 && c.parent_id === activeL1Id)
-            .sort((a, b) => a.name.localeCompare(b.name, "zh")),
+          .filter((c) => c.level === 2 && c.parent_id === activeL1Id)
+          .sort((a, b) => a.name.localeCompare(b.name, "zh")),
     [categories, activeL1Id],
   );
   const [selectedItem, setSelectedItem] = useState<ImageryItem | null>(null);
@@ -734,61 +734,104 @@ export default function ImageryClient({ items, categories }: Props) {
       </header>
 
       {/* ── category filter ── */}
-      <div className="sticky top-(--nav-h,48px) z-20 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-100/80 dark:border-slate-800/80 transition-all duration-300">
-        <div className="max-w-5xl mx-auto px-5 overflow-x-auto no-scrollbar">
+      <div className="sticky top-(--nav-h,48px) z-20 bg-[#FAFAFA]/40 dark:bg-[#0B0F19]/40 backdrop-blur-2xl border-b border-slate-200/10 dark:border-slate-800/20 transition-all duration-1000">
+        <div className="max-w-5xl mx-auto px-6 py-2.5">
           {/* L1 filter row */}
-          <div className="flex items-center gap-1 py-3 w-max">
+          <div className="flex items-center gap-8 overflow-x-auto no-scrollbar py-1 mask-linear-fade-edges">
+            {/* Start spacer for mask */}
+            <div className="min-w-[8px]" />
+
             <button
               onClick={() => setActiveL1Id(null)}
-              className={`px-3.5 py-1.5 text-sm rounded-full transition-all duration-200 tracking-wide ${
-                activeL1Id === null
-                  ? "bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 font-medium shadow-sm"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
-              }`}
+              className={`group relative py-1.5 text-[14px] transition-all duration-700 font-serif tracking-[0.2em] whitespace-nowrap ${activeL1Id === null
+                  ? "text-slate-900 dark:text-white"
+                  : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:tracking-[0.25em]"
+                }`}
             >
               全部
+              <span
+                className={`absolute bottom-0 left-0 h-px bg-slate-400/60 transition-all duration-1000 ease-out origin-left ${activeL1Id === null ? "w-full scale-x-100 opacity-100" : "w-full scale-x-0 opacity-0"
+                  }`}
+              />
             </button>
+
             {level1Categories.map((cat, i) => {
               const palette = PALETTE_FULL[i % PALETTE_FULL.length];
               const isActive = activeL1Id === cat.id;
               return (
-                <button
-                  key={cat.id}
-                  onClick={() => setActiveL1Id(isActive ? null : cat.id)}
-                  className={`px-3.5 py-1.5 text-sm rounded-full transition-all duration-200 tracking-wide ring-inset ${
-                    isActive
-                      ? `${palette.text} ${palette.activeBg} font-medium ring-1 ${palette.ring}`
-                      : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
-                  }`}
-                >
-                  {cat.name}
-                </button>
-              );
-            })}
-          </div>
-          {/* L2 sub-filter row — slides in when a L1 is active */}
-          {level2Categories.length > 0 && (
-            <div className="flex items-center gap-1 pb-2.5 w-max">
-              {level2Categories.map((cat) => {
-                const l1Idx = activeL1Id !== null ? (l1ColorIndex.get(activeL1Id) ?? 0) : 0;
-                const palette = PALETTE_FULL[l1Idx % PALETTE_FULL.length];
-                const isActive = activeL2Id === cat.id;
-                return (
+                <div key={cat.id} className="flex items-center gap-8">
+                  <div className="w-[0.5px] h-3 bg-slate-200/50 dark:bg-slate-800/30 rotate-12" />
                   <button
-                    key={cat.id}
-                    onClick={() => setActiveL2Id(isActive ? null : cat.id)}
-                    className={`px-3 py-1 text-xs rounded-full transition-all duration-200 tracking-wide ring-inset ${
-                      isActive
-                        ? `${palette.text} ${palette.activeBg} font-medium ring-1 ${palette.ring}`
-                        : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50"
-                    }`}
+                    onClick={() => setActiveL1Id(isActive ? null : cat.id)}
+                    className={`group relative py-1.5 text-[14px] transition-all duration-700 font-serif tracking-[0.2em] whitespace-nowrap ${isActive
+                        ? "text-slate-900 dark:text-white"
+                        : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:tracking-[0.25em]"
+                      }`}
                   >
                     {cat.name}
+                    <span
+                      className="absolute bottom-0 left-0 h-[1.5px] transition-all duration-1000 ease-[cubic-bezier(0.19,1,0.22,1)] origin-left"
+                      style={{
+                        width: "100%",
+                        transform: isActive ? "scale-x-100" : "scale-x-0",
+                        opacity: isActive ? 0.8 : 0,
+                        backgroundColor: palette.accent,
+                        boxShadow: isActive ? `0 1px 10px ${palette.accent}22` : "none"
+                      }}
+                    />
                   </button>
-                );
-              })}
+                </div>
+              );
+            })}
+
+            {/* End spacer for mask */}
+            <div className="min-w-[8px]" />
+          </div>
+
+          {/* L2 sub-filter row — calligraphic list */}
+          <div
+            className={`grid transition-[grid-template-rows,opacity,margin] duration-1000 ease-[cubic-bezier(0.19,1,0.22,1)] ${level2Categories.length > 0 ? "grid-rows-[1fr] opacity-100 mt-2" : "grid-rows-[0fr] opacity-0 mt-0"}`}
+          >
+            <div className="overflow-hidden">
+              <div className="flex items-center gap-6 flex-wrap pt-3 border-t border-slate-200/20 dark:border-slate-800/10">
+                {/* Matching spacer for alignment with L1 */}
+                <div className="min-w-[8px]" />
+
+                {level2Categories.map((cat) => {
+                  const isActive = activeL2Id === cat.id;
+                  const l1Idx = activeL1Id !== null ? (l1ColorIndex.get(activeL1Id) ?? 0) : 0;
+                  const palette = PALETTE_FULL[l1Idx % PALETTE_FULL.length];
+
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => setActiveL2Id(isActive ? null : cat.id)}
+                      className={`group relative text-[12px] transition-all duration-700 font-serif tracking-widest whitespace-nowrap py-1 ${isActive
+                          ? "text-slate-700 dark:text-slate-300"
+                          : "text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-400 hover:tracking-[0.15em]"
+                        }`}
+                    >
+                      <span
+                        className={`inline-block transition-all duration-700 font-system ${isActive ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"} mr-1.5`}
+                        style={{ color: palette.accent }}
+                      >
+                        「
+                      </span>
+                      {cat.name}
+                      <span
+                        className={`inline-block transition-all duration-700 font-system ${isActive ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"} ml-1.5`}
+                        style={{ color: palette.accent }}
+                      >
+                        」
+                      </span>
+                      {/* Subtle hover indicator for L2 */}
+                      <span className={`absolute -bottom-1 left-0 w-full h-[0.5px] bg-slate-300 dark:bg-slate-700 scale-x-0 transition-transform duration-500 group-hover:scale-x-100`} />
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
 
@@ -798,9 +841,9 @@ export default function ImageryClient({ items, categories }: Props) {
         style={
           mounted
             ? {
-                animation: "main-fade-in 1s ease-out both",
-                animationDelay: "200ms",
-              }
+              animation: "main-fade-in 1s ease-out both",
+              animationDelay: "200ms",
+            }
             : undefined
         }
       >

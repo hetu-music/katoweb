@@ -253,3 +253,14 @@ button {
     opacity: 1;
   }
 }
+
+/* 渐变遮罩，用于横向滚动指示 */
+.mask-linear-fade-edges {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 12px,
+    black calc(100% - 12px),
+    transparent
+  );
+}
