@@ -40,7 +40,6 @@ interface WordDisplayData {
   fontSize: number;
   breatheDuration: number;
   breatheDelay: number;
-  tooltip: string;
 }
 
 // ─── row-grouping helpers ─────────────────────────────────────────────────────
@@ -211,7 +210,7 @@ const WordItem = memo(function WordItem({
       >
         <button
           data-item-id={data.item.id}
-          data-tooltip={data.tooltip}
+          title={`${data.item.count}次`}
           className={`font-serif leading-none transition-opacity duration-200 word-breathe-anim ${isSelected ? "word-breathe-force-run" : ""} ${data.paletteText} ${isSelected ? "opacity-100" : "opacity-70 hover:opacity-100"}`}
           style={
             {
@@ -275,20 +274,43 @@ export default function ImageryClient({ items, categories }: Props) {
     return m;
   }, [items, catMap]);
 
+  const itemToL2 = useMemo(() => {
+    const m = new Map<number, ImageryCategory | null>();
+    for (const item of items) {
+      let found: ImageryCategory | null = null;
+      for (const catId of item.categoryIds) {
+        const l3 = catMap.get(catId);
+        if (!l3?.parent_id) continue;
+        const l2 = catMap.get(l3.parent_id);
+        if (l2) { found = l2; break; }
+      }
+      m.set(item.id, found);
+    }
+    return m;
+  }, [items, catMap]);
+
   // ── state ────────────────────────────────────────────────────────────────
   const [activeL1Id, setActiveL1Id] = useState<number | null>(null);
   // Deferred: filter button highlights immediately; cloud re-renders in background
   const deferredActiveL1Id = useDeferredValue(activeL1Id);
+  const [activeL2Id, setActiveL2Id] = useState<number | null>(null);
+  const deferredActiveL2Id = useDeferredValue(activeL2Id);
+
+  // L2 sub-categories visible when a L1 is selected
+  const level2Categories = useMemo(
+    () =>
+      activeL1Id === null
+        ? []
+        : categories
+            .filter((c) => c.level === 2 && c.parent_id === activeL1Id)
+            .sort((a, b) => a.name.localeCompare(b.name, "zh")),
+    [categories, activeL1Id],
+  );
   const [selectedItem, setSelectedItem] = useState<ImageryItem | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelSide, setPanelSide] = useState<"left" | "right">("right");
   const [songs, setSongs] = useState<SongResult[]>([]);
   const [songsLoading, setSongsLoading] = useState(false);
-  const [hoveredData, setHoveredData] = useState<{
-    text: string;
-    x: number;
-    y: number;
-  } | null>(null);
   const [showAbout, setShowAbout] = useState(false);
 
   const router = useRouter();
@@ -345,10 +367,14 @@ export default function ImageryClient({ items, categories }: Props) {
   );
 
   const wordDisplayList = useMemo(() => {
-    const list =
-      deferredActiveL1Id === null
-        ? items
-        : items.filter((item) => itemToL1.get(item.id)?.id === deferredActiveL1Id);
+    let list: ImageryItem[];
+    if (deferredActiveL2Id !== null) {
+      list = items.filter((item) => itemToL2.get(item.id)?.id === deferredActiveL2Id);
+    } else if (deferredActiveL1Id !== null) {
+      list = items.filter((item) => itemToL1.get(item.id)?.id === deferredActiveL1Id);
+    } else {
+      list = items;
+    }
     return [...list]
       .sort((a, b) => b.count - a.count)
       .map((item, idx) => {
@@ -365,10 +391,9 @@ export default function ImageryClient({ items, categories }: Props) {
           fontSize: calcFontSize(item.count, maxCount),
           breatheDuration: 3.5 + (idx % 7) * 0.6,
           breatheDelay: (idx % 13) * 0.35,
-          tooltip: `${item.name} · ${item.count} 次${l1 ? ` · ${l1.name}` : ""}`,
         };
       });
-  }, [items, deferredActiveL1Id, itemToL1, l1ColorIndex, maxCount]);
+  }, [items, deferredActiveL1Id, deferredActiveL2Id, itemToL1, itemToL2, l1ColorIndex, maxCount]);
 
   const marqueeRows = useMemo(() => {
     const sorted = [...items].sort((a, b) => b.count - a.count);
@@ -432,6 +457,11 @@ export default function ImageryClient({ items, categories }: Props) {
     return () => window.removeEventListener("resize", update);
   }, [wordDisplayList.length]);
 
+  // Reset L2 when L1 changes
+  useEffect(() => {
+    setActiveL2Id(null);
+  }, [activeL1Id]);
+
   // Scroll to cloud top when filter changes
   const isFirstFilterRender = useRef(true);
   useEffect(() => {
@@ -443,11 +473,10 @@ export default function ImageryClient({ items, categories }: Props) {
       const top =
         cloudRef.current.getBoundingClientRect().top +
         window.scrollY -
-        // leave a bit of breathing room below the sticky filter bar
         20;
       window.scrollTo({ top, behavior: "smooth" });
     }
-  }, [activeL1Id]);
+  }, [activeL1Id, activeL2Id]);
 
   // Fetch songs
   useEffect(() => {
@@ -490,15 +519,6 @@ export default function ImageryClient({ items, categories }: Props) {
     return map;
   }, [wordDisplayList]);
 
-  // Keep a ref in sync with panelOpen so delegated handlers avoid stale closures
-  const panelOpenRef = useRef(panelOpen);
-  useEffect(() => {
-    panelOpenRef.current = panelOpen;
-  }, [panelOpen]);
-
-  // Track which button is currently hovered to prevent redundant re-renders
-  const hoveredBtnRef = useRef<number | null>(null);
-
   const handleCloudClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       const btn = (e.target as HTMLElement).closest<HTMLElement>(
@@ -519,33 +539,6 @@ export default function ImageryClient({ items, categories }: Props) {
     },
     [itemLookup],
   );
-
-  const handleCloudMouseOver = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (panelOpenRef.current) return;
-      const btn = (e.target as HTMLElement).closest<HTMLElement>(
-        "button[data-item-id]",
-      );
-      if (!btn) return;
-      const itemId = Number(btn.dataset.itemId);
-      if (hoveredBtnRef.current === itemId) return; // already showing this tooltip
-      hoveredBtnRef.current = itemId;
-      const d = itemLookup.get(itemId);
-      if (!d) return;
-      const rect = btn.getBoundingClientRect();
-      setHoveredData({
-        text: d.tooltip,
-        x: rect.left + rect.width / 2,
-        y: rect.top,
-      });
-    },
-    [itemLookup],
-  );
-
-  const handleCloudMouseLeave = useCallback(() => {
-    hoveredBtnRef.current = null;
-    setHoveredData(null);
-  }, []);
 
   const handleClose = useCallback(() => setPanelOpen(false), []);
 
@@ -697,7 +690,8 @@ export default function ImageryClient({ items, categories }: Props) {
       {/* ── category filter ── */}
       <div className="sticky top-(--nav-h,48px) z-20 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-100/80 dark:border-slate-800/80 transition-all duration-300">
         <div className="max-w-5xl mx-auto px-5 overflow-x-auto no-scrollbar">
-          <div className="flex items-center gap-1 py-4 w-max">
+          {/* L1 filter row */}
+          <div className="flex items-center gap-1 py-3 w-max">
             <button
               onClick={() => setActiveL1Id(null)}
               className={`px-3.5 py-1.5 text-sm rounded-full transition-all duration-200 tracking-wide ${
@@ -715,20 +709,40 @@ export default function ImageryClient({ items, categories }: Props) {
                 <button
                   key={cat.id}
                   onClick={() => setActiveL1Id(isActive ? null : cat.id)}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 text-sm rounded-full transition-all duration-200 tracking-wide ring-inset ${
+                  className={`px-3.5 py-1.5 text-sm rounded-full transition-all duration-200 tracking-wide ring-inset ${
                     isActive
                       ? `${palette.text} ${palette.activeBg} font-medium ring-1 ${palette.ring}`
                       : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
                   }`}
                 >
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full transition-colors duration-200 ${isActive ? palette.dot : "bg-slate-300 dark:bg-slate-600"}`}
-                  />
                   {cat.name}
                 </button>
               );
             })}
           </div>
+          {/* L2 sub-filter row — slides in when a L1 is active */}
+          {level2Categories.length > 0 && (
+            <div className="flex items-center gap-1 pb-2.5 w-max">
+              {level2Categories.map((cat) => {
+                const l1Idx = activeL1Id !== null ? (l1ColorIndex.get(activeL1Id) ?? 0) : 0;
+                const palette = PALETTE_FULL[l1Idx % PALETTE_FULL.length];
+                const isActive = activeL2Id === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setActiveL2Id(isActive ? null : cat.id)}
+                    className={`px-3 py-1 text-xs rounded-full transition-all duration-200 tracking-wide ring-inset ${
+                      isActive
+                        ? `${palette.text} ${palette.activeBg} font-medium ring-1 ${palette.ring}`
+                        : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50"
+                    }`}
+                  >
+                    {cat.name}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
@@ -754,8 +768,6 @@ export default function ImageryClient({ items, categories }: Props) {
             <div
               ref={cloudRef}
               onClick={handleCloudClick}
-              onMouseOver={handleCloudMouseOver}
-              onMouseLeave={handleCloudMouseLeave}
               style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: "relative" }}
             >
               {rowVirtualizer.getVirtualItems().map((virtualRow) => {
@@ -789,23 +801,6 @@ export default function ImageryClient({ items, categories }: Props) {
                 );
               })}
             </div>
-
-            {/* Singleton Tooltip */}
-            {hoveredData && (
-              <div
-                className="fixed z-100 pointer-events-none px-2.5 py-1.5 rounded-lg bg-white/95 dark:bg-slate-900/95 border border-slate-200/80 dark:border-slate-700/60 shadow-lg whitespace-nowrap transition-opacity duration-150"
-                style={{
-                  left: hoveredData.x,
-                  top: hoveredData.y - 10,
-                  transform: "translate(-50%, -100%)",
-                }}
-              >
-                <p className="text-xs text-slate-600 dark:text-slate-300 tracking-wide">
-                  {hoveredData.text}
-                </p>
-                <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-200/80 dark:border-t-slate-700/60" />
-              </div>
-            )}
 
             {/* Total count */}
             <div className="mt-12 flex justify-center">
