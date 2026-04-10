@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import React, {
   memo,
   useCallback,
+  useDeferredValue,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -40,7 +41,6 @@ interface WordDisplayData {
   breatheDuration: number;
   breatheDelay: number;
   tooltip: string;
-  globalIdx: number;
 }
 
 // ─── row-grouping helpers ─────────────────────────────────────────────────────
@@ -178,35 +178,23 @@ function triggerHaptic(ms = 8) {
 
 const WordItem = memo(function WordItem({
   data,
-  onClick,
+  rowWordIdx,
   selectedItemId,
-  onHover,
 }: {
   data: WordDisplayData;
-  onClick: (item: ImageryItem, clickX: number) => void;
+  rowWordIdx: number;
   selectedItemId: number | null;
-  onHover: (data: WordDisplayData | null, rect?: DOMRect) => void;
 }) {
-  const btnRef = useRef<HTMLButtonElement>(null);
-
-  const handleClick = useCallback(() => {
-    const rect = btnRef.current?.getBoundingClientRect();
-    const cx = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
-    onClick(data.item, cx);
-  }, [onClick, data.item]);
-
-  // Stagger only the first 100 visible words; subsequent rows appear instantly
-  const unfurlDelay = `${Math.min(data.globalIdx, 100) * 40}ms`;
+  // Stagger words within the same row for a cascade effect on each new batch
+  const unfurlDelay = `${rowWordIdx * 80}ms`;
   const isSelected = selectedItemId === data.item.id;
   const hasSelection = selectedItemId !== null;
 
-  // Layered glow in the word's own accent color
   const glow = isSelected
     ? `0 0 10px ${data.paletteAccent}cc, 0 0 26px ${data.paletteAccent}66, 0 0 55px ${data.paletteAccent}22`
     : undefined;
 
   return (
-    // ── Outer: controls opacity + scale — NEVER animated (so selection state works) ──
     <div
       className="relative"
       style={{
@@ -215,40 +203,23 @@ const WordItem = memo(function WordItem({
         zIndex: isSelected ? 30 : undefined,
         transition:
           "opacity 0.8s ease, transform 0.8s cubic-bezier(0.16,1,0.3,1)",
-        overflow: isSelected ? "visible" : undefined,
       }}
     >
-      {/* ── Inner: one-shot unfurl animation plays on mount (= when row scrolls into view) ── */}
       <div
         className="relative group/word leading-none word-unfurl-anim"
-        style={
-          {
-            "--unfurl-delay": unfurlDelay,
-            contain: isSelected ? "none" : undefined,
-            willChange: isSelected ? "auto" : "transform, opacity",
-            overflow: isSelected ? "visible" : undefined,
-          } as React.CSSProperties
-        }
+        style={{ "--unfurl-delay": unfurlDelay } as React.CSSProperties}
       >
         <button
-          ref={btnRef}
-          onClick={handleClick}
-          onMouseEnter={() =>
-            !hasSelection &&
-            onHover(data, btnRef.current?.getBoundingClientRect())
-          }
-          onMouseLeave={() => onHover(null)}
-          className={`font-serif leading-none transition-opacity duration-200 word-breathe-anim ${data.paletteText} ${isSelected ? "opacity-100" : "opacity-70 hover:opacity-100"}`}
+          data-item-id={data.item.id}
+          data-tooltip={data.tooltip}
+          className={`font-serif leading-none transition-opacity duration-200 word-breathe-anim ${isSelected ? "word-breathe-force-run" : ""} ${data.paletteText} ${isSelected ? "opacity-100" : "opacity-70 hover:opacity-100"}`}
           style={
             {
               fontSize: `${data.fontSize}rem`,
               "--word-breathe-duration": `${data.breatheDuration}s`,
               "--word-breathe-delay": `${data.breatheDelay}s`,
-              animationPlayState: isSelected ? "running" : undefined,
-              willChange: isSelected ? "auto" : "transform",
               textShadow: glow,
               transition: "text-shadow 0.4s ease, opacity 0.4s ease",
-              overflow: isSelected ? "visible" : undefined,
             } as React.CSSProperties
           }
         >
@@ -306,6 +277,8 @@ export default function ImageryClient({ items, categories }: Props) {
 
   // ── state ────────────────────────────────────────────────────────────────
   const [activeL1Id, setActiveL1Id] = useState<number | null>(null);
+  // Deferred: filter button highlights immediately; cloud re-renders in background
+  const deferredActiveL1Id = useDeferredValue(activeL1Id);
   const [selectedItem, setSelectedItem] = useState<ImageryItem | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelSide, setPanelSide] = useState<"left" | "right">("right");
@@ -373,9 +346,9 @@ export default function ImageryClient({ items, categories }: Props) {
 
   const wordDisplayList = useMemo(() => {
     const list =
-      activeL1Id === null
+      deferredActiveL1Id === null
         ? items
-        : items.filter((item) => itemToL1.get(item.id)?.id === activeL1Id);
+        : items.filter((item) => itemToL1.get(item.id)?.id === deferredActiveL1Id);
     return [...list]
       .sort((a, b) => b.count - a.count)
       .map((item, idx) => {
@@ -393,10 +366,9 @@ export default function ImageryClient({ items, categories }: Props) {
           breatheDuration: 3.5 + (idx % 7) * 0.6,
           breatheDelay: (idx % 13) * 0.35,
           tooltip: `${item.name} · ${item.count} 次${l1 ? ` · ${l1.name}` : ""}`,
-          globalIdx: idx,
         };
       });
-  }, [items, activeL1Id, itemToL1, l1ColorIndex, maxCount]);
+  }, [items, deferredActiveL1Id, itemToL1, l1ColorIndex, maxCount]);
 
   const marqueeRows = useMemo(() => {
     const sorted = [...items].sort((a, b) => b.count - a.count);
@@ -505,38 +477,77 @@ export default function ImageryClient({ items, categories }: Props) {
       (i: number) => estimateRowHeightPx(wordRows[i] ?? []),
       [wordRows],
     ),
-    overscan: 4,
+    overscan: 8,
     scrollMargin,
   });
 
   // ── handlers ─────────────────────────────────────────────────────────────
-  const handleWordClick = useCallback((item: ImageryItem, clickX: number) => {
-    triggerHaptic();
-    // Panel opens from the side opposite the clicked word, so it won't cover it
-    // Prefer right: only switch to left when word is in the rightmost quarter of the cloud area
-    const cloudRect = cloudRef.current?.getBoundingClientRect();
-    const cloudRight = cloudRect ? cloudRect.right : window.innerWidth;
-    setPanelSide(clickX > (cloudRight * 3) / 4 ? "left" : "right");
-    setSelectedItem(item);
-    setPanelOpen(true);
-  }, []);
 
-  const handleClose = useCallback(() => setPanelOpen(false), []);
+  // O(1) lookup: item id → WordDisplayData, rebuilt when filtered list changes
+  const itemLookup = useMemo(() => {
+    const map = new Map<number, WordDisplayData>();
+    wordDisplayList.forEach((d) => map.set(d.item.id, d));
+    return map;
+  }, [wordDisplayList]);
 
-  const handleWordHover = useCallback(
-    (data: WordDisplayData | null, rect?: DOMRect) => {
-      if (!data || !rect) {
-        setHoveredData(null);
-        return;
-      }
+  // Keep a ref in sync with panelOpen so delegated handlers avoid stale closures
+  const panelOpenRef = useRef(panelOpen);
+  useEffect(() => {
+    panelOpenRef.current = panelOpen;
+  }, [panelOpen]);
+
+  // Track which button is currently hovered to prevent redundant re-renders
+  const hoveredBtnRef = useRef<number | null>(null);
+
+  const handleCloudClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const btn = (e.target as HTMLElement).closest<HTMLElement>(
+        "button[data-item-id]",
+      );
+      if (!btn) return;
+      const itemId = Number(btn.dataset.itemId);
+      const d = itemLookup.get(itemId);
+      if (!d) return;
+      triggerHaptic();
+      const rect = btn.getBoundingClientRect();
+      const clickX = rect.left + rect.width / 2;
+      const cloudRect = cloudRef.current?.getBoundingClientRect();
+      const cloudRight = cloudRect ? cloudRect.right : window.innerWidth;
+      setPanelSide(clickX > (cloudRight * 3) / 4 ? "left" : "right");
+      setSelectedItem(d.item);
+      setPanelOpen(true);
+    },
+    [itemLookup],
+  );
+
+  const handleCloudMouseOver = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (panelOpenRef.current) return;
+      const btn = (e.target as HTMLElement).closest<HTMLElement>(
+        "button[data-item-id]",
+      );
+      if (!btn) return;
+      const itemId = Number(btn.dataset.itemId);
+      if (hoveredBtnRef.current === itemId) return; // already showing this tooltip
+      hoveredBtnRef.current = itemId;
+      const d = itemLookup.get(itemId);
+      if (!d) return;
+      const rect = btn.getBoundingClientRect();
       setHoveredData({
-        text: data.tooltip,
+        text: d.tooltip,
         x: rect.left + rect.width / 2,
         y: rect.top,
       });
     },
-    [],
+    [itemLookup],
   );
+
+  const handleCloudMouseLeave = useCallback(() => {
+    hoveredBtnRef.current = null;
+    setHoveredData(null);
+  }, []);
+
+  const handleClose = useCallback(() => setPanelOpen(false), []);
 
   const handleTitleReset = useCallback(() => {
     window.location.href = "/";
@@ -632,7 +643,10 @@ export default function ImageryClient({ items, categories }: Props) {
                 key={ri}
                 className="flex whitespace-nowrap font-serif will-change-transform"
                 style={{
-                  animation: `${dir} ${duration} linear infinite`,
+                  animationName: dir,
+                  animationDuration: duration,
+                  animationTimingFunction: "linear",
+                  animationIterationCount: "infinite",
                   animationPlayState: headerVisible ? "running" : "paused",
                 }}
               >
@@ -739,6 +753,9 @@ export default function ImageryClient({ items, categories }: Props) {
             {/* Virtual word cloud: position:relative container whose height equals all rows */}
             <div
               ref={cloudRef}
+              onClick={handleCloudClick}
+              onMouseOver={handleCloudMouseOver}
+              onMouseLeave={handleCloudMouseLeave}
               style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: "relative" }}
             >
               {rowVirtualizer.getVirtualItems().map((virtualRow) => {
@@ -758,15 +775,14 @@ export default function ImageryClient({ items, categories }: Props) {
                     }}
                     className="flex justify-center items-center gap-x-10 pb-6"
                   >
-                    {row.map((data) => (
+                    {row.map((data, wordIdx) => (
                       <WordItem
                         key={data.item.id}
                         data={data}
-                        onClick={handleWordClick}
+                        rowWordIdx={wordIdx}
                         selectedItemId={
                           panelOpen ? (selectedItem?.id ?? null) : null
                         }
-                        onHover={handleWordHover}
                       />
                     ))}
                   </div>

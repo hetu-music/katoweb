@@ -162,12 +162,16 @@ button {
   animation-duration: var(--word-breathe-duration, 4s);
   animation-delay: var(--word-breathe-delay, 0s);
   animation-fill-mode: both;
-  will-change: transform;
 }
 
 .word-breathe-anim:hover,
 .word-breathe-paused {
   animation-play-state: paused;
+}
+
+/* Force the breathe animation to run even on hover (e.g. when word is selected) */
+.word-breathe-force-run {
+  animation-play-state: running !important;
 }
 
 /* 逐字展开动画 */
@@ -221,8 +225,6 @@ button {
 .word-unfurl-anim {
   animation: word-fade-in 2.2s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: var(--unfurl-delay, 0ms);
-  will-change: transform, opacity;
-  contain: layout style; /* 移除 paint 以防止裁剪掉光效 (text-shadow) */
 }
 
 /* 页面主内容淡入 */
