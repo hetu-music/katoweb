@@ -1,5 +1,5 @@
-import type { MetadataRoute } from "next";
 import { getSongs } from "@/lib/service-songs";
+import type { MetadataRoute } from "next";
 
 const SITE_URL = "https://hetu-music.com";
 
@@ -8,6 +8,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: SITE_URL,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 1.0,
+    },
+    {
+      url: `${SITE_URL}/imagery`,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 1.0,
