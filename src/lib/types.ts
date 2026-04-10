@@ -77,12 +77,19 @@ export type ImageryCategory = {
   description: string | null;
 };
 
+export type ImageryMeaning = {
+  id: number;
+  imagery_id: number;
+  label: string;
+  description: string | null;
+};
+
 export type ImageryItem = {
   id: number;
   name: string;
   count: number;
-  // 出现在哪些分类（去重）
   categoryIds: number[];
+  meaningCount: number;
 };
 
 export type ImageryOccurrence = {

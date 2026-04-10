@@ -214,3 +214,76 @@ export async function apiDeleteImageryCategory(id: number, csrfToken: string) {
   if (!res.ok) throw new Error("删除分类失败");
   return res.json();
 }
+
+// ─── Imagery meanings API ──────────────────────────────────────────────────────
+
+export async function apiGetImageryMeanings(imageryId: number) {
+  const res = await fetch(`/api/admin/imagery/${imageryId}/meanings`);
+  if (!res.ok) throw new Error("获取含义列表失败");
+  return res.json();
+}
+
+export async function apiCreateMeaning(
+  imageryId: number,
+  data: { label: string; description?: string | null },
+  csrfToken: string,
+) {
+  const res = await fetch(`/api/admin/imagery/${imageryId}/meanings`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("新增含义失败");
+  return res.json();
+}
+
+export async function apiUpdateMeaning(
+  imageryId: number,
+  meaningId: number,
+  data: { label: string; description?: string | null },
+  csrfToken: string,
+) {
+  const res = await fetch(`/api/admin/imagery/${imageryId}/meanings/${meaningId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("更新含义失败");
+  return res.json();
+}
+
+export async function apiDeleteMeaning(
+  imageryId: number,
+  meaningId: number,
+  csrfToken: string,
+) {
+  const res = await fetch(`/api/admin/imagery/${imageryId}/meanings/${meaningId}`, {
+    method: "DELETE",
+    headers: { "x-csrf-token": csrfToken },
+  });
+  if (!res.ok) throw new Error("删除含义失败");
+  return res.json();
+}
+
+// ─── Imagery category-map API ──────────────────────────────────────────────────
+
+export async function apiGetImageryCategoryMap(imageryId: number) {
+  const res = await fetch(`/api/admin/imagery/${imageryId}/category-map`);
+  if (!res.ok) throw new Error("获取分类映射失败");
+  return res.json();
+}
+
+export async function apiSetImageryCategories(
+  imageryId: number,
+  categoryIds: number[],
+  csrfToken: string,
+) {
+  const res = await fetch(`/api/admin/imagery/${imageryId}/category-map`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
+    body: JSON.stringify({ categoryIds }),
+  });
+  if (!res.ok) throw new Error("更新分类映射失败");
+  return res.json();
+}
+
