@@ -20,9 +20,9 @@ import {
   Edit2,
   FolderPlus,
   Hash,
+  Home,
   Layers,
   Loader2,
-  LogOut,
   Plus,
   Search,
   Tag,
@@ -647,14 +647,13 @@ export default function ImageryAdminClient({ initialItems, initialCategories }: 
             >
               <User size={20} />
             </Link>
-            <button
-              onClick={logout}
-              disabled={loggingOut}
-              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400 disabled:opacity-40"
-              title="退出登录"
+            <Link
+              href="/"
+              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+              title="返回主页"
             >
-              <LogOut size={20} />
-            </button>
+              <Home size={20} />
+            </Link>
           </div>
         </div>
       </nav>
