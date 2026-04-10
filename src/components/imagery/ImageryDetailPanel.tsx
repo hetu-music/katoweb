@@ -180,7 +180,7 @@ const PanelBody = memo(function PanelBody({
                   >
                     」
                   </span>
-                  <span className="ml-1 text-[10px] tabular-nums opacity-40 font-sans tracking-normal group-hover:opacity-60 transition-opacity">
+                  <span className="ml-1 text-[10px] opacity-40 font-mono tracking-normal group-hover:opacity-60 transition-opacity">
                     ({count})
                   </span>
                 </button>
@@ -268,7 +268,7 @@ function PanelHeader({
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <span className="text-xs text-slate-500 dark:text-slate-400 tracking-widest">
             出现{" "}
-            <span className="text-slate-700 dark:text-slate-200 font-semibold tabular-nums">
+            <span className="text-slate-700 dark:text-slate-200 font-serif font-semibold tabular-nums">
               {selectedItem.count}
             </span>{" "}
             次
@@ -302,7 +302,7 @@ function PanelHeader({
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-400 dark:text-slate-500 tracking-wide">
           <span>
             出现{" "}
-            <span className="font-semibold text-slate-600 dark:text-slate-300 tabular-nums">
+            <span className="font-serif font-semibold text-slate-600 dark:text-slate-300 tabular-nums">
               {selectedItem.count}
             </span>{" "}
             次

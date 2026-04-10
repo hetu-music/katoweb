@@ -702,7 +702,7 @@ export default function ImageryClient({ items, categories }: Props) {
             ))}
           </h1>
           <p
-            className={`text-base md:text-xl text-slate-500 dark:text-slate-400 tracking-[0.4em] pl-[0.4em] mb-3 ${mounted ? "hero-unroll" : "opacity-0"}`}
+            className={`font-serif text-base md:text-xl text-slate-500 dark:text-slate-400 tracking-[0.4em] pl-[0.4em] mb-3 ${mounted ? "hero-unroll" : "opacity-0"}`}
             style={{ animationDelay: "1600ms" }}
           >
             场景 {wordDisplayList.length} ，长歌踏雪去何方
@@ -882,7 +882,7 @@ export default function ImageryClient({ items, categories }: Props) {
                 }}
               >
                 <div
-                  className="px-2.5 py-1 rounded-full text-xs tracking-wider font-light whitespace-nowrap shadow-sm backdrop-blur-sm tooltip-appear"
+                  className="px-2.5 py-1 rounded-full text-xs tracking-wider font-serif font-light whitespace-nowrap shadow-sm backdrop-blur-sm tooltip-appear"
                   style={{
                     backgroundColor: `${hoveredData.accent}22`,
                     color: hoveredData.accent,
@@ -896,7 +896,7 @@ export default function ImageryClient({ items, categories }: Props) {
 
             {/* Total count */}
             <div className="mt-12 flex justify-center">
-              <p className="text-xs text-slate-300 dark:text-slate-700 tracking-[0.2em] select-none">
+              <p className="text-xs text-slate-300 dark:text-slate-700 tracking-[0.2em] select-none font-serif">
                 共 {wordDisplayList.length} 个意象
               </p>
             </div>
