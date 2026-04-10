@@ -776,9 +776,10 @@ export default function ImageryClient({ items, categories }: Props) {
             className={`grid transition-[grid-template-rows,opacity,margin] duration-1000 ease-[cubic-bezier(0.19,1,0.22,1)] ${level2Categories.length > 0 ? "grid-rows-[1fr] opacity-100 mt-2" : "grid-rows-[0fr] opacity-0 mt-0"}`}
           >
             <div className="overflow-hidden">
-              <div className="flex items-center gap-6 flex-wrap pt-3 border-t border-slate-200/20 dark:border-slate-800/10">
-                {/* Matching spacer for alignment with L1 */}
-                <div className="min-w-[8px]" />
+              <div className="grid grid-cols-3 sm:flex sm:items-center gap-y-4 gap-x-6 sm:gap-6 sm:flex-wrap pt-3 border-t border-slate-200/20 dark:border-slate-800/10">
+                {/* On desktop, we keep the spacer; on mobile grid, we skip it or use it as a grid item if needed.
+                    Actually, let's keep it and adjust the grid flow. */}
+                <div className="hidden sm:block min-w-[8px]" />
 
                 {level2Categories.map((cat) => {
                   const isActive = activeL2Id === cat.id;
