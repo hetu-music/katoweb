@@ -3,9 +3,11 @@
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
-  SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  Drawer,
+  DrawerContent,
+} from "@/components/ui/drawer";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import type { ImageryItem, SongRef } from "@/lib/types";
 import { ChevronRight } from "lucide-react";
@@ -329,17 +331,6 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
   const isDesktop = useIsDesktop();
   const [activeLyricist, setActiveLyricist] = useState<string | null>(null);
 
-  // Swipe-down to close on mobile
-  const touchStartY = useRef(0);
-  const onTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartY.current = e.touches[0].clientY;
-  }, []);
-  const onTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (e.changedTouches[0].clientY - touchStartY.current > 72) onClose();
-  }, [onClose]);
-
-  // (removed manual matchMedia — now via useIsDesktop hook)
-
   // Clear lyricist filter when selection changes
   useEffect(() => {
     requestAnimationFrame(() => {
@@ -362,56 +353,60 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
     isDesktop,
   };
 
+  if (!isDesktop) {
+    return (
+      <Drawer open={open} onOpenChange={(v) => !v && onClose()}>
+        <DrawerContent className="max-h-[85dvh]">
+          {/* Accessible title/description (visually hidden) */}
+          <h2 className="sr-only">
+            {selectedItem?.name ?? "意象详情"}
+          </h2>
+          <p className="sr-only">
+            {selectedItem
+              ? `${selectedItem.name}在河图作品中出现${selectedItem.count}次`
+              : "意象详情面板"}
+          </p>
+
+          <PanelHeader
+            selectedItem={selectedItem}
+            selectedPalette={selectedPalette}
+            selectedCategoryPath={selectedCategoryPath}
+            isDesktop={isDesktop}
+          />
+
+          <div
+            className="flex-1 overflow-y-auto no-scrollbar px-8 py-4 pb-[env(safe-area-inset-bottom,1rem)] transition-all duration-500 ease-in-out"
+            style={{ interpolateSize: "allow-keywords" } as any}
+          >
+            <div className="animate-in fade-in duration-700">
+              <PanelBody {...sharedBodyProps} />
+            </div>
+          </div>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
   return (
-    <Sheet open={open} onOpenChange={(v) => !v && onClose()} modal={!isDesktop}>
+    <Sheet open={open} onOpenChange={(v) => !v && onClose()} modal={false}>
       <SheetContent
-        side={isDesktop ? panelSide : "bottom"}
-        hideClose={!isDesktop}
-        showOverlay={!isDesktop}
-        onTouchStart={!isDesktop ? onTouchStart : undefined}
-        onTouchEnd={!isDesktop ? onTouchEnd : undefined}
-        className={
-          isDesktop
-            ? [
-              "top-(--nav-h,48px) h-[calc(100vh-var(--nav-h,48px))] w-[min(440px,42vw)] p-0 border-none shadow-2xl",
-              panelSide === "right"
-                ? "border-l border-slate-200/50 dark:border-white/5"
-                : "border-r border-slate-200/50 dark:border-white/5",
-            ].join(" ")
-            : "max-h-[85dvh] p-0 border-t-0 shadow-2xl"
-        }
+        side={panelSide}
+        className={[
+          "top-(--nav-h,48px) h-[calc(100vh-var(--nav-h,48px))] w-[min(440px,42vw)] p-0 border-none shadow-2xl transition-all duration-500",
+          panelSide === "right"
+            ? "border-l border-slate-200/50 dark:border-white/5"
+            : "border-r border-slate-200/50 dark:border-white/5",
+        ].join(" ")}
       >
         {/* Accessible title/description (visually hidden) */}
-        <SheetTitle className="sr-only">
+        <h2 className="sr-only">
           {selectedItem?.name ?? "意象详情"}
-        </SheetTitle>
-        <SheetDescription className="sr-only">
+        </h2>
+        <p className="sr-only">
           {selectedItem
             ? `${selectedItem.name}在河图作品中出现${selectedItem.count}次`
             : "意象详情面板"}
-        </SheetDescription>
-
-        {/* Mobile drag handle */}
-        {!isDesktop && (
-          <div className="flex justify-center pt-3 pb-1 shrink-0">
-            <div className="w-10 h-1 rounded-full bg-slate-200 dark:bg-slate-700" />
-          </div>
-        )}
-
-        {/* Decorative character for mobile */}
-        {!isDesktop && selectedItem && (
-          <span
-            aria-hidden
-            className="pointer-events-none select-none absolute bottom-0 right-2 font-serif leading-none"
-            style={{
-              fontSize: "9rem",
-              opacity: 0.03,
-              color: selectedPalette.accent,
-            }}
-          >
-            {selectedItem.name[0]}
-          </span>
-        )}
+        </p>
 
         <PanelHeader
           selectedItem={selectedItem}
@@ -421,9 +416,12 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
         />
 
         <div
-          className={`flex-1 overflow-y-auto no-scrollbar ${isDesktop ? "px-12 pb-10" : "px-8 py-4 pb-[env(safe-area-inset-bottom,1rem)]"}`}
+          className="flex-1 overflow-y-auto no-scrollbar px-12 pb-10 transition-all duration-500 ease-in-out"
+          style={{ interpolateSize: "allow-keywords" } as any}
         >
-          <PanelBody {...sharedBodyProps} />
+          <div className="animate-in fade-in duration-500">
+            <PanelBody {...sharedBodyProps} />
+          </div>
         </div>
       </SheetContent>
     </Sheet>
