@@ -420,11 +420,14 @@ export default function ImageryClient({ items, categories }: Props) {
 
   const lyricistCounts = useMemo(() => {
     const counts = new Map<string, number>();
-    songs.forEach(({ song }) =>
-      (song.lyricist ?? []).forEach((l) =>
-        counts.set(l, (counts.get(l) ?? 0) + 1),
-      ),
-    );
+    songs.forEach(({ song }) => {
+      const lyricists = song.lyricist ?? [];
+      if (lyricists.length === 0) {
+        counts.set("未知", (counts.get("未知") ?? 0) + 1);
+      } else {
+        lyricists.forEach((l) => counts.set(l, (counts.get(l) ?? 0) + 1));
+      }
+    });
     return Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
   }, [songs]);
 
@@ -467,22 +470,6 @@ export default function ImageryClient({ items, categories }: Props) {
   useEffect(() => {
     setActiveL2Id(null);
   }, [activeL1Id]);
-
-  // Scroll to cloud top when filter changes
-  const isFirstFilterRender = useRef(true);
-  useEffect(() => {
-    if (isFirstFilterRender.current) {
-      isFirstFilterRender.current = false;
-      return;
-    }
-    if (cloudRef.current) {
-      const top =
-        cloudRef.current.getBoundingClientRect().top +
-        window.scrollY -
-        20;
-      window.scrollTo({ top, behavior: "smooth" });
-    }
-  }, [activeL1Id, activeL2Id]);
 
   // Fetch songs
   useEffect(() => {

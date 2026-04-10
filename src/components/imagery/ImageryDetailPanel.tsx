@@ -1,6 +1,5 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -9,6 +8,7 @@ import {
 } from "@/components/ui/sheet";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import type { ImageryItem, SongRef } from "@/lib/types";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -47,7 +47,7 @@ function SectionLabel({ label, accent }: { label: string; accent: string }) {
     <div className="flex items-center gap-3 my-5">
       <div className="flex-1 h-px bg-slate-100 dark:bg-slate-800" />
       <span
-        className="text-[10px] tracking-[0.3em] font-medium shrink-0"
+        className="text-[10px] tracking-[0.3em] pl-[0.3em] font-medium shrink-0"
         style={{ color: accent }}
       >
         {label}
@@ -81,7 +81,11 @@ const PanelBody = memo(function PanelBody({
   const filtered = useMemo(
     () =>
       activeLyricist
-        ? songs.filter(({ song }) => song.lyricist?.includes(activeLyricist))
+        ? songs.filter(({ song }) =>
+          activeLyricist === "未知"
+            ? !song.lyricist || song.lyricist.length === 0
+            : song.lyricist?.includes(activeLyricist),
+        )
         : songs,
     [songs, activeLyricist],
   );
@@ -100,11 +104,10 @@ const PanelBody = memo(function PanelBody({
   if (songs.length === 0) {
     return (
       <p
-        className={`text-center text-sm tracking-[0.25em] py-16 ${
-          isDesktop
+        className={`text-center text-sm tracking-[0.25em] pl-[0.25em] py-16 ${isDesktop
             ? "text-slate-300 dark:text-slate-700"
             : "text-slate-400 dark:text-slate-600"
-        }`}
+          }`}
       >
         暂无相关词作
       </p>
@@ -117,29 +120,62 @@ const PanelBody = memo(function PanelBody({
       {lyricistCounts.length > 0 && (
         <>
           <SectionLabel label="词作" accent={selectedPalette.accent} />
-          <div className="flex flex-wrap gap-2 mb-1">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-2">
+            <button
+              onClick={() => onLyricistClick("")}
+              className={`group relative text-[13px] transition-all duration-500 font-serif tracking-widest whitespace-nowrap py-1 ${
+                !activeLyricist
+                  ? "text-slate-900 dark:text-white"
+                  : "text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+              }`}
+            >
+              <span
+                className={`inline-block transition-all duration-500 font-system ${
+                  !activeLyricist ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"
+                } mr-1`}
+                style={{ color: selectedPalette.accent }}
+              >
+                「
+              </span>
+              全部
+              <span
+                className={`inline-block transition-all duration-500 font-system ${
+                  !activeLyricist ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"
+                } ml-1`}
+                style={{ color: selectedPalette.accent }}
+              >
+                」
+              </span>
+            </button>
+
             {lyricistCounts.map(([name, count]) => {
               const isActive = activeLyricist === name;
               return (
                 <button
                   key={name}
                   onClick={() => onLyricistClick(name)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs border transition-all duration-150 ${
-                    isActive
-                      ? "text-white border-transparent shadow-sm"
-                      : "bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 border-slate-200/70 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600"
-                  }`}
-                  style={
-                    isActive
-                      ? { backgroundColor: selectedPalette.accent }
-                      : undefined
-                  }
+                  className={`group relative text-[13px] transition-all duration-500 font-serif tracking-widest whitespace-nowrap py-1 ${isActive
+                    ? "text-slate-900 dark:text-white"
+                    : "text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                    }`}
                 >
+                  <span
+                    className={`inline-block transition-all duration-500 font-system ${isActive ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"
+                      } mr-1`}
+                    style={{ color: selectedPalette.accent }}
+                  >
+                    「
+                  </span>
                   {name}
                   <span
-                    className={`tabular-nums ${isActive ? "text-white/70" : "text-slate-400 dark:text-slate-500"}`}
+                    className={`inline-block transition-all duration-500 font-system ${isActive ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"
+                      } ml-1`}
+                    style={{ color: selectedPalette.accent }}
                   >
-                    {count}
+                    」
+                  </span>
+                  <span className="ml-1 text-[10px] tabular-nums opacity-40 font-sans tracking-normal group-hover:opacity-60 transition-opacity">
+                    ({count})
                   </span>
                 </button>
               );
@@ -157,23 +193,21 @@ const PanelBody = memo(function PanelBody({
         }
         accent={selectedPalette.accent}
       />
-      <div className="flex flex-col -mx-3">
+      <div className="flex flex-col -mx-6">
         {filtered.map(({ song }) => (
           <Link
             key={song.id}
             href={`/song/${song.id}`}
             onClick={onLinkClick}
-            className="flex items-center justify-between py-4 px-3 border-b border-slate-100/80 dark:border-slate-800/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group"
+            className="flex items-center justify-between py-4 px-6 border-b border-slate-100/80 dark:border-slate-800/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group"
           >
             <div className="min-w-0 pr-4">
               <div className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors truncate tracking-wide">
                 {song.title}
               </div>
-              {song.lyricist?.length && (
-                <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 truncate tracking-wide">
-                  {song.lyricist.join("  ·  ")}
-                </div>
-              )}
+              <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 truncate tracking-wide">
+                {song.lyricist?.length ? song.lyricist.join("  ·  ") : "未知"}
+              </div>
             </div>
             <ChevronRight
               size={14}
@@ -203,7 +237,7 @@ function PanelHeader({
 
   if (isDesktop) {
     return (
-      <div className="relative shrink-0 px-9 pt-10 pb-7 overflow-hidden border-b border-slate-100/40 dark:border-slate-800/40">
+      <div className="relative shrink-0 px-12 pt-10 pb-7 overflow-hidden border-b border-slate-100/40 dark:border-slate-800/40">
         {/* Decorative background character */}
         <span
           aria-hidden
@@ -250,7 +284,7 @@ function PanelHeader({
 
   // Mobile header (inside the sheet, below the drag handle)
   return (
-    <div className="flex items-start justify-between px-6 pt-3 pb-4 border-b border-slate-100/40 dark:border-slate-800/40 shrink-0">
+    <div className="flex items-start justify-between px-8 pt-3 pb-4 border-b border-slate-100/40 dark:border-slate-800/40 shrink-0">
       <div className="min-w-0">
         <h2
           className={`font-serif text-3xl font-normal tracking-[0.2em] mb-1 ${selectedPalette.text}`}
@@ -314,7 +348,7 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
   }, [selectedItem]);
 
   const handleLyricistClick = useCallback((name: string) => {
-    setActiveLyricist((prev) => (prev === name ? null : name));
+    setActiveLyricist((prev) => (name === "" || prev === name ? null : name));
   }, []);
 
   const sharedBodyProps = {
@@ -339,11 +373,11 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
         className={
           isDesktop
             ? [
-                "top-(--nav-h,48px) h-[calc(100vh-var(--nav-h,48px))] w-[min(440px,42vw)] p-0 border-none shadow-2xl",
-                panelSide === "right"
-                  ? "border-l border-slate-200/50 dark:border-white/5"
-                  : "border-r border-slate-200/50 dark:border-white/5",
-              ].join(" ")
+              "top-(--nav-h,48px) h-[calc(100vh-var(--nav-h,48px))] w-[min(440px,42vw)] p-0 border-none shadow-2xl",
+              panelSide === "right"
+                ? "border-l border-slate-200/50 dark:border-white/5"
+                : "border-r border-slate-200/50 dark:border-white/5",
+            ].join(" ")
             : "max-h-[85dvh] p-0 border-t-0 shadow-2xl"
         }
       >
@@ -387,7 +421,7 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
         />
 
         <div
-          className={`flex-1 overflow-y-auto no-scrollbar ${isDesktop ? "px-9 pb-10" : "px-6 py-4 pb-[env(safe-area-inset-bottom,1rem)]"}`}
+          className={`flex-1 overflow-y-auto no-scrollbar ${isDesktop ? "px-12 pb-10" : "px-8 py-4 pb-[env(safe-area-inset-bottom,1rem)]"}`}
         >
           <PanelBody {...sharedBodyProps} />
         </div>
