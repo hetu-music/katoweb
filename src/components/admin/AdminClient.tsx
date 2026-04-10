@@ -26,9 +26,11 @@ import {
   Edit,
   Eye,
   EyeOff,
+  LogOut,
   Plus,
   Save,
   Search,
+  User,
   Wand2,
   X,
   XCircle,
@@ -37,7 +39,6 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import Account from "./Account";
 import CoverUpload from "./CoverUpload";
 import Notification from "./Notification";
 import ScoreUpload from "./ScoreUpload";
@@ -643,18 +644,27 @@ export default function AdminClientComponent({
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowNotification(true)}
-              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
+              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
               title="使用说明"
             >
               <Bell size={20} />
             </button>
-            <ThemeToggle className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors" />
-            <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1" />
-            <Account
-              csrfToken={csrfToken}
-              handleLogout={logout}
-              logoutLoading={loggingOut}
-            />
+            <ThemeToggle className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400" />
+            <Link
+              href="/profile"
+              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+              title="个人中心"
+            >
+              <User size={20} />
+            </Link>
+            <button
+              onClick={logout}
+              disabled={loggingOut}
+              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400 disabled:opacity-40"
+              title="退出登录"
+            >
+              <LogOut size={20} />
+            </button>
           </div>
         </div>
       </nav>

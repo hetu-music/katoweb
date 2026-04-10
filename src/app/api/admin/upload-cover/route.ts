@@ -49,5 +49,5 @@ export const POST = withAuth(
       );
     }
   },
-  { requireCSRF: true },
+  { requireCSRF: true, requireAdmin: true },
 );

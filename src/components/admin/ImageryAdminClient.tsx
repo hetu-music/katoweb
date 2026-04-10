@@ -1,7 +1,6 @@
 "use client";
 
 import ThemeToggle from "@/components/shared/ThemeToggle";
-import Account from "@/components/admin/Account";
 import { useUserContext } from "@/context/UserContext";
 import type { ImageryCategory, ImageryItem } from "@/lib/types";
 import type { OccurrenceWithSong } from "@/lib/service-imagery";
@@ -23,10 +22,12 @@ import {
   Hash,
   Layers,
   Loader2,
+  LogOut,
   Plus,
   Search,
   Tag,
   Trash2,
+  User,
   X,
   CheckCircle2,
   XCircle,
@@ -638,13 +639,22 @@ export default function ImageryAdminClient({ initialItems, initialCategories }: 
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <ThemeToggle className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors" />
-            <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1" />
-            <Account
-              csrfToken={csrfToken}
-              handleLogout={logout}
-              logoutLoading={loggingOut}
-            />
+            <ThemeToggle className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400" />
+            <Link
+              href="/profile"
+              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+              title="个人中心"
+            >
+              <User size={20} />
+            </Link>
+            <button
+              onClick={logout}
+              disabled={loggingOut}
+              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400 disabled:opacity-40"
+              title="退出登录"
+            >
+              <LogOut size={20} />
+            </button>
           </div>
         </div>
       </nav>

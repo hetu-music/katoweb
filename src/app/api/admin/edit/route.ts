@@ -40,6 +40,7 @@ export const GET = withAuth(
       } = await supabase.auth.getSession();
       const songs = await getSongs(TABLES.ADMIN, session?.access_token);
       return NextResponse.json(songs);
+
     } catch (e: unknown) {
       if (
         e &&
@@ -57,6 +58,7 @@ export const GET = withAuth(
       );
     }
   },
+  { requireAdmin: true },
 );
 
 export const POST = withAuth(
@@ -99,7 +101,7 @@ export const POST = withAuth(
       );
     }
   },
-  { requireCSRF: true },
+  { requireCSRF: true, requireAdmin: true },
 );
 
 export const PUT = withAuth(
@@ -161,5 +163,5 @@ export const PUT = withAuth(
       );
     }
   },
-  { requireCSRF: true },
+  { requireCSRF: true, requireAdmin: true },
 );
