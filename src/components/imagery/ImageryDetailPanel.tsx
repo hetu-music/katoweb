@@ -1,17 +1,17 @@
 "use client";
 
 import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
-import {
   Drawer,
   DrawerContent,
-  DrawerTitle,
   DrawerDescription,
+  DrawerTitle,
 } from "@/components/ui/drawer";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import type { ImageryItem, SongRef } from "@/lib/types";
 import { ChevronRight } from "lucide-react";
@@ -28,11 +28,7 @@ export interface PaletteEntry {
   accent: string;
 }
 
-export interface SongResult {
-  song: SongRef;
-  categoryId: number;
-  occurrenceCount: number;
-}
+export type SongResult = SongRef;
 
 export interface DetailPanelProps {
   open: boolean;
@@ -87,11 +83,11 @@ const PanelBody = memo(function PanelBody({
   const filtered = useMemo(
     () =>
       activeLyricist
-        ? songs.filter(({ song }) =>
-            activeLyricist === "未知"
-              ? !song.lyricist || song.lyricist.length === 0
-              : song.lyricist?.includes(activeLyricist),
-          )
+        ? songs.filter((song) =>
+          activeLyricist === "未知"
+            ? !song.lyricist || song.lyricist.length === 0
+            : song.lyricist?.includes(activeLyricist),
+        )
         : songs,
     [songs, activeLyricist],
   );
@@ -110,11 +106,10 @@ const PanelBody = memo(function PanelBody({
   if (songs.length === 0) {
     return (
       <p
-        className={`text-center text-sm tracking-[0.25em] pl-[0.25em] py-16 ${
-          isDesktop
+        className={`text-center text-sm tracking-[0.25em] pl-[0.25em] py-16 ${isDesktop
             ? "text-slate-300 dark:text-slate-700"
             : "text-slate-400 dark:text-slate-600"
-        }`}
+          }`}
       >
         暂无相关词作
       </p>
@@ -130,29 +125,26 @@ const PanelBody = memo(function PanelBody({
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-2">
             <button
               onClick={() => onLyricistClick("")}
-              className={`group relative text-[13px] transition-all duration-500 font-serif tracking-widest whitespace-nowrap py-1 ${
-                !activeLyricist
+              className={`group relative text-[13px] transition-all duration-500 font-serif tracking-widest whitespace-nowrap py-1 ${!activeLyricist
                   ? "text-slate-900 dark:text-white"
                   : "text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-              }`}
+                }`}
             >
               <span
-                className={`inline-block transition-all duration-500 font-system ${
-                  !activeLyricist
+                className={`inline-block transition-all duration-500 font-system ${!activeLyricist
                     ? "opacity-100 translate-x-0"
                     : "opacity-0 -translate-x-2"
-                } mr-1`}
+                  } mr-1`}
                 style={{ color: selectedPalette.accent }}
               >
                 「
               </span>
               全部
               <span
-                className={`inline-block transition-all duration-500 font-system ${
-                  !activeLyricist
+                className={`inline-block transition-all duration-500 font-system ${!activeLyricist
                     ? "opacity-100 translate-x-0"
                     : "opacity-0 translate-x-2"
-                } ml-1`}
+                  } ml-1`}
                 style={{ color: selectedPalette.accent }}
               >
                 」
@@ -165,29 +157,26 @@ const PanelBody = memo(function PanelBody({
                 <button
                   key={name}
                   onClick={() => onLyricistClick(name)}
-                  className={`group relative text-[13px] transition-all duration-500 font-serif tracking-widest whitespace-nowrap py-1 ${
-                    isActive
+                  className={`group relative text-[13px] transition-all duration-500 font-serif tracking-widest whitespace-nowrap py-1 ${isActive
                       ? "text-slate-900 dark:text-white"
                       : "text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                  }`}
+                    }`}
                 >
                   <span
-                    className={`inline-block transition-all duration-500 font-system ${
-                      isActive
+                    className={`inline-block transition-all duration-500 font-system ${isActive
                         ? "opacity-100 translate-x-0"
                         : "opacity-0 -translate-x-2"
-                    } mr-1`}
+                      } mr-1`}
                     style={{ color: selectedPalette.accent }}
                   >
                     「
                   </span>
                   {name}
                   <span
-                    className={`inline-block transition-all duration-500 font-system ${
-                      isActive
+                    className={`inline-block transition-all duration-500 font-system ${isActive
                         ? "opacity-100 translate-x-0"
                         : "opacity-0 translate-x-2"
-                    } ml-1`}
+                      } ml-1`}
                     style={{ color: selectedPalette.accent }}
                   >
                     」
@@ -210,13 +199,13 @@ const PanelBody = memo(function PanelBody({
         <SectionLabel
           label={
             activeLyricist
-              ? `${activeLyricist}的曲目 ${filtered.length}`
-              : `相关曲目 ${songs.length}`
+              ? `${activeLyricist}的曲目`
+              : `相关曲目`
           }
           accent={selectedPalette.accent}
         />
         <div className="flex flex-col -mx-6">
-          {filtered.map(({ song }) => (
+          {filtered.map((song) => (
             <Link
               key={song.id}
               href={`/song/${song.id}`}

@@ -465,7 +465,7 @@ export default function ImageryClient({ items, categories }: Props) {
 
   const lyricistCounts = useMemo(() => {
     const counts = new Map<string, number>();
-    songs.forEach(({ song }) => {
+    songs.forEach((song) => {
       const lyricists = song.lyricist ?? [];
       if (lyricists.length === 0) {
         counts.set("未知", (counts.get("未知") ?? 0) + 1);
