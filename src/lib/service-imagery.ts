@@ -59,22 +59,24 @@ export async function getImageryWithCounts(): Promise<ImageryItem[]> {
   const supabase = getServiceClient();
   if (!supabase) return [];
   try {
-    const [imageryRows, occurrenceRows] = await Promise.all([
-      fetchAll(supabase, TABLES.IMAGERY, "id,name") as Promise<{ id: number; name: string }[]>,
-      fetchAll(supabase, TABLES.IMAGERY_OCC, "id,imagery_id,category_id") as Promise<{ id: number; imagery_id: number; category_id: number }[]>,
-    ]);
+    const rows = (await fetchAll(
+      supabase,
+      TABLES.IMAGERY_SUMMARY,
+      'id,name,count,"categoryIds"',
+    )) as Array<{
+      id: number;
+      name: string;
+      count: number | null;
+      categoryIds: Array<number | string> | null;
+    }>;
 
-    return imageryRows.map((item) => {
-      const occs = occurrenceRows.filter((o) => o.imagery_id === item.id);
-      const categoryIds = [...new Set(occs.map((o) => o.category_id).filter(Boolean))];
-      return {
-        id: item.id,
-        name: item.name,
-        count: occs.length,
-        categoryIds,
-        meaningCount: 0,
-      };
-    });
+    return rows.map((item) => ({
+      id: item.id,
+      name: item.name,
+      count: item.count ?? 0,
+      categoryIds: (item.categoryIds ?? []).map((value) => Number(value)).filter(Number.isFinite),
+      meaningCount: 0,
+    }));
   } catch (e) {
     console.error("[getImageryWithCounts]", e);
     return [];
@@ -306,16 +308,16 @@ export async function getSongsForImagery(imageryId: number): Promise<SongRef[]> 
   try {
     const { data, error } = await supabase
       .from(TABLES.IMAGERY_OCC)
-      .select("song_id, music(id, title, album, lyricist)")
+      .select("song_id, music(id, title, lyricist)")
       .eq("imagery_id", imageryId);
     if (error) { console.error("[getSongsForImagery]", error); return []; }
     const seen = new Set<number>();
     const results: SongRef[] = [];
     for (const row of (data ?? []) as Record<string, unknown>[]) {
-      const m = row.music as { id?: number; title?: string; album?: string | null; lyricist?: string[] | null } | null;
+      const m = row.music as { id?: number; title?: string; lyricist?: string[] | null } | null;
       if (m?.id && !seen.has(m.id)) {
         seen.add(m.id);
-        results.push({ id: m.id, title: m.title ?? "", album: m.album ?? null, lyricist: m.lyricist ?? null });
+        results.push({ id: m.id, title: m.title ?? "", lyricist: m.lyricist ?? null });
       }
     }
     return results;

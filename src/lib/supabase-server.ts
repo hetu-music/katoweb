@@ -41,6 +41,7 @@ export const TABLES = {
 
   // 意象系统表
   IMAGERY: "imagery",
+  IMAGERY_SUMMARY: "imagery_summary",
   IMAGERY_CAT: "imagery_categories",
   IMAGERY_MEANINGS: "imagery_meanings",
   IMAGERY_OCC: "imagery_occurrences",

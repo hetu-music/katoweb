@@ -25,6 +25,7 @@ import ImageryDetailPanel from "./ImageryDetailPanel";
 
 const GAP_X_PX = 40; // gap-x-10 = 2.5rem = 40px
 const GAP_Y_PX = 24; // gap-y-6 = 1.5rem = 24px
+const MARQUEE_SAMPLE_SIZE = 90;
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -171,6 +172,19 @@ function triggerHaptic(ms = 8) {
   if (typeof navigator !== "undefined" && "vibrate" in navigator) {
     navigator.vibrate(ms);
   }
+}
+
+function seededShuffle<T>(list: T[], seed: number): T[] {
+  const result = [...list];
+  let currentSeed = seed || 1;
+
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    currentSeed = (currentSeed * 1664525 + 1013904223) % 4294967296;
+    const nextIndex = currentSeed % (i + 1);
+    [result[i], result[nextIndex]] = [result[nextIndex], result[i]];
+  }
+
+  return result;
 }
 
 // ─── WordItem ─────────────────────────────────────────────────────────────────
@@ -343,11 +357,15 @@ export default function ImageryClient({ items, categories }: Props) {
   const [scrollMargin, setScrollMargin] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [headerVisible, setHeaderVisible] = useState(true);
+  const [marqueeSeed, setMarqueeSeed] = useState(0);
+  const songsCacheRef = useRef(new Map<number, SongResult[]>());
+  const songsRequestCacheRef = useRef(new Map<number, Promise<SongResult[]>>());
 
   // Trigger entrance animation after first paint
   useEffect(() => {
     requestAnimationFrame(() => {
       setMounted(true);
+      setMarqueeSeed(Math.floor(Math.random() * 2147483647));
     });
   }, []);
 
@@ -429,9 +447,9 @@ export default function ImageryClient({ items, categories }: Props) {
   ]);
 
   const marqueeRows = useMemo(() => {
-    const sorted = [...items].sort((a, b) => b.count - a.count);
-    return [sorted.slice(0, 30), sorted.slice(30, 60), sorted.slice(60, 90)];
-  }, [items]);
+    const sampled = seededShuffle(items, marqueeSeed).slice(0, MARQUEE_SAMPLE_SIZE);
+    return [sampled.slice(0, 30), sampled.slice(30, 60), sampled.slice(60, 90)];
+  }, [items, marqueeSeed]);
 
   // ── selected item helpers ─────────────────────────────────────────────────
   const selectedCategoryPath = useMemo(() => {
@@ -501,16 +519,50 @@ export default function ImageryClient({ items, categories }: Props) {
   // Fetch songs
   useEffect(() => {
     if (!selectedItem || !panelOpen) return;
-    requestAnimationFrame(() => {
-      setSongsLoading(true);
-      setSongs([]);
-    });
+    let active = true;
+    const cachedSongs = songsCacheRef.current.get(selectedItem.id);
+    if (cachedSongs) {
+      if (active) {
+        setSongs(cachedSongs);
+        setSongsLoading(false);
+      }
+      return () => {
+        active = false;
+      };
+    }
 
-    fetch(`/api/imagery/${selectedItem.id}/songs`)
-      .then((r) => r.json())
-      .then((d) => setSongs(d.songs ?? []))
-      .catch(() => setSongs([]))
-      .finally(() => setSongsLoading(false));
+    setSongs([]);
+    setSongsLoading(true);
+
+    let request = songsRequestCacheRef.current.get(selectedItem.id);
+    if (!request) {
+      request = fetch(`/api/imagery/${selectedItem.id}/songs`)
+        .then((response) => response.json())
+        .then((data) => (data.songs ?? []) as SongResult[])
+        .catch(() => [] as SongResult[])
+        .then((result) => {
+          songsCacheRef.current.set(selectedItem.id, result);
+          songsRequestCacheRef.current.delete(selectedItem.id);
+          return result;
+        });
+      songsRequestCacheRef.current.set(selectedItem.id, request);
+    }
+
+    void request
+      .then((result) => {
+        if (active) {
+          setSongs(result);
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setSongsLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
   }, [selectedItem, panelOpen]);
 
   // ── virtualizer ──────────────────────────────────────────────────────────
@@ -663,11 +715,11 @@ export default function ImageryClient({ items, categories }: Props) {
       {/* ── hero ── */}
       <header
         ref={headerRef}
-        className="relative overflow-hidden pt-32 pb-12 px-6 text-center"
+        className="relative overflow-hidden px-6 pb-14 pt-32 text-center"
       >
         <div
           aria-hidden
-          className="absolute inset-0 pointer-events-none select-none overflow-hidden flex flex-col justify-center gap-5 opacity-[0.045] dark:opacity-[0.055]"
+          className="pointer-events-none absolute inset-x-0 top-1/2 flex -translate-y-1/2 select-none flex-col justify-center gap-6 overflow-hidden opacity-[0.045] dark:opacity-[0.055]"
         >
           {(
             [
@@ -718,8 +770,8 @@ export default function ImageryClient({ items, categories }: Props) {
           })}
         </div>
 
-        <div className="relative z-10">
-          <h1 className="font-serif text-5xl md:text-7xl font-normal text-slate-800 dark:text-slate-100 mb-4 flex justify-center items-center gap-4 sm:gap-10 drop-shadow-[0_0_30px_rgba(255,255,255,0.05)]">
+        <div className="relative z-10 mx-auto flex min-h-[13rem] max-w-4xl flex-col items-center justify-center">
+          <h1 className="mb-4 flex items-center justify-center gap-4 font-serif text-5xl font-normal text-slate-800 drop-shadow-[0_0_30px_rgba(255,255,255,0.05)] dark:text-slate-100 md:text-7xl sm:gap-10">
             {"意象词云".split("").map((char, i) => (
               <span
                 key={i}
@@ -731,7 +783,7 @@ export default function ImageryClient({ items, categories }: Props) {
             ))}
           </h1>
           <p
-            className={`font-serif text-base md:text-xl text-slate-500 dark:text-slate-400 tracking-[0.4em] pl-[0.4em] mb-3 ${mounted ? "hero-unroll" : "opacity-0"}`}
+            className={`mb-3 font-serif text-base tracking-[0.4em] text-slate-500 dark:text-slate-400 md:text-xl ${mounted ? "hero-unroll" : "opacity-0"}`}
             style={{ animationDelay: "1600ms" }}
           >
             场景 {wordDisplayList.length} ，长歌踏雪去何方

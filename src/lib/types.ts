@@ -103,7 +103,6 @@ export type ImageryOccurrence = {
 export type SongRef = {
   id: number;
   title: string;
-  album: string | null;
   lyricist: string[] | null;
 };
 
