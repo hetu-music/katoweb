@@ -21,285 +21,36 @@ import {
 } from "@/lib/client-api";
 import type { OccurrenceWithSong } from "@/lib/service-imagery";
 import type { ImageryCategory, ImageryItem, ImageryMeaning } from "@/lib/types";
-import {
-  AlertCircle,
-  ArrowLeft,
-  BookOpen,
-  ChevronDown,
-  ChevronRight,
-  Edit2,
-  FolderPlus,
-  Home,
-  Layers,
-  ListTree,
-  Loader2,
-  Plus,
-  Search,
-  Tag,
-  Trash2,
-  User,
-  X,
-} from "lucide-react";
+import { ArrowLeft, BookOpen, Home, Layers, ListTree, Tag, User } from "lucide-react";
 import Link from "next/link";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-
-function cn(...classes: (string | undefined | null | false)[]) {
-  return classes.filter(Boolean).join(" ");
-}
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { FormEvent, ReactNode } from "react";
+import CategoriesTab from "./imagery-admin/CategoriesTab";
+import ImageryAdminModals from "./imagery-admin/ImageryAdminModals";
+import ImageryTab from "./imagery-admin/ImageryTab";
+import MeaningsTab from "./imagery-admin/MeaningsTab";
+import OccurrencesTab from "./imagery-admin/OccurrencesTab";
+import {
+  cardClassName,
+  cn,
+  pageShellClassName,
+  StatPill,
+} from "./imagery-admin/shared";
+import type {
+  CategoryFormState,
+  ModalState,
+  RelationEditor,
+  RelationFormState,
+  SongOption,
+  Tab,
+} from "./imagery-admin/types";
+import { buildTree, getCategoryPath, parseLyricTimetag } from "./imagery-admin/utils";
 
 const PAGE_SIZE = 20;
 const SONG_PAGE_SIZE = 10;
 
 interface Props {
   initialCategories: ImageryCategory[];
-}
-
-type Tab = "imagery" | "categories" | "meanings" | "occurrences";
-
-type ModalState =
-  | { type: "none" }
-  | { type: "add-imagery" }
-  | { type: "edit-imagery"; item: ImageryItem }
-  | { type: "delete-imagery"; item: ImageryItem }
-  | { type: "add-category"; parentId?: number }
-  | { type: "edit-category"; category: ImageryCategory }
-  | { type: "delete-category"; category: ImageryCategory };
-
-type RelationEditor =
-  | { type: "none" }
-  | { type: "add"; songId: number }
-  | { type: "edit"; songId: number; occurrence: OccurrenceWithSong };
-
-type SongOption = {
-  id: number;
-  title: string;
-  album?: string | null;
-};
-
-type CategoryNode = ImageryCategory & {
-  children: CategoryNode[];
-};
-
-function buildTree(categories: ImageryCategory[]): CategoryNode[] {
-  const map = new Map<number, CategoryNode>();
-  categories.forEach((category) => {
-    map.set(category.id, { ...category, children: [] });
-  });
-
-  const roots: CategoryNode[] = [];
-  map.forEach((node) => {
-    if (node.parent_id) {
-      const parent = map.get(node.parent_id);
-      if (parent) {
-        parent.children.push(node);
-        return;
-      }
-    }
-    roots.push(node);
-  });
-
-  return roots;
-}
-
-function getCategoryPath(categoryId: number, categories: ImageryCategory[]): string {
-  const category = categories.find((item) => item.id === categoryId);
-  if (!category) return `分类 #${categoryId}`;
-
-  const parts = [category.name];
-  let currentParentId = category.parent_id;
-
-  while (currentParentId) {
-    const parent = categories.find((item) => item.id === currentParentId);
-    if (!parent) break;
-    parts.unshift(parent.name);
-    currentParentId = parent.parent_id;
-  }
-
-  return parts.join(" / ");
-}
-
-function parseLyricTimetag(value: string) {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(value);
-  } catch {
-    throw new Error("lyric_timetag 必须是合法的 JSON 数组。");
-  }
-
-  if (!Array.isArray(parsed) || parsed.some((item) => typeof item !== "object" || item === null || Array.isArray(item))) {
-    throw new Error("lyric_timetag 必须是对象数组。");
-  }
-
-  return parsed as Record<string, unknown>[];
-}
-
-function PaginationControls({
-  currentPage,
-  totalPages,
-  onPageChange,
-}: {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}) {
-  if (totalPages <= 1) return null;
-
-  return (
-    <div className="flex items-center justify-center gap-3 pt-4">
-      <button
-        onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-        disabled={currentPage === 1}
-        className="px-3 py-1.5 rounded-lg text-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 transition-colors"
-      >
-        上一页
-      </button>
-      <span className="text-sm text-slate-500">
-        {currentPage} / {totalPages}
-      </span>
-      <button
-        onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-        disabled={currentPage === totalPages}
-        className="px-3 py-1.5 rounded-lg text-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 transition-colors"
-      >
-        下一页
-      </button>
-    </div>
-  );
-}
-
-const CategoryTreeNode = React.memo(function CategoryTreeNode({
-  node,
-  depth,
-  imageryCountByCategory,
-  onAddChild,
-  onEdit,
-  onDelete,
-}: {
-  node: CategoryNode;
-  depth: number;
-  imageryCountByCategory: Map<number, number>;
-  onAddChild: (parentId: number) => void;
-  onEdit: (category: ImageryCategory) => void;
-  onDelete: (category: ImageryCategory) => void;
-}) {
-  const [expanded, setExpanded] = useState(false);
-  const hasChildren = node.children.length > 0;
-  const count = imageryCountByCategory.get(node.id) ?? 0;
-  const isLeaf = !hasChildren;
-
-  return (
-    <div>
-      <div
-        className="group flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
-        style={{ paddingLeft: `${0.5 + depth * 1.25}rem` }}
-      >
-        <button
-          type="button"
-          className="w-4 h-4 flex items-center justify-center shrink-0 text-slate-400"
-          onClick={() => {
-            if (hasChildren) setExpanded((value) => !value);
-          }}
-        >
-          {hasChildren ? (
-            expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />
-          ) : isLeaf ? (
-            <span className="w-2 h-2 rounded-full bg-violet-400 dark:bg-violet-500 inline-block" />
-          ) : (
-            <span className="w-3 h-3 rounded-full border border-slate-300 dark:border-slate-600 inline-block" />
-          )}
-        </button>
-
-        <span className="flex-1 truncate font-medium">{node.name}</span>
-
-        {count > 0 && (
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 shrink-0">
-            {count}
-          </span>
-        )}
-
-        <div className="hidden group-hover:flex items-center gap-0.5 shrink-0 ml-1">
-          {depth < 3 && (
-            <button
-              type="button"
-              onClick={() => onAddChild(node.id)}
-              className="p-1 rounded hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-500 dark:text-blue-400"
-              title="添加子分类"
-            >
-              <FolderPlus size={12} />
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={() => onEdit(node)}
-            className="p-1 rounded hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
-            title="编辑分类"
-          >
-            <Edit2 size={12} />
-          </button>
-          <button
-            type="button"
-            onClick={() => onDelete(node)}
-            className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 dark:text-red-400"
-            title="删除分类"
-          >
-            <Trash2 size={12} />
-          </button>
-        </div>
-      </div>
-
-      {hasChildren && expanded && (
-        <div>
-          {node.children.map((child) => (
-            <CategoryTreeNode
-              key={child.id}
-              node={child}
-              depth={depth + 1}
-              imageryCountByCategory={imageryCountByCategory}
-              onAddChild={onAddChild}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-});
-
-function ModalBackdrop({
-  onClose,
-  children,
-}: {
-  onClose: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div onClick={(event) => event.stopPropagation()}>{children}</div>
-    </div>
-  );
-}
-
-function ModalCard({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div
-      className={cn(
-        "bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md",
-        className,
-      )}
-    >
-      {children}
-    </div>
-  );
 }
 
 export default function ImageryAdminClient({ initialCategories }: Props) {
@@ -318,10 +69,10 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
 
   const [categories, setCategories] = useState<ImageryCategory[]>(initialCategories);
   const [categoryPage, setCategoryPage] = useState(1);
-  const [categoryForm, setCategoryForm] = useState({
+  const [categoryForm, setCategoryForm] = useState<CategoryFormState>({
     name: "",
-    parent_id: null as number | null,
-    level: null as number | null,
+    parent_id: null,
+    level: null,
     description: "",
   });
 
@@ -340,10 +91,10 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   const [songsPage, setSongsPage] = useState(1);
   const [expandedSongId, setExpandedSongId] = useState<number | null>(null);
   const [relationEditor, setRelationEditor] = useState<RelationEditor>({ type: "none" });
-  const [relationForm, setRelationForm] = useState({
+  const [relationForm, setRelationForm] = useState<RelationFormState>({
     imagery_id: 0,
     category_id: 0,
-    meaning_id: null as number | null,
+    meaning_id: null,
     lyric_timetag: "[]",
   });
   const [occurrencesBySong, setOccurrencesBySong] = useState<Record<number, OccurrenceWithSong[]>>({});
@@ -420,7 +171,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
 
   const imageryCountByCategory = useMemo(() => {
     const counts = new Map<number, number>();
-
     items.forEach((item) => {
       item.categoryIds.forEach((categoryId) => {
         let currentId: number | null = categoryId;
@@ -431,12 +181,15 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
         }
       });
     });
-
     return counts;
   }, [categories, items]);
 
   const leafCategories = useMemo(() => {
-    const parentIds = new Set(categories.map((category) => category.parent_id).filter((value): value is number => value !== null));
+    const parentIds = new Set(
+      categories
+        .map((category) => category.parent_id)
+        .filter((value): value is number => value !== null),
+    );
     return categories.filter((category) => !parentIds.has(category.id));
   }, [categories]);
 
@@ -445,26 +198,27 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     const query = imagerySearchTerm.trim().toLowerCase();
     return items.filter((item) => item.name.toLowerCase().includes(query));
   }, [imagerySearchTerm, items]);
-
+  const imageryTotalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE));
   const pagedItems = useMemo(
     () => filteredItems.slice((imageryPage - 1) * PAGE_SIZE, imageryPage * PAGE_SIZE),
     [filteredItems, imageryPage],
   );
-  const imageryTotalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE));
 
   const sortedCategories = useMemo(
     () =>
       [...categories].sort((left, right) =>
-        getCategoryPath(left.id, categories).localeCompare(getCategoryPath(right.id, categories), "zh-CN"),
+        getCategoryPath(left.id, categories).localeCompare(
+          getCategoryPath(right.id, categories),
+          "zh-CN",
+        ),
       ),
     [categories],
   );
-
+  const categoryTotalPages = Math.max(1, Math.ceil(sortedCategories.length / PAGE_SIZE));
   const pagedCategories = useMemo(
     () => sortedCategories.slice((categoryPage - 1) * PAGE_SIZE, categoryPage * PAGE_SIZE),
     [categoryPage, sortedCategories],
   );
-  const categoryTotalPages = Math.max(1, Math.ceil(sortedCategories.length / PAGE_SIZE));
 
   const filteredMeanings = useMemo(() => {
     if (!meaningsSearchTerm.trim()) return meanings;
@@ -473,12 +227,11 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
       `${meaning.label} ${meaning.description ?? ""}`.toLowerCase().includes(query),
     );
   }, [meanings, meaningsSearchTerm]);
-
+  const meaningsTotalPages = Math.max(1, Math.ceil(filteredMeanings.length / PAGE_SIZE));
   const pagedMeanings = useMemo(
     () => filteredMeanings.slice((meaningsPage - 1) * PAGE_SIZE, meaningsPage * PAGE_SIZE),
     [filteredMeanings, meaningsPage],
   );
-  const meaningsTotalPages = Math.max(1, Math.ceil(filteredMeanings.length / PAGE_SIZE));
 
   const filteredSongs = useMemo(() => {
     if (!songSearchTerm.trim()) return allSongs;
@@ -487,25 +240,21 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
       `${song.id} ${song.title} ${song.album ?? ""}`.toLowerCase().includes(query),
     );
   }, [allSongs, songSearchTerm]);
-
+  const songsTotalPages = Math.max(1, Math.ceil(filteredSongs.length / SONG_PAGE_SIZE));
   const pagedSongs = useMemo(
     () => filteredSongs.slice((songsPage - 1) * SONG_PAGE_SIZE, songsPage * SONG_PAGE_SIZE),
     [filteredSongs, songsPage],
   );
-  const songsTotalPages = Math.max(1, Math.ceil(filteredSongs.length / SONG_PAGE_SIZE));
 
   useEffect(() => {
     setImageryPage((current) => Math.min(current, imageryTotalPages));
   }, [imageryTotalPages]);
-
   useEffect(() => {
     setCategoryPage((current) => Math.min(current, categoryTotalPages));
   }, [categoryTotalPages]);
-
   useEffect(() => {
     setMeaningsPage((current) => Math.min(current, meaningsTotalPages));
   }, [meaningsTotalPages]);
-
   useEffect(() => {
     setSongsPage((current) => Math.min(current, songsTotalPages));
   }, [songsTotalPages]);
@@ -514,18 +263,17 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     setImageryFormName("");
     setModal({ type: "add-imagery" });
   };
-
   const openEditImagery = (item: ImageryItem) => {
     setImageryFormName(item.name);
     setModal({ type: "edit-imagery", item });
   };
-
-  const openDeleteImagery = (item: ImageryItem) => {
-    setModal({ type: "delete-imagery", item });
-  };
+  const openDeleteImagery = (item: ImageryItem) => setModal({ type: "delete-imagery", item });
 
   const openAddCategory = (parentId?: number) => {
-    const parent = typeof parentId === "number" ? categories.find((category) => category.id === parentId) : undefined;
+    const parent =
+      typeof parentId === "number"
+        ? categories.find((category) => category.id === parentId)
+        : undefined;
     setCategoryForm({
       name: "",
       parent_id: parentId ?? null,
@@ -545,16 +293,23 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     setModal({ type: "edit-category", category });
   };
 
-  const openDeleteCategory = (category: ImageryCategory) => {
+  const openDeleteCategory = (category: ImageryCategory) =>
     setModal({ type: "delete-category", category });
-  };
+  const openDeleteMeaning = (meaning: ImageryMeaning) =>
+    setModal({ type: "delete-meaning", meaningId: meaning.id, label: meaning.label });
+  const openDeleteOccurrence = (songId: number, occurrence: OccurrenceWithSong) =>
+    setModal({
+      type: "delete-occurrence",
+      songId,
+      occurrenceId: occurrence.id,
+      label: occurrence.imagery_name ?? `关系 #${occurrence.id}`,
+    });
 
   const closeModal = () => setModal({ type: "none" });
 
-  const handleAddImagery = async (event: React.FormEvent) => {
+  const handleAddImagery = async (event: FormEvent) => {
     event.preventDefault();
     if (!imageryFormName.trim()) return;
-
     setIsSubmitting(true);
     try {
       const created = await apiCreateImagery(imageryFormName.trim(), csrfToken);
@@ -568,15 +323,16 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     }
   };
 
-  const handleEditImagery = async (event: React.FormEvent) => {
+  const handleEditImagery = async (event: FormEvent) => {
     event.preventDefault();
     if (modal.type !== "edit-imagery" || !imageryFormName.trim()) return;
-
     setIsSubmitting(true);
     try {
       await apiUpdateImagery(modal.item.id, imageryFormName.trim(), csrfToken);
       setItems((current) =>
-        current.map((item) => (item.id === modal.item.id ? { ...item, name: imageryFormName.trim() } : item)),
+        current.map((item) =>
+          item.id === modal.item.id ? { ...item, name: imageryFormName.trim() } : item,
+        ),
       );
       showToast("success", "意象已更新");
       closeModal();
@@ -589,7 +345,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
 
   const handleDeleteImagery = async () => {
     if (modal.type !== "delete-imagery") return;
-
     setIsSubmitting(true);
     try {
       await apiDeleteImagery(modal.item.id, csrfToken);
@@ -603,10 +358,9 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     }
   };
 
-  const handleAddCategory = async (event: React.FormEvent) => {
+  const handleAddCategory = async (event: FormEvent) => {
     event.preventDefault();
     if (!categoryForm.name.trim()) return;
-
     setIsSubmitting(true);
     try {
       const created = await apiCreateImageryCategory(
@@ -628,10 +382,9 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     }
   };
 
-  const handleEditCategory = async (event: React.FormEvent) => {
+  const handleEditCategory = async (event: FormEvent) => {
     event.preventDefault();
     if (modal.type !== "edit-category" || !categoryForm.name.trim()) return;
-
     setIsSubmitting(true);
     try {
       const updated = await apiUpdateImageryCategory(
@@ -644,7 +397,9 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
         },
         csrfToken,
       );
-      setCategories((current) => current.map((category) => (category.id === updated.id ? updated : category)));
+      setCategories((current) =>
+        current.map((category) => (category.id === updated.id ? updated : category)),
+      );
       showToast("success", "分类已更新");
       closeModal();
     } catch (error) {
@@ -656,7 +411,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
 
   const handleDeleteCategory = async () => {
     if (modal.type !== "delete-category") return;
-
     setIsSubmitting(true);
     try {
       await apiDeleteImageryCategory(modal.category.id, csrfToken);
@@ -675,13 +429,11 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     setEditingMeaningId(null);
     setMeaningForm({ label: "", description: "" });
   };
-
   const startEditMeaning = (meaning: ImageryMeaning) => {
     setAddingMeaning(false);
     setEditingMeaningId(meaning.id);
     setMeaningForm({ label: meaning.label, description: meaning.description ?? "" });
   };
-
   const resetMeaningEditor = () => {
     setAddingMeaning(false);
     setEditingMeaningId(null);
@@ -690,7 +442,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
 
   const handleCreateMeaning = async () => {
     if (!meaningForm.label.trim() || meaningSubmitting) return;
-
     setMeaningSubmitting(true);
     try {
       const created = await apiCreateGlobalMeaning(
@@ -700,7 +451,9 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
         },
         csrfToken,
       );
-      setMeanings((current) => [...current, created].sort((left, right) => left.label.localeCompare(right.label, "zh-CN")));
+      setMeanings((current) =>
+        [...current, created].sort((left, right) => left.label.localeCompare(right.label, "zh-CN")),
+      );
       resetMeaningEditor();
       showToast("success", `含义「${created.label}」已创建`);
     } catch (error) {
@@ -712,7 +465,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
 
   const handleUpdateMeaning = async () => {
     if (!editingMeaningId || !meaningForm.label.trim() || meaningSubmitting) return;
-
     setMeaningSubmitting(true);
     try {
       const updated = await apiUpdateGlobalMeaning(
@@ -737,14 +489,14 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     }
   };
 
-  const handleDeleteMeaning = async (meaningId: number) => {
-    if (meaningSubmitting) return;
-
+  const handleDeleteMeaning = async () => {
+    if (modal.type !== "delete-meaning" || meaningSubmitting) return;
     setMeaningSubmitting(true);
     try {
-      await apiDeleteGlobalMeaning(meaningId, csrfToken);
-      setMeanings((current) => current.filter((meaning) => meaning.id !== meaningId));
-      if (editingMeaningId === meaningId) resetMeaningEditor();
+      await apiDeleteGlobalMeaning(modal.meaningId, csrfToken);
+      setMeanings((current) => current.filter((meaning) => meaning.id !== modal.meaningId));
+      if (editingMeaningId === modal.meaningId) resetMeaningEditor();
+      closeModal();
       showToast("success", "含义已删除");
     } catch (error) {
       showToast("error", error instanceof Error ? error.message : "删除含义失败");
@@ -761,7 +513,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
       }
       return;
     }
-
     setExpandedSongId(songId);
     await loadOccurrencesForSong(songId);
   };
@@ -769,12 +520,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   const startAddRelation = async (songId: number) => {
     setExpandedSongId(songId);
     setRelationEditor({ type: "add", songId });
-    setRelationForm({
-      imagery_id: 0,
-      category_id: 0,
-      meaning_id: null,
-      lyric_timetag: "[]",
-    });
+    setRelationForm({ imagery_id: 0, category_id: 0, meaning_id: null, lyric_timetag: "[]" });
     await loadOccurrencesForSong(songId);
   };
 
@@ -791,12 +537,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
 
   const resetRelationEditor = () => {
     setRelationEditor({ type: "none" });
-    setRelationForm({
-      imagery_id: 0,
-      category_id: 0,
-      meaning_id: null,
-      lyric_timetag: "[]",
-    });
+    setRelationForm({ imagery_id: 0, category_id: 0, meaning_id: null, lyric_timetag: "[]" });
   };
 
   const handleSaveRelation = async () => {
@@ -842,10 +583,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
         showToast("success", "关系已更新");
       }
 
-      await Promise.all([
-        loadOccurrencesForSong(relationEditor.songId),
-        refreshImageryItems(),
-      ]);
+      await Promise.all([loadOccurrencesForSong(relationEditor.songId), refreshImageryItems()]);
       resetRelationEditor();
     } catch (error) {
       showToast("error", error instanceof Error ? error.message : "保存关系失败");
@@ -854,16 +592,16 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     }
   };
 
-  const handleDeleteRelation = async (songId: number, occurrenceId: number) => {
-    if (occurrenceSubmitting) return;
-
+  const handleDeleteRelation = async () => {
+    if (modal.type !== "delete-occurrence" || occurrenceSubmitting) return;
     setOccurrenceSubmitting(true);
     try {
-      await apiDeleteOccurrence(occurrenceId, csrfToken);
-      await Promise.all([loadOccurrencesForSong(songId), refreshImageryItems()]);
-      if (relationEditor.type === "edit" && relationEditor.occurrence.id === occurrenceId) {
+      await apiDeleteOccurrence(modal.occurrenceId, csrfToken);
+      await Promise.all([loadOccurrencesForSong(modal.songId), refreshImageryItems()]);
+      if (relationEditor.type === "edit" && relationEditor.occurrence.id === modal.occurrenceId) {
         resetRelationEditor();
       }
+      closeModal();
       showToast("success", "关系已删除");
     } catch (error) {
       showToast("error", error instanceof Error ? error.message : "删除关系失败");
@@ -872,44 +610,44 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     }
   };
 
-  const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
-    { key: "imagery", label: "意象管理", icon: <Tag size={14} /> },
-    { key: "categories", label: "分类管理", icon: <ListTree size={14} /> },
-    { key: "meanings", label: "含义管理", icon: <BookOpen size={14} /> },
-    { key: "occurrences", label: "关系管理", icon: <Layers size={14} /> },
+  const tabs: { key: Tab; label: string; icon: ReactNode; hint: string }[] = [
+    { key: "imagery", label: "意象管理", icon: <Tag size={14} />, hint: "词条与概览" },
+    { key: "categories", label: "分类管理", icon: <ListTree size={14} />, hint: "树形与分页" },
+    { key: "meanings", label: "含义管理", icon: <BookOpen size={14} />, hint: "全局含义库" },
+    { key: "occurrences", label: "关系管理", icon: <Layers size={14} />, hint: "按歌曲维护" },
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500 font-sans">
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+    <div className="min-h-screen bg-[#FAFAFA] font-sans transition-colors duration-500 dark:bg-[#0B0F19]">
+      <nav className="fixed left-0 right-0 top-0 z-50 border-b border-slate-200/50 bg-[#FAFAFA]/80 backdrop-blur-md dark:border-slate-800/50 dark:bg-[#0B0F19]/80">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
           <div className="flex items-center gap-3">
             <Link
               href="/admin"
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
               title="返回主后台"
             >
               <ArrowLeft size={18} />
             </Link>
-            <div className="text-2xl font-bold tracking-tight flex items-center gap-1 font-serif text-slate-900 dark:text-white">
+            <div className="flex items-center gap-1 font-serif text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               勘鉴
-              <span className="w-[2px] h-5 bg-violet-600 mx-2 rounded-full translate-y-[1.5px]" />
+              <span className="mx-2 h-5 w-[2px] translate-y-[1.5px] rounded-full bg-violet-600" />
               意象管理
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <ThemeToggle className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400" />
+            <ThemeToggle className="rounded-full p-2 text-slate-600 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800" />
             <Link
               href="/profile"
-              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+              className="rounded-full p-2 text-slate-600 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800"
               title="个人中心"
             >
               <User size={20} />
             </Link>
             <Link
               href="/"
-              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+              className="rounded-full p-2 text-slate-600 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800"
               title="返回主页"
             >
               <Home size={20} />
@@ -918,1010 +656,189 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
         </div>
       </nav>
 
-      <main className="pt-28 pb-20 max-w-7xl mx-auto px-6">
-        <div className="flex gap-1 mb-8 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-1.5 w-fit">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all",
-                activeTab === tab.key
-                  ? "bg-violet-600 text-white shadow-sm"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800",
-              )}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {activeTab === "imagery" && (
-          <div>
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                  <input
-                    type="text"
-                    value={imagerySearchTerm}
-                    onChange={(event) => {
-                      setImagerySearchTerm(event.target.value);
-                      setImageryPage(1);
-                    }}
-                    placeholder="搜索意象名称…"
-                    className="pl-8 pr-4 py-2 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-colors"
-                  />
-                  {imagerySearchTerm && (
-                    <button
-                      type="button"
-                      onClick={() => setImagerySearchTerm("")}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                    >
-                      <X size={12} />
-                    </button>
-                  )}
-                </div>
-                <span className="text-sm text-slate-400">{filteredItems.length} 个</span>
+      <main className="mx-auto max-w-7xl px-6 pb-20 pt-28">
+        <section className={cn(pageShellClassName(), "relative overflow-hidden px-6 py-7 md:px-8")}>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.16),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.12),transparent_30%)]" />
+          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-3xl">
+              <div className="text-[11px] uppercase tracking-[0.34em] text-violet-500 dark:text-violet-400">
+                Admin Workspace
               </div>
-
-              <button
-                onClick={openAddImagery}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium shadow-sm transition-all"
-              >
-                <Plus size={14} />
-                新增意象
-              </button>
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 md:text-4xl">
+                统一维护意象、分类、含义与歌曲关系
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500 dark:text-slate-400">
+                页面样式已对齐主后台的圆角、搜索栏和层次化卡片语言；内部结构也拆成多个独立组件，后续维护可以按 tab 单独演进。
+              </p>
             </div>
-
-            {itemsLoading ? (
-              <div className="flex items-center justify-center py-16 text-slate-400">
-                <Loader2 className="animate-spin mr-2" size={18} />
-                加载中…
-              </div>
-            ) : itemsError ? (
-              <div className="flex items-center gap-2 p-4 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 text-red-600 dark:text-red-400 text-sm">
-                <AlertCircle size={16} />
-                {itemsError}
-              </div>
-            ) : filteredItems.length === 0 ? (
-              <div className="text-center py-16 text-slate-400">
-                <Tag size={32} className="mx-auto mb-3 opacity-30" />
-                <p>{imagerySearchTerm ? "没有找到匹配的意象" : "暂无意象，点击「新增意象」添加"}</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {pagedItems.map((item) => {
-                  const categoryNames = item.categoryIds
-                    .map((categoryId) => categories.find((category) => category.id === categoryId)?.name)
-                    .filter((value): value is string => Boolean(value));
-
-                  return (
-                    <div
-                      key={item.id}
-                      className="flex items-center gap-4 p-3 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 hover:border-violet-200 dark:hover:border-violet-900/40 transition-all group"
-                    >
-                      <div className="w-7 h-7 rounded-lg bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center shrink-0">
-                        <Tag size={13} className="text-violet-400" />
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <span className="font-medium text-sm text-slate-900 dark:text-slate-100">{item.name}</span>
-                        {categoryNames.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {categoryNames.slice(0, 3).map((name) => (
-                              <span
-                                key={name}
-                                className="text-[10px] px-1.5 py-0.5 rounded-md bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-900/30"
-                              >
-                                {name}
-                              </span>
-                            ))}
-                            {categoryNames.length > 3 && (
-                              <span className="text-[10px] text-slate-400">+{categoryNames.length - 3}</span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="text-xs text-slate-400 shrink-0 font-mono">{item.count}次</div>
-
-                      <div className="hidden group-hover:flex items-center gap-1 shrink-0">
-                        <button
-                          onClick={() => openEditImagery(item)}
-                          className="p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 transition-colors"
-                          title="编辑"
-                        >
-                          <Edit2 size={13} />
-                        </button>
-                        <button
-                          onClick={() => openDeleteImagery(item)}
-                          className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 dark:text-red-400 transition-colors"
-                          title="删除"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-
-                <PaginationControls
-                  currentPage={imageryPage}
-                  totalPages={imageryTotalPages}
-                  onPageChange={setImageryPage}
-                />
-              </div>
-            )}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <StatPill label="意象" value={items.length} />
+              <StatPill label="分类" value={categories.length} />
+              <StatPill label="含义" value={meanings.length} />
+              <StatPill label="歌曲" value={allSongs.length} />
+            </div>
           </div>
-        )}
+        </section>
 
-        {activeTab === "categories" && (
-          <div className="flex gap-6 items-start">
-            <aside className="w-80 shrink-0 sticky top-28">
-              <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
-                <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    <ListTree size={14} />
-                    分类树（默认折叠）
-                  </div>
-                  <button
-                    onClick={() => openAddCategory()}
-                    className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-blue-500 transition-colors"
-                    title="新增顶级分类"
-                  >
-                    <Plus size={14} />
-                  </button>
+        <section className={cn(cardClassName(), "mt-6 p-2")}>
+          <div className="grid gap-2 md:grid-cols-4">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={cn(
+                  "rounded-[22px] px-4 py-4 text-left transition-all",
+                  activeTab === tab.key
+                    ? "bg-violet-600 text-white shadow-lg shadow-violet-500/20"
+                    : "bg-transparent text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800",
+                )}
+              >
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  {tab.icon}
+                  {tab.label}
                 </div>
-                <div className="p-2 max-h-[calc(100vh-14rem)] overflow-y-auto">
-                  {categoryTree.length === 0 ? (
-                    <p className="text-xs text-slate-400 text-center py-4 px-3">暂无分类，点击 + 新增</p>
-                  ) : (
-                    categoryTree.map((node) => (
-                      <CategoryTreeNode
-                        key={node.id}
-                        node={node}
-                        depth={0}
-                        imageryCountByCategory={imageryCountByCategory}
-                        onAddChild={openAddCategory}
-                        onEdit={openEditCategory}
-                        onDelete={openDeleteCategory}
-                      />
-                    ))
+                <div
+                  className={cn(
+                    "mt-1 text-xs",
+                    activeTab === tab.key ? "text-violet-100" : "text-slate-400",
                   )}
-                </div>
-              </div>
-            </aside>
-
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-5">
-                <div>
-                  <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">分类列表</h2>
-                  <p className="text-sm text-slate-400 mt-1">{sortedCategories.length} 个分类，按路径分页展示</p>
-                </div>
-                <button
-                  onClick={() => openAddCategory()}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium shadow-sm transition-all"
                 >
-                  <FolderPlus size={14} />
-                  新增顶级分类
-                </button>
-              </div>
-
-              <div className="space-y-2">
-                {pagedCategories.map((category) => (
-                  <div
-                    key={category.id}
-                    className="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 group"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium text-sm text-slate-800 dark:text-slate-200">{category.name}</span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-400">
-                          L{category.level ?? 0}
-                        </span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400">
-                          {imageryCountByCategory.get(category.id) ?? 0} 个意象
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{getCategoryPath(category.id, categories)}</p>
-                      {category.description && (
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">{category.description}</p>
-                      )}
-                    </div>
-
-                    <div className="hidden group-hover:flex items-center gap-1 shrink-0">
-                      <button
-                        onClick={() => openEditCategory(category)}
-                        className="p-1.5 rounded hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
-                      >
-                        <Edit2 size={13} />
-                      </button>
-                      <button
-                        onClick={() => openDeleteCategory(category)}
-                        className="p-1.5 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 dark:text-red-400"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-
-                <PaginationControls
-                  currentPage={categoryPage}
-                  totalPages={categoryTotalPages}
-                  onPageChange={setCategoryPage}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "meanings" && (
-          <div>
-            <div className="flex items-center justify-between mb-5 gap-4">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                  <input
-                    type="text"
-                    value={meaningsSearchTerm}
-                    onChange={(event) => {
-                      setMeaningsSearchTerm(event.target.value);
-                      setMeaningsPage(1);
-                    }}
-                    placeholder="搜索含义名称或描述…"
-                    className="pl-8 pr-4 py-2 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-colors"
-                  />
+                  {tab.hint}
                 </div>
-                <span className="text-sm text-slate-400">{filteredMeanings.length} 条</span>
-              </div>
-
-              <button
-                onClick={startAddMeaning}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium shadow-sm transition-all"
-              >
-                <Plus size={14} />
-                新增含义
               </button>
-            </div>
-
-            {meaningsLoading ? (
-              <div className="flex items-center gap-2 text-sm text-slate-400 py-8">
-                <Loader2 className="animate-spin" size={16} />
-                加载中…
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {addingMeaning && (
-                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-3">
-                    <input
-                      type="text"
-                      value={meaningForm.label}
-                      onChange={(event) => setMeaningForm((current) => ({ ...current, label: event.target.value }))}
-                      placeholder="含义名称"
-                      autoFocus
-                      className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30"
-                    />
-                    <textarea
-                      value={meaningForm.description}
-                      onChange={(event) => setMeaningForm((current) => ({ ...current, description: event.target.value }))}
-                      placeholder="描述（可选）"
-                      rows={3}
-                      className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30 resize-none"
-                    />
-                    <div className="flex justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={resetMeaningEditor}
-                        className="px-3 py-1.5 rounded-lg text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                      >
-                        取消
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleCreateMeaning}
-                        disabled={meaningSubmitting || !meaningForm.label.trim()}
-                        className="px-3 py-1.5 rounded-lg text-xs bg-violet-600 text-white hover:bg-violet-500 disabled:opacity-50 flex items-center gap-1"
-                      >
-                        {meaningSubmitting && <Loader2 size={11} className="animate-spin" />}
-                        保存
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {pagedMeanings.map((meaning) =>
-                  editingMeaningId === meaning.id ? (
-                    <div
-                      key={meaning.id}
-                      className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-3"
-                    >
-                      <input
-                        type="text"
-                        value={meaningForm.label}
-                        onChange={(event) => setMeaningForm((current) => ({ ...current, label: event.target.value }))}
-                        placeholder="含义名称"
-                        autoFocus
-                        className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30"
-                      />
-                      <textarea
-                        value={meaningForm.description}
-                        onChange={(event) => setMeaningForm((current) => ({ ...current, description: event.target.value }))}
-                        placeholder="描述（可选）"
-                        rows={3}
-                        className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30 resize-none"
-                      />
-                      <div className="flex justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={resetMeaningEditor}
-                          className="px-3 py-1.5 rounded-lg text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                        >
-                          取消
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleUpdateMeaning}
-                          disabled={meaningSubmitting || !meaningForm.label.trim()}
-                          className="px-3 py-1.5 rounded-lg text-xs bg-violet-600 text-white hover:bg-violet-500 disabled:opacity-50 flex items-center gap-1"
-                        >
-                          {meaningSubmitting && <Loader2 size={11} className="animate-spin" />}
-                          保存
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div
-                      key={meaning.id}
-                      className="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 group"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-slate-800 dark:text-slate-200">{meaning.label}</div>
-                        {meaning.description ? (
-                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 whitespace-pre-wrap">
-                            {meaning.description}
-                          </p>
-                        ) : (
-                          <p className="text-xs text-slate-400 mt-1">暂无描述</p>
-                        )}
-                      </div>
-
-                      <div className="hidden group-hover:flex items-center gap-1 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => startEditMeaning(meaning)}
-                          className="p-1 rounded hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
-                        >
-                          <Edit2 size={12} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteMeaning(meaning.id)}
-                          disabled={meaningSubmitting}
-                          className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 dark:text-red-400"
-                        >
-                          <Trash2 size={12} />
-                        </button>
-                      </div>
-                    </div>
-                  ),
-                )}
-
-                {!addingMeaning && pagedMeanings.length === 0 && (
-                  <div className="text-center py-16 text-slate-400">
-                    <BookOpen size={32} className="mx-auto mb-3 opacity-30" />
-                    <p>{meaningsSearchTerm ? "没有找到匹配的含义" : "暂无含义，点击「新增含义」添加"}</p>
-                  </div>
-                )}
-
-                <PaginationControls
-                  currentPage={meaningsPage}
-                  totalPages={meaningsTotalPages}
-                  onPageChange={setMeaningsPage}
-                />
-              </div>
-            )}
+            ))}
           </div>
-        )}
+        </section>
 
-        {activeTab === "occurrences" && (
-          <div>
-            <div className="flex items-center justify-between mb-5 gap-4">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                  <input
-                    type="text"
-                    value={songSearchTerm}
-                    onChange={(event) => {
-                      setSongSearchTerm(event.target.value);
-                      setSongsPage(1);
-                    }}
-                    placeholder="搜索歌曲名、专辑或 song_id…"
-                    className="pl-8 pr-4 py-2 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-colors"
-                  />
-                </div>
-                <span className="text-sm text-slate-400">{filteredSongs.length} 首歌</span>
-              </div>
-              <p className="text-sm text-slate-400">按歌曲分页展示，每首歌下管理 imagery_id / category_id / meaning_id / lyric_timetag</p>
-            </div>
+        <div className="mt-6">
+          {activeTab === "imagery" && (
+            <ImageryTab
+              categories={categories}
+              itemsLoading={itemsLoading}
+              itemsError={itemsError}
+              searchTerm={imagerySearchTerm}
+              filteredCount={filteredItems.length}
+              pagedItems={pagedItems}
+              currentPage={imageryPage}
+              totalPages={imageryTotalPages}
+              onSearchTermChange={(value) => {
+                setImagerySearchTerm(value);
+                setImageryPage(1);
+              }}
+              onPageChange={setImageryPage}
+              onAdd={openAddImagery}
+              onEdit={openEditImagery}
+              onDelete={openDeleteImagery}
+            />
+          )}
 
-            {songsLoading ? (
-              <div className="flex items-center gap-2 text-sm text-slate-400 py-8">
-                <Loader2 className="animate-spin" size={16} />
-                加载歌曲中…
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {pagedSongs.map((song) => {
-                  const occurrences = occurrencesBySong[song.id] ?? [];
-                  const isExpanded = expandedSongId === song.id;
-                  const isLoadingOccurrences = occurrenceLoadingSongId === song.id;
-                  const isAddingHere = relationEditor.type === "add" && relationEditor.songId === song.id;
+          {activeTab === "categories" && (
+            <CategoriesTab
+              categoryTree={categoryTree}
+              imageryCountByCategory={imageryCountByCategory}
+              sortedCategoriesLength={sortedCategories.length}
+              pagedCategories={pagedCategories}
+              currentPage={categoryPage}
+              totalPages={categoryTotalPages}
+              getCategoryPath={(categoryId) => getCategoryPath(categoryId, categories)}
+              onPageChange={setCategoryPage}
+              onAddCategory={openAddCategory}
+              onEditCategory={openEditCategory}
+              onDeleteCategory={openDeleteCategory}
+            />
+          )}
 
-                  return (
-                    <div
-                      key={song.id}
-                      className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 overflow-hidden"
-                    >
-                      <div className="px-4 py-3 flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() => void toggleSongPanel(song.id)}
-                          className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500"
-                        >
-                          {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                        </button>
+          {activeTab === "meanings" && (
+            <MeaningsTab
+              meaningsLoading={meaningsLoading}
+              meaningsSearchTerm={meaningsSearchTerm}
+              filteredCount={filteredMeanings.length}
+              pagedMeanings={pagedMeanings}
+              addingMeaning={addingMeaning}
+              editingMeaningId={editingMeaningId}
+              meaningForm={meaningForm}
+              setMeaningForm={setMeaningForm}
+              meaningSubmitting={meaningSubmitting}
+              currentPage={meaningsPage}
+              totalPages={meaningsTotalPages}
+              onSearchTermChange={(value) => {
+                setMeaningsSearchTerm(value);
+                setMeaningsPage(1);
+              }}
+              onPageChange={setMeaningsPage}
+              onStartAdd={startAddMeaning}
+              onStartEdit={startEditMeaning}
+              onReset={resetMeaningEditor}
+              onCreate={handleCreateMeaning}
+              onUpdate={handleUpdateMeaning}
+              onDelete={openDeleteMeaning}
+            />
+          )}
 
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-medium text-slate-900 dark:text-slate-100">{song.title}</span>
-                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500">
-                              song_id {song.id}
-                            </span>
-                            {song.album && (
-                              <span className="text-xs text-slate-500 dark:text-slate-400">{song.album}</span>
-                            )}
-                            {occurrencesBySong[song.id] && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400">
-                                {occurrences.length} 条关系
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => void startAddRelation(song.id)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors"
-                        >
-                          <Plus size={12} />
-                          新增关系
-                        </button>
-                      </div>
-
-                      {isExpanded && (
-                        <div className="px-4 pb-4 border-t border-slate-100 dark:border-slate-800">
-                          {isLoadingOccurrences ? (
-                            <div className="flex items-center gap-2 text-sm text-slate-400 py-6">
-                              <Loader2 className="animate-spin" size={14} />
-                              加载中…
-                            </div>
-                          ) : (
-                            <div className="space-y-3 pt-4">
-                              {isAddingHere && (
-                                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-3">
-                                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">新增到歌曲 #{song.id}</p>
-
-                                  <select
-                                    value={relationForm.imagery_id}
-                                    onChange={(event) =>
-                                      setRelationForm((current) => ({
-                                        ...current,
-                                        imagery_id: parseInt(event.target.value, 10) || 0,
-                                      }))
-                                    }
-                                    className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"
-                                  >
-                                    <option value={0}>— 选择意象 —</option>
-                                    {items.map((item) => (
-                                      <option key={item.id} value={item.id}>
-                                        {item.name}（ID: {item.id}）
-                                      </option>
-                                    ))}
-                                  </select>
-
-                                  <select
-                                    value={relationForm.category_id}
-                                    onChange={(event) =>
-                                      setRelationForm((current) => ({
-                                        ...current,
-                                        category_id: parseInt(event.target.value, 10) || 0,
-                                      }))
-                                    }
-                                    className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"
-                                  >
-                                    <option value={0}>— 选择分类 —</option>
-                                    {leafCategories.map((category) => (
-                                      <option key={category.id} value={category.id}>
-                                        {getCategoryPath(category.id, categories)}
-                                      </option>
-                                    ))}
-                                  </select>
-
-                                  <select
-                                    value={relationForm.meaning_id ?? ""}
-                                    onChange={(event) =>
-                                      setRelationForm((current) => ({
-                                        ...current,
-                                        meaning_id: event.target.value ? parseInt(event.target.value, 10) : null,
-                                      }))
-                                    }
-                                    className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"
-                                  >
-                                    <option value="">— 选择含义（可选）—</option>
-                                    {meanings.map((meaning) => (
-                                      <option key={meaning.id} value={meaning.id}>
-                                        {meaning.label}（ID: {meaning.id}）
-                                      </option>
-                                    ))}
-                                  </select>
-
-                                  <textarea
-                                    value={relationForm.lyric_timetag}
-                                    onChange={(event) =>
-                                      setRelationForm((current) => ({ ...current, lyric_timetag: event.target.value }))
-                                    }
-                                    rows={4}
-                                    placeholder='lyric_timetag JSON，如：[{"start": 12.4, "end": 14.8}]'
-                                    className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-mono resize-none"
-                                  />
-
-                                  <div className="flex justify-end gap-2">
-                                    <button
-                                      type="button"
-                                      onClick={resetRelationEditor}
-                                      className="px-3 py-1.5 rounded-lg text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                                    >
-                                      取消
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={handleSaveRelation}
-                                      disabled={occurrenceSubmitting}
-                                      className="px-3 py-1.5 rounded-lg text-xs bg-violet-600 text-white hover:bg-violet-500 disabled:opacity-50 flex items-center gap-1"
-                                    >
-                                      {occurrenceSubmitting && <Loader2 size={11} className="animate-spin" />}
-                                      保存
-                                    </button>
-                                  </div>
-                                </div>
-                              )}
-
-                              {occurrences.map((occurrence) => {
-                                const isEditingThis =
-                                  relationEditor.type === "edit" && relationEditor.occurrence.id === occurrence.id;
-
-                                return isEditingThis ? (
-                                  <div
-                                    key={occurrence.id}
-                                    className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-3"
-                                  >
-                                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                                      编辑关系 #{occurrence.id}
-                                    </p>
-
-                                    <select
-                                      value={relationForm.imagery_id}
-                                      onChange={(event) =>
-                                        setRelationForm((current) => ({
-                                          ...current,
-                                          imagery_id: parseInt(event.target.value, 10) || 0,
-                                        }))
-                                      }
-                                      className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"
-                                    >
-                                      <option value={0}>— 选择意象 —</option>
-                                      {items.map((item) => (
-                                        <option key={item.id} value={item.id}>
-                                          {item.name}（ID: {item.id}）
-                                        </option>
-                                      ))}
-                                    </select>
-
-                                    <select
-                                      value={relationForm.category_id}
-                                      onChange={(event) =>
-                                        setRelationForm((current) => ({
-                                          ...current,
-                                          category_id: parseInt(event.target.value, 10) || 0,
-                                        }))
-                                      }
-                                      className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"
-                                    >
-                                      <option value={0}>— 选择分类 —</option>
-                                      {leafCategories.map((category) => (
-                                        <option key={category.id} value={category.id}>
-                                          {getCategoryPath(category.id, categories)}
-                                        </option>
-                                      ))}
-                                    </select>
-
-                                    <select
-                                      value={relationForm.meaning_id ?? ""}
-                                      onChange={(event) =>
-                                        setRelationForm((current) => ({
-                                          ...current,
-                                          meaning_id: event.target.value ? parseInt(event.target.value, 10) : null,
-                                        }))
-                                      }
-                                      className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"
-                                    >
-                                      <option value="">— 选择含义（可选）—</option>
-                                      {meanings.map((meaning) => (
-                                        <option key={meaning.id} value={meaning.id}>
-                                          {meaning.label}（ID: {meaning.id}）
-                                        </option>
-                                      ))}
-                                    </select>
-
-                                    <textarea
-                                      value={relationForm.lyric_timetag}
-                                      onChange={(event) =>
-                                        setRelationForm((current) => ({ ...current, lyric_timetag: event.target.value }))
-                                      }
-                                      rows={4}
-                                      className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-mono resize-none"
-                                    />
-
-                                    <div className="flex justify-end gap-2">
-                                      <button
-                                        type="button"
-                                        onClick={resetRelationEditor}
-                                        className="px-3 py-1.5 rounded-lg text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                                      >
-                                        取消
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={handleSaveRelation}
-                                        disabled={occurrenceSubmitting}
-                                        className="px-3 py-1.5 rounded-lg text-xs bg-violet-600 text-white hover:bg-violet-500 disabled:opacity-50 flex items-center gap-1"
-                                      >
-                                        {occurrenceSubmitting && <Loader2 size={11} className="animate-spin" />}
-                                        保存
-                                      </button>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div
-                                    key={occurrence.id}
-                                    className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700 group"
-                                  >
-                                    <div className="flex items-start gap-3">
-                                      <div className="flex-1 min-w-0 space-y-2">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                          <span className="font-medium text-slate-800 dark:text-slate-200">
-                                            {occurrence.imagery_name ?? `意象 #${occurrence.imagery_id}`}
-                                          </span>
-                                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-200/70 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-                                            imagery_id {occurrence.imagery_id}
-                                          </span>
-                                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400">
-                                            category_id {occurrence.category_id}
-                                          </span>
-                                          {occurrence.meaning_id && (
-                                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400">
-                                              meaning_id {occurrence.meaning_id}
-                                            </span>
-                                          )}
-                                        </div>
-
-                                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                                          分类：{getCategoryPath(occurrence.category_id, categories)}
-                                        </p>
-
-                                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                                          含义：{occurrence.meaning_label ?? "未设置"}
-                                        </p>
-
-                                        <div>
-                                          <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                                            lyric_timetag
-                                          </div>
-                                          <pre className="text-[11px] whitespace-pre-wrap rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 py-2 text-slate-600 dark:text-slate-300 overflow-x-auto">
-                                            {JSON.stringify(occurrence.lyric_timetag, null, 2)}
-                                          </pre>
-                                        </div>
-                                      </div>
-
-                                      <div className="hidden group-hover:flex items-center gap-1 shrink-0">
-                                        <button
-                                          type="button"
-                                          onClick={() => startEditRelation(song.id, occurrence)}
-                                          className="p-1 rounded hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-emerald-600"
-                                        >
-                                          <Edit2 size={12} />
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={() => void handleDeleteRelation(song.id, occurrence.id)}
-                                          disabled={occurrenceSubmitting}
-                                          className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500"
-                                        >
-                                          <Trash2 size={12} />
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-
-                              {occurrences.length === 0 && !isAddingHere && (
-                                <p className="text-xs text-slate-400 text-center py-6">当前歌曲暂无关系记录</p>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-
-                {!songsLoading && pagedSongs.length === 0 && (
-                  <div className="text-center py-16 text-slate-400">
-                    <Layers size={32} className="mx-auto mb-3 opacity-30" />
-                    <p>{songSearchTerm ? "没有找到匹配的歌曲" : "暂无歌曲可用于关系管理"}</p>
-                  </div>
-                )}
-
-                <PaginationControls
-                  currentPage={songsPage}
-                  totalPages={songsTotalPages}
-                  onPageChange={setSongsPage}
-                />
-              </div>
-            )}
-          </div>
-        )}
+          {activeTab === "occurrences" && (
+            <OccurrencesTab
+              songSearchTerm={songSearchTerm}
+              filteredCount={filteredSongs.length}
+              songsLoading={songsLoading}
+              pagedSongs={pagedSongs}
+              occurrencesBySong={occurrencesBySong}
+              expandedSongId={expandedSongId}
+              occurrenceLoadingSongId={occurrenceLoadingSongId}
+              relationEditor={relationEditor}
+              relationForm={relationForm}
+              setRelationForm={setRelationForm}
+              occurrenceSubmitting={occurrenceSubmitting}
+              items={items}
+              categories={categories}
+              leafCategories={leafCategories}
+              meanings={meanings}
+              currentPage={songsPage}
+              totalPages={songsTotalPages}
+              onSearchTermChange={(value) => {
+                setSongSearchTerm(value);
+                setSongsPage(1);
+              }}
+              onPageChange={setSongsPage}
+              onToggleSongPanel={toggleSongPanel}
+              onStartAddRelation={startAddRelation}
+              onStartEditRelation={startEditRelation}
+              onResetRelationEditor={resetRelationEditor}
+              onSaveRelation={handleSaveRelation}
+              onDeleteRelation={openDeleteOccurrence}
+              getCategoryPath={getCategoryPath}
+            />
+          )}
+        </div>
       </main>
 
-      {modal.type === "add-imagery" && (
-        <ModalBackdrop onClose={closeModal}>
-          <ModalCard>
-            <form onSubmit={handleAddImagery}>
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">新增意象</h2>
-                  <button type="button" onClick={closeModal} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400">
-                    <X size={18} />
-                  </button>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5">
-                    意象名称 <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={imageryFormName}
-                    onChange={(event) => setImageryFormName(event.target.value)}
-                    placeholder="如：明月、江水、枫叶…"
-                    maxLength={50}
-                    required
-                    autoFocus
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-300 dark:focus:border-violet-700 transition-colors"
-                  />
-                </div>
-              </div>
-              <div className="px-6 pb-6 flex justify-end gap-3">
-                <button type="button" onClick={closeModal} className="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                  取消
-                </button>
-                <button type="submit" disabled={isSubmitting || !imageryFormName.trim()} className="px-5 py-2 rounded-xl text-sm font-medium bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white flex items-center gap-2 transition-colors">
-                  {isSubmitting && <Loader2 size={14} className="animate-spin" />}
-                  创建
-                </button>
-              </div>
-            </form>
-          </ModalCard>
-        </ModalBackdrop>
-      )}
-
-      {modal.type === "edit-imagery" && (
-        <ModalBackdrop onClose={closeModal}>
-          <ModalCard>
-            <form onSubmit={handleEditImagery}>
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">编辑意象 · 「{modal.item.name}」</h2>
-                  <button type="button" onClick={closeModal} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400">
-                    <X size={18} />
-                  </button>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5">
-                    意象名称 <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={imageryFormName}
-                    onChange={(event) => setImageryFormName(event.target.value)}
-                    maxLength={50}
-                    required
-                    autoFocus
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-300 dark:focus:border-violet-700 transition-colors"
-                  />
-                </div>
-              </div>
-              <div className="px-6 pb-6 flex justify-end gap-3">
-                <button type="button" onClick={closeModal} className="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                  取消
-                </button>
-                <button type="submit" disabled={isSubmitting || !imageryFormName.trim()} className="px-5 py-2 rounded-xl text-sm font-medium bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white flex items-center gap-2 transition-colors">
-                  {isSubmitting && <Loader2 size={14} className="animate-spin" />}
-                  保存
-                </button>
-              </div>
-            </form>
-          </ModalCard>
-        </ModalBackdrop>
-      )}
-
-      {modal.type === "delete-imagery" && (
-        <ModalBackdrop onClose={closeModal}>
-          <ModalCard>
-            <div className="p-6">
-              <div className="flex items-start gap-4 mb-6">
-                <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
-                  <AlertCircle size={20} className="text-red-600 dark:text-red-400" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">确认删除</h2>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
-                    将删除意象「<strong className="text-slate-700 dark:text-slate-200">{modal.item.name}</strong>」。
-                    {modal.item.count > 0 && (
-                      <span className="text-red-600 dark:text-red-400 ml-1">该意象已有 {modal.item.count} 条关系记录。</span>
-                    )}
-                  </p>
-                </div>
-              </div>
-              <div className="flex justify-end gap-3">
-                <button onClick={closeModal} className="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                  取消
-                </button>
-                <button onClick={handleDeleteImagery} disabled={isSubmitting} className="px-5 py-2 rounded-xl text-sm font-medium bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white flex items-center gap-2 transition-colors">
-                  {isSubmitting && <Loader2 size={14} className="animate-spin" />}
-                  确认删除
-                </button>
-              </div>
-            </div>
-          </ModalCard>
-        </ModalBackdrop>
-      )}
-
-      {(modal.type === "add-category" || modal.type === "edit-category") && (
-        <ModalBackdrop onClose={closeModal}>
-          <ModalCard>
-            <form onSubmit={modal.type === "add-category" ? handleAddCategory : handleEditCategory}>
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                    {modal.type === "add-category" ? "新增分类" : "编辑分类"}
-                  </h2>
-                  <button type="button" onClick={closeModal} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400">
-                    <X size={18} />
-                  </button>
-                </div>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5">
-                      分类名称 <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={categoryForm.name}
-                      onChange={(event) => setCategoryForm((current) => ({ ...current, name: event.target.value }))}
-                      maxLength={50}
-                      required
-                      autoFocus
-                      className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-300 dark:focus:border-blue-700 transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5">父分类</label>
-                    <select
-                      value={categoryForm.parent_id ?? ""}
-                      onChange={(event) => {
-                        const nextParentId = event.target.value ? parseInt(event.target.value, 10) : null;
-                        const parent = nextParentId
-                          ? categories.find((category) => category.id === nextParentId)
-                          : null;
-                        setCategoryForm((current) => ({
-                          ...current,
-                          parent_id: nextParentId,
-                          level: parent ? (parent.level ?? 0) + 1 : 0,
-                        }));
-                      }}
-                      className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-300 dark:focus:border-blue-700 transition-colors"
-                    >
-                      <option value="">（顶级分类）</option>
-                      {categories
-                        .filter((category) => (modal.type !== "edit-category" || category.id !== modal.category.id) && (category.level ?? 0) < 3)
-                        .map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {getCategoryPath(category.id, categories)}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5">描述</label>
-                    <textarea
-                      value={categoryForm.description}
-                      onChange={(event) =>
-                        setCategoryForm((current) => ({ ...current, description: event.target.value }))
-                      }
-                      rows={3}
-                      maxLength={500}
-                      className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-300 dark:focus:border-blue-700 transition-colors resize-none"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="px-6 pb-6 flex justify-end gap-3">
-                <button type="button" onClick={closeModal} className="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                  取消
-                </button>
-                <button type="submit" disabled={isSubmitting || !categoryForm.name.trim()} className="px-5 py-2 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white flex items-center gap-2 transition-colors">
-                  {isSubmitting && <Loader2 size={14} className="animate-spin" />}
-                  保存
-                </button>
-              </div>
-            </form>
-          </ModalCard>
-        </ModalBackdrop>
-      )}
-
-      {modal.type === "delete-category" && (
-        <ModalBackdrop onClose={closeModal}>
-          <ModalCard>
-            <div className="p-6">
-              <div className="flex items-start gap-4 mb-6">
-                <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
-                  <AlertCircle size={20} className="text-red-600 dark:text-red-400" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">确认删除分类</h2>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
-                    将删除分类「<strong className="text-slate-700 dark:text-slate-200">{modal.category.name}</strong>」。
-                  </p>
-                </div>
-              </div>
-              <div className="flex justify-end gap-3">
-                <button onClick={closeModal} className="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                  取消
-                </button>
-                <button onClick={handleDeleteCategory} disabled={isSubmitting} className="px-5 py-2 rounded-xl text-sm font-medium bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white flex items-center gap-2 transition-colors">
-                  {isSubmitting && <Loader2 size={14} className="animate-spin" />}
-                  确认删除
-                </button>
-              </div>
-            </div>
-          </ModalCard>
-        </ModalBackdrop>
-      )}
+      <ImageryAdminModals
+        modal={modal}
+        imageryFormName={imageryFormName}
+        categoryForm={categoryForm}
+        categories={categories}
+        isSubmitting={isSubmitting}
+        onClose={closeModal}
+        onImageryNameChange={setImageryFormName}
+        onCategoryFormChange={setCategoryForm}
+        onAddImagery={handleAddImagery}
+        onEditImagery={handleEditImagery}
+        onDeleteImagery={handleDeleteImagery}
+        onAddCategory={handleAddCategory}
+        onEditCategory={handleEditCategory}
+        onDeleteCategory={handleDeleteCategory}
+        onDeleteMeaning={handleDeleteMeaning}
+        onDeleteOccurrence={handleDeleteRelation}
+        deleteSubmitting={meaningSubmitting || occurrenceSubmitting}
+        getCategoryPath={(categoryId) => getCategoryPath(categoryId, categories)}
+      />
 
       {toast && (
         <div
           className={cn(
-            "fixed right-6 bottom-6 z-[60] px-4 py-3 rounded-xl border shadow-lg text-sm",
+            "fixed bottom-6 right-6 z-[60] rounded-2xl border px-4 py-3 text-sm shadow-lg",
             toast.type === "success"
-              ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800"
-              : "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800",
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300"
+              : "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300",
           )}
         >
           {toast.text}
