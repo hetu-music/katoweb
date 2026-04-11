@@ -3,7 +3,6 @@
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import Pagination from "@/components/shared/Pagination";
 import ThemeToggle from "@/components/shared/ThemeToggle";
-import { useUserContext } from "@/context/UserContext";
 import {
   mergeAutoCompleteData,
   useAutoComplete,
@@ -26,16 +25,19 @@ import {
   Edit,
   Eye,
   EyeOff,
+  Home,
   Plus,
   Save,
   Search,
+  User,
   Wand2,
   X,
   XCircle,
+  Tag,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import Account from "./Account";
 import CoverUpload from "./CoverUpload";
 import Notification from "./Notification";
 import ScoreUpload from "./ScoreUpload";
@@ -459,7 +461,6 @@ export default function AdminClientComponent({
   }, [searchTerm, currentPage, isClient, updateUrl]);
 
   // Auth & Actions
-  const { logout, loggingOut } = useUserContext();
   const [csrfToken, setCsrfToken] = useState("");
   useEffect(() => {
     fetch("/api/public/csrf-token")
@@ -641,18 +642,26 @@ export default function AdminClientComponent({
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowNotification(true)}
-              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
+              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
               title="使用说明"
             >
               <Bell size={20} />
             </button>
-            <ThemeToggle className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors" />
-            <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1" />
-            <Account
-              csrfToken={csrfToken}
-              handleLogout={logout}
-              logoutLoading={loggingOut}
-            />
+            <ThemeToggle className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400" />
+            <Link
+              href="/profile"
+              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+              title="个人中心"
+            >
+              <User size={20} />
+            </Link>
+            <Link
+              href="/"
+              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+              title="返回主页"
+            >
+              <Home size={20} />
+            </Link>
           </div>
         </div>
       </nav>
@@ -677,6 +686,13 @@ export default function AdminClientComponent({
           </div>
 
           <div className="flex items-center gap-3">
+            <Link
+              href="/admin/imagery"
+              className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-full font-medium shadow-sm hover:shadow-md hover:border-violet-300 dark:hover:border-violet-700 transition-all hover:-translate-y-0.5"
+            >
+              <Tag size={18} className="text-violet-500" />
+              <span>意象管理</span>
+            </Link>
             <button
               onClick={() => setShowAdd(true)}
               className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-full font-medium shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
@@ -931,6 +947,7 @@ export default function AdminClientComponent({
                     </div>
                   ))}
                 </div>
+
               </form>
             </div>
 

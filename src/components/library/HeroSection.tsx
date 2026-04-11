@@ -9,16 +9,15 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ songCount }: HeroSectionProps) {
-  // Lazy initializer avoids synchronous setState inside an effect.
-  const [isHoverDevice, setIsHoverDevice] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-  });
+  // Start false on both server and client to avoid hydration mismatch.
+  // useEffect runs after hydration and sets the real value.
+  const [isHoverDevice, setIsHoverDevice] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const mq = window.matchMedia("(hover: hover) and (pointer: fine)");
+    setIsHoverDevice(mq.matches);
     const handler = (e: MediaQueryListEvent) => setIsHoverDevice(e.matches);
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);

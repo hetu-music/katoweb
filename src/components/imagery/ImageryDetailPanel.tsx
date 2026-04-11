@@ -1,22 +1,23 @@
 "use client";
 
 import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
-import {
   Drawer,
   DrawerContent,
-  DrawerTitle,
   DrawerDescription,
+  DrawerTitle,
 } from "@/components/ui/drawer";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import type { ImageryItem, SongRef } from "@/lib/types";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 // ─── shared types ─────────────────────────────────────────────────────────────
 
@@ -28,11 +29,7 @@ export interface PaletteEntry {
   accent: string;
 }
 
-export interface SongResult {
-  song: SongRef;
-  categoryId: number;
-  occurrenceCount: number;
-}
+export type SongResult = SongRef;
 
 export interface DetailPanelProps {
   open: boolean;
@@ -52,12 +49,24 @@ function SectionLabel({ label, accent }: { label: string; accent: string }) {
   return (
     <div className="flex items-center gap-3 my-5">
       <div className="flex-1 h-px bg-slate-100 dark:bg-slate-800" />
-      <span
-        className="text-[10px] tracking-[0.3em] pl-[0.3em] font-medium shrink-0"
-        style={{ color: accent }}
-      >
-        {label}
-      </span>
+      <div className="relative h-4 flex items-center justify-center min-w-[30%]">
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={label}
+            initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            exit={{ opacity: 0, y: -8, filter: "blur(4px)" }}
+            transition={{ 
+              duration: 0.4, 
+              ease: [0.23, 1, 0.32, 1]
+            }}
+            className="absolute text-[10px] tracking-[0.3em] pl-[0.3em] font-medium shrink-0 whitespace-nowrap"
+            style={{ color: accent }}
+          >
+            {label}
+          </motion.span>
+        </AnimatePresence>
+      </div>
       <div className="flex-1 h-px bg-slate-100 dark:bg-slate-800" />
     </div>
   );
@@ -87,11 +96,11 @@ const PanelBody = memo(function PanelBody({
   const filtered = useMemo(
     () =>
       activeLyricist
-        ? songs.filter(({ song }) =>
-            activeLyricist === "未知"
-              ? !song.lyricist || song.lyricist.length === 0
-              : song.lyricist?.includes(activeLyricist),
-          )
+        ? songs.filter((song) =>
+          activeLyricist === "未知"
+            ? !song.lyricist || song.lyricist.length === 0
+            : song.lyricist?.includes(activeLyricist),
+        )
         : songs,
     [songs, activeLyricist],
   );
@@ -110,11 +119,10 @@ const PanelBody = memo(function PanelBody({
   if (songs.length === 0) {
     return (
       <p
-        className={`text-center text-sm tracking-[0.25em] pl-[0.25em] py-16 ${
-          isDesktop
+        className={`text-center text-sm tracking-[0.25em] pl-[0.25em] py-16 ${isDesktop
             ? "text-slate-300 dark:text-slate-700"
             : "text-slate-400 dark:text-slate-600"
-        }`}
+          }`}
       >
         暂无相关词作
       </p>
@@ -130,29 +138,26 @@ const PanelBody = memo(function PanelBody({
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-2">
             <button
               onClick={() => onLyricistClick("")}
-              className={`group relative text-[13px] transition-all duration-500 font-serif tracking-widest whitespace-nowrap py-1 ${
-                !activeLyricist
+              className={`group relative text-[13px] transition-all duration-500 font-serif tracking-widest whitespace-nowrap py-1 ${!activeLyricist
                   ? "text-slate-900 dark:text-white"
                   : "text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-              }`}
+                }`}
             >
               <span
-                className={`inline-block transition-all duration-500 font-system ${
-                  !activeLyricist
+                className={`inline-block transition-all duration-500 font-system ${!activeLyricist
                     ? "opacity-100 translate-x-0"
                     : "opacity-0 -translate-x-2"
-                } mr-1`}
+                  } mr-1`}
                 style={{ color: selectedPalette.accent }}
               >
                 「
               </span>
               全部
               <span
-                className={`inline-block transition-all duration-500 font-system ${
-                  !activeLyricist
+                className={`inline-block transition-all duration-500 font-system ${!activeLyricist
                     ? "opacity-100 translate-x-0"
                     : "opacity-0 translate-x-2"
-                } ml-1`}
+                  } ml-1`}
                 style={{ color: selectedPalette.accent }}
               >
                 」
@@ -165,29 +170,26 @@ const PanelBody = memo(function PanelBody({
                 <button
                   key={name}
                   onClick={() => onLyricistClick(name)}
-                  className={`group relative text-[13px] transition-all duration-500 font-serif tracking-widest whitespace-nowrap py-1 ${
-                    isActive
+                  className={`group relative text-[13px] transition-all duration-500 font-serif tracking-widest whitespace-nowrap py-1 ${isActive
                       ? "text-slate-900 dark:text-white"
                       : "text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                  }`}
+                    }`}
                 >
                   <span
-                    className={`inline-block transition-all duration-500 font-system ${
-                      isActive
+                    className={`inline-block transition-all duration-500 font-system ${isActive
                         ? "opacity-100 translate-x-0"
                         : "opacity-0 -translate-x-2"
-                    } mr-1`}
+                      } mr-1`}
                     style={{ color: selectedPalette.accent }}
                   >
                     「
                   </span>
                   {name}
                   <span
-                    className={`inline-block transition-all duration-500 font-system ${
-                      isActive
+                    className={`inline-block transition-all duration-500 font-system ${isActive
                         ? "opacity-100 translate-x-0"
                         : "opacity-0 translate-x-2"
-                    } ml-1`}
+                      } ml-1`}
                     style={{ color: selectedPalette.accent }}
                   >
                     」
@@ -203,40 +205,57 @@ const PanelBody = memo(function PanelBody({
       )}
 
       {/* Songs */}
-      <div
-        key={activeLyricist ?? "all"}
-        className="animate-in fade-in duration-500"
-      >
+      <div className="mt-2">
         <SectionLabel
-          label={
-            activeLyricist
-              ? `${activeLyricist}的曲目 ${filtered.length}`
-              : `相关曲目 ${songs.length}`
-          }
+          label={activeLyricist ? `${activeLyricist}的曲目` : `相关曲目`}
           accent={selectedPalette.accent}
         />
-        <div className="flex flex-col -mx-6">
-          {filtered.map(({ song }) => (
-            <Link
-              key={song.id}
-              href={`/song/${song.id}`}
-              onClick={onLinkClick}
-              className="flex items-center justify-between py-4 px-6 border-b border-slate-100/80 dark:border-slate-800/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group"
-            >
-              <div className="min-w-0 pr-4">
-                <div className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors truncate tracking-wide">
-                  {song.title}
-                </div>
-                <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 truncate tracking-wide">
-                  {song.lyricist?.length ? song.lyricist.join("  ·  ") : "未知"}
-                </div>
-              </div>
-              <ChevronRight
-                size={14}
-                className="text-slate-300 dark:text-slate-600 group-hover:text-slate-400 dark:group-hover:text-slate-400 transition-all duration-300 transform group-hover:translate-x-0.5"
-              />
-            </Link>
-          ))}
+        <div className="flex flex-col -mx-6 relative">
+          <AnimatePresence mode="popLayout" initial={false}>
+            {filtered.map((song, i) => (
+              <motion.div
+                key={song.id}
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ 
+                  opacity: 1, 
+                  y: 0,
+                  transition: {
+                    delay: i * 0.02,
+                    duration: 0.5,
+                    ease: [0.23, 1, 0.32, 1]
+                  }
+                }}
+                exit={{ 
+                  opacity: 0, 
+                  scale: 0.98,
+                  transition: { duration: 0.2 }
+                }}
+                className="w-full"
+              >
+                <Link
+                  href={`/song/${song.id}`}
+                  onClick={onLinkClick}
+                  className="flex items-center justify-between py-4 px-6 border-b border-slate-100/80 dark:border-slate-800/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group"
+                >
+                  <div className="min-w-0 pr-4">
+                    <div className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors truncate tracking-wide">
+                      {song.title}
+                    </div>
+                    <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 truncate tracking-wide">
+                      {song.lyricist?.length
+                        ? song.lyricist.join("  ·  ")
+                        : "未知"}
+                    </div>
+                  </div>
+                  <ChevronRight
+                    size={14}
+                    className="text-slate-300 dark:text-slate-600 group-hover:text-slate-400 dark:group-hover:text-slate-400 transition-all duration-300 transform group-hover:translate-x-0.5"
+                  />
+                </Link>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       </div>
     </>

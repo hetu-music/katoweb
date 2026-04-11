@@ -4,9 +4,32 @@ import { createSupabaseServerClient } from "@/lib/supabase-auth";
 
 export const POST = withAuth(
   async (request: NextRequest, user: AuthenticatedUser) => {
-    const { oldPassword, newPassword } = await request.json();
+    const body = await request.json();
+    const oldPassword: string = body.oldPassword;
+    const newPassword: string = body.newPassword;
+
     if (!oldPassword || !newPassword) {
       return NextResponse.json({ error: "缺少参数" }, { status: 400 });
+    }
+
+    // 新密码格式校验
+    if (newPassword.length < 8) {
+      return NextResponse.json(
+        { error: "新密码不能少于8位" },
+        { status: 400 },
+      );
+    }
+    if (!/[a-zA-Z]/.test(newPassword)) {
+      return NextResponse.json(
+        { error: "新密码需包含至少一个字母" },
+        { status: 400 },
+      );
+    }
+    if (!/[0-9]/.test(newPassword)) {
+      return NextResponse.json(
+        { error: "新密码需包含至少一个数字" },
+        { status: 400 },
+      );
     }
 
     try {

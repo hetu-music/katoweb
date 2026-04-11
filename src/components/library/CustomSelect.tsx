@@ -155,6 +155,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       <PopoverContent
         className="p-0 flex flex-col overflow-hidden"
         collisionPadding={8}
+        onOpenAutoFocus={(e) => e.preventDefault()}
         style={{
           width: "var(--radix-popover-trigger-width)",
           minWidth: "160px",

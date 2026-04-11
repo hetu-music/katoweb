@@ -77,12 +77,18 @@ export type ImageryCategory = {
   description: string | null;
 };
 
+export type ImageryMeaning = {
+  id: number;
+  label: string;
+  description: string | null;
+};
+
 export type ImageryItem = {
   id: number;
   name: string;
   count: number;
-  // 出现在哪些分类（去重）
   categoryIds: number[];
+  meaningCount: number;
 };
 
 export type ImageryOccurrence = {
@@ -90,13 +96,13 @@ export type ImageryOccurrence = {
   song_id: number;
   imagery_id: number;
   category_id: number;
+  meaning_id: number | null;
   lyric_timetag: Record<string, unknown>[];
 };
 
 export type SongRef = {
   id: number;
   title: string;
-  album: string | null;
   lyricist: string[] | null;
 };
 

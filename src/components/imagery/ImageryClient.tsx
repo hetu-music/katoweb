@@ -25,6 +25,7 @@ import ImageryDetailPanel from "./ImageryDetailPanel";
 
 const GAP_X_PX = 40; // gap-x-10 = 2.5rem = 40px
 const GAP_Y_PX = 24; // gap-y-6 = 1.5rem = 24px
+const MARQUEE_SAMPLE_SIZE = 90;
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -173,6 +174,19 @@ function triggerHaptic(ms = 8) {
   }
 }
 
+function seededShuffle<T>(list: T[], seed: number): T[] {
+  const result = [...list];
+  let currentSeed = seed || 1;
+
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    currentSeed = (currentSeed * 1664525 + 1013904223) % 4294967296;
+    const nextIndex = currentSeed % (i + 1);
+    [result[i], result[nextIndex]] = [result[nextIndex], result[i]];
+  }
+
+  return result;
+}
+
 // ─── WordItem ─────────────────────────────────────────────────────────────────
 
 const WordItem = memo(function WordItem({
@@ -316,8 +330,8 @@ export default function ImageryClient({ items, categories }: Props) {
       activeL1Id === null
         ? []
         : categories
-            .filter((c) => c.level === 2 && c.parent_id === activeL1Id)
-            .sort((a, b) => a.name.localeCompare(b.name, "zh")),
+          .filter((c) => c.level === 2 && c.parent_id === activeL1Id)
+          .sort((a, b) => a.name.localeCompare(b.name, "zh")),
     [categories, activeL1Id],
   );
   const [selectedItem, setSelectedItem] = useState<ImageryItem | null>(null);
@@ -343,11 +357,15 @@ export default function ImageryClient({ items, categories }: Props) {
   const [scrollMargin, setScrollMargin] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [headerVisible, setHeaderVisible] = useState(true);
+  const [marqueeSeed, setMarqueeSeed] = useState(0);
+  const songsCacheRef = useRef(new Map<number, SongResult[]>());
+  const songsRequestCacheRef = useRef(new Map<number, Promise<SongResult[]>>());
 
   // Trigger entrance animation after first paint
   useEffect(() => {
     requestAnimationFrame(() => {
       setMounted(true);
+      setMarqueeSeed(Math.floor(Math.random() * 2147483647));
     });
   }, []);
 
@@ -429,9 +447,9 @@ export default function ImageryClient({ items, categories }: Props) {
   ]);
 
   const marqueeRows = useMemo(() => {
-    const sorted = [...items].sort((a, b) => b.count - a.count);
-    return [sorted.slice(0, 30), sorted.slice(30, 60), sorted.slice(60, 90)];
-  }, [items]);
+    const sampled = seededShuffle(items, marqueeSeed).slice(0, MARQUEE_SAMPLE_SIZE);
+    return [sampled.slice(0, 30), sampled.slice(30, 60), sampled.slice(60, 90)];
+  }, [items, marqueeSeed]);
 
   // ── selected item helpers ─────────────────────────────────────────────────
   const selectedCategoryPath = useMemo(() => {
@@ -447,7 +465,7 @@ export default function ImageryClient({ items, categories }: Props) {
 
   const lyricistCounts = useMemo(() => {
     const counts = new Map<string, number>();
-    songs.forEach(({ song }) => {
+    songs.forEach((song) => {
       const lyricists = song.lyricist ?? [];
       if (lyricists.length === 0) {
         counts.set("未知", (counts.get("未知") ?? 0) + 1);
@@ -501,16 +519,50 @@ export default function ImageryClient({ items, categories }: Props) {
   // Fetch songs
   useEffect(() => {
     if (!selectedItem || !panelOpen) return;
-    requestAnimationFrame(() => {
-      setSongsLoading(true);
-      setSongs([]);
-    });
+    let active = true;
+    const cachedSongs = songsCacheRef.current.get(selectedItem.id);
+    if (cachedSongs) {
+      if (active) {
+        setSongs(cachedSongs);
+        setSongsLoading(false);
+      }
+      return () => {
+        active = false;
+      };
+    }
 
-    fetch(`/api/imagery/${selectedItem.id}/songs`)
-      .then((r) => r.json())
-      .then((d) => setSongs(d.songs ?? []))
-      .catch(() => setSongs([]))
-      .finally(() => setSongsLoading(false));
+    setSongs([]);
+    setSongsLoading(true);
+
+    let request = songsRequestCacheRef.current.get(selectedItem.id);
+    if (!request) {
+      request = fetch(`/api/imagery/${selectedItem.id}/songs`)
+        .then((response) => response.json())
+        .then((data) => (data.songs ?? []) as SongResult[])
+        .catch(() => [] as SongResult[])
+        .then((result) => {
+          songsCacheRef.current.set(selectedItem.id, result);
+          songsRequestCacheRef.current.delete(selectedItem.id);
+          return result;
+        });
+      songsRequestCacheRef.current.set(selectedItem.id, request);
+    }
+
+    void request
+      .then((result) => {
+        if (active) {
+          setSongs(result);
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setSongsLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
   }, [selectedItem, panelOpen]);
 
   // ── virtualizer ──────────────────────────────────────────────────────────
@@ -665,60 +717,60 @@ export default function ImageryClient({ items, categories }: Props) {
         ref={headerRef}
         className="relative overflow-hidden pt-32 pb-12 px-6 text-center"
       >
-        <div
-          aria-hidden
-          className="absolute inset-0 pointer-events-none select-none overflow-hidden flex flex-col justify-center gap-5 opacity-[0.045] dark:opacity-[0.055]"
-        >
-          {(
-            [
-              {
-                d: "42s",
-                m: "10s",
-                dir: "imagery-marquee-ltr",
-                size: "text-2xl md:text-4xl",
-              },
-              {
-                d: "60s",
-                m: "15s",
-                dir: "imagery-marquee-rtl",
-                size: "text-xl md:text-3xl",
-              },
-              {
-                d: "78s",
-                m: "20s",
-                dir: "imagery-marquee-ltr",
-                size: "text-lg md:text-2xl",
-              },
-            ] as const
-          ).map(({ d, m, dir, size }, ri) => {
-            const rowWords = marqueeRows[ri % marqueeRows.length] || [];
-            const duration = isDesktop ? d : m;
-            return (
-              <div
-                key={ri}
-                className="flex whitespace-nowrap font-serif will-change-transform"
-                style={{
-                  animationName: dir,
-                  animationDuration: duration,
-                  animationTimingFunction: "linear",
-                  animationIterationCount: "infinite",
-                  animationPlayState: headerVisible ? "running" : "paused",
-                }}
-              >
-                {[...rowWords, ...rowWords].map((w, i) => (
-                  <span
-                    key={i}
-                    className={`${size} mx-5 text-slate-900 dark:text-white`}
-                  >
-                    {w.name}
-                  </span>
-                ))}
-              </div>
-            );
-          })}
-        </div>
-
         <div className="relative z-10">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-1/2 z-0 flex -translate-y-1/2 select-none flex-col justify-center gap-5 overflow-hidden opacity-[0.045] dark:opacity-[0.055]"
+          >
+            {(
+              [
+                {
+                  d: "42s",
+                  m: "10s",
+                  dir: "imagery-marquee-ltr",
+                  size: "text-2xl md:text-4xl",
+                },
+                {
+                  d: "60s",
+                  m: "15s",
+                  dir: "imagery-marquee-rtl",
+                  size: "text-xl md:text-3xl",
+                },
+                {
+                  d: "78s",
+                  m: "20s",
+                  dir: "imagery-marquee-ltr",
+                  size: "text-lg md:text-2xl",
+                },
+              ] as const
+            ).map(({ d, m, dir, size }, ri) => {
+              const rowWords = marqueeRows[ri % marqueeRows.length] || [];
+              const duration = isDesktop ? d : m;
+              return (
+                <div
+                  key={ri}
+                  className="flex whitespace-nowrap font-serif will-change-transform"
+                  style={{
+                    animationName: dir,
+                    animationDuration: duration,
+                    animationTimingFunction: "linear",
+                    animationIterationCount: "infinite",
+                    animationPlayState: headerVisible ? "running" : "paused",
+                  }}
+                >
+                  {[...rowWords, ...rowWords].map((w, i) => (
+                    <span
+                      key={i}
+                      className={`${size} mx-5 text-slate-900 dark:text-white`}
+                    >
+                      {w.name}
+                    </span>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+
           <h1 className="font-serif text-5xl md:text-7xl font-normal text-slate-800 dark:text-slate-100 mb-4 flex justify-center items-center gap-4 sm:gap-10 drop-shadow-[0_0_30px_rgba(255,255,255,0.05)]">
             {"意象词云".split("").map((char, i) => (
               <span
@@ -734,7 +786,7 @@ export default function ImageryClient({ items, categories }: Props) {
             className={`font-serif text-base md:text-xl text-slate-500 dark:text-slate-400 tracking-[0.4em] pl-[0.4em] mb-3 ${mounted ? "hero-unroll" : "opacity-0"}`}
             style={{ animationDelay: "1600ms" }}
           >
-            场景 {wordDisplayList.length} ，长歌踏雪去何方
+            行过 {wordDisplayList.length} ，长歌踏雪去何方
           </p>
         </div>
       </header>
@@ -749,19 +801,17 @@ export default function ImageryClient({ items, categories }: Props) {
 
             <button
               onClick={() => setActiveL1Id(null)}
-              className={`group relative py-1.5 text-[14px] transition-all duration-700 font-serif tracking-[0.2em] whitespace-nowrap ${
-                activeL1Id === null
-                  ? "text-slate-900 dark:text-white"
-                  : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:tracking-[0.25em]"
-              }`}
+              className={`group relative py-1.5 text-[14px] transition-all duration-700 font-serif tracking-[0.2em] whitespace-nowrap ${activeL1Id === null
+                ? "text-slate-900 dark:text-white"
+                : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:tracking-[0.25em]"
+                }`}
             >
               全部
               <span
-                className={`absolute bottom-0 left-0 h-px bg-slate-400/60 transition-all duration-1000 ease-out origin-left ${
-                  activeL1Id === null
-                    ? "w-full scale-x-100 opacity-100"
-                    : "w-full scale-x-0 opacity-0"
-                }`}
+                className={`absolute bottom-0 left-0 h-px bg-slate-400/60 transition-all duration-1000 ease-out origin-left ${activeL1Id === null
+                  ? "w-full scale-x-100 opacity-100"
+                  : "w-full scale-x-0 opacity-0"
+                  }`}
               />
             </button>
 
@@ -773,11 +823,10 @@ export default function ImageryClient({ items, categories }: Props) {
                   <div className="w-[0.5px] h-3 bg-slate-200/50 dark:bg-slate-800/30 rotate-12" />
                   <button
                     onClick={() => setActiveL1Id(isActive ? null : cat.id)}
-                    className={`group relative py-1.5 text-[14px] transition-all duration-700 font-serif tracking-[0.2em] whitespace-nowrap ${
-                      isActive
-                        ? "text-slate-900 dark:text-white"
-                        : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:tracking-[0.25em]"
-                    }`}
+                    className={`group relative py-1.5 text-[14px] transition-all duration-700 font-serif tracking-[0.2em] whitespace-nowrap ${isActive
+                      ? "text-slate-900 dark:text-white"
+                      : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:tracking-[0.25em]"
+                      }`}
                   >
                     {cat.name}
                     <span
@@ -823,11 +872,10 @@ export default function ImageryClient({ items, categories }: Props) {
                     <button
                       key={cat.id}
                       onClick={() => setActiveL2Id(isActive ? null : cat.id)}
-                      className={`group relative text-[12px] transition-all duration-700 font-serif tracking-widest whitespace-nowrap py-1 ${
-                        isActive
-                          ? "text-slate-700 dark:text-slate-300"
-                          : "text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-400 hover:tracking-[0.15em]"
-                      }`}
+                      className={`group relative text-[12px] transition-all duration-700 font-serif tracking-widest whitespace-nowrap py-1 ${isActive
+                        ? "text-slate-700 dark:text-slate-300"
+                        : "text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-400 hover:tracking-[0.15em]"
+                        }`}
                     >
                       <span
                         className={`inline-block transition-all duration-700 font-system ${isActive ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"} mr-1.5`}
@@ -861,9 +909,9 @@ export default function ImageryClient({ items, categories }: Props) {
         style={
           mounted
             ? {
-                animation: "main-fade-in 1s ease-out both",
-                animationDelay: "200ms",
-              }
+              animation: "main-fade-in 1s ease-out both",
+              animationDelay: "200ms",
+            }
             : undefined
         }
       >

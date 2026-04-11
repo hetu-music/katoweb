@@ -93,6 +93,7 @@ function ProfileContent() {
   // Password Form State
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [pwdSaving, setPwdSaving] = useState(false);
   const [pwdMsg, setPwdMsg] = useState<string | null>(null);
 
@@ -138,7 +139,20 @@ function ProfileContent() {
   }, [csrfToken, saving, name, intro]);
 
   const handleChangePassword = useCallback(async () => {
-    if (!csrfToken || pwdSaving || !currentPassword || !newPassword) return;
+    if (!csrfToken || pwdSaving || !currentPassword || !newPassword || !confirmPassword) return;
+    // 客户端校验
+    if (newPassword.length < 8) {
+      setPwdMsg("新密码不能少于8位");
+      return;
+    }
+    if (!/[a-zA-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+      setPwdMsg("新密码需包含字母和数字");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPwdMsg("两次输入的新密码不一致");
+      return;
+    }
     setPwdSaving(true);
     setPwdMsg(null);
     try {
@@ -148,12 +162,13 @@ function ProfileContent() {
           "Content-Type": "application/json",
           "x-csrf-token": csrfToken,
         },
-        body: JSON.stringify({ currentPassword, newPassword }),
+        body: JSON.stringify({ oldPassword: currentPassword, newPassword }),
       });
       if (res.ok) {
         setPwdMsg("密码修改成功");
         setCurrentPassword("");
         setNewPassword("");
+        setConfirmPassword("");
       } else {
         const d = await res.json();
         setPwdMsg(d.error || "修改失败");
@@ -164,7 +179,7 @@ function ProfileContent() {
       setPwdSaving(false);
       setTimeout(() => setPwdMsg(null), 3500);
     }
-  }, [csrfToken, pwdSaving, currentPassword, newPassword]);
+  }, [csrfToken, pwdSaving, currentPassword, newPassword, confirmPassword]);
 
   const handleBack = useCallback(() => {
     const navDepthStr = sessionStorage.getItem("__katoweb_nav_depth");
@@ -588,16 +603,33 @@ function ProfileContent() {
                               className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:bg-white dark:focus:bg-[#111] focus:border-blue-500/50 outline-none transition-all text-sm text-slate-800 dark:text-slate-200"
                             />
                           </div>
+                          <div className="space-y-1.5 md:col-span-2 md:w-1/2">
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
+                              确认新密码
+                            </label>
+                            <input
+                              type="password"
+                              value={confirmPassword}
+                              onChange={(e) =>
+                                setConfirmPassword(e.target.value)
+                              }
+                              placeholder="再次输入新密码"
+                              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:bg-white dark:focus:bg-[#111] focus:border-blue-500/50 outline-none transition-all text-sm text-slate-800 dark:text-slate-200"
+                            />
+                          </div>
                         </div>
                         <div className="pt-2 flex items-center gap-3">
                           <button
                             onClick={handleChangePassword}
                             disabled={
-                              pwdSaving || !currentPassword || !newPassword
+                              pwdSaving ||
+                              !currentPassword ||
+                              !newPassword ||
+                              !confirmPassword
                             }
                             className={cn(
                               "px-6 py-2.5 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2",
-                              pwdSaving || !currentPassword || !newPassword
+                              pwdSaving || !currentPassword || !newPassword || !confirmPassword
                                 ? "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
                                 : "bg-rose-600 text-white hover:bg-rose-700 shadow-md shadow-rose-500/10 active:scale-95",
                             )}

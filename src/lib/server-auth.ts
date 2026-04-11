@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "./supabase-auth";
+import { getUserClient, TABLES } from "./supabase-server";
 import { verifyCSRFToken } from "./server-utils";
 
 export interface AuthenticatedUser {
@@ -122,13 +123,16 @@ export async function authenticateUserWithCSRF(
 
 /**
  * 高阶函数：为 API 路由添加身份验证
+ *
+ * options.requireCSRF  — 同时验证 CSRF token（写操作必须开启）
+ * options.requireAdmin — 额外校验 users 表中的 is_admin=true（管理后台操作必须开启）
  */
 export function withAuth(
   handler: (
     request: NextRequest,
     user: AuthenticatedUser,
   ) => Promise<NextResponse>,
-  options: { requireCSRF?: boolean } = {},
+  options: { requireCSRF?: boolean; requireAdmin?: boolean } = {},
 ) {
   return async (request: NextRequest): Promise<NextResponse> => {
     const authResult = options.requireCSRF
@@ -144,6 +148,29 @@ export function withAuth(
 
     if (!authResult.user) {
       return NextResponse.json({ error: "User not found" }, { status: 401 });
+    }
+
+    // Admin check: verify is_admin flag in the users table
+    if (options.requireAdmin) {
+      try {
+        const supabase = await createSupabaseServerClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        const userClient = getUserClient(session?.access_token);
+        if (!userClient) {
+          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        }
+        const { data: userData } = await userClient
+          .from(TABLES.USERS)
+          .select("is_admin")
+          .eq("id", authResult.user.id)
+          .maybeSingle();
+        if (!userData?.is_admin) {
+          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        }
+      } catch (error) {
+        console.error("Admin check error:", error);
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
     }
 
     return handler(request, authResult.user);
