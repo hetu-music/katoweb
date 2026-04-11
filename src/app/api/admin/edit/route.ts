@@ -40,7 +40,6 @@ export const GET = withAuth(
       } = await supabase.auth.getSession();
       const songs = await getSongs(TABLES.ADMIN, session?.access_token);
       return NextResponse.json(songs);
-
     } catch (e: unknown) {
       if (
         e &&

@@ -947,7 +947,6 @@ export default function AdminClientComponent({
                     </div>
                   ))}
                 </div>
-
               </form>
             </div>
 

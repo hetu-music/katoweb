@@ -45,7 +45,10 @@ export default function CategoriesTab({
         actions={
           <>
             <StatPill label="分类总数" value={sortedCategoriesLength} />
-            <button onClick={() => onAddCategory()} className={primaryButtonClassName()}>
+            <button
+              onClick={() => onAddCategory()}
+              className={primaryButtonClassName()}
+            >
               <FolderPlus size={14} />
               新增顶级分类
             </button>
@@ -54,7 +57,9 @@ export default function CategoriesTab({
       />
 
       <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className={cn(cardClassName(), "sticky top-28 h-fit overflow-hidden")}>
+        <aside
+          className={cn(cardClassName(), "sticky top-28 h-fit overflow-hidden")}
+        >
           <div className="flex items-center justify-between border-b border-slate-200/70 px-5 py-4 dark:border-slate-800/70">
             <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
               <ListTree size={14} />
@@ -70,7 +75,9 @@ export default function CategoriesTab({
           </div>
           <div className="max-h-[calc(100vh-14rem)] overflow-y-auto px-3 py-3">
             {categoryTree.length === 0 ? (
-              <p className="py-8 text-center text-xs text-slate-400">暂无分类，点击右上角新增。</p>
+              <p className="py-8 text-center text-xs text-slate-400">
+                暂无分类，点击右上角新增。
+              </p>
             ) : (
               categoryTree.map((node) => (
                 <CategoryTreeNode
@@ -89,7 +96,9 @@ export default function CategoriesTab({
 
         <div className={cn(cardClassName(), "overflow-hidden")}>
           <div className="border-b border-slate-200/70 px-6 py-5 dark:border-slate-800/70">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">分类列表</h3>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+              分类列表
+            </h3>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               分页展示所有分类，方便按路径核对层级和挂载数量。
             </p>

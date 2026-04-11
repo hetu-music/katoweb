@@ -53,12 +53,12 @@ function SectionLabel({ label, accent }: { label: string; accent: string }) {
         <AnimatePresence mode="wait">
           <motion.span
             key={label}
-            initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
+            initial={{ opacity: 0, y: 6, filter: "blur(4px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: -8, filter: "blur(4px)" }}
-            transition={{ 
-              duration: 0.4, 
-              ease: [0.23, 1, 0.32, 1]
+            exit={{ opacity: 0, y: -6, filter: "blur(4px)" }}
+            transition={{
+              duration: 0.25,
+              ease: [0.23, 1, 0.32, 1],
             }}
             className="absolute text-[10px] tracking-[0.3em] pl-[0.3em] font-medium shrink-0 whitespace-nowrap"
             style={{ color: accent }}
@@ -97,10 +97,10 @@ const PanelBody = memo(function PanelBody({
     () =>
       activeLyricist
         ? songs.filter((song) =>
-          activeLyricist === "未知"
-            ? !song.lyricist || song.lyricist.length === 0
-            : song.lyricist?.includes(activeLyricist),
-        )
+            activeLyricist === "未知"
+              ? !song.lyricist || song.lyricist.length === 0
+              : song.lyricist?.includes(activeLyricist),
+          )
         : songs,
     [songs, activeLyricist],
   );
@@ -119,10 +119,11 @@ const PanelBody = memo(function PanelBody({
   if (songs.length === 0) {
     return (
       <p
-        className={`text-center text-sm tracking-[0.25em] pl-[0.25em] py-16 ${isDesktop
+        className={`text-center text-sm tracking-[0.25em] pl-[0.25em] py-16 ${
+          isDesktop
             ? "text-slate-300 dark:text-slate-700"
             : "text-slate-400 dark:text-slate-600"
-          }`}
+        }`}
       >
         暂无相关词作
       </p>
@@ -138,26 +139,29 @@ const PanelBody = memo(function PanelBody({
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-2">
             <button
               onClick={() => onLyricistClick("")}
-              className={`group relative text-[13px] transition-all duration-500 font-serif tracking-widest whitespace-nowrap py-1 ${!activeLyricist
+              className={`group relative text-[13px] transition-all duration-500 font-serif tracking-widest whitespace-nowrap py-1 ${
+                !activeLyricist
                   ? "text-slate-900 dark:text-white"
                   : "text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                }`}
+              }`}
             >
               <span
-                className={`inline-block transition-all duration-500 font-system ${!activeLyricist
+                className={`inline-block transition-all duration-500 font-system ${
+                  !activeLyricist
                     ? "opacity-100 translate-x-0"
                     : "opacity-0 -translate-x-2"
-                  } mr-1`}
+                } mr-1`}
                 style={{ color: selectedPalette.accent }}
               >
                 「
               </span>
               全部
               <span
-                className={`inline-block transition-all duration-500 font-system ${!activeLyricist
+                className={`inline-block transition-all duration-500 font-system ${
+                  !activeLyricist
                     ? "opacity-100 translate-x-0"
                     : "opacity-0 translate-x-2"
-                  } ml-1`}
+                } ml-1`}
                 style={{ color: selectedPalette.accent }}
               >
                 」
@@ -170,26 +174,29 @@ const PanelBody = memo(function PanelBody({
                 <button
                   key={name}
                   onClick={() => onLyricistClick(name)}
-                  className={`group relative text-[13px] transition-all duration-500 font-serif tracking-widest whitespace-nowrap py-1 ${isActive
+                  className={`group relative text-[13px] transition-all duration-500 font-serif tracking-widest whitespace-nowrap py-1 ${
+                    isActive
                       ? "text-slate-900 dark:text-white"
                       : "text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                    }`}
+                  }`}
                 >
                   <span
-                    className={`inline-block transition-all duration-500 font-system ${isActive
+                    className={`inline-block transition-all duration-500 font-system ${
+                      isActive
                         ? "opacity-100 translate-x-0"
                         : "opacity-0 -translate-x-2"
-                      } mr-1`}
+                    } mr-1`}
                     style={{ color: selectedPalette.accent }}
                   >
                     「
                   </span>
                   {name}
                   <span
-                    className={`inline-block transition-all duration-500 font-system ${isActive
+                    className={`inline-block transition-all duration-500 font-system ${
+                      isActive
                         ? "opacity-100 translate-x-0"
                         : "opacity-0 translate-x-2"
-                      } ml-1`}
+                    } ml-1`}
                     style={{ color: selectedPalette.accent }}
                   >
                     」
@@ -217,19 +224,19 @@ const PanelBody = memo(function PanelBody({
                 key={song.id}
                 layout
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ 
-                  opacity: 1, 
+                animate={{
+                  opacity: 1,
                   y: 0,
                   transition: {
                     delay: i * 0.02,
                     duration: 0.5,
-                    ease: [0.23, 1, 0.32, 1]
-                  }
+                    ease: [0.23, 1, 0.32, 1],
+                  },
                 }}
-                exit={{ 
-                  opacity: 0, 
+                exit={{
+                  opacity: 0,
                   scale: 0.98,
-                  transition: { duration: 0.2 }
+                  transition: { duration: 0.2 },
                 }}
                 className="w-full"
               >

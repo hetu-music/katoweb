@@ -89,13 +89,21 @@ export default function ImageryTab({
             <EmptyState
               icon={<Tag size={24} />}
               title={searchTerm ? "没有找到匹配的意象" : "暂无意象"}
-              description={searchTerm ? "试试别的关键词。" : "点击右上角的按钮创建第一条意象。"}
+              description={
+                searchTerm
+                  ? "试试别的关键词。"
+                  : "点击右上角的按钮创建第一条意象。"
+              }
             />
           ) : (
             <div className="space-y-3">
               {pagedItems.map((item) => {
                 const categoryNames = item.categoryIds
-                  .map((categoryId) => categories.find((category) => category.id === categoryId)?.name)
+                  .map(
+                    (categoryId) =>
+                      categories.find((category) => category.id === categoryId)
+                        ?.name,
+                  )
                   .filter((value): value is string => Boolean(value));
 
                 return (

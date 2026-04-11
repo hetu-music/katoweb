@@ -21,7 +21,10 @@ export const GET = withAuth(
       return NextResponse.json(categories);
     } catch (e) {
       console.error("[GET /api/admin/imagery/categories]", e);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 },
+      );
     }
   },
   { requireAdmin: true },
@@ -33,20 +36,31 @@ export const POST = withAuth(
       const body = await request.json();
       const parsed = CreateCategorySchema.safeParse(body);
       if (!parsed.success) {
-        return NextResponse.json({ error: "Invalid input", details: parsed.error.issues }, { status: 400 });
+        return NextResponse.json(
+          { error: "Invalid input", details: parsed.error.issues },
+          { status: 400 },
+        );
       }
 
       const supabase = await createSupabaseServerClient();
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session?.access_token) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
 
-      const created = await createImageryCategory(parsed.data, session.access_token);
+      const created = await createImageryCategory(
+        parsed.data,
+        session.access_token,
+      );
       return NextResponse.json(created);
     } catch (e) {
       console.error("[POST /api/admin/imagery/categories]", e);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 },
+      );
     }
   },
   { requireCSRF: true, requireAdmin: true },

@@ -24,15 +24,29 @@ export const PUT = withAuth(
     try {
       const body = await request.json();
       const parsed = UpdateOccurrenceSchema.safeParse(body);
-      if (!parsed.success) return NextResponse.json({ error: "Invalid input", details: parsed.error.issues }, { status: 400 });
+      if (!parsed.success)
+        return NextResponse.json(
+          { error: "Invalid input", details: parsed.error.issues },
+          { status: 400 },
+        );
       const supabase = await createSupabaseServerClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      const updated = await updateOccurrence(id, parsed.data, session.access_token);
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token)
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      const updated = await updateOccurrence(
+        id,
+        parsed.data,
+        session.access_token,
+      );
       return NextResponse.json(updated);
     } catch (e) {
       console.error("[PUT /api/admin/occurrences/[id]]", e);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 },
+      );
     }
   },
   { requireCSRF: true, requireAdmin: true },
@@ -44,13 +58,19 @@ export const DELETE = withAuth(
     if (!id) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
     try {
       const supabase = await createSupabaseServerClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token)
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       await deleteOccurrence(id, session.access_token);
       return NextResponse.json({ success: true });
     } catch (e) {
       console.error("[DELETE /api/admin/occurrences/[id]]", e);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 },
+      );
     }
   },
   { requireCSRF: true, requireAdmin: true },

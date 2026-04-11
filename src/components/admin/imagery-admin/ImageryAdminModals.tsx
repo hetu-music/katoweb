@@ -57,7 +57,11 @@ export default function ImageryAdminModals({
     return (
       <ModalBackdrop onClose={onClose}>
         <ModalCard>
-          <form onSubmit={modal.type === "add-imagery" ? onAddImagery : onEditImagery}>
+          <form
+            onSubmit={
+              modal.type === "add-imagery" ? onAddImagery : onEditImagery
+            }
+          >
             <div className="border-b border-slate-200/70 px-6 py-5 dark:border-slate-800/70">
               <div className="flex items-center justify-between">
                 <div>
@@ -65,10 +69,16 @@ export default function ImageryAdminModals({
                     Imagery Item
                   </div>
                   <h2 className="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">
-                    {modal.type === "add-imagery" ? "新增意象" : `编辑意象 · ${modal.item.name}`}
+                    {modal.type === "add-imagery"
+                      ? "新增意象"
+                      : `编辑意象 · ${modal.item.name}`}
                   </h2>
                 </div>
-                <button type="button" onClick={onClose} className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+                >
                   <X size={18} />
                 </button>
               </div>
@@ -91,7 +101,11 @@ export default function ImageryAdminModals({
             </div>
 
             <div className="flex justify-end gap-2 border-t border-slate-200/70 px-6 py-5 dark:border-slate-800/70">
-              <button type="button" onClick={onClose} className={ghostButtonClassName()}>
+              <button
+                type="button"
+                onClick={onClose}
+                className={ghostButtonClassName()}
+              >
                 取消
               </button>
               <button
@@ -162,7 +176,11 @@ export default function ImageryAdminModals({
     return (
       <ModalBackdrop onClose={onClose}>
         <ModalCard>
-          <form onSubmit={modal.type === "add-category" ? onAddCategory : onEditCategory}>
+          <form
+            onSubmit={
+              modal.type === "add-category" ? onAddCategory : onEditCategory
+            }
+          >
             <div className="border-b border-slate-200/70 px-6 py-5 dark:border-slate-800/70">
               <div className="flex items-center justify-between">
                 <div>
@@ -170,10 +188,16 @@ export default function ImageryAdminModals({
                     Category
                   </div>
                   <h2 className="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">
-                    {modal.type === "add-category" ? "新增分类" : `编辑分类 · ${modal.category.name}`}
+                    {modal.type === "add-category"
+                      ? "新增分类"
+                      : `编辑分类 · ${modal.category.name}`}
                   </h2>
                 </div>
-                <button type="button" onClick={onClose} className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+                >
                   <X size={18} />
                 </button>
               </div>
@@ -188,7 +212,10 @@ export default function ImageryAdminModals({
                   type="text"
                   value={categoryForm.name}
                   onChange={(event) =>
-                    onCategoryFormChange({ ...categoryForm, name: event.target.value })
+                    onCategoryFormChange({
+                      ...categoryForm,
+                      name: event.target.value,
+                    })
                   }
                   required
                   autoFocus
@@ -205,7 +232,9 @@ export default function ImageryAdminModals({
                       ? parseInt(event.target.value, 10)
                       : null;
                     const parent = nextParentId
-                      ? categories.find((category) => category.id === nextParentId)
+                      ? categories.find(
+                          (category) => category.id === nextParentId,
+                        )
                       : null;
                     onCategoryFormChange({
                       ...categoryForm,
@@ -219,7 +248,8 @@ export default function ImageryAdminModals({
                   {categories
                     .filter(
                       (category) =>
-                        (modal.type !== "edit-category" || category.id !== modal.category.id) &&
+                        (modal.type !== "edit-category" ||
+                          category.id !== modal.category.id) &&
                         (category.level ?? 0) < 3,
                     )
                     .map((category) => (
@@ -248,7 +278,11 @@ export default function ImageryAdminModals({
             </div>
 
             <div className="flex justify-end gap-2 border-t border-slate-200/70 px-6 py-5 dark:border-slate-800/70">
-              <button type="button" onClick={onClose} className={ghostButtonClassName()}>
+              <button
+                type="button"
+                onClick={onClose}
+                className={ghostButtonClassName()}
+              >
                 取消
               </button>
               <button
@@ -292,12 +326,15 @@ function DeleteConfirmationModal({
               <AlertCircle size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{title}</h2>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                {title}
+              </h2>
               <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
                 {description}
               </p>
               <p className="mt-3 text-xs text-slate-400 dark:text-slate-500">
-                请输入 <span className="font-semibold text-red-500">删除</span> 以完成二次确认。
+                请输入 <span className="font-semibold text-red-500">删除</span>{" "}
+                以完成二次确认。
               </p>
             </div>
           </div>
@@ -306,14 +343,18 @@ function DeleteConfirmationModal({
               type="text"
               value={confirmationText}
               onChange={(event) => setConfirmationText(event.target.value)}
-              placeholder='输入“删除”确认'
+              placeholder="输入“删除”确认"
               autoFocus
               className={compactInputClassName()}
             />
           </div>
         </div>
         <div className="flex justify-end gap-2 border-t border-slate-200/70 px-6 py-5 dark:border-slate-800/70">
-          <button type="button" onClick={onClose} className={ghostButtonClassName()}>
+          <button
+            type="button"
+            onClick={onClose}
+            className={ghostButtonClassName()}
+          >
             取消
           </button>
           <button

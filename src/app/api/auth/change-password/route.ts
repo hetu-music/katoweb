@@ -14,10 +14,7 @@ export const POST = withAuth(
 
     // 新密码格式校验
     if (newPassword.length < 8) {
-      return NextResponse.json(
-        { error: "新密码不能少于8位" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "新密码不能少于8位" }, { status: 400 });
     }
     if (!/[a-zA-Z]/.test(newPassword)) {
       return NextResponse.json(

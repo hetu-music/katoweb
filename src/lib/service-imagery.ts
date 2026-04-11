@@ -1,4 +1,9 @@
-import { getServiceClient, getUserClient, fetchAll, TABLES } from "./supabase-server";
+import {
+  getServiceClient,
+  getUserClient,
+  fetchAll,
+  TABLES,
+} from "./supabase-server";
 import type {
   ImageryCategory,
   ImageryItem,
@@ -52,7 +57,11 @@ function mapOccurrenceRow(row: Record<string, unknown>): OccurrenceWithSong {
 export async function getImageryCategories(): Promise<ImageryCategory[]> {
   const supabase = getServiceClient();
   if (!supabase) return [];
-  return fetchAll(supabase, TABLES.IMAGERY_CAT, "id,name,parent_id,level,description") as Promise<ImageryCategory[]>;
+  return fetchAll(
+    supabase,
+    TABLES.IMAGERY_CAT,
+    "id,name,parent_id,level,description",
+  ) as Promise<ImageryCategory[]>;
 }
 
 export async function getImageryWithCounts(): Promise<ImageryItem[]> {
@@ -74,7 +83,9 @@ export async function getImageryWithCounts(): Promise<ImageryItem[]> {
       id: item.id,
       name: item.name,
       count: item.count ?? 0,
-      categoryIds: (item.categoryIds ?? []).map((value) => Number(value)).filter(Number.isFinite),
+      categoryIds: (item.categoryIds ?? [])
+        .map((value) => Number(value))
+        .filter(Number.isFinite),
       meaningCount: 0,
     }));
   } catch (e) {
@@ -91,7 +102,10 @@ export async function getImageryMeanings(): Promise<ImageryMeaning[]> {
       .from(TABLES.IMAGERY_MEANINGS)
       .select("id,label,description")
       .order("label", { ascending: true });
-    if (error) { console.error("[getImageryMeanings]", error); return []; }
+    if (error) {
+      console.error("[getImageryMeanings]", error);
+      return [];
+    }
     return (data ?? []) as ImageryMeaning[];
   } catch (e) {
     console.error("[getImageryMeanings]", e);
@@ -99,19 +113,28 @@ export async function getImageryMeanings(): Promise<ImageryMeaning[]> {
   }
 }
 
-export async function getMeaningsForImagery(_imageryId: number): Promise<ImageryMeaning[]> {
+export async function getMeaningsForImagery(
+  _imageryId: number,
+): Promise<ImageryMeaning[]> {
   return getImageryMeanings();
 }
 
-export async function getOccurrencesForImagery(imageryId: number): Promise<OccurrenceWithSong[]> {
+export async function getOccurrencesForImagery(
+  imageryId: number,
+): Promise<OccurrenceWithSong[]> {
   const supabase = getServiceClient();
   if (!supabase) return [];
   try {
     const { data, error } = await supabase
       .from("imagery_occurrences")
-      .select("*, music(title, album), imagery(name), imagery_categories(name), imagery_meanings(label)")
+      .select(
+        "*, music(title, album), imagery(name), imagery_categories(name), imagery_meanings(label)",
+      )
       .eq("imagery_id", imageryId);
-    if (error) { console.error("[getOccurrencesForImagery]", error); return []; }
+    if (error) {
+      console.error("[getOccurrencesForImagery]", error);
+      return [];
+    }
     return ((data ?? []) as Record<string, unknown>[]).map(mapOccurrenceRow);
   } catch (e) {
     console.error("[getOccurrencesForImagery]", e);
@@ -119,15 +142,22 @@ export async function getOccurrencesForImagery(imageryId: number): Promise<Occur
   }
 }
 
-export async function getOccurrencesForSong(songId: number): Promise<OccurrenceWithSong[]> {
+export async function getOccurrencesForSong(
+  songId: number,
+): Promise<OccurrenceWithSong[]> {
   const supabase = getServiceClient();
   if (!supabase) return [];
   try {
     const { data, error } = await supabase
       .from("imagery_occurrences")
-      .select("*, music(title, album), imagery(name), imagery_categories(name), imagery_meanings(label)")
+      .select(
+        "*, music(title, album), imagery(name), imagery_categories(name), imagery_meanings(label)",
+      )
       .eq("song_id", songId);
-    if (error) { console.error("[getOccurrencesForSong]", error); return []; }
+    if (error) {
+      console.error("[getOccurrencesForSong]", error);
+      return [];
+    }
     return ((data ?? []) as Record<string, unknown>[]).map(mapOccurrenceRow);
   } catch (e) {
     console.error("[getOccurrencesForSong]", e);
@@ -140,15 +170,28 @@ export async function getOccurrencesForSong(songId: number): Promise<OccurrenceW
 export async function createImagery(name: string, accessToken: string) {
   const supabase = getUserClient(accessToken);
   if (!supabase) throw new Error("Supabase client unavailable");
-  const { data, error } = await supabase.from(TABLES.IMAGERY).insert({ name }).select().single();
+  const { data, error } = await supabase
+    .from(TABLES.IMAGERY)
+    .insert({ name })
+    .select()
+    .single();
   if (error) throw error;
   return data;
 }
 
-export async function updateImagery(id: number, name: string, accessToken: string) {
+export async function updateImagery(
+  id: number,
+  name: string,
+  accessToken: string,
+) {
   const supabase = getUserClient(accessToken);
   if (!supabase) throw new Error("Supabase client unavailable");
-  const { data, error } = await supabase.from(TABLES.IMAGERY).update({ name }).eq("id", id).select().single();
+  const { data, error } = await supabase
+    .from(TABLES.IMAGERY)
+    .update({ name })
+    .eq("id", id)
+    .select()
+    .single();
   if (error) throw error;
   return data;
 }
@@ -163,24 +206,43 @@ export async function deleteImagery(id: number, accessToken: string) {
 // ─── write functions: imagery categories ─────────────────────────────────────
 
 export async function createImageryCategory(
-  data: { name: string; parent_id?: number | null; level?: number | null; description?: string | null },
+  data: {
+    name: string;
+    parent_id?: number | null;
+    level?: number | null;
+    description?: string | null;
+  },
   accessToken: string,
 ) {
   const supabase = getUserClient(accessToken);
   if (!supabase) throw new Error("Supabase client unavailable");
-  const { data: created, error } = await supabase.from(TABLES.IMAGERY_CAT).insert(data).select().single();
+  const { data: created, error } = await supabase
+    .from(TABLES.IMAGERY_CAT)
+    .insert(data)
+    .select()
+    .single();
   if (error) throw error;
   return created;
 }
 
 export async function updateImageryCategory(
   id: number,
-  data: { name?: string; parent_id?: number | null; level?: number | null; description?: string | null },
+  data: {
+    name?: string;
+    parent_id?: number | null;
+    level?: number | null;
+    description?: string | null;
+  },
   accessToken: string,
 ) {
   const supabase = getUserClient(accessToken);
   if (!supabase) throw new Error("Supabase client unavailable");
-  const { data: updated, error } = await supabase.from(TABLES.IMAGERY_CAT).update(data).eq("id", id).select().single();
+  const { data: updated, error } = await supabase
+    .from(TABLES.IMAGERY_CAT)
+    .update(data)
+    .eq("id", id)
+    .select()
+    .single();
   if (error) throw error;
   return updated;
 }
@@ -188,21 +250,23 @@ export async function updateImageryCategory(
 export async function deleteImageryCategory(id: number, accessToken: string) {
   const supabase = getUserClient(accessToken);
   if (!supabase) throw new Error("Supabase client unavailable");
-  const { error } = await supabase.from(TABLES.IMAGERY_CAT).delete().eq("id", id);
+  const { error } = await supabase
+    .from(TABLES.IMAGERY_CAT)
+    .delete()
+    .eq("id", id);
   if (error) throw error;
 }
 
 // ─── write functions: meanings ────────────────────────────────────────────────
 
-async function getOccurrenceWithRelationsById(
-  id: number,
-  accessToken: string,
-) {
+async function getOccurrenceWithRelationsById(id: number, accessToken: string) {
   const supabase = getUserClient(accessToken);
   if (!supabase) throw new Error("Supabase client unavailable");
   const { data, error } = await supabase
     .from(TABLES.IMAGERY_OCC)
-    .select("*, music(title, album), imagery(name), imagery_categories(name), imagery_meanings(label)")
+    .select(
+      "*, music(title, album), imagery(name), imagery_categories(name), imagery_meanings(label)",
+    )
     .eq("id", id)
     .single();
   if (error) throw error;
@@ -255,14 +319,23 @@ export async function updateMeaning(
 export async function deleteMeaning(id: number, accessToken: string) {
   const supabase = getUserClient(accessToken);
   if (!supabase) throw new Error("Supabase client unavailable");
-  const { error } = await supabase.from(TABLES.IMAGERY_MEANINGS).delete().eq("id", id);
+  const { error } = await supabase
+    .from(TABLES.IMAGERY_MEANINGS)
+    .delete()
+    .eq("id", id);
   if (error) throw error;
 }
 
 // ─── write functions: occurrences ─────────────────────────────────────────────
 
 export async function createOccurrence(
-  data: { song_id: number; imagery_id: number; category_id: number; meaning_id?: number | null; lyric_timetag: Record<string, unknown>[] },
+  data: {
+    song_id: number;
+    imagery_id: number;
+    category_id: number;
+    meaning_id?: number | null;
+    lyric_timetag: Record<string, unknown>[];
+  },
   accessToken: string,
 ) {
   const supabase = getUserClient(accessToken);
@@ -273,12 +346,20 @@ export async function createOccurrence(
     .select()
     .single();
   if (error) throw error;
-  return getOccurrenceWithRelationsById((created as { id: number }).id, accessToken);
+  return getOccurrenceWithRelationsById(
+    (created as { id: number }).id,
+    accessToken,
+  );
 }
 
 export async function updateOccurrence(
   id: number,
-  data: { imagery_id?: number; category_id?: number; meaning_id?: number | null; lyric_timetag?: Record<string, unknown>[] },
+  data: {
+    imagery_id?: number;
+    category_id?: number;
+    meaning_id?: number | null;
+    lyric_timetag?: Record<string, unknown>[];
+  },
   accessToken: string,
 ) {
   const supabase = getUserClient(accessToken);
@@ -296,13 +377,18 @@ export async function updateOccurrence(
 export async function deleteOccurrence(id: number, accessToken: string) {
   const supabase = getUserClient(accessToken);
   if (!supabase) throw new Error("Supabase client unavailable");
-  const { error } = await supabase.from(TABLES.IMAGERY_OCC).delete().eq("id", id);
+  const { error } = await supabase
+    .from(TABLES.IMAGERY_OCC)
+    .delete()
+    .eq("id", id);
   if (error) throw error;
 }
 
 // ─── public read functions ─────────────────────────────────────────────────────
 
-export async function getSongsForImagery(imageryId: number): Promise<SongRef[]> {
+export async function getSongsForImagery(
+  imageryId: number,
+): Promise<SongRef[]> {
   const supabase = getServiceClient();
   if (!supabase) return [];
   try {
@@ -310,14 +396,25 @@ export async function getSongsForImagery(imageryId: number): Promise<SongRef[]> 
       .from(TABLES.IMAGERY_OCC)
       .select("song_id, music(id, title, lyricist)")
       .eq("imagery_id", imageryId);
-    if (error) { console.error("[getSongsForImagery]", error); return []; }
+    if (error) {
+      console.error("[getSongsForImagery]", error);
+      return [];
+    }
     const seen = new Set<number>();
     const results: SongRef[] = [];
     for (const row of (data ?? []) as Record<string, unknown>[]) {
-      const m = row.music as { id?: number; title?: string; lyricist?: string[] | null } | null;
+      const m = row.music as {
+        id?: number;
+        title?: string;
+        lyricist?: string[] | null;
+      } | null;
       if (m?.id && !seen.has(m.id)) {
         seen.add(m.id);
-        results.push({ id: m.id, title: m.title ?? "", lyricist: m.lyricist ?? null });
+        results.push({
+          id: m.id,
+          title: m.title ?? "",
+          lyricist: m.lyricist ?? null,
+        });
       }
     }
     return results;

@@ -18,17 +18,24 @@ function getMidFromUrl(request: NextRequest): number | null {
 export const PUT = withAuth(
   async (request: NextRequest, _user: AuthenticatedUser) => {
     const mid = getMidFromUrl(request);
-    if (!mid) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+    if (!mid)
+      return NextResponse.json({ error: "Invalid id" }, { status: 400 });
     try {
       const body = await request.json();
       const parsed = UpdateMeaningSchema.safeParse(body);
       if (!parsed.success) {
-        return NextResponse.json({ error: "Invalid input", details: parsed.error.issues }, { status: 400 });
+        return NextResponse.json(
+          { error: "Invalid input", details: parsed.error.issues },
+          { status: 400 },
+        );
       }
 
       const supabase = await createSupabaseServerClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token)
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
       const updated = await updateMeaning(
         mid,
@@ -39,7 +46,10 @@ export const PUT = withAuth(
       return NextResponse.json(updated);
     } catch (e) {
       console.error("[PUT /api/admin/imagery/[id]/meanings/[mid]]", e);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 },
+      );
     }
   },
   { requireCSRF: true, requireAdmin: true },
@@ -48,17 +58,24 @@ export const PUT = withAuth(
 export const DELETE = withAuth(
   async (request: NextRequest, _user: AuthenticatedUser) => {
     const mid = getMidFromUrl(request);
-    if (!mid) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+    if (!mid)
+      return NextResponse.json({ error: "Invalid id" }, { status: 400 });
     try {
       const supabase = await createSupabaseServerClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token)
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
       await deleteMeaning(mid, session.access_token);
       return NextResponse.json({ success: true });
     } catch (e) {
       console.error("[DELETE /api/admin/imagery/[id]/meanings/[mid]]", e);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 },
+      );
     }
   },
   { requireCSRF: true, requireAdmin: true },

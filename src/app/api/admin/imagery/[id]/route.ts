@@ -29,7 +29,10 @@ export const GET = withAuth(
       return NextResponse.json(occurrences);
     } catch (e) {
       console.error("[GET /api/admin/imagery/[id]]", e);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 },
+      );
     }
   },
   { requireAdmin: true },
@@ -45,20 +48,32 @@ export const PUT = withAuth(
       const body = await request.json();
       const parsed = UpdateImagerySchema.safeParse(body);
       if (!parsed.success) {
-        return NextResponse.json({ error: "Invalid input", details: parsed.error.issues }, { status: 400 });
+        return NextResponse.json(
+          { error: "Invalid input", details: parsed.error.issues },
+          { status: 400 },
+        );
       }
 
       const supabase = await createSupabaseServerClient();
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session?.access_token) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
 
-      const updated = await updateImagery(imageryId, parsed.data.name, session.access_token);
+      const updated = await updateImagery(
+        imageryId,
+        parsed.data.name,
+        session.access_token,
+      );
       return NextResponse.json(updated);
     } catch (e) {
       console.error("[PUT /api/admin/imagery/[id]]", e);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 },
+      );
     }
   },
   { requireCSRF: true, requireAdmin: true },
@@ -72,7 +87,9 @@ export const DELETE = withAuth(
     }
     try {
       const supabase = await createSupabaseServerClient();
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session?.access_token) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
@@ -81,9 +98,11 @@ export const DELETE = withAuth(
       return NextResponse.json({ success: true });
     } catch (e) {
       console.error("[DELETE /api/admin/imagery/[id]]", e);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 },
+      );
     }
   },
   { requireCSRF: true, requireAdmin: true },
 );
-

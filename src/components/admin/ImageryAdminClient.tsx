@@ -21,7 +21,15 @@ import {
 } from "@/lib/client-api";
 import type { OccurrenceWithSong } from "@/lib/service-imagery";
 import type { ImageryCategory, ImageryItem, ImageryMeaning } from "@/lib/types";
-import { ArrowLeft, BookOpen, Home, Layers, ListTree, Tag, User } from "lucide-react";
+import {
+  ArrowLeft,
+  BookOpen,
+  Home,
+  Layers,
+  ListTree,
+  Tag,
+  User,
+} from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
@@ -44,7 +52,11 @@ import type {
   SongOption,
   Tab,
 } from "./imagery-admin/types";
-import { buildTree, getCategoryPath, parseLyricTimetag } from "./imagery-admin/utils";
+import {
+  buildTree,
+  getCategoryPath,
+  parseLyricTimetag,
+} from "./imagery-admin/utils";
 
 const PAGE_SIZE = 20;
 const SONG_PAGE_SIZE = 10;
@@ -57,7 +69,10 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   const [csrfToken, setCsrfToken] = useState("");
   const [activeTab, setActiveTab] = useState<Tab>("imagery");
   const [modal, setModal] = useState<ModalState>({ type: "none" });
-  const [toast, setToast] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [toast, setToast] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [items, setItems] = useState<ImageryItem[]>([]);
@@ -67,7 +82,8 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   const [imageryPage, setImageryPage] = useState(1);
   const [imageryFormName, setImageryFormName] = useState("");
 
-  const [categories, setCategories] = useState<ImageryCategory[]>(initialCategories);
+  const [categories, setCategories] =
+    useState<ImageryCategory[]>(initialCategories);
   const [categoryPage, setCategoryPage] = useState(1);
   const [categoryForm, setCategoryForm] = useState<CategoryFormState>({
     name: "",
@@ -82,7 +98,10 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   const [meaningsPage, setMeaningsPage] = useState(1);
   const [addingMeaning, setAddingMeaning] = useState(false);
   const [editingMeaningId, setEditingMeaningId] = useState<number | null>(null);
-  const [meaningForm, setMeaningForm] = useState({ label: "", description: "" });
+  const [meaningForm, setMeaningForm] = useState({
+    label: "",
+    description: "",
+  });
   const [meaningSubmitting, setMeaningSubmitting] = useState(false);
 
   const [allSongs, setAllSongs] = useState<SongOption[]>([]);
@@ -90,15 +109,21 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   const [songSearchTerm, setSongSearchTerm] = useState("");
   const [songsPage, setSongsPage] = useState(1);
   const [expandedSongId, setExpandedSongId] = useState<number | null>(null);
-  const [relationEditor, setRelationEditor] = useState<RelationEditor>({ type: "none" });
+  const [relationEditor, setRelationEditor] = useState<RelationEditor>({
+    type: "none",
+  });
   const [relationForm, setRelationForm] = useState<RelationFormState>({
     imagery_id: 0,
     category_id: 0,
     meaning_id: null,
     lyric_timetag: "[]",
   });
-  const [occurrencesBySong, setOccurrencesBySong] = useState<Record<number, OccurrenceWithSong[]>>({});
-  const [occurrenceLoadingSongId, setOccurrenceLoadingSongId] = useState<number | null>(null);
+  const [occurrencesBySong, setOccurrencesBySong] = useState<
+    Record<number, OccurrenceWithSong[]>
+  >({});
+  const [occurrenceLoadingSongId, setOccurrenceLoadingSongId] = useState<
+    number | null
+  >(null);
   const [occurrenceSubmitting, setOccurrenceSubmitting] = useState(false);
 
   const showToast = useCallback((type: "success" | "error", text: string) => {
@@ -125,7 +150,10 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
       const nextMeanings = await apiGetMeanings();
       setMeanings(nextMeanings);
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "加载含义失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "加载含义失败",
+      );
     } finally {
       setMeaningsLoading(false);
     }
@@ -136,13 +164,21 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
       setOccurrenceLoadingSongId(songId);
       try {
         const occurrences = await apiGetOccurrencesForSong(songId);
-        setOccurrencesBySong((current) => ({ ...current, [songId]: occurrences }));
+        setOccurrencesBySong((current) => ({
+          ...current,
+          [songId]: occurrences,
+        }));
         return occurrences;
       } catch (error) {
-        showToast("error", error instanceof Error ? error.message : "加载关系失败");
+        showToast(
+          "error",
+          error instanceof Error ? error.message : "加载关系失败",
+        );
         return [];
       } finally {
-        setOccurrenceLoadingSongId((current) => (current === songId ? null : current));
+        setOccurrenceLoadingSongId((current) =>
+          current === songId ? null : current,
+        );
       }
     },
     [showToast],
@@ -162,7 +198,10 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     apiGetSongs()
       .then(setAllSongs)
       .catch((error: unknown) => {
-        showToast("error", error instanceof Error ? error.message : "加载歌曲失败");
+        showToast(
+          "error",
+          error instanceof Error ? error.message : "加载歌曲失败",
+        );
       })
       .finally(() => setSongsLoading(false));
   }, [loadMeanings, refreshImageryItems, showToast]);
@@ -176,7 +215,9 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
         let currentId: number | null = categoryId;
         while (currentId) {
           counts.set(currentId, (counts.get(currentId) ?? 0) + 1);
-          const currentCategory = categories.find((category) => category.id === currentId);
+          const currentCategory = categories.find(
+            (category) => category.id === currentId,
+          );
           currentId = currentCategory?.parent_id ?? null;
         }
       });
@@ -198,9 +239,16 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     const query = imagerySearchTerm.trim().toLowerCase();
     return items.filter((item) => item.name.toLowerCase().includes(query));
   }, [imagerySearchTerm, items]);
-  const imageryTotalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE));
+  const imageryTotalPages = Math.max(
+    1,
+    Math.ceil(filteredItems.length / PAGE_SIZE),
+  );
   const pagedItems = useMemo(
-    () => filteredItems.slice((imageryPage - 1) * PAGE_SIZE, imageryPage * PAGE_SIZE),
+    () =>
+      filteredItems.slice(
+        (imageryPage - 1) * PAGE_SIZE,
+        imageryPage * PAGE_SIZE,
+      ),
     [filteredItems, imageryPage],
   );
 
@@ -214,9 +262,16 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
       ),
     [categories],
   );
-  const categoryTotalPages = Math.max(1, Math.ceil(sortedCategories.length / PAGE_SIZE));
+  const categoryTotalPages = Math.max(
+    1,
+    Math.ceil(sortedCategories.length / PAGE_SIZE),
+  );
   const pagedCategories = useMemo(
-    () => sortedCategories.slice((categoryPage - 1) * PAGE_SIZE, categoryPage * PAGE_SIZE),
+    () =>
+      sortedCategories.slice(
+        (categoryPage - 1) * PAGE_SIZE,
+        categoryPage * PAGE_SIZE,
+      ),
     [categoryPage, sortedCategories],
   );
 
@@ -224,12 +279,21 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     if (!meaningsSearchTerm.trim()) return meanings;
     const query = meaningsSearchTerm.trim().toLowerCase();
     return meanings.filter((meaning) =>
-      `${meaning.label} ${meaning.description ?? ""}`.toLowerCase().includes(query),
+      `${meaning.label} ${meaning.description ?? ""}`
+        .toLowerCase()
+        .includes(query),
     );
   }, [meanings, meaningsSearchTerm]);
-  const meaningsTotalPages = Math.max(1, Math.ceil(filteredMeanings.length / PAGE_SIZE));
+  const meaningsTotalPages = Math.max(
+    1,
+    Math.ceil(filteredMeanings.length / PAGE_SIZE),
+  );
   const pagedMeanings = useMemo(
-    () => filteredMeanings.slice((meaningsPage - 1) * PAGE_SIZE, meaningsPage * PAGE_SIZE),
+    () =>
+      filteredMeanings.slice(
+        (meaningsPage - 1) * PAGE_SIZE,
+        meaningsPage * PAGE_SIZE,
+      ),
     [filteredMeanings, meaningsPage],
   );
 
@@ -237,12 +301,21 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     if (!songSearchTerm.trim()) return allSongs;
     const query = songSearchTerm.trim().toLowerCase();
     return allSongs.filter((song) =>
-      `${song.id} ${song.title} ${song.album ?? ""}`.toLowerCase().includes(query),
+      `${song.id} ${song.title} ${song.album ?? ""}`
+        .toLowerCase()
+        .includes(query),
     );
   }, [allSongs, songSearchTerm]);
-  const songsTotalPages = Math.max(1, Math.ceil(filteredSongs.length / SONG_PAGE_SIZE));
+  const songsTotalPages = Math.max(
+    1,
+    Math.ceil(filteredSongs.length / SONG_PAGE_SIZE),
+  );
   const pagedSongs = useMemo(
-    () => filteredSongs.slice((songsPage - 1) * SONG_PAGE_SIZE, songsPage * SONG_PAGE_SIZE),
+    () =>
+      filteredSongs.slice(
+        (songsPage - 1) * SONG_PAGE_SIZE,
+        songsPage * SONG_PAGE_SIZE,
+      ),
     [filteredSongs, songsPage],
   );
 
@@ -267,7 +340,8 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     setImageryFormName(item.name);
     setModal({ type: "edit-imagery", item });
   };
-  const openDeleteImagery = (item: ImageryItem) => setModal({ type: "delete-imagery", item });
+  const openDeleteImagery = (item: ImageryItem) =>
+    setModal({ type: "delete-imagery", item });
 
   const openAddCategory = (parentId?: number) => {
     const parent =
@@ -296,8 +370,15 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   const openDeleteCategory = (category: ImageryCategory) =>
     setModal({ type: "delete-category", category });
   const openDeleteMeaning = (meaning: ImageryMeaning) =>
-    setModal({ type: "delete-meaning", meaningId: meaning.id, label: meaning.label });
-  const openDeleteOccurrence = (songId: number, occurrence: OccurrenceWithSong) =>
+    setModal({
+      type: "delete-meaning",
+      meaningId: meaning.id,
+      label: meaning.label,
+    });
+  const openDeleteOccurrence = (
+    songId: number,
+    occurrence: OccurrenceWithSong,
+  ) =>
     setModal({
       type: "delete-occurrence",
       songId,
@@ -313,11 +394,17 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     setIsSubmitting(true);
     try {
       const created = await apiCreateImagery(imageryFormName.trim(), csrfToken);
-      setItems((current) => [...current, { ...created, count: 0, categoryIds: [], meaningCount: 0 }]);
+      setItems((current) => [
+        ...current,
+        { ...created, count: 0, categoryIds: [], meaningCount: 0 },
+      ]);
       showToast("success", `意象「${created.name}」已创建`);
       closeModal();
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "创建意象失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "创建意象失败",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -331,13 +418,18 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
       await apiUpdateImagery(modal.item.id, imageryFormName.trim(), csrfToken);
       setItems((current) =>
         current.map((item) =>
-          item.id === modal.item.id ? { ...item, name: imageryFormName.trim() } : item,
+          item.id === modal.item.id
+            ? { ...item, name: imageryFormName.trim() }
+            : item,
         ),
       );
       showToast("success", "意象已更新");
       closeModal();
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "更新意象失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "更新意象失败",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -348,11 +440,16 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     setIsSubmitting(true);
     try {
       await apiDeleteImagery(modal.item.id, csrfToken);
-      setItems((current) => current.filter((item) => item.id !== modal.item.id));
+      setItems((current) =>
+        current.filter((item) => item.id !== modal.item.id),
+      );
       showToast("success", `意象「${modal.item.name}」已删除`);
       closeModal();
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "删除意象失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "删除意象失败",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -376,7 +473,10 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
       showToast("success", `分类「${created.name}」已创建`);
       closeModal();
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "创建分类失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "创建分类失败",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -398,12 +498,17 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
         csrfToken,
       );
       setCategories((current) =>
-        current.map((category) => (category.id === updated.id ? updated : category)),
+        current.map((category) =>
+          category.id === updated.id ? updated : category,
+        ),
       );
       showToast("success", "分类已更新");
       closeModal();
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "更新分类失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "更新分类失败",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -414,11 +519,16 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     setIsSubmitting(true);
     try {
       await apiDeleteImageryCategory(modal.category.id, csrfToken);
-      setCategories((current) => current.filter((category) => category.id !== modal.category.id));
+      setCategories((current) =>
+        current.filter((category) => category.id !== modal.category.id),
+      );
       showToast("success", `分类「${modal.category.name}」已删除`);
       closeModal();
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "删除分类失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "删除分类失败",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -432,7 +542,10 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   const startEditMeaning = (meaning: ImageryMeaning) => {
     setAddingMeaning(false);
     setEditingMeaningId(meaning.id);
-    setMeaningForm({ label: meaning.label, description: meaning.description ?? "" });
+    setMeaningForm({
+      label: meaning.label,
+      description: meaning.description ?? "",
+    });
   };
   const resetMeaningEditor = () => {
     setAddingMeaning(false);
@@ -452,19 +565,25 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
         csrfToken,
       );
       setMeanings((current) =>
-        [...current, created].sort((left, right) => left.label.localeCompare(right.label, "zh-CN")),
+        [...current, created].sort((left, right) =>
+          left.label.localeCompare(right.label, "zh-CN"),
+        ),
       );
       resetMeaningEditor();
       showToast("success", `含义「${created.label}」已创建`);
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "创建含义失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "创建含义失败",
+      );
     } finally {
       setMeaningSubmitting(false);
     }
   };
 
   const handleUpdateMeaning = async () => {
-    if (!editingMeaningId || !meaningForm.label.trim() || meaningSubmitting) return;
+    if (!editingMeaningId || !meaningForm.label.trim() || meaningSubmitting)
+      return;
     setMeaningSubmitting(true);
     try {
       const updated = await apiUpdateGlobalMeaning(
@@ -477,13 +596,20 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
       );
       setMeanings((current) =>
         current
-          .map((meaning) => (meaning.id === editingMeaningId ? updated : meaning))
-          .sort((left, right) => left.label.localeCompare(right.label, "zh-CN")),
+          .map((meaning) =>
+            meaning.id === editingMeaningId ? updated : meaning,
+          )
+          .sort((left, right) =>
+            left.label.localeCompare(right.label, "zh-CN"),
+          ),
       );
       resetMeaningEditor();
       showToast("success", "含义已更新");
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "更新含义失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "更新含义失败",
+      );
     } finally {
       setMeaningSubmitting(false);
     }
@@ -494,12 +620,17 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     setMeaningSubmitting(true);
     try {
       await apiDeleteGlobalMeaning(modal.meaningId, csrfToken);
-      setMeanings((current) => current.filter((meaning) => meaning.id !== modal.meaningId));
+      setMeanings((current) =>
+        current.filter((meaning) => meaning.id !== modal.meaningId),
+      );
       if (editingMeaningId === modal.meaningId) resetMeaningEditor();
       closeModal();
       showToast("success", "含义已删除");
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "删除含义失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "删除含义失败",
+      );
     } finally {
       setMeaningSubmitting(false);
     }
@@ -520,11 +651,19 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   const startAddRelation = async (songId: number) => {
     setExpandedSongId(songId);
     setRelationEditor({ type: "add", songId });
-    setRelationForm({ imagery_id: 0, category_id: 0, meaning_id: null, lyric_timetag: "[]" });
+    setRelationForm({
+      imagery_id: 0,
+      category_id: 0,
+      meaning_id: null,
+      lyric_timetag: "[]",
+    });
     await loadOccurrencesForSong(songId);
   };
 
-  const startEditRelation = (songId: number, occurrence: OccurrenceWithSong) => {
+  const startEditRelation = (
+    songId: number,
+    occurrence: OccurrenceWithSong,
+  ) => {
     setExpandedSongId(songId);
     setRelationEditor({ type: "edit", songId, occurrence });
     setRelationForm({
@@ -537,7 +676,12 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
 
   const resetRelationEditor = () => {
     setRelationEditor({ type: "none" });
-    setRelationForm({ imagery_id: 0, category_id: 0, meaning_id: null, lyric_timetag: "[]" });
+    setRelationForm({
+      imagery_id: 0,
+      category_id: 0,
+      meaning_id: null,
+      lyric_timetag: "[]",
+    });
   };
 
   const handleSaveRelation = async () => {
@@ -551,7 +695,10 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     try {
       lyricTimetag = parseLyricTimetag(relationForm.lyric_timetag);
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "lyric_timetag 格式错误");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "lyric_timetag 格式错误",
+      );
       return;
     }
 
@@ -583,10 +730,16 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
         showToast("success", "关系已更新");
       }
 
-      await Promise.all([loadOccurrencesForSong(relationEditor.songId), refreshImageryItems()]);
+      await Promise.all([
+        loadOccurrencesForSong(relationEditor.songId),
+        refreshImageryItems(),
+      ]);
       resetRelationEditor();
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "保存关系失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "保存关系失败",
+      );
     } finally {
       setOccurrenceSubmitting(false);
     }
@@ -597,24 +750,53 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     setOccurrenceSubmitting(true);
     try {
       await apiDeleteOccurrence(modal.occurrenceId, csrfToken);
-      await Promise.all([loadOccurrencesForSong(modal.songId), refreshImageryItems()]);
-      if (relationEditor.type === "edit" && relationEditor.occurrence.id === modal.occurrenceId) {
+      await Promise.all([
+        loadOccurrencesForSong(modal.songId),
+        refreshImageryItems(),
+      ]);
+      if (
+        relationEditor.type === "edit" &&
+        relationEditor.occurrence.id === modal.occurrenceId
+      ) {
         resetRelationEditor();
       }
       closeModal();
       showToast("success", "关系已删除");
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "删除关系失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "删除关系失败",
+      );
     } finally {
       setOccurrenceSubmitting(false);
     }
   };
 
   const tabs: { key: Tab; label: string; icon: ReactNode; hint: string }[] = [
-    { key: "imagery", label: "意象管理", icon: <Tag size={14} />, hint: "词条与概览" },
-    { key: "categories", label: "分类管理", icon: <ListTree size={14} />, hint: "树形与分页" },
-    { key: "meanings", label: "含义管理", icon: <BookOpen size={14} />, hint: "全局含义库" },
-    { key: "occurrences", label: "关系管理", icon: <Layers size={14} />, hint: "按歌曲维护" },
+    {
+      key: "imagery",
+      label: "意象管理",
+      icon: <Tag size={14} />,
+      hint: "词条与概览",
+    },
+    {
+      key: "categories",
+      label: "分类管理",
+      icon: <ListTree size={14} />,
+      hint: "树形与分页",
+    },
+    {
+      key: "meanings",
+      label: "含义管理",
+      icon: <BookOpen size={14} />,
+      hint: "全局含义库",
+    },
+    {
+      key: "occurrences",
+      label: "关系管理",
+      icon: <Layers size={14} />,
+      hint: "按歌曲维护",
+    },
   ];
 
   return (
@@ -657,7 +839,12 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
       </nav>
 
       <main className="mx-auto max-w-7xl px-6 pb-20 pt-28">
-        <section className={cn(pageShellClassName(), "relative overflow-hidden px-6 py-7 md:px-8")}>
+        <section
+          className={cn(
+            pageShellClassName(),
+            "relative overflow-hidden px-6 py-7 md:px-8",
+          )}
+        >
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.16),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.12),transparent_30%)]" />
           <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl">
@@ -668,7 +855,8 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
                 统一维护意象、分类、含义与歌曲关系
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500 dark:text-slate-400">
-                页面样式已对齐主后台的圆角、搜索栏和层次化卡片语言；内部结构也拆成多个独立组件，后续维护可以按 tab 单独演进。
+                页面样式已对齐主后台的圆角、搜索栏和层次化卡片语言；内部结构也拆成多个独立组件，后续维护可以按
+                tab 单独演进。
               </p>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -700,7 +888,9 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
                 <div
                   className={cn(
                     "mt-1 text-xs",
-                    activeTab === tab.key ? "text-violet-100" : "text-slate-400",
+                    activeTab === tab.key
+                      ? "text-violet-100"
+                      : "text-slate-400",
                   )}
                 >
                   {tab.hint}
@@ -740,7 +930,9 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
               pagedCategories={pagedCategories}
               currentPage={categoryPage}
               totalPages={categoryTotalPages}
-              getCategoryPath={(categoryId) => getCategoryPath(categoryId, categories)}
+              getCategoryPath={(categoryId) =>
+                getCategoryPath(categoryId, categories)
+              }
               onPageChange={setCategoryPage}
               onAddCategory={openAddCategory}
               onEditCategory={openEditCategory}
@@ -829,7 +1021,9 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
         onDeleteMeaning={handleDeleteMeaning}
         onDeleteOccurrence={handleDeleteRelation}
         deleteSubmitting={meaningSubmitting || occurrenceSubmitting}
-        getCategoryPath={(categoryId) => getCategoryPath(categoryId, categories)}
+        getCategoryPath={(categoryId) =>
+          getCategoryPath(categoryId, categories)
+        }
       />
 
       {toast && (

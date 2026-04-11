@@ -1,6 +1,12 @@
 import React, { useState } from "react";
 import type { ImageryCategory } from "@/lib/types";
-import { ChevronDown, ChevronRight, Edit2, FolderPlus, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Edit2,
+  FolderPlus,
+  Trash2,
+} from "lucide-react";
 import { cn } from "./shared";
 import type { CategoryNode } from "./types";
 
@@ -39,7 +45,11 @@ export const CategoryTreeNode = React.memo(function CategoryTreeNode({
           }}
         >
           {hasChildren ? (
-            expanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />
+            expanded ? (
+              <ChevronDown size={13} />
+            ) : (
+              <ChevronRight size={13} />
+            )
           ) : (
             <span className="inline-block h-2 w-2 rounded-full bg-violet-400 dark:bg-violet-500" />
           )}

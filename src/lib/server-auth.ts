@@ -154,7 +154,9 @@ export function withAuth(
     if (options.requireAdmin) {
       try {
         const supabase = await createSupabaseServerClient();
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         const userClient = getUserClient(session?.access_token);
         if (!userClient) {
           return NextResponse.json({ error: "Forbidden" }, { status: 403 });

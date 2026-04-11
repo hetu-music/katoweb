@@ -72,7 +72,12 @@ export function SectionIntro({
   actions?: React.ReactNode;
 }) {
   return (
-    <div className={cn(pageShellClassName(), "relative overflow-hidden px-6 py-6 md:px-7")}>
+    <div
+      className={cn(
+        pageShellClassName(),
+        "relative overflow-hidden px-6 py-6 md:px-7",
+      )}
+    >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(139,92,246,0.13),transparent_38%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.10),transparent_32%)]" />
       <div className="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div className="max-w-2xl">
@@ -86,7 +91,9 @@ export function SectionIntro({
             {description}
           </p>
         </div>
-        {actions && <div className="flex flex-wrap items-center gap-3">{actions}</div>}
+        {actions && (
+          <div className="flex flex-wrap items-center gap-3">{actions}</div>
+        )}
       </div>
     </div>
   );
@@ -173,11 +180,15 @@ export function EmptyState({
   description: string;
 }) {
   return (
-    <div className={cn(cardClassName(), "px-6 py-16 text-center text-slate-400")}>
+    <div
+      className={cn(cardClassName(), "px-6 py-16 text-center text-slate-400")}
+    >
       <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-slate-800">
         {icon}
       </div>
-      <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">{title}</h3>
+      <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">
+        {title}
+      </h3>
       <p className="mt-2 text-sm text-slate-400">{description}</p>
     </div>
   );
@@ -185,7 +196,12 @@ export function EmptyState({
 
 export function LoadingState({ text }: { text: string }) {
   return (
-    <div className={cn(cardClassName(), "flex items-center justify-center gap-2 px-6 py-16 text-slate-400")}>
+    <div
+      className={cn(
+        cardClassName(),
+        "flex items-center justify-center gap-2 px-6 py-16 text-slate-400",
+      )}
+    >
       <Loader2 className="animate-spin" size={18} />
       <span>{text}</span>
     </div>

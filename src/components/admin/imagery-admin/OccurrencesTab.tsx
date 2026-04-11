@@ -1,6 +1,13 @@
 import type { OccurrenceWithSong } from "@/lib/service-imagery";
 import type { ImageryCategory, ImageryItem, ImageryMeaning } from "@/lib/types";
-import { ChevronDown, ChevronRight, Edit2, Layers, Plus, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Edit2,
+  Layers,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import {
   cardClassName,
   compactInputClassName,
@@ -43,7 +50,10 @@ function RelationEditorCard({
   submitting: boolean;
   onSave: () => void;
   onCancel: () => void;
-  getCategoryPath: (categoryId: number, categories: ImageryCategory[]) => string;
+  getCategoryPath: (
+    categoryId: number,
+    categories: ImageryCategory[],
+  ) => string;
 }) {
   void categories;
   return (
@@ -93,7 +103,9 @@ function RelationEditorCard({
           onChange={(event) =>
             setRelationForm((current) => ({
               ...current,
-              meaning_id: event.target.value ? parseInt(event.target.value, 10) : null,
+              meaning_id: event.target.value
+                ? parseInt(event.target.value, 10)
+                : null,
             }))
           }
           className={compactInputClassName()}
@@ -110,7 +122,10 @@ function RelationEditorCard({
       <textarea
         value={relationForm.lyric_timetag}
         onChange={(event) =>
-          setRelationForm((current) => ({ ...current, lyric_timetag: event.target.value }))
+          setRelationForm((current) => ({
+            ...current,
+            lyric_timetag: event.target.value,
+          }))
         }
         rows={4}
         placeholder='lyric_timetag JSON，如：[{"start": 12.4, "end": 14.8}]'
@@ -118,7 +133,11 @@ function RelationEditorCard({
       />
 
       <div className="mt-4 flex justify-end gap-2">
-        <button type="button" onClick={onCancel} className={ghostButtonClassName()}>
+        <button
+          type="button"
+          onClick={onCancel}
+          className={ghostButtonClassName()}
+        >
           取消
         </button>
         <button
@@ -145,7 +164,10 @@ function OccurrenceRow({
   songId: number;
   occurrence: OccurrenceWithSong;
   categories: ImageryCategory[];
-  getCategoryPath: (categoryId: number, categories: ImageryCategory[]) => string;
+  getCategoryPath: (
+    categoryId: number,
+    categories: ImageryCategory[],
+  ) => string;
   onEdit: (songId: number, occurrence: OccurrenceWithSong) => void;
   onDelete: (songId: number, occurrence: OccurrenceWithSong) => void;
 }) {
@@ -259,7 +281,10 @@ export default function OccurrencesTab({
   onResetRelationEditor: () => void;
   onSaveRelation: () => void;
   onDeleteRelation: (songId: number, occurrence: OccurrenceWithSong) => void;
-  getCategoryPath: (categoryId: number, categories: ImageryCategory[]) => string;
+  getCategoryPath: (
+    categoryId: number,
+    categories: ImageryCategory[],
+  ) => string;
 }) {
   return (
     <div className="space-y-6">
@@ -274,9 +299,12 @@ export default function OccurrencesTab({
         <div className="border-b border-slate-200/70 px-6 py-5 dark:border-slate-800/70">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">按歌曲维护关系</h3>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                按歌曲维护关系
+              </h3>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                搜索歌曲后展开对应面板，即可查看和编辑该 song_id 下的全部意象关系。
+                搜索歌曲后展开对应面板，即可查看和编辑该 song_id
+                下的全部意象关系。
               </p>
             </div>
             <SearchField
@@ -295,16 +323,22 @@ export default function OccurrencesTab({
             <EmptyState
               icon={<Layers size={24} />}
               title={songSearchTerm ? "没有找到匹配的歌曲" : "暂无歌曲"}
-              description={songSearchTerm ? "试试别的关键词。" : "当前没有可管理关系的歌曲。"}
+              description={
+                songSearchTerm
+                  ? "试试别的关键词。"
+                  : "当前没有可管理关系的歌曲。"
+              }
             />
           ) : (
             <>
               {pagedSongs.map((song) => {
                 const occurrences = occurrencesBySong[song.id] ?? [];
                 const isExpanded = expandedSongId === song.id;
-                const isLoadingOccurrences = occurrenceLoadingSongId === song.id;
+                const isLoadingOccurrences =
+                  occurrenceLoadingSongId === song.id;
                 const isAddingHere =
-                  relationEditor.type === "add" && relationEditor.songId === song.id;
+                  relationEditor.type === "add" &&
+                  relationEditor.songId === song.id;
 
                 return (
                   <div
@@ -317,7 +351,11 @@ export default function OccurrencesTab({
                         onClick={() => void onToggleSongPanel(song.id)}
                         className="rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
                       >
-                        {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                        {isExpanded ? (
+                          <ChevronDown size={16} />
+                        ) : (
+                          <ChevronRight size={16} />
+                        )}
                       </button>
 
                       <div className="min-w-0 flex-1">

@@ -53,7 +53,10 @@ function MeaningEditor({
           <textarea
             value={form.description}
             onChange={(event) =>
-              setForm((current) => ({ ...current, description: event.target.value }))
+              setForm((current) => ({
+                ...current,
+                description: event.target.value,
+              }))
             }
             rows={3}
             placeholder="描述（可选）"
@@ -62,7 +65,11 @@ function MeaningEditor({
         </div>
       </div>
       <div className="mt-4 flex justify-end gap-2">
-        <button type="button" onClick={onCancel} className={ghostButtonClassName()}>
+        <button
+          type="button"
+          onClick={onCancel}
+          className={ghostButtonClassName()}
+        >
           取消
         </button>
         <button
@@ -140,7 +147,9 @@ export default function MeaningsTab({
         <div className="border-b border-slate-200/70 px-6 py-5 dark:border-slate-800/70">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">全局含义词库</h3>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                全局含义词库
+              </h3>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 名称与描述独立维护，供关系记录引用。
               </p>
@@ -175,7 +184,11 @@ export default function MeaningsTab({
                 <EmptyState
                   icon={<BookOpen size={24} />}
                   title={meaningsSearchTerm ? "没有找到匹配的含义" : "暂无含义"}
-                  description={meaningsSearchTerm ? "试试别的关键词。" : "点击上方按钮创建第一条含义。"}
+                  description={
+                    meaningsSearchTerm
+                      ? "试试别的关键词。"
+                      : "点击上方按钮创建第一条含义。"
+                  }
                 />
               ) : (
                 pagedMeanings.map((meaning) =>

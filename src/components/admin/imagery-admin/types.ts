@@ -13,7 +13,12 @@ export type ModalState =
   | { type: "edit-category"; category: ImageryCategory }
   | { type: "delete-category"; category: ImageryCategory }
   | { type: "delete-meaning"; meaningId: number; label: string }
-  | { type: "delete-occurrence"; songId: number; occurrenceId: number; label: string };
+  | {
+      type: "delete-occurrence";
+      songId: number;
+      occurrenceId: number;
+      label: string;
+    };
 
 export type RelationEditor =
   | { type: "none" }
@@ -54,5 +59,9 @@ export type RelationFormState = {
   lyric_timetag: string;
 };
 
-export type SetRelationForm = React.Dispatch<React.SetStateAction<RelationFormState>>;
-export type SetMeaningForm = React.Dispatch<React.SetStateAction<MeaningFormState>>;
+export type SetRelationForm = React.Dispatch<
+  React.SetStateAction<RelationFormState>
+>;
+export type SetMeaningForm = React.Dispatch<
+  React.SetStateAction<MeaningFormState>
+>;

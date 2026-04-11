@@ -132,7 +132,9 @@ export async function apiCheckFileExists(
 
 // ─── Songs Admin API ───────────────────────────────────────────────────────────
 
-export async function apiGetSongs(): Promise<{ id: number; title: string; album?: string | null }[]> {
+export async function apiGetSongs(): Promise<
+  { id: number; title: string; album?: string | null }[]
+> {
   const res = await fetch("/api/admin/edit");
   if (!res.ok) throw new Error("获取歌曲列表失败");
   return res.json();
@@ -156,7 +158,11 @@ export async function apiCreateImagery(name: string, csrfToken: string) {
   return res.json();
 }
 
-export async function apiUpdateImagery(id: number, name: string, csrfToken: string) {
+export async function apiUpdateImagery(
+  id: number,
+  name: string,
+  csrfToken: string,
+) {
   const res = await fetch(`/api/admin/imagery/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
@@ -188,7 +194,12 @@ export async function apiGetImageryCategories() {
 }
 
 export async function apiCreateImageryCategory(
-  data: { name: string; parent_id?: number | null; level?: number | null; description?: string | null },
+  data: {
+    name: string;
+    parent_id?: number | null;
+    level?: number | null;
+    description?: string | null;
+  },
   csrfToken: string,
 ) {
   const res = await fetch("/api/admin/imagery/categories", {
@@ -202,7 +213,12 @@ export async function apiCreateImageryCategory(
 
 export async function apiUpdateImageryCategory(
   id: number,
-  data: { name?: string; parent_id?: number | null; level?: number | null; description?: string | null },
+  data: {
+    name?: string;
+    parent_id?: number | null;
+    level?: number | null;
+    description?: string | null;
+  },
   csrfToken: string,
 ) {
   const res = await fetch(`/api/admin/imagery/categories/${id}`, {
@@ -258,11 +274,17 @@ export async function apiUpdateMeaning(
   data: { label: string; description?: string | null },
   csrfToken: string,
 ) {
-  const res = await fetch(`/api/admin/imagery/${imageryId}/meanings/${meaningId}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
-    body: JSON.stringify(data),
-  });
+  const res = await fetch(
+    `/api/admin/imagery/${imageryId}/meanings/${meaningId}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "x-csrf-token": csrfToken,
+      },
+      body: JSON.stringify(data),
+    },
+  );
   if (!res.ok) throw new Error("更新含义失败");
   return res.json();
 }
@@ -272,10 +294,13 @@ export async function apiDeleteMeaning(
   meaningId: number,
   csrfToken: string,
 ) {
-  const res = await fetch(`/api/admin/imagery/${imageryId}/meanings/${meaningId}`, {
-    method: "DELETE",
-    headers: { "x-csrf-token": csrfToken },
-  });
+  const res = await fetch(
+    `/api/admin/imagery/${imageryId}/meanings/${meaningId}`,
+    {
+      method: "DELETE",
+      headers: { "x-csrf-token": csrfToken },
+    },
+  );
   if (!res.ok) throw new Error("删除含义失败");
   return res.json();
 }
@@ -307,7 +332,10 @@ export async function apiUpdateGlobalMeaning(
   return res.json();
 }
 
-export async function apiDeleteGlobalMeaning(meaningId: number, csrfToken: string) {
+export async function apiDeleteGlobalMeaning(
+  meaningId: number,
+  csrfToken: string,
+) {
   const res = await fetch(`/api/admin/meanings/${meaningId}`, {
     method: "DELETE",
     headers: { "x-csrf-token": csrfToken },
@@ -331,7 +359,13 @@ export async function apiGetOccurrencesForSong(songId: number) {
 }
 
 export async function apiCreateOccurrence(
-  data: { song_id: number; imagery_id: number; category_id: number; meaning_id?: number | null; lyric_timetag: Record<string, unknown>[] },
+  data: {
+    song_id: number;
+    imagery_id: number;
+    category_id: number;
+    meaning_id?: number | null;
+    lyric_timetag: Record<string, unknown>[];
+  },
   csrfToken: string,
 ) {
   const res = await fetch("/api/admin/occurrences", {
@@ -345,7 +379,12 @@ export async function apiCreateOccurrence(
 
 export async function apiUpdateOccurrence(
   id: number,
-  data: { imagery_id?: number; category_id?: number; meaning_id?: number | null; lyric_timetag?: Record<string, unknown>[] },
+  data: {
+    imagery_id?: number;
+    category_id?: number;
+    meaning_id?: number | null;
+    lyric_timetag?: Record<string, unknown>[];
+  },
   csrfToken: string,
 ) {
   const res = await fetch(`/api/admin/occurrences/${id}`, {

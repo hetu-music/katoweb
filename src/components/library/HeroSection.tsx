@@ -2,26 +2,26 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 
 interface HeroSectionProps {
   songCount: number;
 }
 
 export default function HeroSection({ songCount }: HeroSectionProps) {
-  // Start false on both server and client to avoid hydration mismatch.
-  // useEffect runs after hydration and sets the real value.
-  const [isHoverDevice, setIsHoverDevice] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(hover: hover) and (pointer: fine)");
-    setIsHoverDevice(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsHoverDevice(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
+  const isHoverDevice = useSyncExternalStore(
+    (onStoreChange) => {
+      const mediaQuery = window.matchMedia(
+        "(hover: hover) and (pointer: fine)",
+      );
+      mediaQuery.addEventListener("change", onStoreChange);
+      return () => mediaQuery.removeEventListener("change", onStoreChange);
+    },
+    () => window.matchMedia("(hover: hover) and (pointer: fine)").matches,
+    () => false,
+  );
 
   return (
     <div

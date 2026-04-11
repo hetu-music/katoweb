@@ -22,7 +22,10 @@ export function buildTree(categories: ImageryCategory[]): CategoryNode[] {
   return roots;
 }
 
-export function getCategoryPath(categoryId: number, categories: ImageryCategory[]): string {
+export function getCategoryPath(
+  categoryId: number,
+  categories: ImageryCategory[],
+): string {
   const category = categories.find((item) => item.id === categoryId);
   if (!category) return `分类 #${categoryId}`;
 
@@ -50,7 +53,8 @@ export function parseLyricTimetag(value: string) {
   if (
     !Array.isArray(parsed) ||
     parsed.some(
-      (item) => typeof item !== "object" || item === null || Array.isArray(item),
+      (item) =>
+        typeof item !== "object" || item === null || Array.isArray(item),
     )
   ) {
     throw new Error("lyric_timetag 必须是对象数组。");
