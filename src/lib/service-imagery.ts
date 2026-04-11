@@ -59,22 +59,20 @@ export async function getImageryWithCounts(): Promise<ImageryItem[]> {
   const supabase = getServiceClient();
   if (!supabase) return [];
   try {
-    const [imageryRows, occurrenceRows, meaningRows] = await Promise.all([
+    const [imageryRows, occurrenceRows] = await Promise.all([
       fetchAll(supabase, TABLES.IMAGERY, "id,name") as Promise<{ id: number; name: string }[]>,
       fetchAll(supabase, TABLES.IMAGERY_OCC, "id,imagery_id,category_id") as Promise<{ id: number; imagery_id: number; category_id: number }[]>,
-      fetchAll(supabase, TABLES.IMAGERY_MEANINGS, "id,imagery_id") as Promise<{ id: number; imagery_id: number }[]>,
     ]);
 
     return imageryRows.map((item) => {
       const occs = occurrenceRows.filter((o) => o.imagery_id === item.id);
       const categoryIds = [...new Set(occs.map((o) => o.category_id).filter(Boolean))];
-      const meaningCount = meaningRows.filter((m) => m.imagery_id === item.id).length;
       return {
         id: item.id,
         name: item.name,
         count: occs.length,
         categoryIds,
-        meaningCount,
+        meaningCount: 0,
       };
     });
   } catch (e) {
@@ -83,20 +81,24 @@ export async function getImageryWithCounts(): Promise<ImageryItem[]> {
   }
 }
 
-export async function getMeaningsForImagery(imageryId: number): Promise<ImageryMeaning[]> {
+export async function getImageryMeanings(): Promise<ImageryMeaning[]> {
   const supabase = getServiceClient();
   if (!supabase) return [];
   try {
     const { data, error } = await supabase
       .from(TABLES.IMAGERY_MEANINGS)
-      .select("id,imagery_id,label,description")
-      .eq("imagery_id", imageryId);
-    if (error) { console.error("[getMeaningsForImagery]", error); return []; }
+      .select("id,label,description")
+      .order("label", { ascending: true });
+    if (error) { console.error("[getImageryMeanings]", error); return []; }
     return (data ?? []) as ImageryMeaning[];
   } catch (e) {
-    console.error("[getMeaningsForImagery]", e);
+    console.error("[getImageryMeanings]", e);
     return [];
   }
+}
+
+export async function getMeaningsForImagery(_imageryId: number): Promise<ImageryMeaning[]> {
+  return getImageryMeanings();
 }
 
 export async function getOccurrencesForImagery(imageryId: number): Promise<OccurrenceWithSong[]> {
@@ -190,8 +192,22 @@ export async function deleteImageryCategory(id: number, accessToken: string) {
 
 // ─── write functions: meanings ────────────────────────────────────────────────
 
-export async function createMeaning(
-  imageryId: number,
+async function getOccurrenceWithRelationsById(
+  id: number,
+  accessToken: string,
+) {
+  const supabase = getUserClient(accessToken);
+  if (!supabase) throw new Error("Supabase client unavailable");
+  const { data, error } = await supabase
+    .from(TABLES.IMAGERY_OCC)
+    .select("*, music(title, album), imagery(name), imagery_categories(name), imagery_meanings(label)")
+    .eq("id", id)
+    .single();
+  if (error) throw error;
+  return mapOccurrenceRow(data as Record<string, unknown>);
+}
+
+export async function createImageryMeaning(
   label: string,
   description: string | null,
   accessToken: string,
@@ -200,11 +216,20 @@ export async function createMeaning(
   if (!supabase) throw new Error("Supabase client unavailable");
   const { data, error } = await supabase
     .from(TABLES.IMAGERY_MEANINGS)
-    .insert({ imagery_id: imageryId, label, description })
+    .insert({ label, description })
     .select()
     .single();
   if (error) throw error;
   return data;
+}
+
+export async function createMeaning(
+  _imageryId: number,
+  label: string,
+  description: string | null,
+  accessToken: string,
+) {
+  return createImageryMeaning(label, description, accessToken);
 }
 
 export async function updateMeaning(
@@ -246,24 +271,24 @@ export async function createOccurrence(
     .select()
     .single();
   if (error) throw error;
-  return created;
+  return getOccurrenceWithRelationsById((created as { id: number }).id, accessToken);
 }
 
 export async function updateOccurrence(
   id: number,
-  data: { category_id?: number; meaning_id?: number | null; lyric_timetag?: Record<string, unknown>[] },
+  data: { imagery_id?: number; category_id?: number; meaning_id?: number | null; lyric_timetag?: Record<string, unknown>[] },
   accessToken: string,
 ) {
   const supabase = getUserClient(accessToken);
   if (!supabase) throw new Error("Supabase client unavailable");
-  const { data: updated, error } = await supabase
+  const { error } = await supabase
     .from(TABLES.IMAGERY_OCC)
     .update(data)
     .eq("id", id)
-    .select()
+    .select("id")
     .single();
   if (error) throw error;
-  return updated;
+  return getOccurrenceWithRelationsById(id, accessToken);
 }
 
 export async function deleteOccurrence(id: number, accessToken: string) {

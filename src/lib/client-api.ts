@@ -226,7 +226,14 @@ export async function apiDeleteImageryCategory(id: number, csrfToken: string) {
 // ─── Imagery meanings API ──────────────────────────────────────────────────────
 
 export async function apiGetImageryMeanings(imageryId: number) {
-  const res = await fetch(`/api/admin/imagery/${imageryId}/meanings`);
+  void imageryId;
+  const res = await fetch("/api/admin/meanings");
+  if (!res.ok) throw new Error("获取含义列表失败");
+  return res.json();
+}
+
+export async function apiGetMeanings() {
+  const res = await fetch("/api/admin/meanings");
   if (!res.ok) throw new Error("获取含义列表失败");
   return res.json();
 }
@@ -273,6 +280,42 @@ export async function apiDeleteMeaning(
   return res.json();
 }
 
+export async function apiCreateGlobalMeaning(
+  data: { label: string; description?: string | null },
+  csrfToken: string,
+) {
+  const res = await fetch("/api/admin/meanings", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("新增含义失败");
+  return res.json();
+}
+
+export async function apiUpdateGlobalMeaning(
+  meaningId: number,
+  data: { label: string; description?: string | null },
+  csrfToken: string,
+) {
+  const res = await fetch(`/api/admin/meanings/${meaningId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("更新含义失败");
+  return res.json();
+}
+
+export async function apiDeleteGlobalMeaning(meaningId: number, csrfToken: string) {
+  const res = await fetch(`/api/admin/meanings/${meaningId}`, {
+    method: "DELETE",
+    headers: { "x-csrf-token": csrfToken },
+  });
+  if (!res.ok) throw new Error("删除含义失败");
+  return res.json();
+}
+
 // ─── Occurrences API ───────────────────────────────────────────────────────────
 
 export async function apiGetOccurrencesForImagery(imageryId: number) {
@@ -302,7 +345,7 @@ export async function apiCreateOccurrence(
 
 export async function apiUpdateOccurrence(
   id: number,
-  data: { category_id?: number; meaning_id?: number | null; lyric_timetag?: Record<string, unknown>[] },
+  data: { imagery_id?: number; category_id?: number; meaning_id?: number | null; lyric_timetag?: Record<string, unknown>[] },
   csrfToken: string,
 ) {
   const res = await fetch(`/api/admin/occurrences/${id}`, {
@@ -322,4 +365,3 @@ export async function apiDeleteOccurrence(id: number, csrfToken: string) {
   if (!res.ok) throw new Error("删除关系失败");
   return res.json();
 }
-

@@ -79,7 +79,6 @@ export type ImageryCategory = {
 
 export type ImageryMeaning = {
   id: number;
-  imagery_id: number;
   label: string;
   description: string | null;
 };
