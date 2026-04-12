@@ -55,7 +55,8 @@ const Pagination: React.FC<PaginationProps> = ({
     };
   }, [isOpen]);
 
-  if (totalPages <= 1) return null;
+  // 即使只有一页也显示，让用户明确当前状态 (1 / 1)
+  if (totalPages < 1) return null;
 
   return (
     <div className={`flex items-center justify-center gap-2 ${className}`}>
