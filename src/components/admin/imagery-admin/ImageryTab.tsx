@@ -1,10 +1,6 @@
 import type { ImageryCategory, ImageryItem } from "@/lib/types";
 import { Edit2, Tag, Trash2 } from "lucide-react";
-import {
-  EmptyState,
-  LoadingState,
-  PaginationControls,
-} from "./shared";
+import { EmptyState, LoadingState, PaginationControls } from "./shared";
 
 export default function ImageryTab({
   categories,
@@ -42,9 +38,7 @@ export default function ImageryTab({
           icon={<Tag size={24} />}
           title={searchTerm ? "没有找到匹配的意象" : "暂无意象"}
           description={
-            searchTerm
-              ? "试试别的关键词。"
-              : "点击右上角的按钮创建第一条意象。"
+            searchTerm ? "试试别的关键词。" : "点击右上角的按钮创建第一条意象。"
           }
         />
       ) : (

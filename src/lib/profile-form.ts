@@ -29,4 +29,6 @@ export const profilePasswordFormSchema = z
   });
 
 export type ProfileAccountFormValues = z.infer<typeof profileAccountFormSchema>;
-export type ProfilePasswordFormValues = z.infer<typeof profilePasswordFormSchema>;
+export type ProfilePasswordFormValues = z.infer<
+  typeof profilePasswordFormSchema
+>;

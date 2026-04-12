@@ -72,11 +72,7 @@ const makeOptionalUrlSchema = (label: string) =>
 export const songFormSchema = z.object({
   title: z.preprocess(
     normalizeString,
-    z
-      .string()
-      .trim()
-      .min(1, "标题为必填项")
-      .max(100, "标题不能超过100个字符"),
+    z.string().trim().min(1, "标题为必填项").max(100, "标题不能超过100个字符"),
   ),
   album: makeOptionalTextSchema("专辑", 100),
   lyricist: makeOptionalArraySchema("作词", 30),
@@ -104,11 +100,7 @@ export const songFormSchema = z.object({
 export const songFormStateSchema = z.object({
   title: z.preprocess(
     normalizeString,
-    z
-      .string()
-      .trim()
-      .min(1, "标题为必填项")
-      .max(100, "标题不能超过100个字符"),
+    z.string().trim().min(1, "标题为必填项").max(100, "标题不能超过100个字符"),
   ),
   album: makeOptionalTextSchema("专辑", 100),
   lyricist: z.array(makeArrayFieldItemSchema("作词", 30)),
@@ -137,7 +129,9 @@ export type SongFormValues = z.infer<typeof songFormSchema>;
 export type SongFormStateValues = z.infer<typeof songFormStateSchema>;
 export type SongArrayFieldItem = SongFormStateValues["lyricist"][number];
 
-export type SongFormErrors = Partial<Record<keyof z.infer<typeof songFormSchema>, string>>;
+export type SongFormErrors = Partial<
+  Record<keyof z.infer<typeof songFormSchema>, string>
+>;
 
 export function createEmptySongForm(): SongFormValues {
   return {
@@ -166,7 +160,8 @@ export function createEmptySongForm(): SongFormValues {
   };
 }
 
-const toFieldArrayItems = (values: string[]) => values.map((value) => ({ value }));
+const toFieldArrayItems = (values: string[]) =>
+  values.map((value) => ({ value }));
 
 export function createEmptySongFormState(): SongFormStateValues {
   return {
@@ -202,9 +197,11 @@ export function toSongFormValues(song: Partial<SongDetail>): SongFormValues {
     albumartist: normalizeStringArray(song.albumartist),
     comment: normalizeString(song.comment),
     lyrics: normalizeString(song.lyrics),
-    nmn_status:
-      typeof song.nmn_status === "boolean" ? song.nmn_status : null,
-    track: typeof song.track === "number" && Number.isFinite(song.track) ? song.track : null,
+    nmn_status: typeof song.nmn_status === "boolean" ? song.nmn_status : null,
+    track:
+      typeof song.track === "number" && Number.isFinite(song.track)
+        ? song.track
+        : null,
     tracktotal:
       typeof song.tracktotal === "number" && Number.isFinite(song.tracktotal)
         ? song.tracktotal
@@ -249,9 +246,10 @@ export function toSongFormPayload(state: SongFormStateValues): SongFormValues {
   };
 }
 
-export function validateSongForm(
-  values: SongFormValues,
-): { data: SongFormValues | null; errors: SongFormErrors } {
+export function validateSongForm(values: SongFormValues): {
+  data: SongFormValues | null;
+  errors: SongFormErrors;
+} {
   const result = songFormSchema.safeParse(values);
   if (result.success) {
     return {

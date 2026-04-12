@@ -1,9 +1,4 @@
-import {
-  Song,
-  SongDetail,
-  FilterOptions,
-  SongInfo,
-} from "./types";
+import { Song, SongDetail, FilterOptions, SongInfo } from "./types";
 import {
   FILTER_OPTION_ALL,
   FILTER_OPTION_UNKNOWN,

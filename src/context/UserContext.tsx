@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { createContext, useCallback, useContext } from "react";
 
 export interface UserInfo {
@@ -58,7 +54,11 @@ async function fetchCsrfToken() {
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const { data: user = null, isPending, refetch: refetchUser } = useQuery({
+  const {
+    data: user = null,
+    isPending,
+    refetch: refetchUser,
+  } = useQuery({
     queryKey: AUTH_ME_QUERY_KEY,
     queryFn: fetchCurrentUser,
     staleTime: 5 * 60 * 1000,

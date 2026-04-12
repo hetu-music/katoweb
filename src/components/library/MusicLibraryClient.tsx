@@ -110,10 +110,7 @@ export default function MusicLibraryClient({
     handleSongClick,
     isRestoringScroll,
     notifyDataReady,
-  } = useMusicLibraryState(
-    sliderYears.length,
-    DEFAULT_MUSIC_LIBRARY_VIEW_MODE,
-  );
+  } = useMusicLibraryState(sliderYears.length, DEFAULT_MUSIC_LIBRARY_VIEW_MODE);
 
   const {
     filteredSongs,
@@ -227,7 +224,10 @@ export default function MusicLibraryClient({
       setActiveSongId(songId);
       handleSongClick();
 
-      const navDepth = parseInt(sessionStorage.getItem(NAV_DEPTH_KEY) || "0", 10);
+      const navDepth = parseInt(
+        sessionStorage.getItem(NAV_DEPTH_KEY) || "0",
+        10,
+      );
       sessionStorage.setItem(NAV_DEPTH_KEY, String(navDepth + 1));
       router.push(`/song/${songId}`);
     },
@@ -359,7 +359,11 @@ export default function MusicLibraryClient({
                   )}
                   title="高级筛选"
                 >
-                  {showAdvancedFilters ? <X size={16} /> : <SlidersHorizontal size={16} />}
+                  {showAdvancedFilters ? (
+                    <X size={16} />
+                  ) : (
+                    <SlidersHorizontal size={16} />
+                  )}
                 </button>
 
                 <div className="hidden h-6 w-px bg-slate-200 dark:bg-slate-700 md:block" />

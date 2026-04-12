@@ -303,7 +303,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   const editingMeaning = useMemo(
     () =>
       editingMeaningId
-        ? meanings.find((meaning) => meaning.id === editingMeaningId) ?? null
+        ? (meanings.find((meaning) => meaning.id === editingMeaningId) ?? null)
         : null,
     [editingMeaningId, meanings],
   );
@@ -383,9 +383,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
       await apiUpdateImagery(modal.item.id, name.trim(), csrfToken);
       setItems((current) =>
         current.map((item) =>
-          item.id === modal.item.id
-            ? { ...item, name: name.trim() }
-            : item,
+          item.id === modal.item.id ? { ...item, name: name.trim() } : item,
         ),
       );
       showToast("success", "意象已更新");
@@ -877,8 +875,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
         </div>
 
         <div className="space-y-4 min-h-[50vh]">
-
-
           {activeTab === "imagery" && (
             <ImageryTab
               categories={categories}

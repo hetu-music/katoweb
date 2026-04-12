@@ -70,7 +70,10 @@ const AppNavbar = forwardRef<HTMLElement, AppNavbarProps>(function AppNavbar(
             className="relative rounded-full p-2 text-slate-600 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800"
             title={user ? user.name : "登录"}
           >
-            <User size={20} className={user ? "text-blue-500 dark:text-blue-400" : ""} />
+            <User
+              size={20}
+              className={user ? "text-blue-500 dark:text-blue-400" : ""}
+            />
           </button>
           <ThemeToggle />
         </div>

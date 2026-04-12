@@ -346,10 +346,9 @@ function DeleteConfirmationModal({
   onConfirm: () => void;
 }) {
   const form = useForm({
-    resolver:
-      zodResolver(deleteConfirmationFormSchema) as Resolver<{
-        confirmationText: string;
-      }>,
+    resolver: zodResolver(deleteConfirmationFormSchema) as Resolver<{
+      confirmationText: string;
+    }>,
     defaultValues: createDeleteConfirmationFormValues(),
     mode: "onBlur",
     reValidateMode: "onChange",
@@ -376,7 +375,8 @@ function DeleteConfirmationModal({
                   {description}
                 </p>
                 <p className="mt-3 text-xs text-slate-400 dark:text-slate-500">
-                  请输入 <span className="font-semibold text-red-500">删除</span>{" "}
+                  请输入{" "}
+                  <span className="font-semibold text-red-500">删除</span>{" "}
                   以完成二次确认。
                 </p>
               </div>

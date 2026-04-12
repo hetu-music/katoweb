@@ -8,9 +8,7 @@ export function createAuthFormSchema(mode: "login" | "register") {
     password:
       mode === "login"
         ? z.string().min(1, "请输入密码")
-        : z
-          .string()
-          .regex(passwordRule, "密码要求至少8位，并包含字母和数字"),
+        : z.string().regex(passwordRule, "密码要求至少8位，并包含字母和数字"),
     turnstileToken: z.string().min(1, "请完成人机验证"),
   });
 }

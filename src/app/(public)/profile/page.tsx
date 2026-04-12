@@ -134,37 +134,39 @@ function ProfileContent() {
       .then((d) => setCsrfToken(d.csrfToken || ""));
   }, [activeTab, user]);
 
-  const handleSave = accountForm.handleSubmit(async ({ displayName, intro }) => {
-    setSaveMsg(null);
-    if (!csrfToken) {
-      setSaveMsg("保存失败");
-      return;
-    }
-    try {
-      const res = await fetch("/api/auth/account", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-csrf-token": csrfToken,
-        },
-        body: JSON.stringify({ displayName, intro }),
-      });
-      if (res.ok) {
-        setSaveMsg("已保存");
-      } else {
-        const d = await res.json();
-        setSaveMsg(d.error || "保存失败");
+  const handleSave = accountForm.handleSubmit(
+    async ({ displayName, intro }) => {
+      setSaveMsg(null);
+      if (!csrfToken) {
+        setSaveMsg("保存失败");
+        return;
       }
-    } catch {
-      setSaveMsg("保存失败");
-    } finally {
-      setTimeout(() => setSaveMsg(null), 2500);
-    }
-  });
+      try {
+        const res = await fetch("/api/auth/account", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-csrf-token": csrfToken,
+          },
+          body: JSON.stringify({ displayName, intro }),
+        });
+        if (res.ok) {
+          setSaveMsg("已保存");
+        } else {
+          const d = await res.json();
+          setSaveMsg(d.error || "保存失败");
+        }
+      } catch {
+        setSaveMsg("保存失败");
+      } finally {
+        setTimeout(() => setSaveMsg(null), 2500);
+      }
+    },
+  );
 
   const handleChangePassword = passwordForm.handleSubmit(
     async ({ currentPassword, newPassword }) => {
-    setPwdMsg(null);
+      setPwdMsg(null);
       if (!csrfToken) {
         setPwdMsg("修改失败");
         return;
@@ -638,7 +640,8 @@ function ProfileContent() {
                                     : "border-transparent focus:bg-white dark:focus:bg-[#111] focus:border-blue-500/50",
                                 )}
                               />
-                              {passwordForm.formState.errors.currentPassword && (
+                              {passwordForm.formState.errors
+                                .currentPassword && (
                                 <p className="text-xs text-rose-500 ml-1">
                                   {
                                     passwordForm.formState.errors
@@ -686,7 +689,8 @@ function ProfileContent() {
                                     : "border-transparent focus:bg-white dark:focus:bg-[#111] focus:border-blue-500/50",
                                 )}
                               />
-                              {passwordForm.formState.errors.confirmPassword && (
+                              {passwordForm.formState.errors
+                                .confirmPassword && (
                                 <p className="text-xs text-rose-500 ml-1">
                                   {
                                     passwordForm.formState.errors
@@ -700,11 +704,13 @@ function ProfileContent() {
                             <button
                               type="submit"
                               disabled={
-                                passwordForm.formState.isSubmitting || !csrfToken
+                                passwordForm.formState.isSubmitting ||
+                                !csrfToken
                               }
                               className={cn(
                                 "px-6 py-2.5 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2",
-                                passwordForm.formState.isSubmitting || !csrfToken
+                                passwordForm.formState.isSubmitting ||
+                                  !csrfToken
                                   ? "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
                                   : "bg-rose-600 text-white hover:bg-rose-700 shadow-md shadow-rose-500/10 active:scale-95",
                               )}

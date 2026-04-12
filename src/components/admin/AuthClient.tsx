@@ -108,7 +108,8 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
     } catch (err: unknown) {
       authForm.setError("root", {
-        message: err instanceof Error ? err.message : "网络连接异常，请稍后重试",
+        message:
+          err instanceof Error ? err.message : "网络连接异常，请稍后重试",
       });
     }
   });
@@ -151,7 +152,8 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
         }, 1500);
       } catch (err: unknown) {
         otpForm.setError("root", {
-          message: err instanceof Error ? err.message : "网络连接异常，请稍后重试",
+          message:
+            err instanceof Error ? err.message : "网络连接异常，请稍后重试",
         });
       }
     },
@@ -189,7 +191,11 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
     index: number,
     e: React.KeyboardEvent<HTMLInputElement>,
   ) => {
-    if (e.key === "Backspace" && !otpForm.getValues(`otp.${index}`) && index > 0) {
+    if (
+      e.key === "Backspace" &&
+      !otpForm.getValues(`otp.${index}`) &&
+      index > 0
+    ) {
       otpRefs.current[index - 1]?.focus();
     }
   };
@@ -343,7 +349,11 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
               <ShieldCheck size={32} strokeWidth={1.5} />
             </div>
             <h1 className="text-3xl font-medium tracking-tight text-slate-900 dark:text-white">
-              {otpSent ? "邮箱验证" : isLogin ? "Welcome Back" : "Create Account"}
+              {otpSent
+                ? "邮箱验证"
+                : isLogin
+                  ? "Welcome Back"
+                  : "Create Account"}
             </h1>
             {!otpSent && (
               <p className="text-sm font-light text-slate-500 dark:text-slate-400">

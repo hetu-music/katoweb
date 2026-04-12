@@ -23,7 +23,12 @@ import {
   type SongArrayFieldItem,
   type SongFormStateValues,
 } from "@/lib/song-form";
-import type { Song, SongDetail, SongFieldConfig, SongFormFieldKey } from "@/lib/types";
+import type {
+  Song,
+  SongDetail,
+  SongFieldConfig,
+  SongFormFieldKey,
+} from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { convertEmptyStringToNull, formatField } from "@/lib/utils-common";
 import { getCoverUrl } from "@/lib/utils-song";
@@ -585,7 +590,9 @@ export default function AdminClientComponent({
           },
           csrfToken,
         );
-        setSongs((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+        setSongs((prev) =>
+          prev.map((s) => (s.id === updated.id ? updated : s)),
+        );
         closeSongForm();
         setOperationMsg({ type: "success", text: "更新成功" });
       }
@@ -703,11 +710,11 @@ export default function AdminClientComponent({
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
             {/* Filter Pills */}
             <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto no-scrollbar">
-                <button
-                  onClick={() => {
-                    setShowIncompleteOnly(false);
-                    void setQueryState({ page: null });
-                  }}
+              <button
+                onClick={() => {
+                  setShowIncompleteOnly(false);
+                  void setQueryState({ page: null });
+                }}
                 className={cn(
                   "px-4 py-1.5 rounded-full text-sm border transition-all whitespace-nowrap",
                   !showIncompleteOnly
@@ -717,11 +724,11 @@ export default function AdminClientComponent({
               >
                 全部歌曲
               </button>
-                <button
-                  onClick={() => {
-                    setShowIncompleteOnly(true);
-                    void setQueryState({ page: null });
-                  }}
+              <button
+                onClick={() => {
+                  setShowIncompleteOnly(true);
+                  void setQueryState({ page: null });
+                }}
                 className={cn(
                   "px-4 py-1.5 rounded-full text-sm border transition-all whitespace-nowrap flex items-center gap-1.5",
                   showIncompleteOnly
@@ -945,7 +952,7 @@ export default function AdminClientComponent({
                 <button
                   type="button"
                   onClick={closeSongForm}
-                className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
                   取消
                 </button>
@@ -1053,11 +1060,7 @@ function RenderInput({
   const { control } = useFormContext<SongFormStateValues>();
 
   if (isCreatorFieldKey(field.key)) {
-    return (
-      <CreatorFieldArrayInput
-        fieldKey={field.key}
-      />
-    );
+    return <CreatorFieldArrayInput fieldKey={field.key} />;
   }
 
   return (
@@ -1091,8 +1094,9 @@ function RenderInput({
                 {options.map((opt) => {
                   const isActive = arr.includes(opt);
                   const colorClass =
-                    (field.key === "genre" ? genreColorMap : typeColorMap)[opt] ||
-                    "bg-slate-100 text-slate-600";
+                    (field.key === "genre" ? genreColorMap : typeColorMap)[
+                      opt
+                    ] || "bg-slate-100 text-slate-600";
 
                   return (
                     <button
@@ -1157,7 +1161,9 @@ function RenderInput({
               <div className="flex gap-4">
                 <select
                   {...controllerField}
-                  value={value === true ? "true" : value === false ? "false" : ""}
+                  value={
+                    value === true ? "true" : value === false ? "false" : ""
+                  }
                   onChange={(e) => {
                     const nextValue =
                       e.target.value === "true"
@@ -1251,11 +1257,7 @@ function RenderInput({
   );
 }
 
-function CreatorFieldArrayInput({
-  fieldKey,
-}: {
-  fieldKey: CreatorFieldKey;
-}) {
+function CreatorFieldArrayInput({ fieldKey }: { fieldKey: CreatorFieldKey }) {
   const { control, formState, getFieldState, register } =
     useFormContext<SongFormStateValues>();
   const { fields, append, remove } = useFieldArray({

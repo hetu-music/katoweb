@@ -294,155 +294,152 @@ export default function OccurrencesTab({
 }) {
   return (
     <div className="space-y-3">
-          {songsLoading ? (
-            <LoadingState text="加载歌曲中…" />
-          ) : pagedSongs.length === 0 ? (
-            <EmptyState
-              icon={<Layers size={24} />}
-              title={songSearchTerm ? "没有找到匹配的歌曲" : "暂无歌曲"}
-              description={
-                songSearchTerm
-                  ? "试试别的关键词。"
-                  : "当前没有可管理关系的歌曲。"
-              }
-            />
-          ) : (
-            <>
-              {pagedSongs.map((song) => {
-                const occurrences = occurrencesBySong[song.id] ?? [];
-                const isExpanded = expandedSongId === song.id;
-                const isLoadingOccurrences =
-                  occurrenceLoadingSongId === song.id;
-                const isAddingHere =
-                  relationEditor.type === "add" &&
-                  relationEditor.songId === song.id;
+      {songsLoading ? (
+        <LoadingState text="加载歌曲中…" />
+      ) : pagedSongs.length === 0 ? (
+        <EmptyState
+          icon={<Layers size={24} />}
+          title={songSearchTerm ? "没有找到匹配的歌曲" : "暂无歌曲"}
+          description={
+            songSearchTerm ? "试试别的关键词。" : "当前没有可管理关系的歌曲。"
+          }
+        />
+      ) : (
+        <>
+          {pagedSongs.map((song) => {
+            const occurrences = occurrencesBySong[song.id] ?? [];
+            const isExpanded = expandedSongId === song.id;
+            const isLoadingOccurrences = occurrenceLoadingSongId === song.id;
+            const isAddingHere =
+              relationEditor.type === "add" &&
+              relationEditor.songId === song.id;
 
-                return (
-                  <div
-                    key={song.id}
-                    className="flex flex-col bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden transition-all hover:shadow-md hover:border-blue-200 dark:hover:border-blue-900/30"
+            return (
+              <div
+                key={song.id}
+                className="flex flex-col bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden transition-all hover:shadow-md hover:border-blue-200 dark:hover:border-blue-900/30"
+              >
+                <div className="flex items-center gap-3 px-4 py-4">
+                  <button
+                    type="button"
+                    onClick={() => void onToggleSongPanel(song.id)}
+                    className="rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
                   >
-                    <div className="flex items-center gap-3 px-4 py-4">
-                      <button
-                        type="button"
-                        onClick={() => void onToggleSongPanel(song.id)}
-                        className="rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
-                      >
-                        {isExpanded ? (
-                          <ChevronDown size={16} />
-                        ) : (
-                          <ChevronRight size={16} />
-                        )}
-                      </button>
+                    {isExpanded ? (
+                      <ChevronDown size={16} />
+                    ) : (
+                      <ChevronRight size={16} />
+                    )}
+                  </button>
 
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-base font-semibold text-slate-900 dark:text-slate-100">
-                            {song.title}
-                          </span>
-                          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500 dark:bg-slate-800 dark:text-slate-300">
-                            song_id {song.id}
-                          </span>
-                          {song.album && (
-                            <span className="text-sm text-slate-500 dark:text-slate-400">
-                              {song.album}
-                            </span>
-                          )}
-                          {occurrencesBySong[song.id] && (
-                            <span className="rounded-full bg-violet-50 px-2 py-0.5 text-[11px] text-violet-700 dark:bg-violet-900/20 dark:text-violet-300">
-                              {occurrences.length} 条关系
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => void onStartAddRelation(song.id)}
-                        className={primaryButtonClassName()}
-                      >
-                        <Plus size={12} />
-                        新增关系
-                      </button>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                        {song.title}
+                      </span>
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                        song_id {song.id}
+                      </span>
+                      {song.album && (
+                        <span className="text-sm text-slate-500 dark:text-slate-400">
+                          {song.album}
+                        </span>
+                      )}
+                      {occurrencesBySong[song.id] && (
+                        <span className="rounded-full bg-violet-50 px-2 py-0.5 text-[11px] text-violet-700 dark:bg-violet-900/20 dark:text-violet-300">
+                          {occurrences.length} 条关系
+                        </span>
+                      )}
                     </div>
+                  </div>
 
-                    {isExpanded && (
-                      <div className="border-t border-slate-200/70 px-4 py-4 dark:border-slate-800/70">
-                        {isLoadingOccurrences ? (
-                          <LoadingState text="加载关系中…" />
-                        ) : (
-                          <div className="space-y-3">
-                            {isAddingHere && (
-                              <RelationEditorCard
-                                title={`新增到歌曲 #${song.id}`}
-                                items={items}
-                                leafCategories={leafCategories}
-                                meanings={meanings}
-                                categories={categories}
-                                initialValues={createRelationFormValues()}
-                                submitting={occurrenceSubmitting}
-                                onSave={onSaveRelation}
-                                onCancel={onResetRelationEditor}
-                                getCategoryPath={getCategoryPath}
-                              />
-                            )}
+                  <button
+                    type="button"
+                    onClick={() => void onStartAddRelation(song.id)}
+                    className={primaryButtonClassName()}
+                  >
+                    <Plus size={12} />
+                    新增关系
+                  </button>
+                </div>
 
-                            {occurrences.map((occurrence) => {
-                              const isEditingThis =
-                                relationEditor.type === "edit" &&
-                                relationEditor.occurrence.id === occurrence.id;
+                {isExpanded && (
+                  <div className="border-t border-slate-200/70 px-4 py-4 dark:border-slate-800/70">
+                    {isLoadingOccurrences ? (
+                      <LoadingState text="加载关系中…" />
+                    ) : (
+                      <div className="space-y-3">
+                        {isAddingHere && (
+                          <RelationEditorCard
+                            title={`新增到歌曲 #${song.id}`}
+                            items={items}
+                            leafCategories={leafCategories}
+                            meanings={meanings}
+                            categories={categories}
+                            initialValues={createRelationFormValues()}
+                            submitting={occurrenceSubmitting}
+                            onSave={onSaveRelation}
+                            onCancel={onResetRelationEditor}
+                            getCategoryPath={getCategoryPath}
+                          />
+                        )}
 
-                              return isEditingThis ? (
-                                <RelationEditorCard
-                                  key={occurrence.id}
-                                  title={`编辑关系 #${occurrence.id}`}
-                                  items={items}
-                                  leafCategories={leafCategories}
-                                  meanings={meanings}
-                                  categories={categories}
-                                  initialValues={createRelationFormValues(
-                                    relationEditor.occurrence,
-                                  )}
-                                  submitting={occurrenceSubmitting}
-                                  onSave={onSaveRelation}
-                                  onCancel={onResetRelationEditor}
-                                  getCategoryPath={getCategoryPath}
-                                />
-                              ) : (
-                                <OccurrenceRow
-                                  key={occurrence.id}
-                                  songId={song.id}
-                                  occurrence={occurrence}
-                                  categories={categories}
-                                  getCategoryPath={getCategoryPath}
-                                  onEdit={onStartEditRelation}
-                                  onDelete={onDeleteRelation}
-                                />
-                              );
-                            })}
+                        {occurrences.map((occurrence) => {
+                          const isEditingThis =
+                            relationEditor.type === "edit" &&
+                            relationEditor.occurrence.id === occurrence.id;
 
-                            {occurrences.length === 0 && !isAddingHere && (
-                              <EmptyState
-                                icon={<Layers size={20} />}
-                                title="暂无关系"
-                                description="点击右上角“新增关系”创建第一条记录。"
-                              />
-                            )}
-                          </div>
+                          return isEditingThis ? (
+                            <RelationEditorCard
+                              key={occurrence.id}
+                              title={`编辑关系 #${occurrence.id}`}
+                              items={items}
+                              leafCategories={leafCategories}
+                              meanings={meanings}
+                              categories={categories}
+                              initialValues={createRelationFormValues(
+                                relationEditor.occurrence,
+                              )}
+                              submitting={occurrenceSubmitting}
+                              onSave={onSaveRelation}
+                              onCancel={onResetRelationEditor}
+                              getCategoryPath={getCategoryPath}
+                            />
+                          ) : (
+                            <OccurrenceRow
+                              key={occurrence.id}
+                              songId={song.id}
+                              occurrence={occurrence}
+                              categories={categories}
+                              getCategoryPath={getCategoryPath}
+                              onEdit={onStartEditRelation}
+                              onDelete={onDeleteRelation}
+                            />
+                          );
+                        })}
+
+                        {occurrences.length === 0 && !isAddingHere && (
+                          <EmptyState
+                            icon={<Layers size={20} />}
+                            title="暂无关系"
+                            description="点击右上角“新增关系”创建第一条记录。"
+                          />
                         )}
                       </div>
                     )}
                   </div>
-                );
-              })}
+                )}
+              </div>
+            );
+          })}
 
-              <PaginationControls
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={onPageChange}
-              />
-            </>
-          )}
-        </div>
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
+          />
+        </>
+      )}
+    </div>
   );
 }

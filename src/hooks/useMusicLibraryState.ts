@@ -67,19 +67,31 @@ export function useMusicLibraryState(
     "type",
     parseAsString.withDefault(FILTER_OPTION_ALL).withOptions({ shallow: true }),
   );
-  const [filterLyricist, setFilterLyricistState] = useSyncedQueryState<string[]>(
+  const [filterLyricist, setFilterLyricistState] = useSyncedQueryState<
+    string[]
+  >(
     "lyricist",
-    parseAsArrayOf(parseAsString).withDefault([]).withOptions({ shallow: true }),
+    parseAsArrayOf(parseAsString)
+      .withDefault([])
+      .withOptions({ shallow: true }),
     { equals: areStringArraysEqual },
   );
-  const [filterComposer, setFilterComposerState] = useSyncedQueryState<string[]>(
+  const [filterComposer, setFilterComposerState] = useSyncedQueryState<
+    string[]
+  >(
     "composer",
-    parseAsArrayOf(parseAsString).withDefault([]).withOptions({ shallow: true }),
+    parseAsArrayOf(parseAsString)
+      .withDefault([])
+      .withOptions({ shallow: true }),
     { equals: areStringArraysEqual },
   );
-  const [filterArranger, setFilterArrangerState] = useSyncedQueryState<string[]>(
+  const [filterArranger, setFilterArrangerState] = useSyncedQueryState<
+    string[]
+  >(
     "arranger",
-    parseAsArrayOf(parseAsString).withDefault([]).withOptions({ shallow: true }),
+    parseAsArrayOf(parseAsString)
+      .withDefault([])
+      .withOptions({ shallow: true }),
     { equals: areStringArraysEqual },
   );
   const [yearStart, setYearStartState] = useSyncedQueryState<number>(
@@ -88,7 +100,9 @@ export function useMusicLibraryState(
   );
   const [yearEnd, setYearEndState] = useSyncedQueryState<number>(
     "yearEnd",
-    parseAsInteger.withDefault(getMaxYearIndex()).withOptions({ shallow: true }),
+    parseAsInteger
+      .withDefault(getMaxYearIndex())
+      .withOptions({ shallow: true }),
   );
   const [viewMode, setViewModeState] =
     useSyncedQueryState<MusicLibraryViewMode>(

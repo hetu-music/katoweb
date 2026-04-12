@@ -58,8 +58,11 @@ export function useFilteredSongs({
       : debouncedYearRangeIndices;
 
   const fuseInstance = useMemo(() => createFuseInstance(songs), [songs]);
-  const { lyricsFuseInstance, lyricsMap, state: lyricsState } =
-    useLyricsIndex(songs);
+  const {
+    lyricsFuseInstance,
+    lyricsMap,
+    state: lyricsState,
+  } = useLyricsIndex(songs);
 
   const activeFuseInstance = searchQueryForFiltering
     ? (lyricsFuseInstance ?? fuseInstance)

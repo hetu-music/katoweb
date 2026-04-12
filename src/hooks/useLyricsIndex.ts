@@ -97,7 +97,10 @@ export function useLyricsIndex(songs: Song[]): UseLyricsIndexResult {
 
   const builtIndex = useMemo(() => {
     if (!query.data) {
-      return { map: new Map<number, string>(), fuse: null as FuseExtended | null };
+      return {
+        map: new Map<number, string>(),
+        fuse: null as FuseExtended | null,
+      };
     }
 
     const { map, fuse } = buildFromEntries(songs, query.data);

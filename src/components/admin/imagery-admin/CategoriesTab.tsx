@@ -70,51 +70,51 @@ export default function CategoriesTab({
             key={category.id}
             className="flex flex-col bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden transition-all hover:shadow-md hover:border-cyan-200 dark:hover:border-cyan-900/30 px-4 py-4 group"
           >
-                <div className="flex items-start gap-4">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-base font-semibold text-slate-900 dark:text-slate-100">
-                        {category.name}
-                      </span>
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500 dark:bg-slate-800 dark:text-slate-300">
-                        L{category.level ?? 0}
-                      </span>
-                      <span className="rounded-full bg-violet-50 px-2 py-0.5 text-[11px] text-violet-700 dark:bg-violet-900/20 dark:text-violet-300">
-                        {imageryCountByCategory.get(category.id) ?? 0} 个意象
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                      {getCategoryPath(category.id)}
-                    </p>
-                    {category.description && (
-                      <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">
-                        {category.description}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="hidden items-center gap-1 group-hover:flex">
-                    <button
-                      onClick={() => onEditCategory(category)}
-                      className="rounded-xl px-2 py-2 text-xs text-emerald-600 transition-colors hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20"
-                    >
-                      编辑
-                    </button>
-                    <button
-                      onClick={() => onDeleteCategory(category)}
-                      className="rounded-xl px-2 py-2 text-xs text-red-500 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
-                    >
-                      删除
-                    </button>
-                  </div>
+            <div className="flex items-start gap-4">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                    {category.name}
+                  </span>
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                    L{category.level ?? 0}
+                  </span>
+                  <span className="rounded-full bg-violet-50 px-2 py-0.5 text-[11px] text-violet-700 dark:bg-violet-900/20 dark:text-violet-300">
+                    {imageryCountByCategory.get(category.id) ?? 0} 个意象
+                  </span>
                 </div>
+                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                  {getCategoryPath(category.id)}
+                </p>
+                {category.description && (
+                  <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">
+                    {category.description}
+                  </p>
+                )}
               </div>
-            ))}
-            <PaginationControls
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={onPageChange}
-            />
+
+              <div className="hidden items-center gap-1 group-hover:flex">
+                <button
+                  onClick={() => onEditCategory(category)}
+                  className="rounded-xl px-2 py-2 text-xs text-emerald-600 transition-colors hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20"
+                >
+                  编辑
+                </button>
+                <button
+                  onClick={() => onDeleteCategory(category)}
+                  className="rounded-xl px-2 py-2 text-xs text-red-500 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                >
+                  删除
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+        />
       </div>
     </div>
   );

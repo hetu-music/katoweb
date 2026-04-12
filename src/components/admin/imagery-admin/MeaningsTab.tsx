@@ -135,95 +135,95 @@ export default function MeaningsTab({
 }) {
   return (
     <div className="space-y-3">
-          {meaningsLoading ? (
-            <LoadingState text="加载含义中…" />
+      {meaningsLoading ? (
+        <LoadingState text="加载含义中…" />
+      ) : (
+        <>
+          {addingMeaning && (
+            <MeaningEditor
+              initialValues={createMeaningFormValues()}
+              submitting={meaningSubmitting}
+              saveLabel="创建"
+              onSave={onCreate}
+              onCancel={onReset}
+              autoFocus
+            />
+          )}
+
+          {pagedMeanings.length === 0 && !addingMeaning ? (
+            <EmptyState
+              icon={<BookOpen size={24} />}
+              title={meaningsSearchTerm ? "没有找到匹配的含义" : "暂无含义"}
+              description={
+                meaningsSearchTerm
+                  ? "试试别的关键词。"
+                  : "点击上方按钮创建第一条含义。"
+              }
+            />
           ) : (
-            <>
-              {addingMeaning && (
+            pagedMeanings.map((meaning) =>
+              editingMeaning?.id === meaning.id ? (
                 <MeaningEditor
-                  initialValues={createMeaningFormValues()}
+                  key={meaning.id}
+                  initialValues={createMeaningFormValues(editingMeaning)}
                   submitting={meaningSubmitting}
-                  saveLabel="创建"
-                  onSave={onCreate}
+                  saveLabel="保存"
+                  onSave={onUpdate}
                   onCancel={onReset}
                   autoFocus
                 />
-              )}
-
-              {pagedMeanings.length === 0 && !addingMeaning ? (
-                <EmptyState
-                  icon={<BookOpen size={24} />}
-                  title={meaningsSearchTerm ? "没有找到匹配的含义" : "暂无含义"}
-                  description={
-                    meaningsSearchTerm
-                      ? "试试别的关键词。"
-                      : "点击上方按钮创建第一条含义。"
-                  }
-                />
               ) : (
-                pagedMeanings.map((meaning) =>
-                  editingMeaning?.id === meaning.id ? (
-                    <MeaningEditor
-                      key={meaning.id}
-                      initialValues={createMeaningFormValues(editingMeaning)}
-                      submitting={meaningSubmitting}
-                      saveLabel="保存"
-                      onSave={onUpdate}
-                      onCancel={onReset}
-                      autoFocus
-                    />
-                  ) : (
-                    <div
-                      key={meaning.id}
-                      className="flex flex-col bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden transition-all hover:shadow-md hover:border-amber-200 dark:hover:border-amber-900/30 px-4 py-4 group"
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-linear-to-br from-violet-100 to-slate-100 text-violet-600 dark:from-violet-900/40 dark:to-slate-900 dark:text-violet-300">
-                          <BookOpen size={18} />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-base font-semibold text-slate-900 dark:text-slate-100">
-                              {meaning.label}
-                            </span>
-                            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500 dark:bg-slate-800 dark:text-slate-300">
-                              ID {meaning.id}
-                            </span>
-                          </div>
-                          <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-500 dark:text-slate-400">
-                            {meaning.description || "暂无描述"}
-                          </p>
-                        </div>
-                        <div className="hidden items-center gap-1 group-hover:flex">
-                          <button
-                            type="button"
-                            onClick={() => onStartEdit(meaning)}
-                            className="rounded-xl p-2 text-emerald-600 transition-colors hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20"
-                          >
-                            <Edit2 size={13} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => onDelete(meaning)}
-                            disabled={meaningSubmitting}
-                            className="rounded-xl p-2 text-red-500 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        </div>
-                      </div>
+                <div
+                  key={meaning.id}
+                  className="flex flex-col bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden transition-all hover:shadow-md hover:border-amber-200 dark:hover:border-amber-900/30 px-4 py-4 group"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-linear-to-br from-violet-100 to-slate-100 text-violet-600 dark:from-violet-900/40 dark:to-slate-900 dark:text-violet-300">
+                      <BookOpen size={18} />
                     </div>
-                  ),
-                )
-              )}
-            </>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                          {meaning.label}
+                        </span>
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                          ID {meaning.id}
+                        </span>
+                      </div>
+                      <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-500 dark:text-slate-400">
+                        {meaning.description || "暂无描述"}
+                      </p>
+                    </div>
+                    <div className="hidden items-center gap-1 group-hover:flex">
+                      <button
+                        type="button"
+                        onClick={() => onStartEdit(meaning)}
+                        className="rounded-xl p-2 text-emerald-600 transition-colors hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20"
+                      >
+                        <Edit2 size={13} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onDelete(meaning)}
+                        disabled={meaningSubmitting}
+                        className="rounded-xl p-2 text-red-500 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ),
+            )
           )}
+        </>
+      )}
 
-          <PaginationControls
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={onPageChange}
-          />
-        </div>
+      <PaginationControls
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={onPageChange}
+      />
+    </div>
   );
 }

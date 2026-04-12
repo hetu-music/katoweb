@@ -11,11 +11,7 @@ interface CoverArtProps {
   isActive?: boolean;
 }
 
-export default function CoverArt({
-  song,
-  className,
-  isActive,
-}: CoverArtProps) {
+export default function CoverArt({ song, className, isActive }: CoverArtProps) {
   const coverUrl = getCoverUrl(song);
 
   return (

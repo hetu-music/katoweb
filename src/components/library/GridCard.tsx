@@ -1,10 +1,7 @@
 "use client";
 
 import { useFavorites } from "@/context/FavoritesContext";
-import {
-  FILTER_OPTION_UNKNOWN,
-  getTypeTagStyle,
-} from "@/lib/constants";
+import { FILTER_OPTION_UNKNOWN, getTypeTagStyle } from "@/lib/constants";
 import type { Song } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Heart } from "lucide-react";
