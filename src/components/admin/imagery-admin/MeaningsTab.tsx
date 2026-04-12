@@ -9,7 +9,6 @@ import { BookOpen, Edit2, Plus, Trash2 } from "lucide-react";
 import { useEffect } from "react";
 import { type Resolver, useForm } from "react-hook-form";
 import {
-  cardClassName,
   compactInputClassName,
   EmptyState,
   formLabelClassName,
@@ -17,9 +16,6 @@ import {
   LoadingState,
   PaginationControls,
   primaryButtonClassName,
-  SearchField,
-  SectionIntro,
-  StatPill,
 } from "./shared";
 
 function MeaningEditor({
@@ -144,43 +140,7 @@ export default function MeaningsTab({
   onDelete: (meaning: ImageryMeaning) => void;
 }) {
   return (
-    <div className="space-y-6">
-      <SectionIntro
-        eyebrow="Meaning Glossary"
-        title="含义管理"
-        description="这里仅维护 imagery_meanings 表中的名称和描述，作为全局含义词库使用，不再在该页面处理意象关系。"
-        actions={
-          <>
-            <StatPill label="含义条目" value={`${filteredCount} 条`} />
-            <button onClick={onStartAdd} className={primaryButtonClassName()}>
-              <Plus size={14} />
-              新增含义
-            </button>
-          </>
-        }
-      />
-
-      <div className={cardClassName()}>
-        <div className="border-b border-slate-200/70 px-6 py-5 dark:border-slate-800/70">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                全局含义词库
-              </h3>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                名称与描述独立维护，供关系记录引用。
-              </p>
-            </div>
-            <SearchField
-              value={meaningsSearchTerm}
-              onChange={onSearchTermChange}
-              placeholder="搜索含义名称或描述…"
-              className="w-full md:w-80"
-            />
-          </div>
-        </div>
-
-        <div className="space-y-3 px-6 py-5">
+    <div className="space-y-3">
           {meaningsLoading ? (
             <LoadingState text="加载含义中…" />
           ) : (
@@ -221,7 +181,7 @@ export default function MeaningsTab({
                   ) : (
                     <div
                       key={meaning.id}
-                      className="group rounded-[24px] border border-slate-200/70 bg-white px-4 py-4 dark:border-slate-800/70 dark:bg-slate-900/60"
+                      className="flex flex-col bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden transition-all hover:shadow-md hover:border-amber-200 dark:hover:border-amber-900/30 px-4 py-4 group"
                     >
                       <div className="flex items-start gap-4">
                         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-linear-to-br from-violet-100 to-slate-100 text-violet-600 dark:from-violet-900/40 dark:to-slate-900 dark:text-violet-300">
@@ -271,7 +231,5 @@ export default function MeaningsTab({
             onPageChange={onPageChange}
           />
         </div>
-      </div>
-    </div>
   );
 }

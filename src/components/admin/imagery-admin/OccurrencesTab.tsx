@@ -17,16 +17,12 @@ import {
 import { useEffect } from "react";
 import { type Resolver, useForm } from "react-hook-form";
 import {
-  cardClassName,
   compactInputClassName,
   EmptyState,
   ghostButtonClassName,
   LoadingState,
   PaginationControls,
   primaryButtonClassName,
-  SearchField,
-  SectionIntro,
-  StatPill,
 } from "./shared";
 import type { RelationEditor, SongOption } from "./types";
 
@@ -190,7 +186,7 @@ function OccurrenceRow({
   onDelete: (songId: number, occurrence: OccurrenceWithSong) => void;
 }) {
   return (
-    <div className="group rounded-[24px] border border-slate-200/70 bg-white px-4 py-4 dark:border-slate-800/70 dark:bg-slate-900/60">
+    <div className="flex flex-col bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden transition-all hover:shadow-md hover:border-blue-200 dark:hover:border-blue-900/30 px-4 py-4 group">
       <div className="flex items-start gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
@@ -301,35 +297,7 @@ export default function OccurrencesTab({
   ) => string;
 }) {
   return (
-    <div className="space-y-6">
-      <SectionIntro
-        eyebrow="Song Relations"
-        title="关系管理"
-        description="按歌曲分页展示并展开维护每条关系记录；每条记录都聚焦 imagery_id、category_id、meaning_id 与 lyric_timetag。"
-        actions={<StatPill label="歌曲结果" value={`${filteredCount} 首`} />}
-      />
-
-      <div className={cardClassName()}>
-        <div className="border-b border-slate-200/70 px-6 py-5 dark:border-slate-800/70">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                按歌曲维护关系
-              </h3>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                搜索歌曲后展开对应面板，即可查看和编辑该 song_id 下的全部意象关系。
-              </p>
-            </div>
-            <SearchField
-              value={songSearchTerm}
-              onChange={onSearchTermChange}
-              placeholder="搜索歌曲名、专辑或 song_id…"
-              className="w-full md:w-80"
-            />
-          </div>
-        </div>
-
-        <div className="space-y-3 px-6 py-5">
+    <div className="space-y-3">
           {songsLoading ? (
             <LoadingState text="加载歌曲中…" />
           ) : pagedSongs.length === 0 ? (
@@ -356,7 +324,7 @@ export default function OccurrencesTab({
                 return (
                   <div
                     key={song.id}
-                    className="overflow-hidden rounded-[24px] border border-slate-200/70 bg-white dark:border-slate-800/70 dark:bg-slate-900/60"
+                    className="flex flex-col bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden transition-all hover:shadow-md hover:border-blue-200 dark:hover:border-blue-900/30"
                   >
                     <div className="flex items-center gap-3 px-4 py-4">
                       <button
@@ -480,7 +448,5 @@ export default function OccurrencesTab({
             </>
           )}
         </div>
-      </div>
-    </div>
   );
 }

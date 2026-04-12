@@ -60,6 +60,7 @@ import type {
   Tab,
 } from "./imagery-admin/types";
 import { buildTree, getCategoryPath } from "./imagery-admin/utils";
+import { Search, XCircle, Plus } from "lucide-react";
 
 const PAGE_SIZE = 20;
 const SONG_PAGE_SIZE = 10;
@@ -741,69 +742,148 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
         </div>
       </nav>
 
-      <main className="mx-auto max-w-7xl px-6 pb-20 pt-28">
-        <section
-          className={cn(
-            pageShellClassName(),
-            "relative overflow-hidden px-6 py-7 md:px-8",
-          )}
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.16),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.12),transparent_30%)]" />
-          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-3xl">
-              <div className="text-[11px] uppercase tracking-[0.34em] text-violet-500 dark:text-violet-400">
-                Admin Workspace
+      <main className="pt-32 pb-20 max-w-7xl mx-auto px-6">
+        {/* Header & Stats */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div>
+            <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-50 mb-4">
+              意象管理
+            </h1>
+            <div className="flex flex-wrap gap-3">
+              <div className="px-3 py-1 bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 rounded-full text-sm font-medium border border-violet-100 dark:border-violet-800">
+                总计意象 {items.length} 个
               </div>
-              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 md:text-4xl">
-                统一维护意象、分类、含义与歌曲关系
-              </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500 dark:text-slate-400">
-                页面样式已对齐主后台的圆角、搜索栏和层次化卡片语言；内部结构也拆成多个独立组件，后续维护可以按
-                tab 单独演进。
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <StatPill label="意象" value={items.length} />
-              <StatPill label="分类" value={categories.length} />
-              <StatPill label="含义" value={meanings.length} />
-              <StatPill label="歌曲" value={allSongs.length} />
+              <div className="px-3 py-1 bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 rounded-full text-sm font-medium border border-amber-100 dark:border-amber-800">
+                分类 {categories.length} 个
+              </div>
+              <div className="px-3 py-1 bg-cyan-50 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300 rounded-full text-sm font-medium border border-cyan-100 dark:border-cyan-800">
+                含义 {meanings.length} 条
+              </div>
             </div>
           </div>
-        </section>
 
-        <section className={cn(cardClassName(), "mt-6 p-2")}>
-          <div className="grid gap-2 md:grid-cols-4">
-            {tabs.map((tab) => (
+          <div className="flex items-center gap-3">
+            {activeTab === "imagery" && (
               <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={cn(
-                  "rounded-[22px] px-4 py-4 text-left transition-all",
-                  activeTab === tab.key
-                    ? "bg-violet-600 text-white shadow-lg shadow-violet-500/20"
-                    : "bg-transparent text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800",
-                )}
+                onClick={openAddImagery}
+                className="flex items-center gap-2 px-6 py-3 bg-violet-600 hover:bg-violet-500 text-white rounded-full font-medium shadow-lg shadow-violet-500/20 transition-all hover:-translate-y-0.5"
               >
-                <div className="flex items-center gap-2 text-sm font-semibold">
-                  {tab.icon}
-                  {tab.label}
-                </div>
-                <div
+                <Plus size={20} />
+                <span>新增意象</span>
+              </button>
+            )}
+            {activeTab === "categories" && (
+              <button
+                onClick={() => openAddCategory()}
+                className="flex items-center gap-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-full font-medium shadow-lg shadow-cyan-500/20 transition-all hover:-translate-y-0.5"
+              >
+                <Plus size={20} />
+                <span>新增顶级分类</span>
+              </button>
+            )}
+            {activeTab === "meanings" && (
+              <button
+                onClick={startAddMeaning}
+                className="flex items-center gap-2 px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-full font-medium shadow-lg shadow-amber-500/20 transition-all hover:-translate-y-0.5"
+              >
+                <Plus size={20} />
+                <span>新增含义</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Controls Bar */}
+        <div className="sticky top-20 z-40 bg-[#FAFAFA]/95 dark:bg-[#0B0F19]/95 backdrop-blur-sm py-4 mb-8 -mx-6 px-6 border-y border-transparent data-[scrolled=true]:border-slate-100">
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+            {/* Filter Pills */}
+            <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto no-scrollbar">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
                   className={cn(
-                    "mt-1 text-xs",
+                    "px-4 py-1.5 rounded-full text-sm border transition-all whitespace-nowrap flex items-center gap-1.5",
                     activeTab === tab.key
-                      ? "text-violet-100"
-                      : "text-slate-400",
+                      ? "bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white"
+                      : "bg-transparent text-slate-500 border-slate-200 dark:border-slate-800 hover:border-slate-300 hover:text-slate-900 dark:hover:text-slate-300",
                   )}
                 >
-                  {tab.hint}
-                </div>
-              </button>
-            ))}
-          </div>
-        </section>
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              ))}
+            </div>
 
-        <div className="mt-6">
+            {/* Search */}
+            {(activeTab === "imagery" ||
+              activeTab === "meanings" ||
+              activeTab === "occurrences") && (
+              <div className="relative group w-full md:w-64">
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  size={16}
+                />
+                <input
+                  type="text"
+                  placeholder={
+                    activeTab === "imagery"
+                      ? "搜索意象名称..."
+                      : activeTab === "meanings"
+                        ? "搜索含义标签或描述..."
+                        : "搜索歌曲标题、专辑..."
+                  }
+                  value={
+                    activeTab === "imagery"
+                      ? imagerySearchTerm
+                      : activeTab === "meanings"
+                        ? meaningsSearchTerm
+                        : songSearchTerm
+                  }
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (activeTab === "imagery") {
+                      setImagerySearchTerm(value);
+                      setImageryPage(1);
+                    } else if (activeTab === "meanings") {
+                      setMeaningsSearchTerm(value);
+                      setMeaningsPage(1);
+                    } else if (activeTab === "occurrences") {
+                      setSongSearchTerm(value);
+                      setSongsPage(1);
+                    }
+                  }}
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full py-2 pl-9 pr-8 text-sm outline-none focus:border-violet-500 transition-colors"
+                />
+                {((activeTab === "imagery" && imagerySearchTerm) ||
+                  (activeTab === "meanings" && meaningsSearchTerm) ||
+                  (activeTab === "occurrences" && songSearchTerm)) && (
+                  <button
+                    onClick={() => {
+                      if (activeTab === "imagery") {
+                        setImagerySearchTerm("");
+                        setImageryPage(1);
+                      } else if (activeTab === "meanings") {
+                        setMeaningsSearchTerm("");
+                        setMeaningsPage(1);
+                      } else if (activeTab === "occurrences") {
+                        setSongSearchTerm("");
+                        setSongsPage(1);
+                      }
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-300 hover:text-slate-500"
+                  >
+                    <XCircle size={14} />
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-4 min-h-[50vh]">
+
+
           {activeTab === "imagery" && (
             <ImageryTab
               categories={categories}
