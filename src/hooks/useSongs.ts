@@ -1,5 +1,6 @@
 import { useDebouncedValue } from "@mantine/hooks";
 import { useMemo, useState } from "react";
+import { FILTER_OPTION_ALL } from "@/lib/constants";
 import type { SongDetail } from "@/lib/types";
 import {
   mapAndSortSongs,
@@ -29,8 +30,8 @@ export function useSongs(
     return filterSongs(
       songs,
       resolvedSearchTerm,
-      "全部", // selectedType
-      "全部", // selectedYear
+      FILTER_OPTION_ALL,
+      FILTER_OPTION_ALL,
       [], // selectedLyricist
       [], // selectedComposer
       [], // selectedArranger

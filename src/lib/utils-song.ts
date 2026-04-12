@@ -4,7 +4,11 @@ import {
   FilterOptions,
   SongInfo,
 } from "./types";
-import { TYPE_ORDER } from "./constants";
+import {
+  FILTER_OPTION_ALL,
+  FILTER_OPTION_UNKNOWN,
+  TYPE_ORDER,
+} from "./constants";
 import Fuse from "fuse.js";
 import { formatDate, formatTime } from "./utils-common";
 
@@ -57,8 +61,8 @@ export function calculateFilterOptions(songsData: Song[]): FilterOptions {
   allTypes = preferredOrder
     .filter((t) => allTypes.includes(t))
     .concat(allTypes.filter((t) => !preferredOrder.includes(t)));
-  allTypes = ["全部", ...allTypes];
-  if (hasUnknownType) allTypes.push("未知");
+  allTypes = [FILTER_OPTION_ALL, ...allTypes];
+  if (hasUnknownType) allTypes.push(FILTER_OPTION_UNKNOWN);
 
   // 处理年份
   const yearSet = new Set<number>();
@@ -71,10 +75,10 @@ export function calculateFilterOptions(songsData: Song[]): FilterOptions {
     }
   });
   const allYears = [
-    "全部",
-    ...Array.from(yearSet).sort((a, b) => (b as number) - (a as number)),
+    FILTER_OPTION_ALL,
+    ...Array.from(yearSet).sort((a, b) => b - a),
   ];
-  if (hasUnknownYear) allYears.push("未知");
+  if (hasUnknownYear) allYears.push(FILTER_OPTION_UNKNOWN);
 
   // 处理作词
   const lyricistSet = new Set<string>();
@@ -87,8 +91,8 @@ export function calculateFilterOptions(songsData: Song[]): FilterOptions {
     }
   });
   const sortedLyricists = sortNamesOptimized(Array.from(lyricistSet));
-  const allLyricists = ["全部", ...sortedLyricists];
-  if (hasUnknownLyricist) allLyricists.push("未知");
+  const allLyricists = [FILTER_OPTION_ALL, ...sortedLyricists];
+  if (hasUnknownLyricist) allLyricists.push(FILTER_OPTION_UNKNOWN);
 
   // 处理作曲
   const composerSet = new Set<string>();
@@ -101,8 +105,8 @@ export function calculateFilterOptions(songsData: Song[]): FilterOptions {
     }
   });
   const sortedComposers = sortNamesOptimized(Array.from(composerSet));
-  const allComposers = ["全部", ...sortedComposers];
-  if (hasUnknownComposer) allComposers.push("未知");
+  const allComposers = [FILTER_OPTION_ALL, ...sortedComposers];
+  if (hasUnknownComposer) allComposers.push(FILTER_OPTION_UNKNOWN);
 
   // 处理编曲
   const arrangerSet = new Set<string>();
@@ -115,8 +119,8 @@ export function calculateFilterOptions(songsData: Song[]): FilterOptions {
     }
   });
   const sortedArrangers = sortNamesOptimized(Array.from(arrangerSet));
-  const allArrangers = ["全部", ...sortedArrangers];
-  if (hasUnknownArranger) allArrangers.push("未知");
+  const allArrangers = [FILTER_OPTION_ALL, ...sortedArrangers];
+  if (hasUnknownArranger) allArrangers.push(FILTER_OPTION_UNKNOWN);
 
   return { allTypes, allYears, allLyricists, allComposers, allArrangers };
 }
@@ -202,8 +206,8 @@ export function filterSongs(
   return filteredBySearch.filter((song) => {
     // type 筛选
     const matchesType =
-      selectedType === "全部" ||
-      (selectedType === "未知"
+      selectedType === FILTER_OPTION_ALL ||
+      (selectedType === FILTER_OPTION_UNKNOWN
         ? !song.type || song.type.length === 0
         : song.type && song.type.includes(selectedType));
 
@@ -212,13 +216,13 @@ export function filterSongs(
     if (Array.isArray(selectedYear)) {
       if (selectedYear.length > 0) {
         // 如果是数组，检查是否包含
-        const yearVal = song.year || "未知";
+        const yearVal = song.year || FILTER_OPTION_UNKNOWN;
         matchesYear = selectedYear.includes(yearVal);
       }
     } else {
       matchesYear =
-        selectedYear === "全部" ||
-        (selectedYear === "未知"
+        selectedYear === FILTER_OPTION_ALL ||
+        (selectedYear === FILTER_OPTION_UNKNOWN
           ? !song.year
           : (song.year?.toString() ?? "") === selectedYear);
     }
@@ -226,7 +230,7 @@ export function filterSongs(
     const matchesLyricist =
       selectedLyricist.length === 0 ||
       selectedLyricist.some((sel) =>
-        sel === "未知"
+        sel === FILTER_OPTION_UNKNOWN
           ? !song.lyricist || song.lyricist.length === 0
           : song.lyricist && song.lyricist.includes(sel),
       );
@@ -234,7 +238,7 @@ export function filterSongs(
     const matchesComposer =
       selectedComposer.length === 0 ||
       selectedComposer.some((sel) =>
-        sel === "未知"
+        sel === FILTER_OPTION_UNKNOWN
           ? !song.composer || song.composer.length === 0
           : song.composer && song.composer.includes(sel),
       );
@@ -242,7 +246,7 @@ export function filterSongs(
     const matchesArranger =
       selectedArranger.length === 0 ||
       selectedArranger.some((sel) =>
-        sel === "未知"
+        sel === FILTER_OPTION_UNKNOWN
           ? !song.arranger || song.arranger.length === 0
           : song.arranger && song.arranger.includes(sel),
       );

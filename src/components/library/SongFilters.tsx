@@ -1,4 +1,5 @@
 import React from "react";
+import { FILTER_OPTION_ALL, FILTER_OPTION_UNKNOWN } from "@/lib/constants";
 import CustomSelect from "./CustomSelect";
 import { Slider } from "@/components/ui/slider";
 
@@ -81,7 +82,9 @@ const SongFilters: React.FC<SongFiltersProps> = ({
 
   // If no years loaded yet, use dummy
   const displayYears =
-    sliderYears.length > 0 ? sliderYears : [new Date().getFullYear(), "未知"];
+    sliderYears.length > 0
+      ? sliderYears
+      : [new Date().getFullYear(), FILTER_OPTION_UNKNOWN];
 
   return (
     <div className="w-full flex flex-col gap-4 p-1">
@@ -106,7 +109,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
               onChange={setSelectedLyricist}
               placeholder="全部作词"
               options={filterOptions.allLyricists
-                .filter((l) => l !== "全部")
+                .filter((lyricist) => lyricist !== FILTER_OPTION_ALL)
                 .map((lyricist) => ({ value: lyricist, label: lyricist }))}
             />
           </div>
@@ -119,7 +122,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
               onChange={setSelectedComposer}
               placeholder="全部作曲"
               options={filterOptions.allComposers
-                .filter((c) => c !== "全部")
+                .filter((composer) => composer !== FILTER_OPTION_ALL)
                 .map((composer) => ({ value: composer, label: composer }))}
             />
           </div>
@@ -132,7 +135,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
               onChange={setSelectedArranger}
               placeholder="全部编曲"
               options={filterOptions.allArrangers
-                .filter((a) => a !== "全部")
+                .filter((arranger) => arranger !== FILTER_OPTION_ALL)
                 .map((arranger) => ({ value: arranger, label: arranger }))}
             />
           </div>

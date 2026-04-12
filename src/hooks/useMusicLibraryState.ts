@@ -1,14 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   parseAsArrayOf,
   parseAsBoolean,
   parseAsInteger,
   parseAsString,
   parseAsStringLiteral,
-  useQueryStates,
 } from "nuqs";
+import {
+  DEFAULT_MUSIC_LIBRARY_VIEW_MODE,
+  FILTER_OPTION_ALL,
+  type MusicLibraryViewMode,
+  MUSIC_LIBRARY_VIEW_MODES,
+} from "@/lib/constants";
+import { useSyncedQueryState } from "./useSyncedQueryState";
 
 export interface MusicLibraryState {
   searchQuery: string;
@@ -23,8 +29,8 @@ export interface MusicLibraryState {
   setFilterComposer: (composer: string[]) => void;
   filterArranger: string[];
   setFilterArranger: (arranger: string[]) => void;
-  viewMode: "grid" | "list";
-  setViewMode: (mode: "grid" | "list") => void;
+  viewMode: MusicLibraryViewMode;
+  setViewMode: (mode: MusicLibraryViewMode) => void;
   currentPage: number;
   setPaginationPage: (page: number) => void;
   showAdvancedFilters: boolean;
@@ -36,126 +42,93 @@ export interface MusicLibraryState {
 }
 
 const STORAGE_KEY = "music_library_scrollY";
-const VIEW_MODES = ["grid", "list"] as const;
+
+function areStringArraysEqual(left: string[], right: string[]) {
+  return (
+    left.length === right.length &&
+    left.every((value, index) => value === right[index])
+  );
+}
 
 export function useMusicLibraryState(
   initialSliderYearsLength: number,
-  defaultViewMode: "grid" | "list" = "grid",
+  defaultViewMode: MusicLibraryViewMode = DEFAULT_MUSIC_LIBRARY_VIEW_MODE,
 ): MusicLibraryState {
   const getMaxYearIndex = useCallback(
     () => Math.max(0, initialSliderYearsLength - 1),
     [initialSliderYearsLength],
   );
 
-  // ── URL 状态（nuqs）──────────────────────────────────────────────────────────
-  // 职责：①初始化（从 URL 读取一次）②持久化（写入 URL）
-  // ⚠️ 不直接用于渲染，避免 nuqs 在并发模式下协调渲染时产生的"第一次点击闪旧值"bug
-  const [queryState, setQueryState] = useQueryStates({
-    q: parseAsString.withDefault("").withOptions({ shallow: true }),
-    type: parseAsString.withDefault("全部").withOptions({ shallow: true }),
-    lyricist: parseAsArrayOf(parseAsString)
-      .withDefault([])
-      .withOptions({ shallow: true }),
-    composer: parseAsArrayOf(parseAsString)
-      .withDefault([])
-      .withOptions({ shallow: true }),
-    arranger: parseAsArrayOf(parseAsString)
-      .withDefault([])
-      .withOptions({ shallow: true }),
-    yearStart: parseAsInteger.withDefault(0).withOptions({ shallow: true }),
-    yearEnd: parseAsInteger
-      .withDefault(getMaxYearIndex())
-      .withOptions({ shallow: true }),
-    view: parseAsStringLiteral(VIEW_MODES)
-      .withDefault(defaultViewMode)
-      .withOptions({ shallow: true }),
-    page: parseAsInteger.withDefault(1).withOptions({ shallow: true }),
-    advanced: parseAsBoolean.withDefault(false).withOptions({ shallow: true }),
-  });
+  const [searchQuery, setSearchQueryState] = useSyncedQueryState<string>(
+    "q",
+    parseAsString.withDefault("").withOptions({ shallow: true }),
+  );
+  const [filterType, setFilterTypeState] = useSyncedQueryState<string>(
+    "type",
+    parseAsString.withDefault(FILTER_OPTION_ALL).withOptions({ shallow: true }),
+  );
+  const [filterLyricist, setFilterLyricistState] = useSyncedQueryState<string[]>(
+    "lyricist",
+    parseAsArrayOf(parseAsString).withDefault([]).withOptions({ shallow: true }),
+    { equals: areStringArraysEqual },
+  );
+  const [filterComposer, setFilterComposerState] = useSyncedQueryState<string[]>(
+    "composer",
+    parseAsArrayOf(parseAsString).withDefault([]).withOptions({ shallow: true }),
+    { equals: areStringArraysEqual },
+  );
+  const [filterArranger, setFilterArrangerState] = useSyncedQueryState<string[]>(
+    "arranger",
+    parseAsArrayOf(parseAsString).withDefault([]).withOptions({ shallow: true }),
+    { equals: areStringArraysEqual },
+  );
+  const [yearStart, setYearStartState] = useSyncedQueryState<number>(
+    "yearStart",
+    parseAsInteger.withDefault(0).withOptions({ shallow: true }),
+  );
+  const [yearEnd, setYearEndState] = useSyncedQueryState<number>(
+    "yearEnd",
+    parseAsInteger.withDefault(getMaxYearIndex()).withOptions({ shallow: true }),
+  );
+  const [viewMode, setViewModeState] =
+    useSyncedQueryState<MusicLibraryViewMode>(
+      "view",
+      parseAsStringLiteral(MUSIC_LIBRARY_VIEW_MODES)
+        .withDefault(defaultViewMode)
+        .withOptions({ shallow: true }),
+    );
+  const [currentPage, setCurrentPageState] = useSyncedQueryState<number>(
+    "page",
+    parseAsInteger.withDefault(1).withOptions({ shallow: true }),
+  );
+  const [showAdvancedFilters, setShowAdvancedFiltersState] =
+    useSyncedQueryState<boolean>(
+      "advanced",
+      parseAsBoolean.withDefault(false).withOptions({ shallow: true }),
+    );
 
-  // ── 本地 UI 状态（用于所有渲染）─────────────────────────────────────────────
-  // lazy initializer 读取 queryState 一次（首次渲染时的 URL 值），之后由 setter 独立维护
-  const [searchQuery, setSearchQueryState] = useState(() => queryState.q);
-  const [filterType, setFilterTypeState] = useState(() => queryState.type);
-  const [filterLyricist, setFilterLyricistState] = useState<string[]>(
-    () => queryState.lyricist,
-  );
-  const [filterComposer, setFilterComposerState] = useState<string[]>(
-    () => queryState.composer,
-  );
-  const [filterArranger, setFilterArrangerState] = useState<string[]>(
-    () => queryState.arranger,
-  );
-  const [yearStart, setYearStartState] = useState(() => queryState.yearStart);
-  const [yearEnd, setYearEndState] = useState(() => queryState.yearEnd);
-  const [viewMode, setViewModeState] = useState<"grid" | "list">(
-    () => queryState.view,
-  );
-  const [currentPage, setCurrentPageState] = useState(() =>
-    Math.max(1, queryState.page),
-  );
-  const [showAdvancedFilters, setShowAdvancedFiltersState] = useState(
-    () => queryState.advanced,
-  );
-
-  // ── 年份范围（从本地状态衍生）──────────────────────────────────────────────
   const yearRangeIndices = useMemo<[number, number]>(() => {
     const maxIndex = getMaxYearIndex();
     const start = Math.max(0, Math.min(yearStart, maxIndex));
     const end = Math.max(0, Math.min(yearEnd, maxIndex));
     return start <= end ? [start, end] : [end, start];
-  }, [yearStart, yearEnd, getMaxYearIndex]);
+  }, [getMaxYearIndex, yearEnd, yearStart]);
 
-  // ── 浏览器前进/后退同步 ──────────────────────────────────────────────────────
-  // 用 ref 标记是否来自浏览器导航事件（而非用户主动操作）
-  // 只有确认是 popstate 后，才从 queryState 同步到本地状态
-  // 这样正常用户操作的路径完全不依赖 queryState 的读取
-  const pendingPopstateRef = useRef(false);
-
-  useEffect(() => {
-    const handlePopState = () => {
-      pendingPopstateRef.current = true;
-      // 同时处理滚动恢复
-      if (sessionStorage.getItem(STORAGE_KEY)) {
-        setIsRestoringScroll(true);
-      }
-    };
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
-
-  // 当 queryState 变化时（nuqs 处理了 popstate 后会更新），若是浏览器导航，则同步本地状态
-  useEffect(() => {
-    if (!pendingPopstateRef.current) return;
-    pendingPopstateRef.current = false;
-    setSearchQueryState(queryState.q);
-    setFilterTypeState(queryState.type);
-    setFilterLyricistState(queryState.lyricist);
-    setFilterComposerState(queryState.composer);
-    setFilterArrangerState(queryState.arranger);
-    setYearStartState(queryState.yearStart);
-    setYearEndState(queryState.yearEnd);
-    setViewModeState(queryState.view);
-    setCurrentPageState(Math.max(1, queryState.page));
-    setShowAdvancedFiltersState(queryState.advanced);
-  }, [
-    queryState.q,
-    queryState.type,
-    queryState.lyricist,
-    queryState.composer,
-    queryState.arranger,
-    queryState.yearStart,
-    queryState.yearEnd,
-    queryState.view,
-    queryState.page,
-    queryState.advanced,
-  ]);
-
-  // ── 滚动恢复 ─────────────────────────────────────────────────────────────────
   const [isRestoringScroll, setIsRestoringScroll] = useState(() => {
     if (typeof window === "undefined") return false;
     return sessionStorage.getItem(STORAGE_KEY) !== null;
   });
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (sessionStorage.getItem(STORAGE_KEY)) {
+        setIsRestoringScroll(true);
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   const restoreScroll = useCallback(() => {
     const savedScroll = sessionStorage.getItem(STORAGE_KEY);
@@ -163,12 +136,10 @@ export function useMusicLibraryState(
       setIsRestoringScroll(false);
       return;
     }
-    const targetY = parseInt(savedScroll, 10);
-    window.scrollTo(0, targetY);
+
+    window.scrollTo(0, parseInt(savedScroll, 10));
     sessionStorage.removeItem(STORAGE_KEY);
-    requestAnimationFrame(() => {
-      setIsRestoringScroll(false);
-    });
+    requestAnimationFrame(() => setIsRestoringScroll(false));
   }, []);
 
   const notifyDataReady = useCallback(() => {
@@ -181,60 +152,44 @@ export function useMusicLibraryState(
     }
   }, []);
 
-  // ── Setter：立即更新本地状态 + 异步写 URL（副作用）──────────────────────────
-
   const setSearchQuery = useCallback(
     (query: string) => {
       setSearchQueryState(query);
       setCurrentPageState(1);
-      void setQueryState({ q: query || null, page: null });
     },
-    [setQueryState],
+    [setCurrentPageState, setSearchQueryState],
   );
 
   const setFilterType = useCallback(
     (type: string) => {
       setFilterTypeState(type);
       setCurrentPageState(1);
-      void setQueryState({ type: type === "全部" ? null : type, page: null });
     },
-    [setQueryState],
+    [setCurrentPageState, setFilterTypeState],
   );
 
   const setFilterLyricist = useCallback(
     (lyricist: string[]) => {
       setFilterLyricistState(lyricist);
       setCurrentPageState(1);
-      void setQueryState({
-        lyricist: lyricist.length > 0 ? lyricist : null,
-        page: null,
-      });
     },
-    [setQueryState],
+    [setCurrentPageState, setFilterLyricistState],
   );
 
   const setFilterComposer = useCallback(
     (composer: string[]) => {
       setFilterComposerState(composer);
       setCurrentPageState(1);
-      void setQueryState({
-        composer: composer.length > 0 ? composer : null,
-        page: null,
-      });
     },
-    [setQueryState],
+    [setCurrentPageState, setFilterComposerState],
   );
 
   const setFilterArranger = useCallback(
     (arranger: string[]) => {
       setFilterArrangerState(arranger);
       setCurrentPageState(1);
-      void setQueryState({
-        arranger: arranger.length > 0 ? arranger : null,
-        page: null,
-      });
     },
-    [setQueryState],
+    [setCurrentPageState, setFilterArrangerState],
   );
 
   const setYearRangeIndices = useCallback(
@@ -242,48 +197,38 @@ export function useMusicLibraryState(
       const maxIndex = getMaxYearIndex();
       const start = Math.max(0, Math.min(range[0], maxIndex));
       const end = Math.max(start, Math.min(range[1], maxIndex));
+
       setYearStartState(start);
       setYearEndState(end);
       setCurrentPageState(1);
-      void setQueryState({
-        yearStart: start === 0 ? null : start,
-        yearEnd: end === maxIndex ? null : end,
-        page: null,
-      });
     },
-    [getMaxYearIndex, setQueryState],
+    [getMaxYearIndex, setCurrentPageState, setYearEndState, setYearStartState],
   );
 
   const setViewMode = useCallback(
-    (mode: "grid" | "list") => {
+    (mode: MusicLibraryViewMode) => {
       setViewModeState(mode);
-      void setQueryState({ view: mode === defaultViewMode ? null : mode });
     },
-    [defaultViewMode, setQueryState],
+    [setViewModeState],
   );
 
   const setPaginationPage = useCallback(
     (page: number) => {
-      const normalizedPage = Math.max(1, page);
-      setCurrentPageState(normalizedPage);
-      void setQueryState({
-        page: normalizedPage === 1 ? null : normalizedPage,
-      });
+      setCurrentPageState(Math.max(1, page));
     },
-    [setQueryState],
+    [setCurrentPageState],
   );
 
   const setShowAdvancedFilters = useCallback(
     (show: boolean) => {
       setShowAdvancedFiltersState(show);
-      void setQueryState({ advanced: show ? true : null });
     },
-    [setQueryState],
+    [setShowAdvancedFiltersState],
   );
 
   const resetAllFilters = useCallback(() => {
     setSearchQueryState("");
-    setFilterTypeState("全部");
+    setFilterTypeState(FILTER_OPTION_ALL);
     setFilterLyricistState([]);
     setFilterComposerState([]);
     setFilterArrangerState([]);
@@ -291,17 +236,18 @@ export function useMusicLibraryState(
     setYearEndState(getMaxYearIndex());
     setCurrentPageState(1);
     setShowAdvancedFiltersState(false);
-    void setQueryState({
-      q: null,
-      type: null,
-      lyricist: null,
-      composer: null,
-      arranger: null,
-      yearStart: null,
-      yearEnd: null,
-      page: null,
-    });
-  }, [getMaxYearIndex, setQueryState]);
+  }, [
+    getMaxYearIndex,
+    setCurrentPageState,
+    setFilterArrangerState,
+    setFilterComposerState,
+    setFilterLyricistState,
+    setFilterTypeState,
+    setSearchQueryState,
+    setShowAdvancedFiltersState,
+    setYearEndState,
+    setYearStartState,
+  ]);
 
   return {
     searchQuery,
@@ -318,7 +264,7 @@ export function useMusicLibraryState(
     setFilterArranger,
     viewMode,
     setViewMode,
-    currentPage,
+    currentPage: Math.max(1, currentPage),
     setPaginationPage,
     showAdvancedFilters,
     setShowAdvancedFilters,
