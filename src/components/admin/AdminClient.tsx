@@ -7,7 +7,7 @@ import {
   mergeAutoCompleteData,
   useAutoComplete,
 } from "@/hooks/useAutoComplete";
-import { usePagination } from "@/hooks/usePagination";
+
 import { useSongs } from "@/hooks/useSongs";
 import {
   type MusicProviderType,
@@ -15,9 +15,19 @@ import {
 } from "@/lib/api-auto-complete";
 import { apiCreateSong, apiUpdateSong } from "@/lib/client-api";
 import { genreColorMap, songFields, typeColorMap } from "@/lib/constants";
-import type { Song, SongDetail, SongFieldConfig } from "@/lib/types";
+import {
+  createEmptySongFormState,
+  songFormStateSchema,
+  toSongFormPayload,
+  toSongFormState,
+  type SongArrayFieldItem,
+  type SongFormStateValues,
+} from "@/lib/song-form";
+import type { Song, SongDetail, SongFieldConfig, SongFormFieldKey } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import { convertEmptyStringToNull, formatField } from "@/lib/utils-common";
-import { getCoverUrl, validateField } from "@/lib/utils-song";
+import { getCoverUrl } from "@/lib/utils-song";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   AlertCircle,
   Bell,
@@ -37,15 +47,19 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Controller,
+  FormProvider,
+  type Resolver,
+  useFieldArray,
+  useForm,
+  useFormContext,
+} from "react-hook-form";
 import CoverUpload from "./CoverUpload";
 import Notification from "./Notification";
 import ScoreUpload from "./ScoreUpload";
-
-// Force simpler classNames utility
-function cn(...classes: (string | undefined | null | false)[]) {
-  return classes.filter(Boolean).join(" ");
-}
 
 // Reuse CoverArt logic simply for small thumbs
 const AdminCoverArt = ({
@@ -73,6 +87,28 @@ const AdminCoverArt = ({
     </div>
   );
 };
+
+function getInputValue(value: string | number | null | undefined) {
+  return value ?? "";
+}
+
+function hasSongId(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+const CREATOR_FIELD_KEYS = [
+  "lyricist",
+  "composer",
+  "arranger",
+  "artist",
+  "albumartist",
+] as const satisfies readonly SongFormFieldKey[];
+
+type CreatorFieldKey = (typeof CREATOR_FIELD_KEYS)[number];
+
+function isCreatorFieldKey(value: SongFormFieldKey): value is CreatorFieldKey {
+  return CREATOR_FIELD_KEYS.includes(value as CreatorFieldKey);
+}
 
 // --- Logic Helpers ---
 
@@ -376,7 +412,15 @@ export default function AdminClientComponent({
   initialError: string | null;
 }) {
   // States
-  const [isClient, setIsClient] = useState(false);
+  // 不使用 throttleMs：混用有/无 throttle 参数会导致 trailing-edge timer 竞态（第一次操作闪旧值）
+  const [{ q: searchTerm, page: currentPage }, setQueryState] = useQueryStates({
+    q: parseAsString.withDefault("").withOptions({
+      shallow: true,
+    }),
+    page: parseAsInteger.withDefault(1).withOptions({
+      shallow: true,
+    }),
+  });
   const [showIncompleteOnly, setShowIncompleteOnly] = useState(false);
 
   // Data Hooks
@@ -384,17 +428,9 @@ export default function AdminClientComponent({
     songs,
     setSongs,
     loading,
-    searchTerm,
-    setSearchTerm,
     filteredSongs: baseFilteredSongs,
     sortedSongs: baseSortedSongs,
-  } = useSongs(
-    initialSongs,
-    initialError,
-    typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search).get("q") || ""
-      : "",
-  );
+  } = useSongs(initialSongs, initialError, searchTerm);
 
   // Filter Logic
   const filteredSongs = useMemo(() => {
@@ -409,56 +445,30 @@ export default function AdminClientComponent({
       : baseSortedSongs;
   }, [baseSortedSongs, showIncompleteOnly]);
 
-  // Pagination
-  const getInitialPage = () => {
-    if (typeof window === "undefined") return 1;
-    const p = new URLSearchParams(window.location.search).get("page");
-    return p ? parseInt(p, 10) : 1;
-  };
-
-  const {
-    currentPage,
-    totalPages,
-    currentData: paginatedSongs,
-    setCurrentPage: setPaginationPage,
-    startIndex,
-  } = usePagination({
-    data: sortedSongs,
-    itemsPerPage: 24,
-    initialPage: getInitialPage(),
-    resetOnDataChange: false,
-  });
-
-  // Sync URL
-  const updateUrl = useCallback((page: number, q: string) => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    if (q) params.set("q", q);
-    else params.delete("q");
-    if (page > 1) params.set("page", page.toString());
-    else params.delete("page");
-
-    const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
-    window.history.replaceState(null, "", newUrl);
-  }, []);
+  // 分页处理 — 直接用 nuqs 的 currentPage 作为唯一真值源，避免双层状态的时序竞争导致闪烁
+  const ITEMS_PER_PAGE = 24;
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil(sortedSongs.length / ITEMS_PER_PAGE)),
+    [sortedSongs.length],
+  );
+  const safePage = useMemo(
+    () => Math.min(Math.max(1, currentPage), totalPages),
+    [currentPage, totalPages],
+  );
+  const paginatedSongs = useMemo(() => {
+    const startIndex = (safePage - 1) * ITEMS_PER_PAGE;
+    return sortedSongs.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [sortedSongs, safePage]);
+  const startIndex = (safePage - 1) * ITEMS_PER_PAGE + 1;
 
   const handlePageChange = useCallback(
     (page: number) => {
-      setPaginationPage(page);
-      updateUrl(page, searchTerm);
+      void setQueryState({
+        page: page > 1 ? page : null,
+      });
     },
-    [searchTerm, updateUrl, setPaginationPage],
+    [setQueryState],
   );
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isClient) return;
-    // Debounce basic URL update if needed, but here we just rely on explicit actions or debounced search
-    updateUrl(currentPage, searchTerm);
-  }, [searchTerm, currentPage, isClient, updateUrl]);
 
   // Auth & Actions
   const [csrfToken, setCsrfToken] = useState("");
@@ -467,29 +477,22 @@ export default function AdminClientComponent({
       .then((r) => r.json())
       .then((d) => setCsrfToken(d.csrfToken || ""));
   }, []);
-  const [showAdd, setShowAdd] = useState(false);
-  const [newSong, setNewSong] = useState<Partial<Song>>({
-    title: "",
-    album: "",
-  });
-  const [addFormErrors, setAddFormErrors] = useState<Record<string, string>>(
-    {},
-  );
-
+  const [formMode, setFormMode] = useState<"add" | "edit" | null>(null);
   const [editSong, setEditSong] = useState<SongDetail | null>(null);
-  const [editForm, setEditForm] = useState<Partial<Song>>({});
-  const [editFormErrors, setEditFormErrors] = useState<Record<string, string>>(
-    {},
-  );
-
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
   const [operationMsg, setOperationMsg] = useState<{
     type: "success" | "error";
     text: string;
   } | null>(null);
   const [showNotification, setShowNotification] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+
+  const songForm = useForm<SongFormStateValues>({
+    resolver: zodResolver(songFormStateSchema) as Resolver<SongFormStateValues>,
+    defaultValues: createEmptySongFormState(),
+    mode: "onBlur",
+    reValidateMode: "onChange",
+  });
 
   // 自动补全 Hook
   const autoComplete = useAutoComplete(csrfToken, (msg) => {
@@ -531,99 +534,91 @@ export default function AdminClientComponent({
     });
   }, []);
 
-  // Handlers
-  const handleAddSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const errors: Record<string, string> = {};
-    songFields.forEach((f) => {
-      errors[f.key] = validateField(
-        f,
-        (newSong as Record<string, unknown>)[f.key],
-      );
-    });
-    setAddFormErrors(errors);
-    if (Object.values(errors).some(Boolean)) return;
+  const closeSongForm = useCallback(() => {
+    setFormMode(null);
+    setEditSong(null);
+    autoComplete.reset();
+    songForm.reset(createEmptySongFormState());
+  }, [autoComplete, songForm]);
+
+  const openAddForm = useCallback(() => {
+    setEditSong(null);
+    setFormMode("add");
+    autoComplete.reset();
+    songForm.reset(createEmptySongFormState());
+  }, [autoComplete, songForm]);
+
+  const startEdit = useCallback(
+    (song: SongDetail) => {
+      setEditSong(song);
+      setFormMode("edit");
+      autoComplete.reset();
+      songForm.reset(toSongFormState(song));
+    },
+    [autoComplete, songForm],
+  );
+
+  const handleSongSubmit = songForm.handleSubmit(async (data) => {
+    if (!csrfToken) {
+      setOperationMsg({ type: "error", text: "缺少安全令牌，请刷新后重试" });
+      setTimeout(() => setOperationMsg(null), 3000);
+      return;
+    }
+
+    const payload = toSongFormPayload(data);
 
     try {
-      setIsSubmitting(true);
-      const created = await apiCreateSong(
-        convertEmptyStringToNull(newSong),
-        csrfToken,
-      );
-      setSongs((prev) => [...prev, created]);
-      setShowAdd(false);
-      setNewSong({ title: "", album: "" });
-      setOperationMsg({ type: "success", text: "创建成功" });
+      if (formMode === "add") {
+        const created = await apiCreateSong(
+          convertEmptyStringToNull(payload),
+          csrfToken,
+        );
+        setSongs((prev) => [...prev, created]);
+        closeSongForm();
+        setOperationMsg({ type: "success", text: "创建成功" });
+      } else if (formMode === "edit" && editSong) {
+        const updated = await apiUpdateSong(
+          editSong.id,
+          {
+            ...convertEmptyStringToNull(payload),
+            updated_at: editSong.updated_at,
+          },
+          csrfToken,
+        );
+        setSongs((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+        closeSongForm();
+        setOperationMsg({ type: "success", text: "更新成功" });
+      }
     } catch (err: unknown) {
       setOperationMsg({
         type: "error",
-        text: err instanceof Error ? err.message : "创建失败",
+        text:
+          err instanceof Error
+            ? err.message
+            : formMode === "add"
+              ? "创建失败"
+              : "更新失败",
       });
     } finally {
-      setIsSubmitting(false);
       setTimeout(() => setOperationMsg(null), 3000);
     }
-  };
-
-  const handleEditSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editSong) return;
-    const errors: Record<string, string> = {};
-    songFields.forEach((f) => {
-      errors[f.key] = validateField(
-        f,
-        (editForm as Record<string, unknown>)[f.key],
-      );
-    });
-    setEditFormErrors(errors);
-    if (Object.values(errors).some(Boolean)) return;
-
-    try {
-      setIsSubmitting(true);
-      const updated = await apiUpdateSong(
-        editSong.id,
-        {
-          ...convertEmptyStringToNull(editForm),
-          updated_at: editSong.updated_at,
-        },
-        csrfToken,
-      );
-      setSongs((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
-      setEditSong(null);
-      setOperationMsg({ type: "success", text: "更新成功" });
-    } catch (err: unknown) {
-      setOperationMsg({
-        type: "error",
-        text: err instanceof Error ? err.message : "更新失败",
-      });
-    } finally {
-      setIsSubmitting(false);
-      setTimeout(() => setOperationMsg(null), 3000);
-    }
-  };
-
-  const startEdit = (song: SongDetail) => {
-    setEditSong(song);
-    setEditForm({ ...song });
-  };
+  });
 
   // 自动补全处理函数
   const handleAutoComplete = async (provider: MusicProviderType) => {
-    const artists =
-      editForm.artist && Array.isArray(editForm.artist)
-        ? editForm.artist
-        : undefined;
-    await autoComplete.handleAutoComplete(
-      provider,
-      editForm.title as string,
-      artists,
-    );
+    const values = toSongFormPayload(songForm.getValues());
+    const artists = Array.isArray(values.artist) ? values.artist : undefined;
+    await autoComplete.handleAutoComplete(provider, values.title, artists);
   };
 
   const handleSelectSearchResult = async (song: SearchResultItem) => {
     const data = await autoComplete.handleSelectSearchResult(song);
     if (data) {
-      setEditForm((prev) => mergeAutoCompleteData(prev, data));
+      songForm.reset(
+        toSongFormState(
+          mergeAutoCompleteData(toSongFormPayload(songForm.getValues()), data),
+        ),
+      );
       setOperationMsg({ type: "success", text: "自动补全成功" });
       setTimeout(() => setOperationMsg(null), 3000);
     }
@@ -694,7 +689,7 @@ export default function AdminClientComponent({
               <span>意象管理</span>
             </Link>
             <button
-              onClick={() => setShowAdd(true)}
+              onClick={openAddForm}
               className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-full font-medium shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
             >
               <Plus size={20} />
@@ -708,11 +703,11 @@ export default function AdminClientComponent({
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
             {/* Filter Pills */}
             <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto no-scrollbar">
-              <button
-                onClick={() => {
-                  setShowIncompleteOnly(false);
-                  setPaginationPage(1);
-                }}
+                <button
+                  onClick={() => {
+                    setShowIncompleteOnly(false);
+                    void setQueryState({ page: null });
+                  }}
                 className={cn(
                   "px-4 py-1.5 rounded-full text-sm border transition-all whitespace-nowrap",
                   !showIncompleteOnly
@@ -722,11 +717,11 @@ export default function AdminClientComponent({
               >
                 全部歌曲
               </button>
-              <button
-                onClick={() => {
-                  setShowIncompleteOnly(true);
-                  setPaginationPage(1);
-                }}
+                <button
+                  onClick={() => {
+                    setShowIncompleteOnly(true);
+                    void setQueryState({ page: null });
+                  }}
                 className={cn(
                   "px-4 py-1.5 rounded-full text-sm border transition-all whitespace-nowrap flex items-center gap-1.5",
                   showIncompleteOnly
@@ -750,14 +745,18 @@ export default function AdminClientComponent({
                 placeholder="搜索标题、专辑、作者..."
                 value={searchTerm}
                 onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setPaginationPage(1);
+                  void setQueryState({
+                    q: e.target.value || null,
+                    page: null,
+                  });
                 }}
                 className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full py-2 pl-9 pr-8 text-sm outline-none focus:border-blue-500 transition-colors"
               />
               {searchTerm && (
                 <button
-                  onClick={() => setSearchTerm("")}
+                  onClick={() => {
+                    void setQueryState({ q: null, page: null });
+                  }}
                   className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-300 hover:text-slate-500"
                 >
                   <XCircle size={14} />
@@ -801,7 +800,7 @@ export default function AdminClientComponent({
 
               <div className="mt-12 flex justify-center">
                 <Pagination
-                  currentPage={currentPage}
+                  currentPage={safePage}
                   totalPages={totalPages}
                   onPageChange={handlePageChange}
                 />
@@ -844,17 +843,17 @@ export default function AdminClientComponent({
       )}
 
       {/* Logic for Modal: Reuse similar markup for both Add/Edit */}
-      {(showAdd || editSong) && (
+      {formMode && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-[#151921] w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col pt-0 animate-in zoom-in-95 duration-200 border border-slate-200/50 dark:border-slate-800">
             {/* Modal Header */}
             <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white/50 dark:bg-[#151921]/50 backdrop-blur-md sticky top-0 z-10">
               <div className="flex items-center gap-3">
                 <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                  {showAdd ? "添加新歌曲" : "编辑歌曲"}
+                  {formMode === "add" ? "添加新歌曲" : "编辑歌曲"}
                 </h2>
                 {/* 自动补全按钮 - 仅在编辑模式下显示 */}
-                {editSong && (
+                {formMode === "edit" && editSong && (
                   <>
                     <button
                       type="button"
@@ -900,12 +899,7 @@ export default function AdminClientComponent({
                 )}
               </div>
               <button
-                onClick={() => {
-                  setShowAdd(false);
-                  setEditSong(null);
-                  setAddFormErrors({});
-                  setEditFormErrors({});
-                }}
+                onClick={closeSongForm}
                 className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors"
               >
                 <X size={20} />
@@ -913,69 +907,63 @@ export default function AdminClientComponent({
             </div>
 
             {/* Modal Body */}
-            <div className="flex-1 overflow-y-auto p-6 md:p-8">
-              <form
-                id="song-form"
-                onSubmit={showAdd ? handleAddSubmit : handleEditSubmit}
-                className="space-y-8"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                  {songFields.map((field) => (
-                    <div
-                      key={field.key}
-                      className={cn(
-                        "flex flex-col gap-2",
-                        field.type === "textarea" ? "md:col-span-2" : "",
-                      )}
-                    >
-                      <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">
-                        {field.label}
-                        {field.key === "title" && (
-                          <span className="text-red-500 ml-1">*</span>
+            <FormProvider {...songForm}>
+              <div className="flex-1 overflow-y-auto p-6 md:p-8">
+                <form
+                  id="song-form"
+                  onSubmit={handleSongSubmit}
+                  className="space-y-8"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    {songFields.map((field) => (
+                      <div
+                        key={field.key}
+                        className={cn(
+                          "flex flex-col gap-2",
+                          field.type === "textarea" ? "md:col-span-2" : "",
                         )}
-                      </label>
-                      <RenderInput
-                        field={field}
-                        state={showAdd ? newSong : editForm}
-                        setState={showAdd ? setNewSong : setEditForm}
-                        errors={showAdd ? addFormErrors : editFormErrors}
-                        setErrors={
-                          showAdd ? setAddFormErrors : setEditFormErrors
-                        }
-                        csrfToken={csrfToken}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </form>
-            </div>
+                      >
+                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">
+                          {field.label}
+                          {field.key === "title" && (
+                            <span className="text-red-500 ml-1">*</span>
+                          )}
+                        </label>
+                        <RenderInput
+                          field={field}
+                          csrfToken={csrfToken}
+                          songId={editSong?.id}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </form>
+              </div>
 
-            {/* Modal Footer */}
-            <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-[#151921] flex justify-end gap-3 sticky bottom-0 z-10">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowAdd(false);
-                  setEditSong(null);
-                }}
+              {/* Modal Footer */}
+              <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-[#151921] flex justify-end gap-3 sticky bottom-0 z-10">
+                <button
+                  type="button"
+                  onClick={closeSongForm}
                 className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              >
-                取消
-              </button>
-              <button
-                type="submit"
-                form="song-form"
-                disabled={isSubmitting}
-                className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
-              >
-                {isSubmitting ? (
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <Save size={18} />
-                )}
-                {showAdd ? "确认添加" : "保存修改"}
-              </button>
-            </div>
+                >
+                  取消
+                </button>
+                <button
+                  type="submit"
+                  form="song-form"
+                  disabled={songForm.formState.isSubmitting}
+                  className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                >
+                  {songForm.formState.isSubmitting ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <Save size={18} />
+                  )}
+                  {formMode === "add" ? "确认添加" : "保存修改"}
+                </button>
+              </div>
+            </FormProvider>
           </div>
         </div>
       )}
@@ -1055,226 +1043,272 @@ export default function AdminClientComponent({
 
 function RenderInput({
   field,
-  state,
-  setState,
-  errors,
-  setErrors,
   csrfToken,
+  songId,
 }: {
   field: SongFieldConfig;
-  state: Record<string, unknown>;
-  setState: React.Dispatch<React.SetStateAction<Record<string, unknown>>>;
-  errors: Record<string, string>;
-  setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   csrfToken: string;
+  songId?: number;
 }) {
-  const value = state[field.key];
-  const error = errors[field.key];
+  const { control } = useFormContext<SongFormStateValues>();
 
-  const update = (val: unknown) => {
-    setState((prev: Record<string, unknown>) => ({
-      ...prev,
-      [field.key]: val,
-    }));
-    setErrors((prev: Record<string, string>) => ({
-      ...prev,
-      [field.key]: validateField(field, val),
-    }));
-  };
+  if (isCreatorFieldKey(field.key)) {
+    return (
+      <CreatorFieldArrayInput
+        fieldKey={field.key}
+      />
+    );
+  }
 
+  return (
+    <Controller
+      control={control}
+      name={field.key}
+      render={({ field: controllerField, fieldState }) => {
+        const value = controllerField.value;
+        const errorMessage = fieldState.error?.message;
+        const baseClass = cn(
+          "w-full px-4 py-2.5 bg-white dark:bg-black/20 border rounded-xl outline-none transition-all",
+          errorMessage
+            ? "border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-500/10"
+            : "border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10",
+        );
+
+        if (field.key === "genre" || field.key === "type") {
+          const options =
+            field.key === "genre"
+              ? Object.keys(genreColorMap)
+              : Object.keys(typeColorMap);
+          const arr = Array.isArray(value)
+            ? value.filter((item): item is string => typeof item === "string")
+            : typeof value === "string"
+              ? [value]
+              : [];
+
+          return (
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-2">
+                {options.map((opt) => {
+                  const isActive = arr.includes(opt);
+                  const colorClass =
+                    (field.key === "genre" ? genreColorMap : typeColorMap)[opt] ||
+                    "bg-slate-100 text-slate-600";
+
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => {
+                        const next = isActive
+                          ? arr.filter((x) => x !== opt)
+                          : [...arr, opt];
+                        controllerField.onChange(next);
+                      }}
+                      className={cn(
+                        "px-3 py-1 rounded-full text-xs font-medium border transition-all",
+                        isActive
+                          ? "ring-2 ring-offset-1 ring-blue-500 dark:ring-offset-[#151921]"
+                          : "opacity-80 grayscale-[0.3] hover:grayscale-0 hover:opacity-100",
+                        colorClass
+                          .replace("bg-", "bg-opacity-20 bg-")
+                          .replace("text-", "text-"),
+                      )}
+                      style={{
+                        backgroundColor: isActive ? undefined : "transparent",
+                        borderColor: isActive ? "transparent" : "currentColor",
+                      }}
+                    >
+                      {opt}
+                    </button>
+                  );
+                })}
+              </div>
+              <FieldErrorMessage message={errorMessage} />
+            </div>
+          );
+        }
+
+        if (field.type === "textarea") {
+          return (
+            <>
+              <textarea
+                {...controllerField}
+                value={getInputValue(
+                  typeof value === "string" || typeof value === "number"
+                    ? value
+                    : undefined,
+                )}
+                onChange={(e) => controllerField.onChange(e.target.value)}
+                className={baseClass}
+                rows={4}
+                placeholder={`请输入${field.label}`}
+              />
+              <FieldErrorMessage className="mt-1" message={errorMessage} />
+            </>
+          );
+        }
+
+        if (field.type === "boolean") {
+          const isCover = field.key === "hascover";
+          const isScore = field.key === "nmn_status";
+
+          return (
+            <div className="space-y-3">
+              <div className="flex gap-4">
+                <select
+                  {...controllerField}
+                  value={value === true ? "true" : value === false ? "false" : ""}
+                  onChange={(e) => {
+                    const nextValue =
+                      e.target.value === "true"
+                        ? true
+                        : e.target.value === "false"
+                          ? false
+                          : null;
+                    controllerField.onChange(nextValue);
+                  }}
+                  className={cn(
+                    baseClass,
+                    "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100",
+                    "[&>option]:bg-white [&>option]:dark:bg-slate-800 [&>option]:text-slate-900 [&>option]:dark:text-slate-100",
+                  )}
+                >
+                  {isCover ? (
+                    <>
+                      <option value="">白底狐狸 (默认)</option>
+                      <option value="false">初号机 (黑底)</option>
+                      <option value="true">定制封面</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="false">否 / 无</option>
+                      <option value="true">是 / 有</option>
+                    </>
+                  )}
+                </select>
+              </div>
+
+              {isCover && value === true && hasSongId(songId) && (
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-100 dark:border-slate-800">
+                  <CoverUpload
+                    songId={songId}
+                    csrfToken={csrfToken}
+                    onUploadSuccess={() => void 0}
+                    onUploadError={console.error}
+                  />
+                </div>
+              )}
+
+              {isScore && value === true && hasSongId(songId) && (
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-100 dark:border-slate-800">
+                  <ScoreUpload
+                    songId={songId}
+                    csrfToken={csrfToken}
+                    onUploadSuccess={() => void 0}
+                    onUploadError={console.error}
+                  />
+                </div>
+              )}
+
+              <FieldErrorMessage message={errorMessage} />
+            </div>
+          );
+        }
+
+        return (
+          <>
+            <input
+              {...controllerField}
+              type={
+                field.type === "number"
+                  ? "number"
+                  : field.type === "date"
+                    ? "date"
+                    : "text"
+              }
+              value={getInputValue(
+                typeof value === "string" || typeof value === "number"
+                  ? value
+                  : undefined,
+              )}
+              onChange={(e) =>
+                controllerField.onChange(
+                  field.type === "number"
+                    ? e.target.value === ""
+                      ? null
+                      : Number(e.target.value)
+                    : e.target.value,
+                )
+              }
+              className={baseClass}
+              placeholder={`请输入${field.label}`}
+            />
+            <FieldErrorMessage className="mt-1" message={errorMessage} />
+          </>
+        );
+      }}
+    />
+  );
+}
+
+function CreatorFieldArrayInput({
+  fieldKey,
+}: {
+  fieldKey: CreatorFieldKey;
+}) {
+  const { control, formState, getFieldState, register } =
+    useFormContext<SongFormStateValues>();
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: fieldKey,
+  });
+  const errorMessage = getFieldState(fieldKey, formState).error?.message;
   const baseClass = cn(
     "w-full px-4 py-2.5 bg-white dark:bg-black/20 border rounded-xl outline-none transition-all",
-    error
+    errorMessage
       ? "border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-500/10"
       : "border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10",
   );
 
-  if (field.key === "genre" || field.key === "type") {
-    const options =
-      field.key === "genre"
-        ? Object.keys(genreColorMap)
-        : Object.keys(typeColorMap);
-    const arr: string[] = Array.isArray(value) ? value : value ? [value] : [];
-
-    return (
-      <div className="space-y-2">
-        <div className="flex flex-wrap gap-2">
-          {options.map((opt) => {
-            const isActive = arr.includes(opt);
-            // Use map to get colors, or default
-            const colorClass =
-              (field.key === "genre" ? genreColorMap : typeColorMap)[opt] ||
-              "bg-slate-100 text-slate-600";
-
-            return (
-              <button
-                key={opt}
-                type="button"
-                onClick={() => {
-                  const next = isActive
-                    ? arr.filter((x) => x !== opt)
-                    : [...arr, opt];
-                  update(next);
-                }}
-                className={cn(
-                  "px-3 py-1 rounded-full text-xs font-medium border transition-all",
-                  isActive
-                    ? "ring-2 ring-offset-1 ring-blue-500 dark:ring-offset-[#151921]"
-                    : "opacity-80 grayscale-[0.3] hover:grayscale-0 hover:opacity-100",
-                  colorClass
-                    .replace("bg-", "bg-opacity-20 bg-")
-                    .replace("text-", "text-"), // Rough hack to reuse existing color maps cleanly
-                )}
-                // Re-do style manually for cleaner look
-                style={{
-                  backgroundColor: isActive ? undefined : "transparent",
-                  borderColor: isActive ? "transparent" : "currentColor",
-                }}
-              >
-                {opt}
-              </button>
-            );
-          })}
-        </div>
-        {error && <p className="text-xs text-red-500">{error}</p>}
-      </div>
-    );
-  }
-
-  if (field.type === "textarea") {
-    return (
-      <>
-        <textarea
-          value={(value as string | number) ?? ""}
-          onChange={(e) => update(e.target.value)}
-          className={baseClass}
-          rows={4}
-          placeholder={`请输入${field.label}`}
-        />
-        {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
-      </>
-    );
-  }
-
-  if (field.type === "array") {
-    const arr = Array.isArray(value) ? value : value ? [value] : [];
-    return (
-      <div className="space-y-2">
-        {arr.map((item: string, i: number) => (
-          <div key={i} className="flex gap-2">
-            <input
-              value={item}
-              onChange={(e) => {
-                const next = [...arr];
-                next[i] = e.target.value;
-                update(next);
-              }}
-              className={baseClass}
-            />
-            <button
-              type="button"
-              onClick={() => update(arr.filter((_, idx) => idx !== i))}
-              className="p-2 text-red-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-            >
-              <X size={18} />
-            </button>
-          </div>
-        ))}
-        <button
-          type="button"
-          onClick={() => update([...arr, ""])}
-          className="text-xs font-medium text-blue-600 hover:text-blue-500 flex items-center gap-1"
-        >
-          <Plus size={14} /> 添加一项
-        </button>
-        {error && <p className="text-xs text-red-500">{error}</p>}
-      </div>
-    );
-  }
-
-  if (field.type === "boolean") {
-    // Logic for cover/score upload
-    const isCover = field.key === "hascover";
-    const isScore = field.key === "nmn_status";
-
-    return (
-      <div className="space-y-3">
-        <div className="flex gap-4">
-          <select
-            value={value === true ? "true" : value === false ? "false" : ""}
-            onChange={(e) => {
-              const v = e.target.value;
-              update(v === "true" ? true : v === "false" ? false : null);
-            }}
-            className={cn(
-              baseClass,
-              "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100",
-              "[&>option]:bg-white [&>option]:dark:bg-slate-800 [&>option]:text-slate-900 [&>option]:dark:text-slate-100",
-            )}
-          >
-            {isCover ? (
-              <>
-                <option value="">白底狐狸 (默认)</option>
-                <option value="false">初号机 (黑底)</option>
-                <option value="true">定制封面</option>
-              </>
-            ) : (
-              <>
-                <option value="false">否 / 无</option>
-                <option value="true">是 / 有</option>
-              </>
-            )}
-          </select>
-        </div>
-
-        {isCover && value === true && (
-          <div className="p-4 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-100 dark:border-slate-800">
-            <CoverUpload
-              songId={state.id as number}
-              csrfToken={csrfToken}
-              hasExistingFile={true} // We assume true if state is set, logic handled in component
-              onUploadSuccess={() => void 0}
-              onUploadError={console.error}
-            />
-          </div>
-        )}
-
-        {isScore && value === true && (
-          <div className="p-4 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-100 dark:border-slate-800">
-            <ScoreUpload
-              songId={state.id as number}
-              csrfToken={csrfToken}
-              hasExistingFile={true}
-              onUploadSuccess={() => void 0}
-              onUploadError={console.error}
-            />
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // Default text/number/date
   return (
-    <>
-      <input
-        type={
-          field.type === "number"
-            ? "number"
-            : field.type === "date"
-              ? "date"
-              : "text"
-        }
-        value={(value as string | number) ?? ""}
-        onChange={(e) =>
-          update(
-            field.type === "number" ? Number(e.target.value) : e.target.value,
-          )
-        }
-        className={baseClass}
-        placeholder={`请输入${field.label}`}
-      />
-      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
-    </>
+    <div className="space-y-2">
+      {fields.map((item, index) => (
+        <div key={item.id} className="flex gap-2">
+          <input
+            {...register(`${fieldKey}.${index}.value`)}
+            className={baseClass}
+          />
+          <button
+            type="button"
+            onClick={() => remove(index)}
+            className="p-2 text-red-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={() => append({ value: "" } satisfies SongArrayFieldItem)}
+        className="text-xs font-medium text-blue-600 hover:text-blue-500 flex items-center gap-1"
+      >
+        <Plus size={14} /> 添加一项
+      </button>
+      <FieldErrorMessage message={errorMessage} />
+    </div>
   );
+}
+
+function FieldErrorMessage({
+  message,
+  className,
+}: {
+  message?: string;
+  className?: string;
+}) {
+  if (!message) {
+    return null;
+  }
+
+  return <p className={cn("text-xs text-red-500", className)}>{message}</p>;
 }

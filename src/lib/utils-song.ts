@@ -3,9 +3,12 @@ import {
   SongDetail,
   FilterOptions,
   SongInfo,
-  SongFieldConfig,
 } from "./types";
-import { TYPE_ORDER } from "./constants";
+import {
+  FILTER_OPTION_ALL,
+  FILTER_OPTION_UNKNOWN,
+  TYPE_ORDER,
+} from "./constants";
 import Fuse from "fuse.js";
 import { formatDate, formatTime } from "./utils-common";
 
@@ -58,8 +61,8 @@ export function calculateFilterOptions(songsData: Song[]): FilterOptions {
   allTypes = preferredOrder
     .filter((t) => allTypes.includes(t))
     .concat(allTypes.filter((t) => !preferredOrder.includes(t)));
-  allTypes = ["全部", ...allTypes];
-  if (hasUnknownType) allTypes.push("未知");
+  allTypes = [FILTER_OPTION_ALL, ...allTypes];
+  if (hasUnknownType) allTypes.push(FILTER_OPTION_UNKNOWN);
 
   // 处理年份
   const yearSet = new Set<number>();
@@ -72,10 +75,10 @@ export function calculateFilterOptions(songsData: Song[]): FilterOptions {
     }
   });
   const allYears = [
-    "全部",
-    ...Array.from(yearSet).sort((a, b) => (b as number) - (a as number)),
+    FILTER_OPTION_ALL,
+    ...Array.from(yearSet).sort((a, b) => b - a),
   ];
-  if (hasUnknownYear) allYears.push("未知");
+  if (hasUnknownYear) allYears.push(FILTER_OPTION_UNKNOWN);
 
   // 处理作词
   const lyricistSet = new Set<string>();
@@ -88,8 +91,8 @@ export function calculateFilterOptions(songsData: Song[]): FilterOptions {
     }
   });
   const sortedLyricists = sortNamesOptimized(Array.from(lyricistSet));
-  const allLyricists = ["全部", ...sortedLyricists];
-  if (hasUnknownLyricist) allLyricists.push("未知");
+  const allLyricists = [FILTER_OPTION_ALL, ...sortedLyricists];
+  if (hasUnknownLyricist) allLyricists.push(FILTER_OPTION_UNKNOWN);
 
   // 处理作曲
   const composerSet = new Set<string>();
@@ -102,24 +105,22 @@ export function calculateFilterOptions(songsData: Song[]): FilterOptions {
     }
   });
   const sortedComposers = sortNamesOptimized(Array.from(composerSet));
-  const allComposers = ["全部", ...sortedComposers];
-  if (hasUnknownComposer) allComposers.push("未知");
+  const allComposers = [FILTER_OPTION_ALL, ...sortedComposers];
+  if (hasUnknownComposer) allComposers.push(FILTER_OPTION_UNKNOWN);
 
   // 处理编曲
   const arrangerSet = new Set<string>();
   let hasUnknownArranger = false;
   songsData.forEach((song) => {
-    // 需要检查 arranger 字段，如果 Song 类型没有，则从 SongDetail 获取
-    const songDetail = song as SongDetail;
-    if (!songDetail.arranger || songDetail.arranger.length === 0) {
+    if (!song.arranger || song.arranger.length === 0) {
       hasUnknownArranger = true;
     } else {
-      songDetail.arranger.forEach((a) => arrangerSet.add(a));
+      song.arranger.forEach((a) => arrangerSet.add(a));
     }
   });
   const sortedArrangers = sortNamesOptimized(Array.from(arrangerSet));
-  const allArrangers = ["全部", ...sortedArrangers];
-  if (hasUnknownArranger) allArrangers.push("未知");
+  const allArrangers = [FILTER_OPTION_ALL, ...sortedArrangers];
+  if (hasUnknownArranger) allArrangers.push(FILTER_OPTION_UNKNOWN);
 
   return { allTypes, allYears, allLyricists, allComposers, allArrangers };
 }
@@ -149,21 +150,18 @@ export function processLyricsForSearch(lrcLyrics: string | null): string {
 // 创建 Fuse.js 搜索实例（不包含歌词搜索）
 export function createFuseInstance(songs: Song[]) {
   // 为每首歌准备搜索数据
-  const searchData = songs.map((song) => {
-    const songDetail = song as SongDetail;
-    return {
-      ...song,
-      searchableContent: [
-        song.title,
-        song.album || "",
-        (song.lyricist || []).join(" "),
-        (song.composer || []).join(" "),
-        (songDetail.arranger || []).join(" "),
-      ]
-        .filter(Boolean)
-        .join(" "),
-    };
-  });
+  const searchData = songs.map((song) => ({
+    ...song,
+    searchableContent: [
+      song.title,
+      song.album || "",
+      (song.lyricist || []).join(" "),
+      (song.composer || []).join(" "),
+      (song.arranger || []).join(" "),
+    ]
+      .filter(Boolean)
+      .join(" "),
+  }));
 
   return new Fuse(searchData, {
     keys: [
@@ -206,12 +204,10 @@ export function filterSongs(
 
   // 应用其他筛选条件
   return filteredBySearch.filter((song) => {
-    const songDetail = song as SongDetail;
-
     // type 筛选
     const matchesType =
-      selectedType === "全部" ||
-      (selectedType === "未知"
+      selectedType === FILTER_OPTION_ALL ||
+      (selectedType === FILTER_OPTION_UNKNOWN
         ? !song.type || song.type.length === 0
         : song.type && song.type.includes(selectedType));
 
@@ -220,13 +216,13 @@ export function filterSongs(
     if (Array.isArray(selectedYear)) {
       if (selectedYear.length > 0) {
         // 如果是数组，检查是否包含
-        const yearVal = song.year || "未知";
+        const yearVal = song.year || FILTER_OPTION_UNKNOWN;
         matchesYear = selectedYear.includes(yearVal);
       }
     } else {
       matchesYear =
-        selectedYear === "全部" ||
-        (selectedYear === "未知"
+        selectedYear === FILTER_OPTION_ALL ||
+        (selectedYear === FILTER_OPTION_UNKNOWN
           ? !song.year
           : (song.year?.toString() ?? "") === selectedYear);
     }
@@ -234,7 +230,7 @@ export function filterSongs(
     const matchesLyricist =
       selectedLyricist.length === 0 ||
       selectedLyricist.some((sel) =>
-        sel === "未知"
+        sel === FILTER_OPTION_UNKNOWN
           ? !song.lyricist || song.lyricist.length === 0
           : song.lyricist && song.lyricist.includes(sel),
       );
@@ -242,7 +238,7 @@ export function filterSongs(
     const matchesComposer =
       selectedComposer.length === 0 ||
       selectedComposer.some((sel) =>
-        sel === "未知"
+        sel === FILTER_OPTION_UNKNOWN
           ? !song.composer || song.composer.length === 0
           : song.composer && song.composer.includes(sel),
       );
@@ -250,9 +246,9 @@ export function filterSongs(
     const matchesArranger =
       selectedArranger.length === 0 ||
       selectedArranger.some((sel) =>
-        sel === "未知"
-          ? !songDetail.arranger || songDetail.arranger.length === 0
-          : songDetail.arranger && songDetail.arranger.includes(sel),
+        sel === FILTER_OPTION_UNKNOWN
+          ? !song.arranger || song.arranger.length === 0
+          : song.arranger && song.arranger.includes(sel),
       );
 
     return (
@@ -363,52 +359,4 @@ export function getCoverUrl(song: Song | SongDetail): string {
 // 获取乐谱图片 URL
 export function getNmnUrl(song: Song | SongDetail): string {
   return `https://cover.hetu-music.com/nmn/${song.id}.png`;
-}
-
-// 字段校验工具（用于表单校验）
-export function validateField(f: SongFieldConfig, value: unknown): string {
-  if (
-    f.required &&
-    (!value || (typeof value === "string" && value.trim() === ""))
-  ) {
-    return `${f.label}为必填项`;
-  }
-  if (
-    (f.type === "text" || f.type === "textarea" || f.type === "date") &&
-    typeof value === "string"
-  ) {
-    if (f.minLength && value.length < f.minLength) {
-      return `${f.label}最少${f.minLength}个字符`;
-    }
-    if (f.maxLength && value.length > f.maxLength) {
-      return `${f.label}不能超过${f.maxLength}个字符`;
-    }
-    if (f.isUrl && value) {
-      try {
-        new URL(value);
-      } catch {
-        return `${f.label}必须为合法的URL`;
-      }
-    }
-  }
-  if (f.type === "array" && Array.isArray(value)) {
-    for (let i = 0; i < value.length; i++) {
-      if (f.arrayMaxLength && value[i] && value[i].length > f.arrayMaxLength) {
-        return `${f.label}第${i + 1}项不能超过${f.arrayMaxLength}个字符`;
-      }
-    }
-  }
-  if (f.type === "number") {
-    if (value !== null && value !== undefined && value !== "") {
-      if (typeof value !== "number" || isNaN(value))
-        return `${f.label}必须为数字`;
-      if (f.min !== undefined && (value as number) < f.min) {
-        return `${f.label}不能小于${f.min}`;
-      }
-      if (!Number.isInteger(value)) {
-        return `${f.label}必须为整数`;
-      }
-    }
-  }
-  return "";
 }

@@ -9,6 +9,7 @@ import ThemeToggle from "@/components/shared/ThemeToggle";
 import { useUserContext } from "@/context/UserContext";
 import { getGenreTagStyle, getTypeTagStyle } from "@/lib/constants";
 import { SongDetailClientProps } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import { calculateSongInfo, getCoverUrl, getNmnUrl } from "@/lib/utils-song";
 import {
   ArrowLeft,
@@ -25,10 +26,6 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-// 简易 classNames 工具
-function cn(...classes: (string | undefined | null | false)[]) {
-  return classes.filter(Boolean).join(" ");
-}
 
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const router = useRouter();

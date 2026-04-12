@@ -1,13 +1,12 @@
 "use client";
 
 import About from "@/components/library/About";
-import ThemeToggle from "@/components/shared/ThemeToggle";
-import { useUserContext } from "@/context/UserContext";
+import AppNavbar from "@/components/shared/AppNavbar";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import type { ImageryCategory, ImageryItem } from "@/lib/types";
+import { useIntersection } from "@mantine/hooks";
+import { useQuery } from "@tanstack/react-query";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import { Info, User } from "lucide-react";
-import { useRouter } from "next/navigation";
 import React, {
   memo,
   useCallback,
@@ -337,8 +336,6 @@ export default function ImageryClient({ items, categories }: Props) {
   const [selectedItem, setSelectedItem] = useState<ImageryItem | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelSide, setPanelSide] = useState<"left" | "right">("right");
-  const [songs, setSongs] = useState<SongResult[]>([]);
-  const [songsLoading, setSongsLoading] = useState(false);
   const [hoveredData, setHoveredData] = useState<{
     itemId: number;
     count: number;
@@ -348,18 +345,17 @@ export default function ImageryClient({ items, categories }: Props) {
   } | null>(null);
   const [showAbout, setShowAbout] = useState(false);
 
-  const router = useRouter();
-  const { user } = useUserContext();
   const isDesktop = useIsDesktop();
   const navRef = useRef<HTMLElement>(null);
   const cloudRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(960);
   const [scrollMargin, setScrollMargin] = useState(0);
   const [mounted, setMounted] = useState(false);
-  const [headerVisible, setHeaderVisible] = useState(true);
   const [marqueeSeed, setMarqueeSeed] = useState(0);
-  const songsCacheRef = useRef(new Map<number, SongResult[]>());
-  const songsRequestCacheRef = useRef(new Map<number, Promise<SongResult[]>>());
+  const { ref: headerRef, entry: headerEntry } = useIntersection({
+    threshold: 0.05,
+  });
+  const headerVisible = headerEntry?.isIntersecting ?? true;
 
   // Trigger entrance animation after first paint
   useEffect(() => {
@@ -367,21 +363,6 @@ export default function ImageryClient({ items, categories }: Props) {
       setMounted(true);
       setMarqueeSeed(Math.floor(Math.random() * 2147483647));
     });
-  }, []);
-
-  // Track header visibility to pause infinite marquee animations
-  const headerRef = useRef<HTMLElement>(null);
-  useEffect(() => {
-    const el = headerRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        setHeaderVisible(entry.isIntersecting);
-      },
-      { threshold: 0.05 },
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
   }, []);
 
   // Track nav height → CSS variable --nav-h for the panel to consume
@@ -466,6 +447,29 @@ export default function ImageryClient({ items, categories }: Props) {
     return [l1?.name, l2?.name, l3.name].filter(Boolean) as string[];
   }, [selectedItem, catMap]);
 
+  const songsQuery = useQuery({
+    queryKey: ["imagery", "songs", selectedItem?.id],
+    queryFn: async (): Promise<SongResult[]> => {
+      if (!selectedItem) {
+        return [];
+      }
+
+      const response = await fetch(`/api/imagery/${selectedItem.id}/songs`);
+      if (!response.ok) {
+        throw new Error("加载意象关联歌曲失败");
+      }
+
+      const data: { songs?: SongResult[] } = await response.json();
+      return data.songs ?? [];
+    },
+    enabled: panelOpen && !!selectedItem,
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+  });
+
+  const songs = useMemo(() => songsQuery.data ?? [], [songsQuery.data]);
+  const songsLoading = songsQuery.isPending;
+
   const lyricistCounts = useMemo(() => {
     const counts = new Map<string, number>();
     songs.forEach((song) => {
@@ -518,55 +522,6 @@ export default function ImageryClient({ items, categories }: Props) {
   useEffect(() => {
     setActiveL2Id(null);
   }, [activeL1Id]);
-
-  // Fetch songs
-  useEffect(() => {
-    if (!selectedItem || !panelOpen) return;
-    let active = true;
-    const cachedSongs = songsCacheRef.current.get(selectedItem.id);
-    if (cachedSongs) {
-      if (active) {
-        setSongs(cachedSongs);
-        setSongsLoading(false);
-      }
-      return () => {
-        active = false;
-      };
-    }
-
-    setSongs([]);
-    setSongsLoading(true);
-
-    let request = songsRequestCacheRef.current.get(selectedItem.id);
-    if (!request) {
-      request = fetch(`/api/imagery/${selectedItem.id}/songs`)
-        .then((response) => response.json())
-        .then((data) => (data.songs ?? []) as SongResult[])
-        .catch(() => [] as SongResult[])
-        .then((result) => {
-          songsCacheRef.current.set(selectedItem.id, result);
-          songsRequestCacheRef.current.delete(selectedItem.id);
-          return result;
-        });
-      songsRequestCacheRef.current.set(selectedItem.id, request);
-    }
-
-    void request
-      .then((result) => {
-        if (active) {
-          setSongs(result);
-        }
-      })
-      .finally(() => {
-        if (active) {
-          setSongsLoading(false);
-        }
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [selectedItem, panelOpen]);
 
   // ── virtualizer ──────────────────────────────────────────────────────────
 
@@ -663,57 +618,21 @@ export default function ImageryClient({ items, categories }: Props) {
     window.location.href = "/";
   }, []);
 
-  const openUserPanel = (tab: "account" | "favorites" = "favorites") => {
-    if (!user) {
-      const next = encodeURIComponent(
-        window.location.pathname + window.location.search,
-      );
-      router.push(`/login?next=${next}`);
-      return;
-    }
-    router.push(`/profile?tab=${tab}`);
-  };
-
   // ── render ────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] text-slate-800 dark:text-slate-200">
-      {/* ── nav ── */}
-      <nav
+      <AppNavbar
         ref={navRef}
-        className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 transition-colors duration-500"
-      >
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <button
-            onClick={handleTitleReset}
-            className="text-2xl font-bold tracking-tight flex items-center gap-1 cursor-pointer transition-colors font-serif text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
-            title="返回首页"
-          >
+        title={
+          <>
             河图
-            <span className="w-[2px] h-5 bg-blue-600 mx-2 rounded-full translate-y-[1.5px]" />
+            <span className="mx-2 h-5 w-[2px] translate-y-[1.5px] rounded-full bg-blue-600" />
             作品勘鉴
-          </button>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowAbout(true)}
-              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
-              title="关于"
-            >
-              <Info size={20} />
-            </button>
-            <button
-              onClick={() => openUserPanel("favorites")}
-              className="relative p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
-              title={user ? user.name : "登录"}
-            >
-              <User
-                size={20}
-                className={user ? "text-blue-500 dark:text-blue-400" : ""}
-              />
-            </button>
-            <ThemeToggle />
-          </div>
-        </div>
-      </nav>
+          </>
+        }
+        onTitleClick={handleTitleReset}
+        onAboutClick={() => setShowAbout(true)}
+      />
 
       {/* ── hero ── */}
       <header

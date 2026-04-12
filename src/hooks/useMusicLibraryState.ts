@@ -1,7 +1,20 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  parseAsArrayOf,
+  parseAsBoolean,
+  parseAsInteger,
+  parseAsString,
+  parseAsStringLiteral,
+} from "nuqs";
+import {
+  DEFAULT_MUSIC_LIBRARY_VIEW_MODE,
+  FILTER_OPTION_ALL,
+  type MusicLibraryViewMode,
+  MUSIC_LIBRARY_VIEW_MODES,
+} from "@/lib/constants";
+import { useSyncedQueryState } from "./useSyncedQueryState";
 
 export interface MusicLibraryState {
   searchQuery: string;
@@ -16,8 +29,8 @@ export interface MusicLibraryState {
   setFilterComposer: (composer: string[]) => void;
   filterArranger: string[];
   setFilterArranger: (arranger: string[]) => void;
-  viewMode: "grid" | "list";
-  setViewMode: (mode: "grid" | "list") => void;
+  viewMode: MusicLibraryViewMode;
+  setViewMode: (mode: MusicLibraryViewMode) => void;
   currentPage: number;
   setPaginationPage: (page: number) => void;
   showAdvancedFilters: boolean;
@@ -29,155 +42,85 @@ export interface MusicLibraryState {
 }
 
 const STORAGE_KEY = "music_library_scrollY";
-const URL_DEBOUNCE_MS = 300;
+
+function areStringArraysEqual(left: string[], right: string[]) {
+  return (
+    left.length === right.length &&
+    left.every((value, index) => value === right[index])
+  );
+}
 
 export function useMusicLibraryState(
   initialSliderYearsLength: number,
-  defaultViewMode: "grid" | "list" = "grid",
-) {
-  const searchParams = useSearchParams();
-
-  // Helper: Get max year index
+  defaultViewMode: MusicLibraryViewMode = DEFAULT_MUSIC_LIBRARY_VIEW_MODE,
+): MusicLibraryState {
   const getMaxYearIndex = useCallback(
     () => Math.max(0, initialSliderYearsLength - 1),
     [initialSliderYearsLength],
   );
 
-  // Helper: Parse year range from URL - memoized
-  const parseYearRange = useMemo((): [number, number] => {
-    const maxIndex = Math.max(0, initialSliderYearsLength - 1);
-    const yearStartStr = searchParams.get("yearStart");
-    const yearEndStr = searchParams.get("yearEnd");
+  const [searchQuery, setSearchQueryState] = useSyncedQueryState<string>(
+    "q",
+    parseAsString.withDefault("").withOptions({ shallow: true }),
+  );
+  const [filterType, setFilterTypeState] = useSyncedQueryState<string>(
+    "type",
+    parseAsString.withDefault(FILTER_OPTION_ALL).withOptions({ shallow: true }),
+  );
+  const [filterLyricist, setFilterLyricistState] = useSyncedQueryState<string[]>(
+    "lyricist",
+    parseAsArrayOf(parseAsString).withDefault([]).withOptions({ shallow: true }),
+    { equals: areStringArraysEqual },
+  );
+  const [filterComposer, setFilterComposerState] = useSyncedQueryState<string[]>(
+    "composer",
+    parseAsArrayOf(parseAsString).withDefault([]).withOptions({ shallow: true }),
+    { equals: areStringArraysEqual },
+  );
+  const [filterArranger, setFilterArrangerState] = useSyncedQueryState<string[]>(
+    "arranger",
+    parseAsArrayOf(parseAsString).withDefault([]).withOptions({ shallow: true }),
+    { equals: areStringArraysEqual },
+  );
+  const [yearStart, setYearStartState] = useSyncedQueryState<number>(
+    "yearStart",
+    parseAsInteger.withDefault(0).withOptions({ shallow: true }),
+  );
+  const [yearEnd, setYearEndState] = useSyncedQueryState<number>(
+    "yearEnd",
+    parseAsInteger.withDefault(getMaxYearIndex()).withOptions({ shallow: true }),
+  );
+  const [viewMode, setViewModeState] =
+    useSyncedQueryState<MusicLibraryViewMode>(
+      "view",
+      parseAsStringLiteral(MUSIC_LIBRARY_VIEW_MODES)
+        .withDefault(defaultViewMode)
+        .withOptions({ shallow: true }),
+    );
+  const [currentPage, setCurrentPageState] = useSyncedQueryState<number>(
+    "page",
+    parseAsInteger.withDefault(1).withOptions({ shallow: true }),
+  );
+  const [showAdvancedFilters, setShowAdvancedFiltersState] =
+    useSyncedQueryState<boolean>(
+      "advanced",
+      parseAsBoolean.withDefault(false).withOptions({ shallow: true }),
+    );
 
-    let startIdx = yearStartStr !== null ? parseInt(yearStartStr, 10) : 0;
-    let endIdx = yearEndStr !== null ? parseInt(yearEndStr, 10) : maxIndex;
+  const yearRangeIndices = useMemo<[number, number]>(() => {
+    const maxIndex = getMaxYearIndex();
+    const start = Math.max(0, Math.min(yearStart, maxIndex));
+    const end = Math.max(0, Math.min(yearEnd, maxIndex));
+    return start <= end ? [start, end] : [end, start];
+  }, [getMaxYearIndex, yearEnd, yearStart]);
 
-    // Clamp values
-    startIdx = Math.max(0, Math.min(startIdx, maxIndex));
-    endIdx = Math.max(0, Math.min(endIdx, maxIndex));
-
-    return [startIdx, endIdx];
-  }, [searchParams, initialSliderYearsLength]);
-
-  // Initialize states directly from URL to avoid flickering
-  const [searchQuery, setSearchQuery] = useState(
-    () => searchParams.get("q") ?? "",
-  );
-  const [filterType, setFilterType] = useState(
-    () => searchParams.get("type") ?? "全部",
-  );
-  const [filterLyricist, setFilterLyricist] = useState<string[]>(
-    () => searchParams.get("lyricist")?.split(",").filter(Boolean) ?? [],
-  );
-  const [filterComposer, setFilterComposer] = useState<string[]>(
-    () => searchParams.get("composer")?.split(",").filter(Boolean) ?? [],
-  );
-  const [filterArranger, setFilterArranger] = useState<string[]>(
-    () => searchParams.get("arranger")?.split(",").filter(Boolean) ?? [],
-  );
-  const [yearRangeIndices, setYearRangeIndices] = useState<[number, number]>(
-    () => parseYearRange,
-  );
-  const [viewMode, setViewMode] = useState<"grid" | "list">(() => {
-    const view = searchParams.get("view");
-    return view === "grid" || view === "list" ? view : defaultViewMode;
-  });
-  const [currentPage, setCurrentPage] = useState(() => {
-    const page = searchParams.get("page");
-    return page ? parseInt(page, 10) : 1;
-  });
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(
-    () => searchParams.get("advanced") === "true",
-  );
-
-  // Scroll restoration - only set to true if there's actually a scroll position to restore
   const [isRestoringScroll, setIsRestoringScroll] = useState(() => {
     if (typeof window === "undefined") return false;
     return sessionStorage.getItem(STORAGE_KEY) !== null;
   });
-  // Removed unused hasRestoredScroll ref
 
-  // Sync state to URL (debounced)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const params = new URLSearchParams();
-      const maxIndex = getMaxYearIndex();
-
-      // Only add non-default params to URL
-      if (searchQuery) params.set("q", searchQuery);
-      if (filterType !== "全部") params.set("type", filterType);
-      if (filterLyricist.length > 0)
-        params.set("lyricist", filterLyricist.join(","));
-      if (filterComposer.length > 0)
-        params.set("composer", filterComposer.join(","));
-      if (filterArranger.length > 0)
-        params.set("arranger", filterArranger.join(","));
-      if (viewMode !== defaultViewMode) params.set("view", viewMode);
-      if (currentPage > 1) params.set("page", currentPage.toString());
-      if (showAdvancedFilters) params.set("advanced", "true");
-
-      // Year range - only save if different from default full range
-      if (yearRangeIndices[0] !== 0 || yearRangeIndices[1] !== maxIndex) {
-        params.set("yearStart", yearRangeIndices[0].toString());
-        params.set("yearEnd", yearRangeIndices[1].toString());
-      }
-
-      const newUrl = `${window.location.pathname}?${params.toString()}`;
-      if (newUrl !== window.location.pathname + window.location.search) {
-        window.history.replaceState(null, "", newUrl);
-      }
-    }, URL_DEBOUNCE_MS);
-
-    return () => clearTimeout(timer);
-  }, [
-    searchQuery,
-    filterType,
-    filterLyricist,
-    filterComposer,
-    filterArranger,
-    viewMode,
-    currentPage,
-    showAdvancedFilters,
-    yearRangeIndices,
-    defaultViewMode,
-    getMaxYearIndex,
-  ]);
-
-  // Explicit scroll restoration - only called when data is signaled as ready
-  const restoreScroll = useCallback(() => {
-    const savedScroll = sessionStorage.getItem(STORAGE_KEY);
-    if (!savedScroll) {
-      setIsRestoringScroll(false);
-      return;
-    }
-
-    const targetY = parseInt(savedScroll, 10);
-
-    // Explicitly scroll without checking height loops - trusting the signal
-    window.scrollTo(0, targetY);
-
-    // Clean up and update state
-    sessionStorage.removeItem(STORAGE_KEY);
-
-    // Use RAF to ensure visual update happens after scroll
-    requestAnimationFrame(() => {
-      setIsRestoringScroll(false);
-    });
-  }, []);
-
-  // Signal from the consumer that data/layout is ready
-  const notifyDataReady = useCallback(() => {
-    restoreScroll();
-  }, [restoreScroll]);
-
-  // Listen for browser's native back/forward navigation (popstate event)
-  // When popstate occurs, we trust the component to re-render and call notifyDataReady again
-  // OR we can optimistically try to restore if we still believe data is ready.
-  // Given the structure, relying on the component lifecycle (useEffect -> notifyDataReady) is safer.
-  // We keep a simple listener to ensure state consistency if needed, but primary driver is notifyDataReady.
   useEffect(() => {
     const handlePopState = () => {
-      // If we have a saved key, ensure we flag as restoring
       if (sessionStorage.getItem(STORAGE_KEY)) {
         setIsRestoringScroll(true);
       }
@@ -187,72 +130,142 @@ export function useMusicLibraryState(
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  // Save scroll position when navigating to song detail
+  const restoreScroll = useCallback(() => {
+    const savedScroll = sessionStorage.getItem(STORAGE_KEY);
+    if (!savedScroll) {
+      setIsRestoringScroll(false);
+      return;
+    }
+
+    window.scrollTo(0, parseInt(savedScroll, 10));
+    sessionStorage.removeItem(STORAGE_KEY);
+    requestAnimationFrame(() => setIsRestoringScroll(false));
+  }, []);
+
+  const notifyDataReady = useCallback(() => {
+    restoreScroll();
+  }, [restoreScroll]);
+
   const handleSongClick = useCallback(() => {
     if (typeof window !== "undefined") {
       sessionStorage.setItem(STORAGE_KEY, window.scrollY.toString());
     }
   }, []);
 
-  // State setters wrappers that also reset pagination
-  const setSearchQueryWrapped = useCallback((val: string) => {
-    setSearchQuery(val);
-    setCurrentPage(1);
-  }, []);
+  const setSearchQuery = useCallback(
+    (query: string) => {
+      setSearchQueryState(query);
+      setCurrentPageState(1);
+    },
+    [setCurrentPageState, setSearchQueryState],
+  );
 
-  const setFilterTypeWrapped = useCallback((val: string) => {
-    setFilterType(val);
-    setCurrentPage(1);
-  }, []);
+  const setFilterType = useCallback(
+    (type: string) => {
+      setFilterTypeState(type);
+      setCurrentPageState(1);
+    },
+    [setCurrentPageState, setFilterTypeState],
+  );
 
-  const setFilterLyricistWrapped = useCallback((val: string[]) => {
-    setFilterLyricist(val);
-    setCurrentPage(1);
-  }, []);
+  const setFilterLyricist = useCallback(
+    (lyricist: string[]) => {
+      setFilterLyricistState(lyricist);
+      setCurrentPageState(1);
+    },
+    [setCurrentPageState, setFilterLyricistState],
+  );
 
-  const setFilterComposerWrapped = useCallback((val: string[]) => {
-    setFilterComposer(val);
-    setCurrentPage(1);
-  }, []);
+  const setFilterComposer = useCallback(
+    (composer: string[]) => {
+      setFilterComposerState(composer);
+      setCurrentPageState(1);
+    },
+    [setCurrentPageState, setFilterComposerState],
+  );
 
-  const setFilterArrangerWrapped = useCallback((val: string[]) => {
-    setFilterArranger(val);
-    setCurrentPage(1);
-  }, []);
+  const setFilterArranger = useCallback(
+    (arranger: string[]) => {
+      setFilterArrangerState(arranger);
+      setCurrentPageState(1);
+    },
+    [setCurrentPageState, setFilterArrangerState],
+  );
 
-  const setYearRangeIndicesWrapped = useCallback((val: [number, number]) => {
-    setYearRangeIndices(val);
-    setCurrentPage(1);
-  }, []);
+  const setYearRangeIndices = useCallback(
+    (range: [number, number]) => {
+      const maxIndex = getMaxYearIndex();
+      const start = Math.max(0, Math.min(range[0], maxIndex));
+      const end = Math.max(start, Math.min(range[1], maxIndex));
 
-  // Reset all filters to default
+      setYearStartState(start);
+      setYearEndState(end);
+      setCurrentPageState(1);
+    },
+    [getMaxYearIndex, setCurrentPageState, setYearEndState, setYearStartState],
+  );
+
+  const setViewMode = useCallback(
+    (mode: MusicLibraryViewMode) => {
+      setViewModeState(mode);
+    },
+    [setViewModeState],
+  );
+
+  const setPaginationPage = useCallback(
+    (page: number) => {
+      setCurrentPageState(Math.max(1, page));
+    },
+    [setCurrentPageState],
+  );
+
+  const setShowAdvancedFilters = useCallback(
+    (show: boolean) => {
+      setShowAdvancedFiltersState(show);
+    },
+    [setShowAdvancedFiltersState],
+  );
+
   const resetAllFilters = useCallback(() => {
-    setSearchQuery("");
-    setFilterType("全部");
-    setFilterLyricist([]);
-    setFilterComposer([]);
-    setFilterArranger([]);
-    setYearRangeIndices([0, getMaxYearIndex()]);
-    setCurrentPage(1);
-  }, [getMaxYearIndex]);
+    setSearchQueryState("");
+    setFilterTypeState(FILTER_OPTION_ALL);
+    setFilterLyricistState([]);
+    setFilterComposerState([]);
+    setFilterArrangerState([]);
+    setYearStartState(0);
+    setYearEndState(getMaxYearIndex());
+    setCurrentPageState(1);
+    setShowAdvancedFiltersState(false);
+  }, [
+    getMaxYearIndex,
+    setCurrentPageState,
+    setFilterArrangerState,
+    setFilterComposerState,
+    setFilterLyricistState,
+    setFilterTypeState,
+    setSearchQueryState,
+    setShowAdvancedFiltersState,
+    setYearEndState,
+    setYearStartState,
+  ]);
 
   return {
     searchQuery,
-    setSearchQuery: setSearchQueryWrapped,
+    setSearchQuery,
     filterType,
-    setFilterType: setFilterTypeWrapped,
+    setFilterType,
     yearRangeIndices,
-    setYearRangeIndices: setYearRangeIndicesWrapped,
+    setYearRangeIndices,
     filterLyricist,
-    setFilterLyricist: setFilterLyricistWrapped,
+    setFilterLyricist,
     filterComposer,
-    setFilterComposer: setFilterComposerWrapped,
+    setFilterComposer,
     filterArranger,
-    setFilterArranger: setFilterArrangerWrapped,
+    setFilterArranger,
     viewMode,
     setViewMode,
-    currentPage,
-    setPaginationPage: setCurrentPage,
+    currentPage: Math.max(1, currentPage),
+    setPaginationPage,
     showAdvancedFilters,
     setShowAdvancedFilters,
     resetAllFilters,

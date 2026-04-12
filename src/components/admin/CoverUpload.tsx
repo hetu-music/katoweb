@@ -32,7 +32,7 @@ export default function CoverUpload({
   >("idle");
   const [uploadMessage, setUploadMessage] = useState("");
   const [fileExists, setFileExists] = useState(hasExistingFile);
-  const [checkingFile, setCheckingFile] = useState(false);
+  const [checkingFile, setCheckingFile] = useState(Boolean(songId));
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const checkFileExists = useCallback(
@@ -58,11 +58,13 @@ export default function CoverUpload({
 
   useEffect(() => {
     if (songId) {
-      checkFileExists(songId);
+      setCheckingFile(true);
+      void checkFileExists(songId);
     } else {
-      setFileExists(false);
+      setCheckingFile(false);
+      setFileExists(hasExistingFile);
     }
-  }, [songId, checkFileExists]);
+  }, [songId, hasExistingFile, checkFileExists]);
 
   const handleFileSelect = async (
     event: React.ChangeEvent<HTMLInputElement>,

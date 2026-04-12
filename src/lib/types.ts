@@ -7,6 +7,7 @@ export type Song = {
   genre: string[] | null;
   lyricist: string[] | null;
   composer: string[] | null;
+  arranger?: string[] | null;
   artist: string[] | null;
   length: number | null;
   hascover?: boolean | null;
@@ -107,8 +108,32 @@ export type SongRef = {
 };
 
 // 歌曲字段配置类型（用于管理页面表单渲染和校验）
+export type SongFormFieldKey =
+  | "title"
+  | "album"
+  | "lyricist"
+  | "composer"
+  | "arranger"
+  | "artist"
+  | "type"
+  | "genre"
+  | "length"
+  | "hascover"
+  | "date"
+  | "albumartist"
+  | "comment"
+  | "lyrics"
+  | "nmn_status"
+  | "track"
+  | "tracktotal"
+  | "discnumber"
+  | "disctotal"
+  | "kugolink"
+  | "nelink"
+  | "qmlink";
+
 export type SongFieldConfig = {
-  key: keyof SongDetail;
+  key: SongFormFieldKey;
   label: string;
   type: "text" | "number" | "array" | "boolean" | "date" | "textarea";
   required?: boolean;

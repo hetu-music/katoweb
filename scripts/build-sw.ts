@@ -1,13 +1,13 @@
 /* eslint-disable no-console */
 /**
- * Workbox Service Worker 构建脚本 (静默更新版)
+ * Serwist Service Worker 构建脚本 (静默更新版)
  * * 特性:
  * 1. skipWaiting: true -> 下载即更新，无需用户点击
  * 2. 针对 Next.js 静态资源做 CacheFirst 优化
  * 3. 针对 API 和 HTML 做 NetworkFirst 策略
  */
 
-import { generateSW, ManifestEntry } from "workbox-build";
+import { injectManifest, type ManifestEntry } from "@serwist/build";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -16,7 +16,7 @@ const publicDir = path.join(rootDir, "public");
 const nextDir = path.join(rootDir, ".next");
 
 async function buildServiceWorker(): Promise<void> {
-  console.log("🔧 开始构建 Service Worker (静默更新模式)...");
+  console.log("🔧 开始构建 Serwist Service Worker (静默更新模式)...");
 
   // 1. 安全检查: 确保 public 目录存在
   if (!fs.existsSync(publicDir)) {
@@ -40,19 +40,21 @@ async function buildServiceWorker(): Promise<void> {
     const additionalManifestEntries: ManifestEntry[] = [];
 
     // 可选: manifest.json（静态文件，适合预缓存）
-    if (fs.existsSync(path.join(publicDir, "manifest.json"))) {
+    const manifestPath = path.join(publicDir, "manifest.json");
+    if (fs.existsSync(manifestPath)) {
       additionalManifestEntries.push({
         url: "/manifest.json",
-        revision: Date.now().toString(),
+        revision: fs.statSync(manifestPath).mtimeMs.toString(),
       });
     }
 
     // 4. 开始生成配置
     const swDest = path.join(publicDir, "sw.js");
 
-    const { count, size, warnings } = await generateSW({
-      swDest,
-      globDirectory: publicDir,
+    const { count, size, warnings } = await injectManifest({
+      swSrc: "src/sw.ts",
+      swDest: "public/sw.js",
+      globDirectory: "public",
 
       // 扫描 public 目录下的静态资源
       globPatterns: [
@@ -66,7 +68,6 @@ async function buildServiceWorker(): Promise<void> {
         "**/*.map",
         "**/sw.js",
         "**/sw.js.map",
-        "**/workbox-*.js",
         "**/mockServiceWorker.js", // 如果你用 MSW
         "**/.DS_Store",
       ],
@@ -74,89 +75,7 @@ async function buildServiceWorker(): Promise<void> {
       // 允许缓存较大的文件 (如字体文件)，设置为 10MB
       maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
 
-      additionalManifestEntries,
-
-      // 🔥 核心配置: 静默更新 🔥
-      skipWaiting: true, // 下载完立即接管，不等待
-      clientsClaim: true, // 立即控制页面
-      cleanupOutdatedCaches: true, // 自动清理旧版本缓存
-
-      // 模式配置
-      mode: "production",
-      sourcemap: false,
-      inlineWorkboxRuntime: true, // 把 runtime 代码内联进去，减少 HTTP 请求
-      navigationPreload: false, // 简单起见关闭，避免与 Next.js 路由冲突
-
-      // 🧠 运行时缓存策略 (Runtime Caching)
-      runtimeCaching: [
-        // 1. Google Fonts 样式 (StaleWhileRevalidate)
-        {
-          urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-          handler: "StaleWhileRevalidate",
-          options: {
-            cacheName: "google-fonts-stylesheets",
-          },
-        },
-        // 2. Google Fonts 字体文件 (CacheFirst - 它们几乎不更新)
-        {
-          urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-          handler: "CacheFirst",
-          options: {
-            cacheName: "google-fonts-webfonts",
-            expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 },
-          },
-        },
-        // 3. Next.js 静态资源 (JS/CSS chunks)
-        // 这里的关键是：文件名带 Hash，所以一旦文件名变了就是新版本，
-        // 旧文件名永远对应旧内容。所以用 CacheFirst 最快。
-        {
-          urlPattern: /\/_next\/static\/.*/i,
-          handler: "CacheFirst",
-          options: {
-            cacheName: "next-static-assets",
-            expiration: {
-              maxEntries: 100,
-              maxAgeSeconds: 60 * 60 * 24 * 365, // 1年
-            },
-          },
-        },
-        // 4. Next.js 图片优化 API
-        {
-          urlPattern: /\/_next\/image\?.*/i,
-          handler: "StaleWhileRevalidate", // 图片可能会变，用 SWR 比较稳妥
-          options: {
-            cacheName: "next-optimized-images",
-            expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 7 }, // 7天
-          },
-        },
-        // 5. 河图封面图 CDN (针对你的具体业务)
-        {
-          urlPattern: /^https:\/\/cover\.hetu-music\.com\/.*/i,
-          handler: "CacheFirst",
-          options: {
-            cacheName: "cover-images",
-            expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
-            cacheableResponse: { statuses: [0, 200] },
-          },
-        },
-        // 6. API 接口数据
-        {
-          urlPattern: /\/api\/.*/i,
-          handler: "NetworkFirst", // 优先取最新数据
-          options: {
-            cacheName: "api-data",
-            networkTimeoutSeconds: 5, // 5秒连不上就读缓存
-            expiration: { maxEntries: 50, maxAgeSeconds: 60 * 5 }, // 5分钟缓存
-          },
-        },
-        // 7. 页面导航 (HTML)
-        // 使用 NetworkOnly 确保页面总是从网络获取最新内容
-        // 这样新添加的条目可以立即显示，不会被 Service Worker 缓存阻挡
-        {
-          urlPattern: ({ request }) => request.mode === "navigate",
-          handler: "NetworkOnly",
-        },
-      ],
+      additionalPrecacheEntries: additionalManifestEntries,
     });
 
     if (warnings.length > 0) {

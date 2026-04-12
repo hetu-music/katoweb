@@ -1,20 +1,12 @@
 import type { ImageryCategory } from "@/lib/types";
 import { FolderPlus, ListTree } from "lucide-react";
 import { CategoryTreeNode } from "./CategoryTree";
-import {
-  cardClassName,
-  cn,
-  PaginationControls,
-  primaryButtonClassName,
-  SectionIntro,
-  StatPill,
-} from "./shared";
+import { PaginationControls } from "./shared";
 import type { CategoryNode } from "./types";
 
 export default function CategoriesTab({
   categoryTree,
   imageryCountByCategory,
-  sortedCategoriesLength,
   pagedCategories,
   currentPage,
   totalPages,
@@ -26,7 +18,6 @@ export default function CategoriesTab({
 }: {
   categoryTree: CategoryNode[];
   imageryCountByCategory: Map<number, number>;
-  sortedCategoriesLength: number;
   pagedCategories: ImageryCategory[];
   currentPage: number;
   totalPages: number;
@@ -37,79 +28,48 @@ export default function CategoriesTab({
   onDeleteCategory: (category: ImageryCategory) => void;
 }) {
   return (
-    <div className="space-y-6">
-      <SectionIntro
-        eyebrow="Category Structure"
-        title="分类管理"
-        description="左侧保留默认折叠的分类树，右侧以分页列表进行批量维护，层级、路径与意象数量一目了然。"
-        actions={
-          <>
-            <StatPill label="分类总数" value={sortedCategoriesLength} />
-            <button
-              onClick={() => onAddCategory()}
-              className={primaryButtonClassName()}
-            >
-              <FolderPlus size={14} />
-              新增顶级分类
-            </button>
-          </>
-        }
-      />
-
-      <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
-        <aside
-          className={cn(cardClassName(), "sticky top-28 h-fit overflow-hidden")}
-        >
-          <div className="flex items-center justify-between border-b border-slate-200/70 px-5 py-4 dark:border-slate-800/70">
-            <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
-              <ListTree size={14} />
-              分类树（默认折叠）
-            </div>
-            <button
-              onClick={() => onAddCategory()}
-              className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-blue-500 dark:hover:bg-slate-800"
-              title="新增顶级分类"
-            >
-              <FolderPlus size={14} />
-            </button>
+    <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)] items-start">
+      <aside className="sticky top-40 h-fit bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800">
+          <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <ListTree size={14} />
+            分类树（默认折叠）
           </div>
-          <div className="max-h-[calc(100vh-14rem)] overflow-y-auto px-3 py-3">
-            {categoryTree.length === 0 ? (
-              <p className="py-8 text-center text-xs text-slate-400">
-                暂无分类，点击右上角新增。
-              </p>
-            ) : (
-              categoryTree.map((node) => (
-                <CategoryTreeNode
-                  key={node.id}
-                  node={node}
-                  depth={0}
-                  imageryCountByCategory={imageryCountByCategory}
-                  onAddChild={onAddCategory}
-                  onEdit={onEditCategory}
-                  onDelete={onDeleteCategory}
-                />
-              ))
-            )}
-          </div>
-        </aside>
-
-        <div className={cn(cardClassName(), "overflow-hidden")}>
-          <div className="border-b border-slate-200/70 px-6 py-5 dark:border-slate-800/70">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-              分类列表
-            </h3>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              分页展示所有分类，方便按路径核对层级和挂载数量。
+          <button
+            onClick={() => onAddCategory()}
+            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-cyan-500 dark:hover:bg-slate-800"
+            title="新增顶级分类"
+          >
+            <FolderPlus size={14} />
+          </button>
+        </div>
+        <div className="max-h-[calc(100vh-14rem)] overflow-y-auto px-3 py-3">
+          {categoryTree.length === 0 ? (
+            <p className="py-8 text-center text-xs text-slate-400">
+              暂无分类，点击此处或右上角新增。
             </p>
-          </div>
+          ) : (
+            categoryTree.map((node) => (
+              <CategoryTreeNode
+                key={node.id}
+                node={node}
+                depth={0}
+                imageryCountByCategory={imageryCountByCategory}
+                onAddChild={onAddCategory}
+                onEdit={onEditCategory}
+                onDelete={onDeleteCategory}
+              />
+            ))
+          )}
+        </div>
+      </aside>
 
-          <div className="space-y-3 px-6 py-5">
-            {pagedCategories.map((category) => (
-              <div
-                key={category.id}
-                className="group rounded-[24px] border border-slate-200/70 bg-white px-4 py-4 dark:border-slate-800/70 dark:bg-slate-900/60"
-              >
+      <div className="space-y-3">
+        {pagedCategories.map((category) => (
+          <div
+            key={category.id}
+            className="flex flex-col bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden transition-all hover:shadow-md hover:border-cyan-200 dark:hover:border-cyan-900/30 px-4 py-4 group"
+          >
                 <div className="flex items-start gap-4">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
@@ -150,14 +110,11 @@ export default function CategoriesTab({
                 </div>
               </div>
             ))}
-
             <PaginationControls
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={onPageChange}
             />
-          </div>
-        </div>
       </div>
     </div>
   );

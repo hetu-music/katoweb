@@ -1,10 +1,6 @@
 import React, { useRef, useState } from "react";
 import { getTypeTagStyle, getGenreTagStyle } from "@/lib/constants";
-
-// 简易 classNames 工具
-function cn(...classes: (string | undefined | null | false)[]) {
-  return classes.filter(Boolean).join(" ");
-}
+import { cn } from "@/lib/utils";
 
 const MultiTagDisplay = ({
   tags,

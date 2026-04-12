@@ -1,7 +1,14 @@
-import type { ImageryMeaning } from "@/lib/types";
-import { BookOpen, Edit2, Plus, Trash2 } from "lucide-react";
 import {
-  cardClassName,
+  createMeaningFormValues,
+  meaningFormSchema,
+  type MeaningFormValues,
+} from "@/lib/imagery-form";
+import type { ImageryMeaning } from "@/lib/types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { BookOpen, Edit2, Trash2 } from "lucide-react";
+import { useEffect } from "react";
+import { type Resolver, useForm } from "react-hook-form";
+import {
   compactInputClassName,
   EmptyState,
   formLabelClassName,
@@ -9,78 +16,88 @@ import {
   LoadingState,
   PaginationControls,
   primaryButtonClassName,
-  SearchField,
-  SectionIntro,
-  StatPill,
 } from "./shared";
-import type { MeaningFormState, SetMeaningForm } from "./types";
 
 function MeaningEditor({
-  form,
-  setForm,
+  initialValues,
   submitting,
   saveLabel,
   onSave,
   onCancel,
   autoFocus,
 }: {
-  form: MeaningFormState;
-  setForm: SetMeaningForm;
+  initialValues: MeaningFormValues;
   submitting: boolean;
   saveLabel: string;
-  onSave: () => void;
+  onSave: (values: MeaningFormValues) => void | Promise<void>;
   onCancel: () => void;
   autoFocus?: boolean;
 }) {
+  const form = useForm<MeaningFormValues>({
+    resolver: zodResolver(meaningFormSchema) as Resolver<MeaningFormValues>,
+    defaultValues: initialValues,
+    mode: "onBlur",
+    reValidateMode: "onChange",
+  });
+
+  useEffect(() => {
+    form.reset(initialValues);
+  }, [form, initialValues]);
+
   return (
     <div className="rounded-3xl border border-slate-200/70 bg-slate-50/90 p-4 dark:border-slate-700 dark:bg-slate-950/30">
-      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-        <div>
-          <label className={formLabelClassName()}>含义名称</label>
-          <input
-            type="text"
-            value={form.label}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, label: event.target.value }))
-            }
-            placeholder="含义名称"
-            autoFocus={autoFocus}
-            className={compactInputClassName()}
-          />
+      <form
+        onSubmit={form.handleSubmit((values) => onSave(values))}
+        className="space-y-4"
+      >
+        <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+          <div>
+            <label className={formLabelClassName()}>含义名称</label>
+            <input
+              type="text"
+              placeholder="含义名称"
+              autoFocus={autoFocus}
+              {...form.register("label")}
+              className={compactInputClassName()}
+            />
+            {form.formState.errors.label && (
+              <p className="mt-2 text-xs text-red-500">
+                {form.formState.errors.label.message}
+              </p>
+            )}
+          </div>
+          <div>
+            <label className={formLabelClassName()}>描述</label>
+            <textarea
+              rows={3}
+              placeholder="描述（可选）"
+              {...form.register("description")}
+              className={compactInputClassName()}
+            />
+            {form.formState.errors.description && (
+              <p className="mt-2 text-xs text-red-500">
+                {form.formState.errors.description.message}
+              </p>
+            )}
+          </div>
         </div>
-        <div>
-          <label className={formLabelClassName()}>描述</label>
-          <textarea
-            value={form.description}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                description: event.target.value,
-              }))
-            }
-            rows={3}
-            placeholder="描述（可选）"
-            className={compactInputClassName()}
-          />
+        <div className="mt-4 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            className={ghostButtonClassName()}
+          >
+            取消
+          </button>
+          <button
+            type="submit"
+            disabled={submitting || form.formState.isSubmitting}
+            className={primaryButtonClassName()}
+          >
+            {saveLabel}
+          </button>
         </div>
-      </div>
-      <div className="mt-4 flex justify-end gap-2">
-        <button
-          type="button"
-          onClick={onCancel}
-          className={ghostButtonClassName()}
-        >
-          取消
-        </button>
-        <button
-          type="button"
-          onClick={onSave}
-          disabled={submitting || !form.label.trim()}
-          className={primaryButtonClassName()}
-        >
-          {saveLabel}
-        </button>
-      </div>
+      </form>
     </div>
   );
 }
@@ -88,18 +105,13 @@ function MeaningEditor({
 export default function MeaningsTab({
   meaningsLoading,
   meaningsSearchTerm,
-  filteredCount,
   pagedMeanings,
   addingMeaning,
-  editingMeaningId,
-  meaningForm,
-  setMeaningForm,
+  editingMeaning,
   meaningSubmitting,
   currentPage,
   totalPages,
-  onSearchTermChange,
   onPageChange,
-  onStartAdd,
   onStartEdit,
   onReset,
   onCreate,
@@ -108,70 +120,28 @@ export default function MeaningsTab({
 }: {
   meaningsLoading: boolean;
   meaningsSearchTerm: string;
-  filteredCount: number;
   pagedMeanings: ImageryMeaning[];
   addingMeaning: boolean;
-  editingMeaningId: number | null;
-  meaningForm: MeaningFormState;
-  setMeaningForm: SetMeaningForm;
+  editingMeaning: ImageryMeaning | null;
   meaningSubmitting: boolean;
   currentPage: number;
   totalPages: number;
-  onSearchTermChange: (value: string) => void;
   onPageChange: (page: number) => void;
-  onStartAdd: () => void;
   onStartEdit: (meaning: ImageryMeaning) => void;
   onReset: () => void;
-  onCreate: () => void;
-  onUpdate: () => void;
+  onCreate: (values: MeaningFormValues) => void | Promise<void>;
+  onUpdate: (values: MeaningFormValues) => void | Promise<void>;
   onDelete: (meaning: ImageryMeaning) => void;
 }) {
   return (
-    <div className="space-y-6">
-      <SectionIntro
-        eyebrow="Meaning Glossary"
-        title="含义管理"
-        description="这里仅维护 imagery_meanings 表中的名称和描述，作为全局含义词库使用，不再在该页面处理意象关系。"
-        actions={
-          <>
-            <StatPill label="含义条目" value={`${filteredCount} 条`} />
-            <button onClick={onStartAdd} className={primaryButtonClassName()}>
-              <Plus size={14} />
-              新增含义
-            </button>
-          </>
-        }
-      />
-
-      <div className={cardClassName()}>
-        <div className="border-b border-slate-200/70 px-6 py-5 dark:border-slate-800/70">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                全局含义词库
-              </h3>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                名称与描述独立维护，供关系记录引用。
-              </p>
-            </div>
-            <SearchField
-              value={meaningsSearchTerm}
-              onChange={onSearchTermChange}
-              placeholder="搜索含义名称或描述…"
-              className="w-full md:w-80"
-            />
-          </div>
-        </div>
-
-        <div className="space-y-3 px-6 py-5">
+    <div className="space-y-3">
           {meaningsLoading ? (
             <LoadingState text="加载含义中…" />
           ) : (
             <>
               {addingMeaning && (
                 <MeaningEditor
-                  form={meaningForm}
-                  setForm={setMeaningForm}
+                  initialValues={createMeaningFormValues()}
                   submitting={meaningSubmitting}
                   saveLabel="创建"
                   onSave={onCreate}
@@ -192,11 +162,10 @@ export default function MeaningsTab({
                 />
               ) : (
                 pagedMeanings.map((meaning) =>
-                  editingMeaningId === meaning.id ? (
+                  editingMeaning?.id === meaning.id ? (
                     <MeaningEditor
                       key={meaning.id}
-                      form={meaningForm}
-                      setForm={setMeaningForm}
+                      initialValues={createMeaningFormValues(editingMeaning)}
                       submitting={meaningSubmitting}
                       saveLabel="保存"
                       onSave={onUpdate}
@@ -206,10 +175,10 @@ export default function MeaningsTab({
                   ) : (
                     <div
                       key={meaning.id}
-                      className="group rounded-[24px] border border-slate-200/70 bg-white px-4 py-4 dark:border-slate-800/70 dark:bg-slate-900/60"
+                      className="flex flex-col bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden transition-all hover:shadow-md hover:border-amber-200 dark:hover:border-amber-900/30 px-4 py-4 group"
                     >
                       <div className="flex items-start gap-4">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-100 to-slate-100 text-violet-600 dark:from-violet-900/40 dark:to-slate-900 dark:text-violet-300">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-linear-to-br from-violet-100 to-slate-100 text-violet-600 dark:from-violet-900/40 dark:to-slate-900 dark:text-violet-300">
                           <BookOpen size={18} />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -256,7 +225,5 @@ export default function MeaningsTab({
             onPageChange={onPageChange}
           />
         </div>
-      </div>
-    </div>
   );
 }

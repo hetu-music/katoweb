@@ -1,9 +1,8 @@
 import type React from "react";
 import { Loader2, Search, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export function cn(...classes: (string | undefined | null | false)[]) {
-  return classes.filter(Boolean).join(" ");
-}
+export { cn };
 
 export function pageShellClassName() {
   return "rounded-[28px] border border-slate-200/70 dark:border-slate-800/70 bg-white/85 dark:bg-slate-900/65 shadow-[0_20px_60px_-32px_rgba(15,23,42,0.35)] backdrop-blur-sm";
