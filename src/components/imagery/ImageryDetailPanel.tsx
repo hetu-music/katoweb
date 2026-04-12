@@ -385,17 +385,15 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
     });
   }, [selectedItem]);
 
-  // Lock body scroll when panel is open
+  // Simple scroll lock (no jump since scrollbar is globally hidden)
   useEffect(() => {
-    if (open) {
+    if (open && isDesktop) {
       document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
+      return () => {
+        document.body.style.overflow = "";
+      };
     }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
+  }, [open, isDesktop]);
 
   const handleLyricistClick = useCallback((name: string) => {
     setActiveLyricist((prev) => (name === "" || prev === name ? null : name));

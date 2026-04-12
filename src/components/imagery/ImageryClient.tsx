@@ -241,6 +241,44 @@ const WordItem = memo(function WordItem({
   );
 });
 
+// ─── CategoryButton ───────────────────────────────────────────────────────────
+
+const CategoryButton = memo(function CategoryButton({
+  isActive,
+  onClick,
+  label,
+  accentColor,
+}: {
+  isActive: boolean;
+  onClick: () => void;
+  label: React.ReactNode;
+  accentColor: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`group relative py-1.5 text-[14px] transition-all duration-700 font-serif whitespace-nowrap ${
+        isActive
+          ? "text-slate-900 dark:text-white tracking-[0.25em]"
+          : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 tracking-[0.2em] hover:tracking-[0.25em]"
+      }`}
+    >
+      {label}
+      <span
+        className={`absolute bottom-0 left-0 h-[1.5px] transition-all duration-1000 ease-out origin-left ${
+          isActive
+            ? "w-[calc(100%-0.25em)] scale-x-100 opacity-80"
+            : "w-[calc(100%-0.25em)] scale-x-0 opacity-0"
+        }`}
+        style={{
+          backgroundColor: accentColor,
+          boxShadow: isActive ? `0 1px 10px ${accentColor}22` : "none",
+        }}
+      />
+    </button>
+  );
+});
+
 // ─── main component ───────────────────────────────────────────────────────────
 
 export default function ImageryClient({ items, categories }: Props) {
@@ -356,6 +394,18 @@ export default function ImageryClient({ items, categories }: Props) {
     threshold: 0.05,
   });
   const headerVisible = headerEntry?.isIntersecting ?? true;
+
+  // Hide global scrollbar only on this page
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    html.classList.add("no-scrollbar");
+    body.classList.add("no-scrollbar");
+    return () => {
+      html.classList.remove("no-scrollbar");
+      body.classList.remove("no-scrollbar");
+    };
+  }, []);
 
   // Trigger entrance animation after first paint
   useEffect(() => {
@@ -721,23 +771,12 @@ export default function ImageryClient({ items, categories }: Props) {
             {/* Start spacer for mask */}
             <div className="min-w-[8px]" />
 
-            <button
+            <CategoryButton
+              label="全部"
+              isActive={activeL1Id === null}
               onClick={() => setActiveL1Id(null)}
-              className={`group relative py-1.5 text-[14px] transition-all duration-700 font-serif tracking-[0.2em] whitespace-nowrap ${
-                activeL1Id === null
-                  ? "text-slate-900 dark:text-white"
-                  : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:tracking-[0.25em]"
-              }`}
-            >
-              全部
-              <span
-                className={`absolute bottom-0 left-0 h-px bg-slate-400/60 transition-all duration-1000 ease-out origin-left ${
-                  activeL1Id === null
-                    ? "w-full scale-x-100 opacity-100"
-                    : "w-full scale-x-0 opacity-0"
-                }`}
-              />
-            </button>
+              accentColor={GRAY_PALETTE.accent}
+            />
 
             {level1Categories.map((cat, i) => {
               const palette = PALETTE_FULL[i % PALETTE_FULL.length];
@@ -745,28 +784,12 @@ export default function ImageryClient({ items, categories }: Props) {
               return (
                 <div key={cat.id} className="flex items-center gap-8">
                   <div className="w-[0.5px] h-3 bg-slate-200/50 dark:bg-slate-800/30 rotate-12" />
-                  <button
+                  <CategoryButton
+                    label={cat.name}
+                    isActive={isActive}
                     onClick={() => setActiveL1Id(isActive ? null : cat.id)}
-                    className={`group relative py-1.5 text-[14px] transition-all duration-700 font-serif tracking-[0.2em] whitespace-nowrap ${
-                      isActive
-                        ? "text-slate-900 dark:text-white"
-                        : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:tracking-[0.25em]"
-                    }`}
-                  >
-                    {cat.name}
-                    <span
-                      className="absolute bottom-0 left-0 h-[1.5px] transition-all duration-1000 ease-[cubic-bezier(0.19,1,0.22,1)] origin-left"
-                      style={{
-                        width: "100%",
-                        transform: isActive ? "scale-x-100" : "scale-x-0",
-                        opacity: isActive ? 0.8 : 0,
-                        backgroundColor: palette.accent,
-                        boxShadow: isActive
-                          ? `0 1px 10px ${palette.accent}22`
-                          : "none",
-                      }}
-                    />
-                  </button>
+                    accentColor={palette.accent}
+                  />
                 </div>
               );
             })}
