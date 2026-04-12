@@ -4,13 +4,13 @@ const passwordRule = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 
 export function createAuthFormSchema(mode: "login" | "register") {
   return z.object({
-    email: z.email("请输入合法的邮箱地址"),
+    email: z.email("请输入正确的邮箱地址"),
     password:
       mode === "login"
         ? z.string().min(1, "请输入密码")
         : z
-            .string()
-            .regex(passwordRule, "密码要求至少8位，并包含字母和数字"),
+          .string()
+          .regex(passwordRule, "密码要求至少8位，并包含字母和数字"),
     turnstileToken: z.string().min(1, "请完成人机验证"),
   });
 }

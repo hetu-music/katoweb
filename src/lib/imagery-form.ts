@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { OccurrenceWithSong } from "./service-imagery";
-import type { ImageryCategory, ImageryMeaning, ImageryItem } from "./types";
+import type { ImageryCategory, ImageryItem, ImageryMeaning } from "./types";
 
 const normalizeString = (value: unknown) =>
   typeof value === "string" ? value : value == null ? "" : String(value);
@@ -10,7 +10,7 @@ export function parseLyricTimetag(value: string) {
   try {
     parsed = JSON.parse(value);
   } catch {
-    throw new Error("lyric_timetag 必须是合法的 JSON 数组。");
+    throw new Error("lyric_timetag 必须是正确的 JSON 数组。");
   }
 
   if (

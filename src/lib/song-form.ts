@@ -65,7 +65,7 @@ const makeOptionalUrlSchema = (label: string) =>
       .max(200, `${label}不能超过200个字符`)
       .refine(
         (value) => value === "" || z.url().safeParse(value).success,
-        `${label}必须为合法的URL`,
+        `${label}必须为正确的URL`,
       ),
   );
 
