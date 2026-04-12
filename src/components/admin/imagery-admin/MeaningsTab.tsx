@@ -5,7 +5,7 @@ import {
 } from "@/lib/imagery-form";
 import type { ImageryMeaning } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BookOpen, Edit2, Plus, Trash2 } from "lucide-react";
+import { BookOpen, Edit2, Trash2 } from "lucide-react";
 import { useEffect } from "react";
 import { type Resolver, useForm } from "react-hook-form";
 import {
@@ -105,16 +105,13 @@ function MeaningEditor({
 export default function MeaningsTab({
   meaningsLoading,
   meaningsSearchTerm,
-  filteredCount,
   pagedMeanings,
   addingMeaning,
   editingMeaning,
   meaningSubmitting,
   currentPage,
   totalPages,
-  onSearchTermChange,
   onPageChange,
-  onStartAdd,
   onStartEdit,
   onReset,
   onCreate,
@@ -123,16 +120,13 @@ export default function MeaningsTab({
 }: {
   meaningsLoading: boolean;
   meaningsSearchTerm: string;
-  filteredCount: number;
   pagedMeanings: ImageryMeaning[];
   addingMeaning: boolean;
   editingMeaning: ImageryMeaning | null;
   meaningSubmitting: boolean;
   currentPage: number;
   totalPages: number;
-  onSearchTermChange: (value: string) => void;
   onPageChange: (page: number) => void;
-  onStartAdd: () => void;
   onStartEdit: (meaning: ImageryMeaning) => void;
   onReset: () => void;
   onCreate: (values: MeaningFormValues) => void | Promise<void>;

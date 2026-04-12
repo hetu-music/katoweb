@@ -244,7 +244,6 @@ function OccurrenceRow({
 
 export default function OccurrencesTab({
   songSearchTerm,
-  filteredCount,
   songsLoading,
   pagedSongs,
   occurrencesBySong,
@@ -258,7 +257,6 @@ export default function OccurrencesTab({
   meanings,
   currentPage,
   totalPages,
-  onSearchTermChange,
   onPageChange,
   onToggleSongPanel,
   onStartAddRelation,
@@ -269,7 +267,6 @@ export default function OccurrencesTab({
   getCategoryPath,
 }: {
   songSearchTerm: string;
-  filteredCount: number;
   songsLoading: boolean;
   pagedSongs: SongOption[];
   occurrencesBySong: Record<number, OccurrenceWithSong[]>;
@@ -283,7 +280,6 @@ export default function OccurrencesTab({
   meanings: ImageryMeaning[];
   currentPage: number;
   totalPages: number;
-  onSearchTermChange: (value: string) => void;
   onPageChange: (page: number) => void;
   onToggleSongPanel: (songId: number) => Promise<void>;
   onStartAddRelation: (songId: number) => Promise<void>;

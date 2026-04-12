@@ -7,7 +7,6 @@ import type { CategoryNode } from "./types";
 export default function CategoriesTab({
   categoryTree,
   imageryCountByCategory,
-  sortedCategoriesLength,
   pagedCategories,
   currentPage,
   totalPages,
@@ -19,7 +18,6 @@ export default function CategoriesTab({
 }: {
   categoryTree: CategoryNode[];
   imageryCountByCategory: Map<number, number>;
-  sortedCategoriesLength: number;
   pagedCategories: ImageryCategory[];
   currentPage: number;
   totalPages: number;

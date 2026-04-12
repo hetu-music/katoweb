@@ -47,12 +47,7 @@ import ImageryAdminModals from "./imagery-admin/ImageryAdminModals";
 import ImageryTab from "./imagery-admin/ImageryTab";
 import MeaningsTab from "./imagery-admin/MeaningsTab";
 import OccurrencesTab from "./imagery-admin/OccurrencesTab";
-import {
-  cardClassName,
-  cn,
-  pageShellClassName,
-  StatPill,
-} from "./imagery-admin/shared";
+import { cn } from "./imagery-admin/shared";
 import type {
   ModalState,
   RelationEditor,
@@ -890,16 +885,10 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
               itemsLoading={itemsLoading}
               itemsError={itemsError}
               searchTerm={imagerySearchTerm}
-              filteredCount={filteredItems.length}
               pagedItems={pagedItems}
               currentPage={imageryPage}
               totalPages={imageryTotalPages}
-              onSearchTermChange={(value) => {
-                setImagerySearchTerm(value);
-                setImageryPage(1);
-              }}
               onPageChange={setImageryPage}
-              onAdd={openAddImagery}
               onEdit={openEditImagery}
               onDelete={openDeleteImagery}
             />
@@ -909,7 +898,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
             <CategoriesTab
               categoryTree={categoryTree}
               imageryCountByCategory={imageryCountByCategory}
-              sortedCategoriesLength={sortedCategories.length}
               pagedCategories={pagedCategories}
               currentPage={categoryPage}
               totalPages={categoryTotalPages}
@@ -927,19 +915,13 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
             <MeaningsTab
               meaningsLoading={meaningsLoading}
               meaningsSearchTerm={meaningsSearchTerm}
-              filteredCount={filteredMeanings.length}
               pagedMeanings={pagedMeanings}
               addingMeaning={addingMeaning}
               editingMeaning={editingMeaning}
               meaningSubmitting={meaningSubmitting}
               currentPage={meaningsPage}
               totalPages={meaningsTotalPages}
-              onSearchTermChange={(value) => {
-                setMeaningsSearchTerm(value);
-                setMeaningsPage(1);
-              }}
               onPageChange={setMeaningsPage}
-              onStartAdd={startAddMeaning}
               onStartEdit={startEditMeaning}
               onReset={resetMeaningEditor}
               onCreate={handleCreateMeaning}
@@ -951,7 +933,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
           {activeTab === "occurrences" && (
             <OccurrencesTab
               songSearchTerm={songSearchTerm}
-              filteredCount={filteredSongs.length}
               songsLoading={songsLoading}
               pagedSongs={pagedSongs}
               occurrencesBySong={occurrencesBySong}
@@ -965,10 +946,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
               meanings={meanings}
               currentPage={songsPage}
               totalPages={songsTotalPages}
-              onSearchTermChange={(value) => {
-                setSongSearchTerm(value);
-                setSongsPage(1);
-              }}
               onPageChange={setSongsPage}
               onToggleSongPanel={toggleSongPanel}
               onStartAddRelation={startAddRelation}

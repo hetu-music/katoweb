@@ -11,13 +11,10 @@ export default function ImageryTab({
   itemsLoading,
   itemsError,
   searchTerm,
-  filteredCount,
   pagedItems,
   currentPage,
   totalPages,
-  onSearchTermChange,
   onPageChange,
-  onAdd,
   onEdit,
   onDelete,
 }: {
@@ -25,13 +22,10 @@ export default function ImageryTab({
   itemsLoading: boolean;
   itemsError: string | null;
   searchTerm: string;
-  filteredCount: number;
   pagedItems: ImageryItem[];
   currentPage: number;
   totalPages: number;
-  onSearchTermChange: (value: string) => void;
   onPageChange: (page: number) => void;
-  onAdd: () => void;
   onEdit: (item: ImageryItem) => void;
   onDelete: (item: ImageryItem) => void;
 }) {
