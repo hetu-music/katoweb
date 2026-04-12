@@ -1193,7 +1193,6 @@ function RenderInput({
                   <CoverUpload
                     songId={songId}
                     csrfToken={csrfToken}
-                    hasExistingFile={true}
                     onUploadSuccess={() => void 0}
                     onUploadError={console.error}
                   />
@@ -1205,7 +1204,6 @@ function RenderInput({
                   <ScoreUpload
                     songId={songId}
                     csrfToken={csrfToken}
-                    hasExistingFile={true}
                     onUploadSuccess={() => void 0}
                     onUploadError={console.error}
                   />
