@@ -46,6 +46,17 @@ const makeOptionalIntegerSchema = (label: string, min: number) =>
       .nullable(),
   );
 
+const makeArrayFieldItemSchema = (label: string, maxLength: number) =>
+  z.object({
+    value: z.preprocess(
+      normalizeString,
+      z
+        .string()
+        .trim()
+        .max(maxLength, `${label}单项不能超过${maxLength}个字符`),
+    ),
+  });
+
 const makeOptionalUrlSchema = (label: string) =>
   z.preprocess(
     normalizeString,
@@ -90,8 +101,41 @@ export const songFormSchema = z.object({
   qmlink: makeOptionalUrlSchema("QQ音乐链接"),
 });
 
-export type SongFormValues = z.infer<typeof songFormSchema> &
-  Pick<Partial<SongDetail>, "id" | "updated_at">;
+export const songFormStateSchema = z.object({
+  title: z.preprocess(
+    normalizeString,
+    z
+      .string()
+      .trim()
+      .min(1, "标题为必填项")
+      .max(100, "标题不能超过100个字符"),
+  ),
+  album: makeOptionalTextSchema("专辑", 100),
+  lyricist: z.array(makeArrayFieldItemSchema("作词", 30)),
+  composer: z.array(makeArrayFieldItemSchema("作曲", 30)),
+  arranger: z.array(makeArrayFieldItemSchema("编曲", 30)),
+  artist: z.array(makeArrayFieldItemSchema("演唱", 30)),
+  type: makeOptionalArraySchema("类型", 30),
+  genre: makeOptionalArraySchema("流派", 30),
+  length: makeOptionalIntegerSchema("时长(秒)", 1),
+  hascover: z.preprocess(normalizeNullableBoolean, z.boolean().nullable()),
+  date: makeOptionalTextSchema("日期", 30),
+  albumartist: z.array(makeArrayFieldItemSchema("出品发行", 30)),
+  comment: makeOptionalTextSchema("备注", 10000),
+  lyrics: makeOptionalTextSchema("LRC歌词", 10000),
+  nmn_status: z.preprocess(normalizeNullableBoolean, z.boolean().nullable()),
+  track: makeOptionalIntegerSchema("曲号", 1),
+  tracktotal: makeOptionalIntegerSchema("曲总数", 1),
+  discnumber: makeOptionalIntegerSchema("碟号", 1),
+  disctotal: makeOptionalIntegerSchema("碟总数", 1),
+  kugolink: makeOptionalUrlSchema("酷狗链接"),
+  nelink: makeOptionalUrlSchema("网易云链接"),
+  qmlink: makeOptionalUrlSchema("QQ音乐链接"),
+});
+
+export type SongFormValues = z.infer<typeof songFormSchema>;
+export type SongFormStateValues = z.infer<typeof songFormStateSchema>;
+export type SongArrayFieldItem = SongFormStateValues["lyricist"][number];
 
 export type SongFormErrors = Partial<Record<keyof z.infer<typeof songFormSchema>, string>>;
 
@@ -119,6 +163,19 @@ export function createEmptySongForm(): SongFormValues {
     kugolink: "",
     nelink: "",
     qmlink: "",
+  };
+}
+
+const toFieldArrayItems = (values: string[]) => values.map((value) => ({ value }));
+
+export function createEmptySongFormState(): SongFormStateValues {
+  return {
+    ...createEmptySongForm(),
+    lyricist: [],
+    composer: [],
+    arranger: [],
+    artist: [],
+    albumartist: [],
   };
 }
 
@@ -163,8 +220,32 @@ export function toSongFormValues(song: Partial<SongDetail>): SongFormValues {
     kugolink: normalizeString(song.kugolink),
     nelink: normalizeString(song.nelink),
     qmlink: normalizeString(song.qmlink),
-    id: typeof song.id === "number" ? song.id : undefined,
-    updated_at: song.updated_at,
+  };
+}
+
+export function toSongFormState(
+  song: Partial<SongDetail> | SongFormValues,
+): SongFormStateValues {
+  const values = toSongFormValues(song);
+
+  return {
+    ...values,
+    lyricist: toFieldArrayItems(values.lyricist),
+    composer: toFieldArrayItems(values.composer),
+    arranger: toFieldArrayItems(values.arranger),
+    artist: toFieldArrayItems(values.artist),
+    albumartist: toFieldArrayItems(values.albumartist),
+  };
+}
+
+export function toSongFormPayload(state: SongFormStateValues): SongFormValues {
+  return {
+    ...state,
+    lyricist: state.lyricist.map((item) => item.value),
+    composer: state.composer.map((item) => item.value),
+    arranger: state.arranger.map((item) => item.value),
+    artist: state.artist.map((item) => item.value),
+    albumartist: state.albumartist.map((item) => item.value),
   };
 }
 

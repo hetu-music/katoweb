@@ -1,5 +1,11 @@
+import {
+  createRelationFormValues,
+  relationFormSchema,
+  type RelationFormValues,
+} from "@/lib/imagery-form";
 import type { OccurrenceWithSong } from "@/lib/service-imagery";
 import type { ImageryCategory, ImageryItem, ImageryMeaning } from "@/lib/types";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ChevronDown,
   ChevronRight,
@@ -8,6 +14,8 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
+import { useEffect } from "react";
+import { type Resolver, useForm } from "react-hook-form";
 import {
   cardClassName,
   compactInputClassName,
@@ -20,12 +28,7 @@ import {
   SectionIntro,
   StatPill,
 } from "./shared";
-import type {
-  RelationEditor,
-  RelationFormState,
-  SetRelationForm,
-  SongOption,
-} from "./types";
+import type { RelationEditor, SongOption } from "./types";
 
 function RelationEditorCard({
   title,
@@ -33,8 +36,7 @@ function RelationEditorCard({
   leafCategories,
   meanings,
   categories,
-  relationForm,
-  setRelationForm,
+  initialValues,
   submitting,
   onSave,
   onCancel,
@@ -45,110 +47,126 @@ function RelationEditorCard({
   leafCategories: ImageryCategory[];
   meanings: ImageryMeaning[];
   categories: ImageryCategory[];
-  relationForm: RelationFormState;
-  setRelationForm: SetRelationForm;
+  initialValues: RelationFormValues;
   submitting: boolean;
-  onSave: () => void;
+  onSave: (values: RelationFormValues) => void | Promise<void>;
   onCancel: () => void;
   getCategoryPath: (
     categoryId: number,
     categories: ImageryCategory[],
   ) => string;
 }) {
-  void categories;
+  const form = useForm<RelationFormValues>({
+    resolver: zodResolver(relationFormSchema) as Resolver<RelationFormValues>,
+    defaultValues: initialValues,
+    mode: "onBlur",
+    reValidateMode: "onChange",
+  });
+
+  useEffect(() => {
+    form.reset(initialValues);
+  }, [form, initialValues]);
+
   return (
     <div className="rounded-3xl border border-slate-200/70 bg-slate-50/90 p-4 dark:border-slate-700 dark:bg-slate-950/30">
-      <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-        {title}
-      </p>
-      <div className="grid gap-3 md:grid-cols-3">
-        <select
-          value={relationForm.imagery_id}
-          onChange={(event) =>
-            setRelationForm((current) => ({
-              ...current,
-              imagery_id: parseInt(event.target.value, 10) || 0,
-            }))
-          }
-          className={compactInputClassName()}
-        >
-          <option value={0}>— 选择意象 —</option>
-          {items.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.name}（ID: {item.id}）
-            </option>
-          ))}
-        </select>
+      <form
+        onSubmit={form.handleSubmit((values) => onSave(values))}
+        className="space-y-4"
+      >
+        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+          {title}
+        </p>
+        <div className="grid gap-3 md:grid-cols-3">
+          <div>
+            <select
+              {...form.register("imagery_id", {
+                setValueAs: (value) => Number(value) || 0,
+              })}
+              className={compactInputClassName()}
+            >
+              <option value={0}>— 选择意象 —</option>
+              {items.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}（ID: {item.id}）
+                </option>
+              ))}
+            </select>
+            {form.formState.errors.imagery_id && (
+              <p className="mt-2 text-xs text-red-500">
+                {form.formState.errors.imagery_id.message}
+              </p>
+            )}
+          </div>
 
-        <select
-          value={relationForm.category_id}
-          onChange={(event) =>
-            setRelationForm((current) => ({
-              ...current,
-              category_id: parseInt(event.target.value, 10) || 0,
-            }))
-          }
-          className={compactInputClassName()}
-        >
-          <option value={0}>— 选择分类 —</option>
-          {leafCategories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {getCategoryPath(category.id, categories)}
-            </option>
-          ))}
-        </select>
+          <div>
+            <select
+              {...form.register("category_id", {
+                setValueAs: (value) => Number(value) || 0,
+              })}
+              className={compactInputClassName()}
+            >
+              <option value={0}>— 选择分类 —</option>
+              {leafCategories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {getCategoryPath(category.id, categories)}
+                </option>
+              ))}
+            </select>
+            {form.formState.errors.category_id && (
+              <p className="mt-2 text-xs text-red-500">
+                {form.formState.errors.category_id.message}
+              </p>
+            )}
+          </div>
 
-        <select
-          value={relationForm.meaning_id ?? ""}
-          onChange={(event) =>
-            setRelationForm((current) => ({
-              ...current,
-              meaning_id: event.target.value
-                ? parseInt(event.target.value, 10)
-                : null,
-            }))
-          }
-          className={compactInputClassName()}
-        >
-          <option value="">— 选择含义（可选）—</option>
-          {meanings.map((meaning) => (
-            <option key={meaning.id} value={meaning.id}>
-              {meaning.label}（ID: {meaning.id}）
-            </option>
-          ))}
-        </select>
-      </div>
+          <div>
+            <select
+              {...form.register("meaning_id", {
+                setValueAs: (value) => (value ? Number(value) : null),
+              })}
+              className={compactInputClassName()}
+            >
+              <option value="">— 选择含义（可选）—</option>
+              {meanings.map((meaning) => (
+                <option key={meaning.id} value={meaning.id}>
+                  {meaning.label}（ID: {meaning.id}）
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
-      <textarea
-        value={relationForm.lyric_timetag}
-        onChange={(event) =>
-          setRelationForm((current) => ({
-            ...current,
-            lyric_timetag: event.target.value,
-          }))
-        }
-        rows={4}
-        placeholder='lyric_timetag JSON，如：[{"start": 12.4, "end": 14.8}]'
-        className={`mt-3 w-full ${compactInputClassName()} text-xs font-mono`}
-      />
+        <div>
+          <textarea
+            rows={4}
+            placeholder='lyric_timetag JSON，如：[{"start": 12.4, "end": 14.8}]'
+            {...form.register("lyric_timetag")}
+            className={`w-full ${compactInputClassName()} text-xs font-mono`}
+          />
+          {form.formState.errors.lyric_timetag && (
+            <p className="mt-2 text-xs text-red-500">
+              {form.formState.errors.lyric_timetag.message}
+            </p>
+          )}
+        </div>
 
-      <div className="mt-4 flex justify-end gap-2">
-        <button
-          type="button"
-          onClick={onCancel}
-          className={ghostButtonClassName()}
-        >
-          取消
-        </button>
-        <button
-          type="button"
-          onClick={onSave}
-          disabled={submitting}
-          className={primaryButtonClassName()}
-        >
-          保存
-        </button>
-      </div>
+        <div className="mt-4 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            className={ghostButtonClassName()}
+          >
+            取消
+          </button>
+          <button
+            type="submit"
+            disabled={submitting || form.formState.isSubmitting}
+            className={primaryButtonClassName()}
+          >
+            保存
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
@@ -237,8 +255,6 @@ export default function OccurrencesTab({
   expandedSongId,
   occurrenceLoadingSongId,
   relationEditor,
-  relationForm,
-  setRelationForm,
   occurrenceSubmitting,
   items,
   categories,
@@ -264,8 +280,6 @@ export default function OccurrencesTab({
   expandedSongId: number | null;
   occurrenceLoadingSongId: number | null;
   relationEditor: RelationEditor;
-  relationForm: RelationFormState;
-  setRelationForm: SetRelationForm;
   occurrenceSubmitting: boolean;
   items: ImageryItem[];
   categories: ImageryCategory[];
@@ -279,7 +293,7 @@ export default function OccurrencesTab({
   onStartAddRelation: (songId: number) => Promise<void>;
   onStartEditRelation: (songId: number, occurrence: OccurrenceWithSong) => void;
   onResetRelationEditor: () => void;
-  onSaveRelation: () => void;
+  onSaveRelation: (values: RelationFormValues) => void | Promise<void>;
   onDeleteRelation: (songId: number, occurrence: OccurrenceWithSong) => void;
   getCategoryPath: (
     categoryId: number,
@@ -303,8 +317,7 @@ export default function OccurrencesTab({
                 按歌曲维护关系
               </h3>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                搜索歌曲后展开对应面板，即可查看和编辑该 song_id
-                下的全部意象关系。
+                搜索歌曲后展开对应面板，即可查看和编辑该 song_id 下的全部意象关系。
               </p>
             </div>
             <SearchField
@@ -402,8 +415,7 @@ export default function OccurrencesTab({
                                 leafCategories={leafCategories}
                                 meanings={meanings}
                                 categories={categories}
-                                relationForm={relationForm}
-                                setRelationForm={setRelationForm}
+                                initialValues={createRelationFormValues()}
                                 submitting={occurrenceSubmitting}
                                 onSave={onSaveRelation}
                                 onCancel={onResetRelationEditor}
@@ -424,8 +436,9 @@ export default function OccurrencesTab({
                                   leafCategories={leafCategories}
                                   meanings={meanings}
                                   categories={categories}
-                                  relationForm={relationForm}
-                                  setRelationForm={setRelationForm}
+                                  initialValues={createRelationFormValues(
+                                    relationEditor.occurrence,
+                                  )}
                                   submitting={occurrenceSubmitting}
                                   onSave={onSaveRelation}
                                   onCancel={onResetRelationEditor}
@@ -445,9 +458,11 @@ export default function OccurrencesTab({
                             })}
 
                             {occurrences.length === 0 && !isAddingHere && (
-                              <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-400 dark:border-slate-800">
-                                当前歌曲暂无关系记录
-                              </div>
+                              <EmptyState
+                                icon={<Layers size={20} />}
+                                title="暂无关系"
+                                description="点击右上角“新增关系”创建第一条记录。"
+                              />
                             )}
                           </div>
                         )}

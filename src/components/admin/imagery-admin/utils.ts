@@ -41,24 +41,3 @@ export function getCategoryPath(
 
   return parts.join(" / ");
 }
-
-export function parseLyricTimetag(value: string) {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(value);
-  } catch {
-    throw new Error("lyric_timetag 必须是合法的 JSON 数组。");
-  }
-
-  if (
-    !Array.isArray(parsed) ||
-    parsed.some(
-      (item) =>
-        typeof item !== "object" || item === null || Array.isArray(item),
-    )
-  ) {
-    throw new Error("lyric_timetag 必须是对象数组。");
-  }
-
-  return parsed as Record<string, unknown>[];
-}

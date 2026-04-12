@@ -3,8 +3,15 @@
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import { useFavorites } from "@/context/FavoritesContext";
 import { useUserContext } from "@/context/UserContext";
+import {
+  profileAccountFormSchema,
+  profilePasswordFormSchema,
+  type ProfileAccountFormValues,
+  type ProfilePasswordFormValues,
+} from "@/lib/profile-form";
 import { cn } from "@/lib/utils";
 import { getCoverUrl } from "@/lib/utils-song";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ArrowLeft,
   Check,
@@ -23,6 +30,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { Suspense, useCallback, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 
 type TabType = "favorites" | "account";
 const PROFILE_TABS = ["favorites", "account"] as const;
@@ -86,26 +94,38 @@ function ProfileContent() {
     [reviewTexts],
   );
 
-  // Account Form State
-  const [name, setName] = useState("");
-  const [intro, setIntro] = useState("");
-  const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [csrfToken, setCsrfToken] = useState("");
 
-  // Password Form State
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [pwdSaving, setPwdSaving] = useState(false);
   const [pwdMsg, setPwdMsg] = useState<string | null>(null);
 
+  const accountForm = useForm<ProfileAccountFormValues>({
+    resolver: zodResolver(profileAccountFormSchema),
+    defaultValues: {
+      displayName: "",
+      intro: "",
+    },
+    mode: "onBlur",
+    reValidateMode: "onChange",
+  });
+
+  const passwordForm = useForm<ProfilePasswordFormValues>({
+    resolver: zodResolver(profilePasswordFormSchema),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+    mode: "onBlur",
+    reValidateMode: "onChange",
+  });
+
   useEffect(() => {
-    if (user) {
-      setName(user.name ?? "");
-      setIntro(user.intro ?? "");
-    }
-  }, [user]);
+    accountForm.reset({
+      displayName: user?.name ?? "",
+      intro: user?.intro ?? "",
+    });
+  }, [accountForm, user]);
 
   useEffect(() => {
     if (!user || activeTab !== "account") return;
@@ -114,10 +134,12 @@ function ProfileContent() {
       .then((d) => setCsrfToken(d.csrfToken || ""));
   }, [activeTab, user]);
 
-  const handleSave = useCallback(async () => {
-    if (!csrfToken || saving) return;
-    setSaving(true);
+  const handleSave = accountForm.handleSubmit(async ({ displayName, intro }) => {
     setSaveMsg(null);
+    if (!csrfToken) {
+      setSaveMsg("保存失败");
+      return;
+    }
     try {
       const res = await fetch("/api/auth/account", {
         method: "POST",
@@ -125,7 +147,7 @@ function ProfileContent() {
           "Content-Type": "application/json",
           "x-csrf-token": csrfToken,
         },
-        body: JSON.stringify({ displayName: name, intro }),
+        body: JSON.stringify({ displayName, intro }),
       });
       if (res.ok) {
         setSaveMsg("已保存");
@@ -136,60 +158,40 @@ function ProfileContent() {
     } catch {
       setSaveMsg("保存失败");
     } finally {
-      setSaving(false);
       setTimeout(() => setSaveMsg(null), 2500);
     }
-  }, [csrfToken, saving, name, intro]);
+  });
 
-  const handleChangePassword = useCallback(async () => {
-    if (
-      !csrfToken ||
-      pwdSaving ||
-      !currentPassword ||
-      !newPassword ||
-      !confirmPassword
-    )
-      return;
-    // 客户端校验
-    if (newPassword.length < 8) {
-      setPwdMsg("新密码不能少于8位");
-      return;
-    }
-    if (!/[a-zA-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
-      setPwdMsg("新密码需包含字母和数字");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setPwdMsg("两次输入的新密码不一致");
-      return;
-    }
-    setPwdSaving(true);
+  const handleChangePassword = passwordForm.handleSubmit(
+    async ({ currentPassword, newPassword }) => {
     setPwdMsg(null);
-    try {
-      const res = await fetch("/api/auth/change-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-csrf-token": csrfToken,
-        },
-        body: JSON.stringify({ oldPassword: currentPassword, newPassword }),
-      });
-      if (res.ok) {
-        setPwdMsg("密码修改成功");
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-      } else {
-        const d = await res.json();
-        setPwdMsg(d.error || "修改失败");
+      if (!csrfToken) {
+        setPwdMsg("修改失败");
+        return;
       }
-    } catch {
-      setPwdMsg("修改失败");
-    } finally {
-      setPwdSaving(false);
-      setTimeout(() => setPwdMsg(null), 3500);
-    }
-  }, [csrfToken, pwdSaving, currentPassword, newPassword, confirmPassword]);
+      try {
+        const res = await fetch("/api/auth/change-password", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-csrf-token": csrfToken,
+          },
+          body: JSON.stringify({ oldPassword: currentPassword, newPassword }),
+        });
+        if (res.ok) {
+          setPwdMsg("密码修改成功");
+          passwordForm.reset();
+        } else {
+          const d = await res.json();
+          setPwdMsg(d.error || "修改失败");
+        }
+      } catch {
+        setPwdMsg("修改失败");
+      } finally {
+        setTimeout(() => setPwdMsg(null), 3500);
+      }
+    },
+  );
 
   const handleBack = useCallback(() => {
     const navDepthStr = sessionStorage.getItem("__katoweb_nav_depth");
@@ -519,61 +521,90 @@ function ProfileContent() {
                       </div>
 
                       <div className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
-                              用户名
-                            </label>
-                            <input
-                              type="text"
-                              value={name}
-                              onChange={(e) => setName(e.target.value)}
-                              maxLength={30}
-                              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:bg-white dark:focus:bg-[#111] focus:border-blue-500/50 outline-none transition-all text-sm text-slate-800 dark:text-slate-200"
-                            />
-                          </div>
-                          <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
-                              邮箱
-                            </label>
-                            <div className="w-full px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 text-xs text-slate-400 cursor-not-allowed">
-                              {user?.email}
+                        <form
+                          onSubmit={handleSave}
+                          className="space-y-6"
+                          noValidate
+                        >
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
+                                用户名
+                              </label>
+                              <input
+                                type="text"
+                                maxLength={30}
+                                {...accountForm.register("displayName")}
+                                className={cn(
+                                  "w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border outline-none transition-all text-sm text-slate-800 dark:text-slate-200",
+                                  accountForm.formState.errors.displayName
+                                    ? "border-rose-300 focus:border-rose-500"
+                                    : "border-transparent focus:bg-white dark:focus:bg-[#111] focus:border-blue-500/50",
+                                )}
+                              />
+                              {accountForm.formState.errors.displayName && (
+                                <p className="text-xs text-rose-500 ml-1">
+                                  {
+                                    accountForm.formState.errors.displayName
+                                      .message
+                                  }
+                                </p>
+                              )}
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
+                                邮箱
+                              </label>
+                              <div className="w-full px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 text-xs text-slate-400 cursor-not-allowed">
+                                {user?.email}
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        <div className="space-y-1.5">
-                          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
-                            个人简介
-                          </label>
-                          <textarea
-                            value={intro}
-                            onChange={(e) => setIntro(e.target.value)}
-                            maxLength={200}
-                            rows={3}
-                            className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:bg-white dark:focus:bg-[#111] focus:border-blue-500/50 outline-none transition-all text-sm text-slate-800 dark:text-slate-200 resize-none"
-                          />
-                        </div>
-
-                        <div className="pt-2">
-                          <button
-                            onClick={handleSave}
-                            disabled={saving || !name.trim()}
-                            className={cn(
-                              "px-6 py-2.5 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2",
-                              saving || !name.trim()
-                                ? "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
-                                : "bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-500/10 active:scale-95",
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
+                              个人简介
+                            </label>
+                            <textarea
+                              maxLength={200}
+                              rows={3}
+                              {...accountForm.register("intro")}
+                              className={cn(
+                                "w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border outline-none transition-all text-sm text-slate-800 dark:text-slate-200 resize-none",
+                                accountForm.formState.errors.intro
+                                  ? "border-rose-300 focus:border-rose-500"
+                                  : "border-transparent focus:bg-white dark:focus:bg-[#111] focus:border-blue-500/50",
+                              )}
+                            />
+                            {accountForm.formState.errors.intro && (
+                              <p className="text-xs text-rose-500 ml-1">
+                                {accountForm.formState.errors.intro.message}
+                              </p>
                             )}
-                          >
-                            {saving ? (
-                              <Loader2 size={16} className="animate-spin" />
-                            ) : saveMsg === "已保存" ? (
-                              <Check size={16} />
-                            ) : null}
-                            {saveMsg ?? "保存更改"}
-                          </button>
-                        </div>
+                          </div>
+
+                          <div className="pt-2">
+                            <button
+                              type="submit"
+                              disabled={
+                                accountForm.formState.isSubmitting || !csrfToken
+                              }
+                              className={cn(
+                                "px-6 py-2.5 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2",
+                                accountForm.formState.isSubmitting || !csrfToken
+                                  ? "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
+                                  : "bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-500/10 active:scale-95",
+                              )}
+                            >
+                              {accountForm.formState.isSubmitting ? (
+                                <Loader2 size={16} className="animate-spin" />
+                              ) : saveMsg === "已保存" ? (
+                                <Check size={16} />
+                              ) : null}
+                              {saveMsg ?? "保存更改"}
+                            </button>
+                          </div>
+                        </form>
                       </div>
 
                       {/* Password Change Section */}
@@ -587,84 +618,116 @@ function ProfileContent() {
                           </p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
-                              当前密码
-                            </label>
-                            <input
-                              type="password"
-                              value={currentPassword}
-                              onChange={(e) =>
-                                setCurrentPassword(e.target.value)
+                        <form
+                          onSubmit={handleChangePassword}
+                          className="space-y-6"
+                          noValidate
+                        >
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
+                                当前密码
+                              </label>
+                              <input
+                                type="password"
+                                {...passwordForm.register("currentPassword")}
+                                className={cn(
+                                  "w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border outline-none transition-all text-sm text-slate-800 dark:text-slate-200",
+                                  passwordForm.formState.errors.currentPassword
+                                    ? "border-rose-300 focus:border-rose-500"
+                                    : "border-transparent focus:bg-white dark:focus:bg-[#111] focus:border-blue-500/50",
+                                )}
+                              />
+                              {passwordForm.formState.errors.currentPassword && (
+                                <p className="text-xs text-rose-500 ml-1">
+                                  {
+                                    passwordForm.formState.errors
+                                      .currentPassword.message
+                                  }
+                                </p>
+                              )}
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
+                                新密码
+                              </label>
+                              <input
+                                type="password"
+                                placeholder="至少8位，包含字母和数字"
+                                {...passwordForm.register("newPassword")}
+                                className={cn(
+                                  "w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border outline-none transition-all text-sm text-slate-800 dark:text-slate-200",
+                                  passwordForm.formState.errors.newPassword
+                                    ? "border-rose-300 focus:border-rose-500"
+                                    : "border-transparent focus:bg-white dark:focus:bg-[#111] focus:border-blue-500/50",
+                                )}
+                              />
+                              {passwordForm.formState.errors.newPassword && (
+                                <p className="text-xs text-rose-500 ml-1">
+                                  {
+                                    passwordForm.formState.errors.newPassword
+                                      .message
+                                  }
+                                </p>
+                              )}
+                            </div>
+                            <div className="space-y-1.5 md:col-span-2 md:w-1/2">
+                              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
+                                确认新密码
+                              </label>
+                              <input
+                                type="password"
+                                placeholder="再次输入新密码"
+                                {...passwordForm.register("confirmPassword")}
+                                className={cn(
+                                  "w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border outline-none transition-all text-sm text-slate-800 dark:text-slate-200",
+                                  passwordForm.formState.errors.confirmPassword
+                                    ? "border-rose-300 focus:border-rose-500"
+                                    : "border-transparent focus:bg-white dark:focus:bg-[#111] focus:border-blue-500/50",
+                                )}
+                              />
+                              {passwordForm.formState.errors.confirmPassword && (
+                                <p className="text-xs text-rose-500 ml-1">
+                                  {
+                                    passwordForm.formState.errors
+                                      .confirmPassword.message
+                                  }
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="pt-2 flex items-center gap-3">
+                            <button
+                              type="submit"
+                              disabled={
+                                passwordForm.formState.isSubmitting || !csrfToken
                               }
-                              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:bg-white dark:focus:bg-[#111] focus:border-blue-500/50 outline-none transition-all text-sm text-slate-800 dark:text-slate-200"
-                            />
-                          </div>
-                          <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
-                              新密码
-                            </label>
-                            <input
-                              type="password"
-                              value={newPassword}
-                              onChange={(e) => setNewPassword(e.target.value)}
-                              placeholder="至少8位，包含字母和数字"
-                              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:bg-white dark:focus:bg-[#111] focus:border-blue-500/50 outline-none transition-all text-sm text-slate-800 dark:text-slate-200"
-                            />
-                          </div>
-                          <div className="space-y-1.5 md:col-span-2 md:w-1/2">
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
-                              确认新密码
-                            </label>
-                            <input
-                              type="password"
-                              value={confirmPassword}
-                              onChange={(e) =>
-                                setConfirmPassword(e.target.value)
-                              }
-                              placeholder="再次输入新密码"
-                              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:bg-white dark:focus:bg-[#111] focus:border-blue-500/50 outline-none transition-all text-sm text-slate-800 dark:text-slate-200"
-                            />
-                          </div>
-                        </div>
-                        <div className="pt-2 flex items-center gap-3">
-                          <button
-                            onClick={handleChangePassword}
-                            disabled={
-                              pwdSaving ||
-                              !currentPassword ||
-                              !newPassword ||
-                              !confirmPassword
-                            }
-                            className={cn(
-                              "px-6 py-2.5 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2",
-                              pwdSaving ||
-                                !currentPassword ||
-                                !newPassword ||
-                                !confirmPassword
-                                ? "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
-                                : "bg-rose-600 text-white hover:bg-rose-700 shadow-md shadow-rose-500/10 active:scale-95",
-                            )}
-                          >
-                            {pwdSaving ? (
-                              <Loader2 size={16} className="animate-spin" />
-                            ) : null}
-                            确认修改
-                          </button>
-                          {pwdMsg && (
-                            <span
                               className={cn(
-                                "text-xs font-bold",
-                                pwdMsg === "密码修改成功"
-                                  ? "text-emerald-500"
-                                  : "text-rose-500",
+                                "px-6 py-2.5 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2",
+                                passwordForm.formState.isSubmitting || !csrfToken
+                                  ? "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
+                                  : "bg-rose-600 text-white hover:bg-rose-700 shadow-md shadow-rose-500/10 active:scale-95",
                               )}
                             >
-                              {pwdMsg}
-                            </span>
-                          )}
-                        </div>
+                              {passwordForm.formState.isSubmitting ? (
+                                <Loader2 size={16} className="animate-spin" />
+                              ) : null}
+                              确认修改
+                            </button>
+                            {pwdMsg && (
+                              <span
+                                className={cn(
+                                  "text-xs font-bold",
+                                  pwdMsg === "密码修改成功"
+                                    ? "text-emerald-500"
+                                    : "text-rose-500",
+                                )}
+                              >
+                                {pwdMsg}
+                              </span>
+                            )}
+                          </div>
+                        </form>
                       </div>
                     </div>
                   )}

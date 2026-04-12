@@ -19,6 +19,15 @@ import {
   apiUpdateImageryCategory,
   apiUpdateOccurrence,
 } from "@/lib/client-api";
+import {
+  type CategoryFormValues,
+  type ImageryFormValues,
+  type MeaningFormValues,
+  type RelationFormValues,
+  toCategoryPayload,
+  toMeaningPayload,
+  toRelationPayload,
+} from "@/lib/imagery-form";
 import type { OccurrenceWithSong } from "@/lib/service-imagery";
 import type { ImageryCategory, ImageryItem, ImageryMeaning } from "@/lib/types";
 import {
@@ -31,8 +40,8 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { FormEvent, ReactNode } from "react";
 import CategoriesTab from "./imagery-admin/CategoriesTab";
 import ImageryAdminModals from "./imagery-admin/ImageryAdminModals";
 import ImageryTab from "./imagery-admin/ImageryTab";
@@ -45,18 +54,12 @@ import {
   StatPill,
 } from "./imagery-admin/shared";
 import type {
-  CategoryFormState,
   ModalState,
   RelationEditor,
-  RelationFormState,
   SongOption,
   Tab,
 } from "./imagery-admin/types";
-import {
-  buildTree,
-  getCategoryPath,
-  parseLyricTimetag,
-} from "./imagery-admin/utils";
+import { buildTree, getCategoryPath } from "./imagery-admin/utils";
 
 const PAGE_SIZE = 20;
 const SONG_PAGE_SIZE = 10;
@@ -80,17 +83,10 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   const [itemsError, setItemsError] = useState<string | null>(null);
   const [imagerySearchTerm, setImagerySearchTerm] = useState("");
   const [imageryPage, setImageryPage] = useState(1);
-  const [imageryFormName, setImageryFormName] = useState("");
 
   const [categories, setCategories] =
     useState<ImageryCategory[]>(initialCategories);
   const [categoryPage, setCategoryPage] = useState(1);
-  const [categoryForm, setCategoryForm] = useState<CategoryFormState>({
-    name: "",
-    parent_id: null,
-    level: null,
-    description: "",
-  });
 
   const [meanings, setMeanings] = useState<ImageryMeaning[]>([]);
   const [meaningsLoading, setMeaningsLoading] = useState(false);
@@ -98,10 +94,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   const [meaningsPage, setMeaningsPage] = useState(1);
   const [addingMeaning, setAddingMeaning] = useState(false);
   const [editingMeaningId, setEditingMeaningId] = useState<number | null>(null);
-  const [meaningForm, setMeaningForm] = useState({
-    label: "",
-    description: "",
-  });
   const [meaningSubmitting, setMeaningSubmitting] = useState(false);
 
   const [allSongs, setAllSongs] = useState<SongOption[]>([]);
@@ -111,12 +103,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   const [expandedSongId, setExpandedSongId] = useState<number | null>(null);
   const [relationEditor, setRelationEditor] = useState<RelationEditor>({
     type: "none",
-  });
-  const [relationForm, setRelationForm] = useState<RelationFormState>({
-    imagery_id: 0,
-    category_id: 0,
-    meaning_id: null,
-    lyric_timetag: "[]",
   });
   const [occurrencesBySong, setOccurrencesBySong] = useState<
     Record<number, OccurrenceWithSong[]>
@@ -318,6 +304,13 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
       ),
     [filteredSongs, songsPage],
   );
+  const editingMeaning = useMemo(
+    () =>
+      editingMeaningId
+        ? meanings.find((meaning) => meaning.id === editingMeaningId) ?? null
+        : null,
+    [editingMeaningId, meanings],
+  );
 
   useEffect(() => {
     setImageryPage((current) => Math.min(current, imageryTotalPages));
@@ -333,39 +326,18 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   }, [songsTotalPages]);
 
   const openAddImagery = () => {
-    setImageryFormName("");
     setModal({ type: "add-imagery" });
   };
-  const openEditImagery = (item: ImageryItem) => {
-    setImageryFormName(item.name);
+  const openEditImagery = (item: ImageryItem) =>
     setModal({ type: "edit-imagery", item });
-  };
   const openDeleteImagery = (item: ImageryItem) =>
     setModal({ type: "delete-imagery", item });
 
-  const openAddCategory = (parentId?: number) => {
-    const parent =
-      typeof parentId === "number"
-        ? categories.find((category) => category.id === parentId)
-        : undefined;
-    setCategoryForm({
-      name: "",
-      parent_id: parentId ?? null,
-      level: parent ? (parent.level ?? 0) + 1 : 0,
-      description: "",
-    });
+  const openAddCategory = (parentId?: number) =>
     setModal({ type: "add-category", parentId });
-  };
 
-  const openEditCategory = (category: ImageryCategory) => {
-    setCategoryForm({
-      name: category.name,
-      parent_id: category.parent_id,
-      level: category.level,
-      description: category.description ?? "",
-    });
+  const openEditCategory = (category: ImageryCategory) =>
     setModal({ type: "edit-category", category });
-  };
 
   const openDeleteCategory = (category: ImageryCategory) =>
     setModal({ type: "delete-category", category });
@@ -388,12 +360,10 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
 
   const closeModal = () => setModal({ type: "none" });
 
-  const handleAddImagery = async (event: FormEvent) => {
-    event.preventDefault();
-    if (!imageryFormName.trim()) return;
+  const handleAddImagery = async ({ name }: ImageryFormValues) => {
     setIsSubmitting(true);
     try {
-      const created = await apiCreateImagery(imageryFormName.trim(), csrfToken);
+      const created = await apiCreateImagery(name.trim(), csrfToken);
       setItems((current) => [
         ...current,
         { ...created, count: 0, categoryIds: [], meaningCount: 0 },
@@ -410,16 +380,15 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     }
   };
 
-  const handleEditImagery = async (event: FormEvent) => {
-    event.preventDefault();
-    if (modal.type !== "edit-imagery" || !imageryFormName.trim()) return;
+  const handleEditImagery = async ({ name }: ImageryFormValues) => {
+    if (modal.type !== "edit-imagery") return;
     setIsSubmitting(true);
     try {
-      await apiUpdateImagery(modal.item.id, imageryFormName.trim(), csrfToken);
+      await apiUpdateImagery(modal.item.id, name.trim(), csrfToken);
       setItems((current) =>
         current.map((item) =>
           item.id === modal.item.id
-            ? { ...item, name: imageryFormName.trim() }
+            ? { ...item, name: name.trim() }
             : item,
         ),
       );
@@ -455,18 +424,11 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     }
   };
 
-  const handleAddCategory = async (event: FormEvent) => {
-    event.preventDefault();
-    if (!categoryForm.name.trim()) return;
+  const handleAddCategory = async (values: CategoryFormValues) => {
     setIsSubmitting(true);
     try {
       const created = await apiCreateImageryCategory(
-        {
-          name: categoryForm.name.trim(),
-          parent_id: categoryForm.parent_id,
-          level: categoryForm.level,
-          description: categoryForm.description.trim() || null,
-        },
+        toCategoryPayload(values, categories),
         csrfToken,
       );
       setCategories((current) => [...current, created]);
@@ -482,19 +444,13 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     }
   };
 
-  const handleEditCategory = async (event: FormEvent) => {
-    event.preventDefault();
-    if (modal.type !== "edit-category" || !categoryForm.name.trim()) return;
+  const handleEditCategory = async (values: CategoryFormValues) => {
+    if (modal.type !== "edit-category") return;
     setIsSubmitting(true);
     try {
       const updated = await apiUpdateImageryCategory(
         modal.category.id,
-        {
-          name: categoryForm.name.trim(),
-          parent_id: categoryForm.parent_id,
-          level: categoryForm.level,
-          description: categoryForm.description.trim() || null,
-        },
+        toCategoryPayload(values, categories),
         csrfToken,
       );
       setCategories((current) =>
@@ -537,31 +493,22 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   const startAddMeaning = () => {
     setAddingMeaning(true);
     setEditingMeaningId(null);
-    setMeaningForm({ label: "", description: "" });
   };
   const startEditMeaning = (meaning: ImageryMeaning) => {
     setAddingMeaning(false);
     setEditingMeaningId(meaning.id);
-    setMeaningForm({
-      label: meaning.label,
-      description: meaning.description ?? "",
-    });
   };
   const resetMeaningEditor = () => {
     setAddingMeaning(false);
     setEditingMeaningId(null);
-    setMeaningForm({ label: "", description: "" });
   };
 
-  const handleCreateMeaning = async () => {
-    if (!meaningForm.label.trim() || meaningSubmitting) return;
+  const handleCreateMeaning = async (values: MeaningFormValues) => {
+    if (meaningSubmitting) return;
     setMeaningSubmitting(true);
     try {
       const created = await apiCreateGlobalMeaning(
-        {
-          label: meaningForm.label.trim(),
-          description: meaningForm.description.trim() || null,
-        },
+        toMeaningPayload(values),
         csrfToken,
       );
       setMeanings((current) =>
@@ -581,17 +528,13 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     }
   };
 
-  const handleUpdateMeaning = async () => {
-    if (!editingMeaningId || !meaningForm.label.trim() || meaningSubmitting)
-      return;
+  const handleUpdateMeaning = async (values: MeaningFormValues) => {
+    if (!editingMeaningId || meaningSubmitting) return;
     setMeaningSubmitting(true);
     try {
       const updated = await apiUpdateGlobalMeaning(
         editingMeaningId,
-        {
-          label: meaningForm.label.trim(),
-          description: meaningForm.description.trim() || null,
-        },
+        toMeaningPayload(values),
         csrfToken,
       );
       setMeanings((current) =>
@@ -651,12 +594,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   const startAddRelation = async (songId: number) => {
     setExpandedSongId(songId);
     setRelationEditor({ type: "add", songId });
-    setRelationForm({
-      imagery_id: 0,
-      category_id: 0,
-      meaning_id: null,
-      lyric_timetag: "[]",
-    });
     await loadOccurrencesForSong(songId);
   };
 
@@ -666,41 +603,15 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   ) => {
     setExpandedSongId(songId);
     setRelationEditor({ type: "edit", songId, occurrence });
-    setRelationForm({
-      imagery_id: occurrence.imagery_id,
-      category_id: occurrence.category_id,
-      meaning_id: occurrence.meaning_id,
-      lyric_timetag: JSON.stringify(occurrence.lyric_timetag, null, 2),
-    });
   };
 
   const resetRelationEditor = () => {
     setRelationEditor({ type: "none" });
-    setRelationForm({
-      imagery_id: 0,
-      category_id: 0,
-      meaning_id: null,
-      lyric_timetag: "[]",
-    });
   };
 
-  const handleSaveRelation = async () => {
+  const handleSaveRelation = async (values: RelationFormValues) => {
     if (relationEditor.type === "none" || occurrenceSubmitting) return;
-    if (!relationForm.imagery_id || !relationForm.category_id) {
-      showToast("error", "请先选择意象和分类。");
-      return;
-    }
-
-    let lyricTimetag: Record<string, unknown>[];
-    try {
-      lyricTimetag = parseLyricTimetag(relationForm.lyric_timetag);
-    } catch (error) {
-      showToast(
-        "error",
-        error instanceof Error ? error.message : "lyric_timetag 格式错误",
-      );
-      return;
-    }
+    const payload = toRelationPayload(values);
 
     setOccurrenceSubmitting(true);
     try {
@@ -708,10 +619,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
         await apiCreateOccurrence(
           {
             song_id: relationEditor.songId,
-            imagery_id: relationForm.imagery_id,
-            category_id: relationForm.category_id,
-            meaning_id: relationForm.meaning_id,
-            lyric_timetag: lyricTimetag,
+            ...payload,
           },
           csrfToken,
         );
@@ -719,12 +627,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
       } else {
         await apiUpdateOccurrence(
           relationEditor.occurrence.id,
-          {
-            imagery_id: relationForm.imagery_id,
-            category_id: relationForm.category_id,
-            meaning_id: relationForm.meaning_id,
-            lyric_timetag: lyricTimetag,
-          },
+          payload,
           csrfToken,
         );
         showToast("success", "关系已更新");
@@ -947,9 +850,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
               filteredCount={filteredMeanings.length}
               pagedMeanings={pagedMeanings}
               addingMeaning={addingMeaning}
-              editingMeaningId={editingMeaningId}
-              meaningForm={meaningForm}
-              setMeaningForm={setMeaningForm}
+              editingMeaning={editingMeaning}
               meaningSubmitting={meaningSubmitting}
               currentPage={meaningsPage}
               totalPages={meaningsTotalPages}
@@ -977,8 +878,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
               expandedSongId={expandedSongId}
               occurrenceLoadingSongId={occurrenceLoadingSongId}
               relationEditor={relationEditor}
-              relationForm={relationForm}
-              setRelationForm={setRelationForm}
               occurrenceSubmitting={occurrenceSubmitting}
               items={items}
               categories={categories}
@@ -1005,13 +904,9 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
 
       <ImageryAdminModals
         modal={modal}
-        imageryFormName={imageryFormName}
-        categoryForm={categoryForm}
         categories={categories}
         isSubmitting={isSubmitting}
         onClose={closeModal}
-        onImageryNameChange={setImageryFormName}
-        onCategoryFormChange={setCategoryForm}
         onAddImagery={handleAddImagery}
         onEditImagery={handleEditImagery}
         onDeleteImagery={handleDeleteImagery}
@@ -1029,7 +924,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
       {toast && (
         <div
           className={cn(
-            "fixed bottom-6 right-6 z-[60] rounded-2xl border px-4 py-3 text-sm shadow-lg",
+            "fixed bottom-6 right-6 z-60 rounded-2xl border px-4 py-3 text-sm shadow-lg",
             toast.type === "success"
               ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300"
               : "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300",

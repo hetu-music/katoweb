@@ -1,7 +1,18 @@
-import { AlertCircle, Loader2, X } from "lucide-react";
+import {
+  type CategoryFormValues,
+  createCategoryFormValues,
+  createDeleteConfirmationFormValues,
+  createImageryFormValues,
+  deleteConfirmationFormSchema,
+  imageryFormSchema,
+  categoryFormSchema,
+  type ImageryFormValues,
+} from "@/lib/imagery-form";
 import type { ImageryCategory } from "@/lib/types";
-import { useState } from "react";
-import type { FormEvent } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertCircle, Loader2, X } from "lucide-react";
+import { useEffect } from "react";
+import { type Resolver, useForm } from "react-hook-form";
 import {
   compactInputClassName,
   formLabelClassName,
@@ -10,17 +21,13 @@ import {
   ModalCard,
   primaryButtonClassName,
 } from "./shared";
-import type { CategoryFormState, ModalState } from "./types";
+import type { ModalState } from "./types";
 
 export default function ImageryAdminModals({
   modal,
-  imageryFormName,
-  categoryForm,
   categories,
   isSubmitting,
   onClose,
-  onImageryNameChange,
-  onCategoryFormChange,
   onAddImagery,
   onEditImagery,
   onDeleteImagery,
@@ -33,24 +40,51 @@ export default function ImageryAdminModals({
   getCategoryPath,
 }: {
   modal: ModalState;
-  imageryFormName: string;
-  categoryForm: CategoryFormState;
   categories: ImageryCategory[];
   isSubmitting: boolean;
   onClose: () => void;
-  onImageryNameChange: (value: string) => void;
-  onCategoryFormChange: (next: CategoryFormState) => void;
-  onAddImagery: (event: FormEvent) => void;
-  onEditImagery: (event: FormEvent) => void;
+  onAddImagery: (values: ImageryFormValues) => void | Promise<void>;
+  onEditImagery: (values: ImageryFormValues) => void | Promise<void>;
   onDeleteImagery: () => void;
-  onAddCategory: (event: FormEvent) => void;
-  onEditCategory: (event: FormEvent) => void;
+  onAddCategory: (values: CategoryFormValues) => void | Promise<void>;
+  onEditCategory: (values: CategoryFormValues) => void | Promise<void>;
   onDeleteCategory: () => void;
   onDeleteMeaning: () => void;
   onDeleteOccurrence: () => void;
   deleteSubmitting: boolean;
   getCategoryPath: (categoryId: number) => string;
 }) {
+  const imageryForm = useForm<ImageryFormValues>({
+    resolver: zodResolver(imageryFormSchema) as Resolver<ImageryFormValues>,
+    defaultValues: createImageryFormValues(),
+    mode: "onBlur",
+    reValidateMode: "onChange",
+  });
+  const categoryForm = useForm<CategoryFormValues>({
+    resolver: zodResolver(categoryFormSchema) as Resolver<CategoryFormValues>,
+    defaultValues: createCategoryFormValues(),
+    mode: "onBlur",
+    reValidateMode: "onChange",
+  });
+
+  useEffect(() => {
+    if (modal.type === "add-imagery") {
+      imageryForm.reset(createImageryFormValues());
+    } else if (modal.type === "edit-imagery") {
+      imageryForm.reset(createImageryFormValues(modal.item));
+    }
+  }, [imageryForm, modal]);
+
+  useEffect(() => {
+    if (modal.type === "add-category") {
+      categoryForm.reset(
+        createCategoryFormValues({ parent_id: modal.parentId ?? null }),
+      );
+    } else if (modal.type === "edit-category") {
+      categoryForm.reset(createCategoryFormValues(modal.category));
+    }
+  }, [categoryForm, modal]);
+
   if (modal.type === "none") return null;
 
   if (modal.type === "add-imagery" || modal.type === "edit-imagery") {
@@ -58,9 +92,11 @@ export default function ImageryAdminModals({
       <ModalBackdrop onClose={onClose}>
         <ModalCard>
           <form
-            onSubmit={
-              modal.type === "add-imagery" ? onAddImagery : onEditImagery
-            }
+            onSubmit={imageryForm.handleSubmit((values) =>
+              modal.type === "add-imagery"
+                ? onAddImagery(values)
+                : onEditImagery(values),
+            )}
           >
             <div className="border-b border-slate-200/70 px-6 py-5 dark:border-slate-800/70">
               <div className="flex items-center justify-between">
@@ -90,14 +126,17 @@ export default function ImageryAdminModals({
               </label>
               <input
                 type="text"
-                value={imageryFormName}
-                onChange={(event) => onImageryNameChange(event.target.value)}
                 placeholder="如：明月、江水、枫叶…"
                 maxLength={50}
-                required
                 autoFocus
+                {...imageryForm.register("name")}
                 className={compactInputClassName()}
               />
+              {imageryForm.formState.errors.name && (
+                <p className="mt-2 text-xs text-red-500">
+                  {imageryForm.formState.errors.name.message}
+                </p>
+              )}
             </div>
 
             <div className="flex justify-end gap-2 border-t border-slate-200/70 px-6 py-5 dark:border-slate-800/70">
@@ -110,10 +149,12 @@ export default function ImageryAdminModals({
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting || !imageryFormName.trim()}
+                disabled={isSubmitting || imageryForm.formState.isSubmitting}
                 className={primaryButtonClassName()}
               >
-                {isSubmitting && <Loader2 size={14} className="animate-spin" />}
+                {(isSubmitting || imageryForm.formState.isSubmitting) && (
+                  <Loader2 size={14} className="animate-spin" />
+                )}
                 {modal.type === "add-imagery" ? "创建" : "保存"}
               </button>
             </div>
@@ -177,9 +218,11 @@ export default function ImageryAdminModals({
       <ModalBackdrop onClose={onClose}>
         <ModalCard>
           <form
-            onSubmit={
-              modal.type === "add-category" ? onAddCategory : onEditCategory
-            }
+            onSubmit={categoryForm.handleSubmit((values) =>
+              modal.type === "add-category"
+                ? onAddCategory(values)
+                : onEditCategory(values),
+            )}
           >
             <div className="border-b border-slate-200/70 px-6 py-5 dark:border-slate-800/70">
               <div className="flex items-center justify-between">
@@ -210,38 +253,23 @@ export default function ImageryAdminModals({
                 </label>
                 <input
                   type="text"
-                  value={categoryForm.name}
-                  onChange={(event) =>
-                    onCategoryFormChange({
-                      ...categoryForm,
-                      name: event.target.value,
-                    })
-                  }
-                  required
                   autoFocus
+                  {...categoryForm.register("name")}
                   className={compactInputClassName()}
                 />
+                {categoryForm.formState.errors.name && (
+                  <p className="mt-2 text-xs text-red-500">
+                    {categoryForm.formState.errors.name.message}
+                  </p>
+                )}
               </div>
 
               <div>
                 <label className={formLabelClassName()}>父分类</label>
                 <select
-                  value={categoryForm.parent_id ?? ""}
-                  onChange={(event) => {
-                    const nextParentId = event.target.value
-                      ? parseInt(event.target.value, 10)
-                      : null;
-                    const parent = nextParentId
-                      ? categories.find(
-                          (category) => category.id === nextParentId,
-                        )
-                      : null;
-                    onCategoryFormChange({
-                      ...categoryForm,
-                      parent_id: nextParentId,
-                      level: parent ? (parent.level ?? 0) + 1 : 0,
-                    });
-                  }}
+                  {...categoryForm.register("parent_id", {
+                    setValueAs: (value) => (value ? Number(value) : null),
+                  })}
                   className={compactInputClassName()}
                 >
                   <option value="">（顶级分类）</option>
@@ -263,17 +291,16 @@ export default function ImageryAdminModals({
               <div>
                 <label className={formLabelClassName()}>描述</label>
                 <textarea
-                  value={categoryForm.description}
-                  onChange={(event) =>
-                    onCategoryFormChange({
-                      ...categoryForm,
-                      description: event.target.value,
-                    })
-                  }
                   rows={3}
                   maxLength={500}
+                  {...categoryForm.register("description")}
                   className={compactInputClassName()}
                 />
+                {categoryForm.formState.errors.description && (
+                  <p className="mt-2 text-xs text-red-500">
+                    {categoryForm.formState.errors.description.message}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -287,10 +314,12 @@ export default function ImageryAdminModals({
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting || !categoryForm.name.trim()}
+                disabled={isSubmitting || categoryForm.formState.isSubmitting}
                 className={primaryButtonClassName()}
               >
-                {isSubmitting && <Loader2 size={14} className="animate-spin" />}
+                {(isSubmitting || categoryForm.formState.isSubmitting) && (
+                  <Loader2 size={14} className="animate-spin" />
+                )}
                 保存
               </button>
             </div>
@@ -299,6 +328,7 @@ export default function ImageryAdminModals({
       </ModalBackdrop>
     );
   }
+
   return null;
 }
 
@@ -315,58 +345,77 @@ function DeleteConfirmationModal({
   onClose: () => void;
   onConfirm: () => void;
 }) {
-  const [confirmationText, setConfirmationText] = useState("");
+  const form = useForm({
+    resolver:
+      zodResolver(deleteConfirmationFormSchema) as Resolver<{
+        confirmationText: string;
+      }>,
+    defaultValues: createDeleteConfirmationFormValues(),
+    mode: "onBlur",
+    reValidateMode: "onChange",
+  });
+
+  useEffect(() => {
+    form.reset(createDeleteConfirmationFormValues());
+  }, [form, title]);
 
   return (
     <ModalBackdrop onClose={onClose}>
       <ModalCard>
-        <div className="px-6 py-6">
-          <div className="flex items-start gap-4">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
-              <AlertCircle size={20} />
+        <form onSubmit={form.handleSubmit(() => onConfirm())}>
+          <div className="px-6 py-6">
+            <div className="flex items-start gap-4">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
+                <AlertCircle size={20} />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  {title}
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
+                  {description}
+                </p>
+                <p className="mt-3 text-xs text-slate-400 dark:text-slate-500">
+                  请输入 <span className="font-semibold text-red-500">删除</span>{" "}
+                  以完成二次确认。
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                {title}
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                {description}
-              </p>
-              <p className="mt-3 text-xs text-slate-400 dark:text-slate-500">
-                请输入 <span className="font-semibold text-red-500">删除</span>{" "}
-                以完成二次确认。
-              </p>
+            <div className="mt-5">
+              <input
+                type="text"
+                placeholder="输入“删除”确认"
+                autoFocus
+                {...form.register("confirmationText")}
+                className={compactInputClassName()}
+              />
+              {form.formState.errors.confirmationText && (
+                <p className="mt-2 text-xs text-red-500">
+                  {form.formState.errors.confirmationText.message}
+                </p>
+              )}
             </div>
           </div>
-          <div className="mt-5">
-            <input
-              type="text"
-              value={confirmationText}
-              onChange={(event) => setConfirmationText(event.target.value)}
-              placeholder="输入“删除”确认"
-              autoFocus
-              className={compactInputClassName()}
-            />
+          <div className="flex justify-end gap-2 border-t border-slate-200/70 px-6 py-5 dark:border-slate-800/70">
+            <button
+              type="button"
+              onClick={onClose}
+              className={ghostButtonClassName()}
+            >
+              取消
+            </button>
+            <button
+              type="submit"
+              disabled={submitting || form.formState.isSubmitting}
+              className="inline-flex items-center gap-2 rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-500 disabled:opacity-50"
+            >
+              {(submitting || form.formState.isSubmitting) && (
+                <Loader2 size={14} className="animate-spin" />
+              )}
+              确认删除
+            </button>
           </div>
-        </div>
-        <div className="flex justify-end gap-2 border-t border-slate-200/70 px-6 py-5 dark:border-slate-800/70">
-          <button
-            type="button"
-            onClick={onClose}
-            className={ghostButtonClassName()}
-          >
-            取消
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            disabled={submitting || confirmationText.trim() !== "删除"}
-            className="inline-flex items-center gap-2 rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-500 disabled:opacity-50"
-          >
-            {submitting && <Loader2 size={14} className="animate-spin" />}
-            确认删除
-          </button>
-        </div>
+        </form>
       </ModalCard>
     </ModalBackdrop>
   );
