@@ -476,13 +476,13 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     }
   }, [mounted, filteredWorks, viewMode, mountKey, notifyDataReady]);
 
-  // 分页处理 — 直接用 nuqs 的 currentPage 作为唯一真值源，避免双层状态的时序竞争导致闪烁
+  // 分页处理 — currentPage 来自本地 useState（立即响应用户操作），不经过 nuqs 读路径
   const ITEMS_PER_PAGE = 24;
   const totalPages = useMemo(
     () => Math.max(1, Math.ceil(filteredWorks.length / ITEMS_PER_PAGE)),
     [filteredWorks.length],
   );
-  // 确保 currentPage 不会超出有效范围
+  // 防止 currentPage 超出有效范围（如过滤器变化导致总页数减少时）
   const safePage = useMemo(
     () => Math.min(Math.max(1, currentPage), totalPages),
     [currentPage, totalPages],

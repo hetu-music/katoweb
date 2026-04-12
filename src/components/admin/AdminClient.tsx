@@ -388,10 +388,10 @@ export default function AdminClientComponent({
   initialError: string | null;
 }) {
   // States
+  // 不使用 throttleMs：混用有/无 throttle 参数会导致 trailing-edge timer 竞态（第一次操作闪旧值）
   const [{ q: searchTerm, page: currentPage }, setQueryState] = useQueryStates({
     q: parseAsString.withDefault("").withOptions({
       shallow: true,
-      throttleMs: 300,
     }),
     page: parseAsInteger.withDefault(1).withOptions({
       shallow: true,
