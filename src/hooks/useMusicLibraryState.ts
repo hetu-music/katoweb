@@ -85,11 +85,9 @@ export function useMusicLibraryState(
     }),
     view: parseAsStringLiteral(VIEW_MODES).withDefault(defaultViewMode).withOptions({
       shallow: true,
-      throttleMs: URL_THROTTLE_MS,
     }),
     page: parseAsInteger.withDefault(1).withOptions({
       shallow: true,
-      throttleMs: URL_THROTTLE_MS,
     }),
     advanced: parseAsBoolean.withDefault(false).withOptions({
       shallow: true,

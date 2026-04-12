@@ -7,7 +7,7 @@ import {
   mergeAutoCompleteData,
   useAutoComplete,
 } from "@/hooks/useAutoComplete";
-import { usePagination } from "@/hooks/usePagination";
+
 import { useSongs } from "@/hooks/useSongs";
 import {
   type MusicProviderType,
@@ -395,7 +395,6 @@ export default function AdminClientComponent({
     }),
     page: parseAsInteger.withDefault(1).withOptions({
       shallow: true,
-      throttleMs: 300,
     }),
   });
   const [showIncompleteOnly, setShowIncompleteOnly] = useState(false);
@@ -422,31 +421,30 @@ export default function AdminClientComponent({
       : baseSortedSongs;
   }, [baseSortedSongs, showIncompleteOnly]);
 
-  const {
-    totalPages,
-    currentData: paginatedSongs,
-    setCurrentPage: setPaginationPage,
-    startIndex,
-  } = usePagination({
-    data: sortedSongs,
-    itemsPerPage: 24,
-    initialPage: currentPage,
-    resetOnDataChange: false,
-  });
+  // 分页处理 — 直接用 nuqs 的 currentPage 作为唯一真值源，避免双层状态的时序竞争导致闪烁
+  const ITEMS_PER_PAGE = 24;
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil(sortedSongs.length / ITEMS_PER_PAGE)),
+    [sortedSongs.length],
+  );
+  const safePage = useMemo(
+    () => Math.min(Math.max(1, currentPage), totalPages),
+    [currentPage, totalPages],
+  );
+  const paginatedSongs = useMemo(() => {
+    const startIndex = (safePage - 1) * ITEMS_PER_PAGE;
+    return sortedSongs.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [sortedSongs, safePage]);
+  const startIndex = (safePage - 1) * ITEMS_PER_PAGE + 1;
 
   const handlePageChange = useCallback(
     (page: number) => {
-      setPaginationPage(page);
       void setQueryState({
         page: page > 1 ? page : null,
       });
     },
-    [setPaginationPage, setQueryState],
+    [setQueryState],
   );
-
-  useEffect(() => {
-    setPaginationPage(currentPage);
-  }, [currentPage, setPaginationPage]);
 
   // Auth & Actions
   const [csrfToken, setCsrfToken] = useState("");
@@ -688,7 +686,6 @@ export default function AdminClientComponent({
                 <button
                   onClick={() => {
                     setShowIncompleteOnly(false);
-                    setPaginationPage(1);
                     void setQueryState({ page: null });
                   }}
                 className={cn(
@@ -703,7 +700,6 @@ export default function AdminClientComponent({
                 <button
                   onClick={() => {
                     setShowIncompleteOnly(true);
-                    setPaginationPage(1);
                     void setQueryState({ page: null });
                   }}
                 className={cn(
@@ -733,7 +729,6 @@ export default function AdminClientComponent({
                     q: e.target.value || null,
                     page: null,
                   });
-                  setPaginationPage(1);
                 }}
                 className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full py-2 pl-9 pr-8 text-sm outline-none focus:border-blue-500 transition-colors"
               />
@@ -741,7 +736,6 @@ export default function AdminClientComponent({
                 <button
                   onClick={() => {
                     void setQueryState({ q: null, page: null });
-                    setPaginationPage(1);
                   }}
                   className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-300 hover:text-slate-500"
                 >
@@ -786,7 +780,7 @@ export default function AdminClientComponent({
 
               <div className="mt-12 flex justify-center">
                 <Pagination
-                  currentPage={currentPage}
+                  currentPage={safePage}
                   totalPages={totalPages}
                   onPageChange={handlePageChange}
                 />

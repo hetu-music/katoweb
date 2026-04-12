@@ -3,7 +3,7 @@
 import { useFavorites } from "@/context/FavoritesContext";
 import { extractLyricsSnippet, useLyricsIndex } from "@/hooks/useLyricsIndex";
 import { useMusicLibraryState } from "@/hooks/useMusicLibraryState";
-import { usePagination } from "@/hooks/usePagination";
+
 import { getTypeTagStyle } from "@/lib/constants";
 import { MusicLibraryClientProps, Song } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -476,30 +476,21 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     }
   }, [mounted, filteredWorks, viewMode, mountKey, notifyDataReady]);
 
-  // 分页处理
-  const {
-    totalPages,
-    currentData: paginatedSongs,
-    setCurrentPage: setPaginationInternal,
-  } = usePagination({
-    data: filteredWorks,
-    itemsPerPage: 24,
-    initialPage: currentPage, // Pass controlled page
-  });
-
-  // Sync pagination hook state with our controlled state if needed
-  // Note: usePagination usually maintains its own state if not controlled perfectly.
-  // We need to ensure when 'currentPage' changes (from URL), usePagination updates.
-  // The 'initialPage' prop is only used on mount or reset.
-  // We need to make sure the hook updates when currentPage changes.
-  useEffect(() => {
-    setPaginationInternal(currentPage);
-  }, [currentPage, setPaginationInternal]);
-
-  // When usePagination updates page internally (if it does), we should sync back?
-  // Our shared hook exposes setPaginationPage which updates state and URL.
-  // We pass setPaginationPage to the Pagination component below.
-  // So we are driving it from outside. All good.
+  // 分页处理 — 直接用 nuqs 的 currentPage 作为唯一真值源，避免双层状态的时序竞争导致闪烁
+  const ITEMS_PER_PAGE = 24;
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil(filteredWorks.length / ITEMS_PER_PAGE)),
+    [filteredWorks.length],
+  );
+  // 确保 currentPage 不会超出有效范围
+  const safePage = useMemo(
+    () => Math.min(Math.max(1, currentPage), totalPages),
+    [currentPage, totalPages],
+  );
+  const paginatedSongs = useMemo(() => {
+    const startIndex = (safePage - 1) * ITEMS_PER_PAGE;
+    return filteredWorks.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredWorks, safePage]);
 
   // 使用 filterOptions 中的类型
   const availableTypes = useMemo(() => {
@@ -901,7 +892,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
               {/* 分页控制 (在内容底部) */}
               <div className="mt-12 flex justify-center">
                 <Pagination
-                  currentPage={currentPage}
+                  currentPage={safePage}
                   totalPages={totalPages}
                   onPageChange={setPaginationPage}
                 />
