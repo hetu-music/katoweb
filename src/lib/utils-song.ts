@@ -3,7 +3,6 @@ import {
   SongDetail,
   FilterOptions,
   SongInfo,
-  SongFieldConfig,
 } from "./types";
 import { TYPE_ORDER } from "./constants";
 import Fuse from "fuse.js";
@@ -109,12 +108,10 @@ export function calculateFilterOptions(songsData: Song[]): FilterOptions {
   const arrangerSet = new Set<string>();
   let hasUnknownArranger = false;
   songsData.forEach((song) => {
-    // 需要检查 arranger 字段，如果 Song 类型没有，则从 SongDetail 获取
-    const songDetail = song as SongDetail;
-    if (!songDetail.arranger || songDetail.arranger.length === 0) {
+    if (!song.arranger || song.arranger.length === 0) {
       hasUnknownArranger = true;
     } else {
-      songDetail.arranger.forEach((a) => arrangerSet.add(a));
+      song.arranger.forEach((a) => arrangerSet.add(a));
     }
   });
   const sortedArrangers = sortNamesOptimized(Array.from(arrangerSet));
@@ -149,21 +146,18 @@ export function processLyricsForSearch(lrcLyrics: string | null): string {
 // 创建 Fuse.js 搜索实例（不包含歌词搜索）
 export function createFuseInstance(songs: Song[]) {
   // 为每首歌准备搜索数据
-  const searchData = songs.map((song) => {
-    const songDetail = song as SongDetail;
-    return {
-      ...song,
-      searchableContent: [
-        song.title,
-        song.album || "",
-        (song.lyricist || []).join(" "),
-        (song.composer || []).join(" "),
-        (songDetail.arranger || []).join(" "),
-      ]
-        .filter(Boolean)
-        .join(" "),
-    };
-  });
+  const searchData = songs.map((song) => ({
+    ...song,
+    searchableContent: [
+      song.title,
+      song.album || "",
+      (song.lyricist || []).join(" "),
+      (song.composer || []).join(" "),
+      (song.arranger || []).join(" "),
+    ]
+      .filter(Boolean)
+      .join(" "),
+  }));
 
   return new Fuse(searchData, {
     keys: [
@@ -206,8 +200,6 @@ export function filterSongs(
 
   // 应用其他筛选条件
   return filteredBySearch.filter((song) => {
-    const songDetail = song as SongDetail;
-
     // type 筛选
     const matchesType =
       selectedType === "全部" ||
@@ -251,8 +243,8 @@ export function filterSongs(
       selectedArranger.length === 0 ||
       selectedArranger.some((sel) =>
         sel === "未知"
-          ? !songDetail.arranger || songDetail.arranger.length === 0
-          : songDetail.arranger && songDetail.arranger.includes(sel),
+          ? !song.arranger || song.arranger.length === 0
+          : song.arranger && song.arranger.includes(sel),
       );
 
     return (
@@ -363,52 +355,4 @@ export function getCoverUrl(song: Song | SongDetail): string {
 // 获取乐谱图片 URL
 export function getNmnUrl(song: Song | SongDetail): string {
   return `https://cover.hetu-music.com/nmn/${song.id}.png`;
-}
-
-// 字段校验工具（用于表单校验）
-export function validateField(f: SongFieldConfig, value: unknown): string {
-  if (
-    f.required &&
-    (!value || (typeof value === "string" && value.trim() === ""))
-  ) {
-    return `${f.label}为必填项`;
-  }
-  if (
-    (f.type === "text" || f.type === "textarea" || f.type === "date") &&
-    typeof value === "string"
-  ) {
-    if (f.minLength && value.length < f.minLength) {
-      return `${f.label}最少${f.minLength}个字符`;
-    }
-    if (f.maxLength && value.length > f.maxLength) {
-      return `${f.label}不能超过${f.maxLength}个字符`;
-    }
-    if (f.isUrl && value) {
-      try {
-        new URL(value);
-      } catch {
-        return `${f.label}必须为合法的URL`;
-      }
-    }
-  }
-  if (f.type === "array" && Array.isArray(value)) {
-    for (let i = 0; i < value.length; i++) {
-      if (f.arrayMaxLength && value[i] && value[i].length > f.arrayMaxLength) {
-        return `${f.label}第${i + 1}项不能超过${f.arrayMaxLength}个字符`;
-      }
-    }
-  }
-  if (f.type === "number") {
-    if (value !== null && value !== undefined && value !== "") {
-      if (typeof value !== "number" || isNaN(value))
-        return `${f.label}必须为数字`;
-      if (f.min !== undefined && (value as number) < f.min) {
-        return `${f.label}不能小于${f.min}`;
-      }
-      if (!Number.isInteger(value)) {
-        return `${f.label}必须为整数`;
-      }
-    }
-  }
-  return "";
 }

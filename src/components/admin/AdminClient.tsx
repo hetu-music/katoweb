@@ -15,9 +15,17 @@ import {
 } from "@/lib/api-auto-complete";
 import { apiCreateSong, apiUpdateSong } from "@/lib/client-api";
 import { genreColorMap, songFields, typeColorMap } from "@/lib/constants";
+import {
+  createEmptySongForm,
+  toSongFormValues,
+  type SongFormErrors,
+  type SongFormValues,
+  validateSongForm,
+} from "@/lib/song-form";
 import type { Song, SongDetail, SongFieldConfig } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import { convertEmptyStringToNull, formatField } from "@/lib/utils-common";
-import { getCoverUrl, validateField } from "@/lib/utils-song";
+import { getCoverUrl } from "@/lib/utils-song";
 import {
   AlertCircle,
   Bell,
@@ -37,15 +45,11 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import CoverUpload from "./CoverUpload";
 import Notification from "./Notification";
 import ScoreUpload from "./ScoreUpload";
-
-// Force simpler classNames utility
-function cn(...classes: (string | undefined | null | false)[]) {
-  return classes.filter(Boolean).join(" ");
-}
 
 // Reuse CoverArt logic simply for small thumbs
 const AdminCoverArt = ({
@@ -73,6 +77,14 @@ const AdminCoverArt = ({
     </div>
   );
 };
+
+function getInputValue(value: string | number | null | undefined) {
+  return value ?? "";
+}
+
+function hasSongId(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
 
 // --- Logic Helpers ---
 
@@ -376,7 +388,16 @@ export default function AdminClientComponent({
   initialError: string | null;
 }) {
   // States
-  const [isClient, setIsClient] = useState(false);
+  const [{ q: searchTerm, page: currentPage }, setQueryState] = useQueryStates({
+    q: parseAsString.withDefault("").withOptions({
+      shallow: true,
+      throttleMs: 300,
+    }),
+    page: parseAsInteger.withDefault(1).withOptions({
+      shallow: true,
+      throttleMs: 300,
+    }),
+  });
   const [showIncompleteOnly, setShowIncompleteOnly] = useState(false);
 
   // Data Hooks
@@ -384,17 +405,9 @@ export default function AdminClientComponent({
     songs,
     setSongs,
     loading,
-    searchTerm,
-    setSearchTerm,
     filteredSongs: baseFilteredSongs,
     sortedSongs: baseSortedSongs,
-  } = useSongs(
-    initialSongs,
-    initialError,
-    typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search).get("q") || ""
-      : "",
-  );
+  } = useSongs(initialSongs, initialError, searchTerm);
 
   // Filter Logic
   const filteredSongs = useMemo(() => {
@@ -409,15 +422,7 @@ export default function AdminClientComponent({
       : baseSortedSongs;
   }, [baseSortedSongs, showIncompleteOnly]);
 
-  // Pagination
-  const getInitialPage = () => {
-    if (typeof window === "undefined") return 1;
-    const p = new URLSearchParams(window.location.search).get("page");
-    return p ? parseInt(p, 10) : 1;
-  };
-
   const {
-    currentPage,
     totalPages,
     currentData: paginatedSongs,
     setCurrentPage: setPaginationPage,
@@ -425,40 +430,23 @@ export default function AdminClientComponent({
   } = usePagination({
     data: sortedSongs,
     itemsPerPage: 24,
-    initialPage: getInitialPage(),
+    initialPage: currentPage,
     resetOnDataChange: false,
   });
-
-  // Sync URL
-  const updateUrl = useCallback((page: number, q: string) => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    if (q) params.set("q", q);
-    else params.delete("q");
-    if (page > 1) params.set("page", page.toString());
-    else params.delete("page");
-
-    const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
-    window.history.replaceState(null, "", newUrl);
-  }, []);
 
   const handlePageChange = useCallback(
     (page: number) => {
       setPaginationPage(page);
-      updateUrl(page, searchTerm);
+      void setQueryState({
+        page: page > 1 ? page : null,
+      });
     },
-    [searchTerm, updateUrl, setPaginationPage],
+    [setPaginationPage, setQueryState],
   );
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isClient) return;
-    // Debounce basic URL update if needed, but here we just rely on explicit actions or debounced search
-    updateUrl(currentPage, searchTerm);
-  }, [searchTerm, currentPage, isClient, updateUrl]);
+    setPaginationPage(currentPage);
+  }, [currentPage, setPaginationPage]);
 
   // Auth & Actions
   const [csrfToken, setCsrfToken] = useState("");
@@ -468,19 +456,12 @@ export default function AdminClientComponent({
       .then((d) => setCsrfToken(d.csrfToken || ""));
   }, []);
   const [showAdd, setShowAdd] = useState(false);
-  const [newSong, setNewSong] = useState<Partial<Song>>({
-    title: "",
-    album: "",
-  });
-  const [addFormErrors, setAddFormErrors] = useState<Record<string, string>>(
-    {},
-  );
+  const [newSong, setNewSong] = useState<SongFormValues>(createEmptySongForm());
+  const [addFormErrors, setAddFormErrors] = useState<SongFormErrors>({});
 
   const [editSong, setEditSong] = useState<SongDetail | null>(null);
-  const [editForm, setEditForm] = useState<Partial<Song>>({});
-  const [editFormErrors, setEditFormErrors] = useState<Record<string, string>>(
-    {},
-  );
+  const [editForm, setEditForm] = useState<SongFormValues>(createEmptySongForm());
+  const [editFormErrors, setEditFormErrors] = useState<SongFormErrors>({});
 
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
   const [operationMsg, setOperationMsg] = useState<{
@@ -534,25 +515,20 @@ export default function AdminClientComponent({
   // Handlers
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const errors: Record<string, string> = {};
-    songFields.forEach((f) => {
-      errors[f.key] = validateField(
-        f,
-        (newSong as Record<string, unknown>)[f.key],
-      );
-    });
+    const { data, errors } = validateSongForm(newSong);
     setAddFormErrors(errors);
-    if (Object.values(errors).some(Boolean)) return;
+    if (!data) return;
 
     try {
       setIsSubmitting(true);
       const created = await apiCreateSong(
-        convertEmptyStringToNull(newSong),
+        convertEmptyStringToNull(data),
         csrfToken,
       );
       setSongs((prev) => [...prev, created]);
       setShowAdd(false);
-      setNewSong({ title: "", album: "" });
+      setNewSong(createEmptySongForm());
+      setAddFormErrors({});
       setOperationMsg({ type: "success", text: "创建成功" });
     } catch (err: unknown) {
       setOperationMsg({
@@ -568,22 +544,16 @@ export default function AdminClientComponent({
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editSong) return;
-    const errors: Record<string, string> = {};
-    songFields.forEach((f) => {
-      errors[f.key] = validateField(
-        f,
-        (editForm as Record<string, unknown>)[f.key],
-      );
-    });
+    const { data, errors } = validateSongForm(editForm);
     setEditFormErrors(errors);
-    if (Object.values(errors).some(Boolean)) return;
+    if (!data) return;
 
     try {
       setIsSubmitting(true);
       const updated = await apiUpdateSong(
         editSong.id,
         {
-          ...convertEmptyStringToNull(editForm),
+          ...convertEmptyStringToNull(data),
           updated_at: editSong.updated_at,
         },
         csrfToken,
@@ -604,7 +574,8 @@ export default function AdminClientComponent({
 
   const startEdit = (song: SongDetail) => {
     setEditSong(song);
-    setEditForm({ ...song });
+    setEditForm(toSongFormValues(song));
+    setEditFormErrors({});
   };
 
   // 自动补全处理函数
@@ -615,7 +586,7 @@ export default function AdminClientComponent({
         : undefined;
     await autoComplete.handleAutoComplete(
       provider,
-      editForm.title as string,
+      editForm.title,
       artists,
     );
   };
@@ -623,7 +594,9 @@ export default function AdminClientComponent({
   const handleSelectSearchResult = async (song: SearchResultItem) => {
     const data = await autoComplete.handleSelectSearchResult(song);
     if (data) {
-      setEditForm((prev) => mergeAutoCompleteData(prev, data));
+      setEditForm((prev) =>
+        toSongFormValues(mergeAutoCompleteData(prev, data)),
+      );
       setOperationMsg({ type: "success", text: "自动补全成功" });
       setTimeout(() => setOperationMsg(null), 3000);
     }
@@ -693,10 +666,14 @@ export default function AdminClientComponent({
               <Tag size={18} className="text-violet-500" />
               <span>意象管理</span>
             </Link>
-            <button
-              onClick={() => setShowAdd(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-full font-medium shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
-            >
+              <button
+                onClick={() => {
+                  setNewSong(createEmptySongForm());
+                  setAddFormErrors({});
+                  setShowAdd(true);
+                }}
+                className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-full font-medium shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
+              >
               <Plus size={20} />
               <span>新增歌曲</span>
             </button>
@@ -708,11 +685,12 @@ export default function AdminClientComponent({
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
             {/* Filter Pills */}
             <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto no-scrollbar">
-              <button
-                onClick={() => {
-                  setShowIncompleteOnly(false);
-                  setPaginationPage(1);
-                }}
+                <button
+                  onClick={() => {
+                    setShowIncompleteOnly(false);
+                    setPaginationPage(1);
+                    void setQueryState({ page: null });
+                  }}
                 className={cn(
                   "px-4 py-1.5 rounded-full text-sm border transition-all whitespace-nowrap",
                   !showIncompleteOnly
@@ -722,11 +700,12 @@ export default function AdminClientComponent({
               >
                 全部歌曲
               </button>
-              <button
-                onClick={() => {
-                  setShowIncompleteOnly(true);
-                  setPaginationPage(1);
-                }}
+                <button
+                  onClick={() => {
+                    setShowIncompleteOnly(true);
+                    setPaginationPage(1);
+                    void setQueryState({ page: null });
+                  }}
                 className={cn(
                   "px-4 py-1.5 rounded-full text-sm border transition-all whitespace-nowrap flex items-center gap-1.5",
                   showIncompleteOnly
@@ -750,14 +729,20 @@ export default function AdminClientComponent({
                 placeholder="搜索标题、专辑、作者..."
                 value={searchTerm}
                 onChange={(e) => {
-                  setSearchTerm(e.target.value);
+                  void setQueryState({
+                    q: e.target.value || null,
+                    page: null,
+                  });
                   setPaginationPage(1);
                 }}
                 className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full py-2 pl-9 pr-8 text-sm outline-none focus:border-blue-500 transition-colors"
               />
               {searchTerm && (
                 <button
-                  onClick={() => setSearchTerm("")}
+                  onClick={() => {
+                    void setQueryState({ q: null, page: null });
+                    setPaginationPage(1);
+                  }}
                   className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-300 hover:text-slate-500"
                 >
                   <XCircle size={14} />
@@ -899,13 +884,15 @@ export default function AdminClientComponent({
                   </>
                 )}
               </div>
-              <button
-                onClick={() => {
-                  setShowAdd(false);
-                  setEditSong(null);
-                  setAddFormErrors({});
-                  setEditFormErrors({});
-                }}
+                <button
+                  onClick={() => {
+                    setShowAdd(false);
+                    setEditSong(null);
+                    setNewSong(createEmptySongForm());
+                    setEditForm(createEmptySongForm());
+                    setAddFormErrors({});
+                    setEditFormErrors({});
+                  }}
                 className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors"
               >
                 <X size={20} />
@@ -952,12 +939,16 @@ export default function AdminClientComponent({
 
             {/* Modal Footer */}
             <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-[#151921] flex justify-end gap-3 sticky bottom-0 z-10">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowAdd(false);
-                  setEditSong(null);
-                }}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAdd(false);
+                    setEditSong(null);
+                    setNewSong(createEmptySongForm());
+                    setEditForm(createEmptySongForm());
+                    setAddFormErrors({});
+                    setEditFormErrors({});
+                  }}
                 className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 取消
@@ -1062,24 +1053,28 @@ function RenderInput({
   csrfToken,
 }: {
   field: SongFieldConfig;
-  state: Record<string, unknown>;
-  setState: React.Dispatch<React.SetStateAction<Record<string, unknown>>>;
-  errors: Record<string, string>;
-  setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  state: SongFormValues;
+  setState: React.Dispatch<React.SetStateAction<SongFormValues>>;
+  errors: SongFormErrors;
+  setErrors: React.Dispatch<React.SetStateAction<SongFormErrors>>;
   csrfToken: string;
 }) {
   const value = state[field.key];
   const error = errors[field.key];
 
   const update = (val: unknown) => {
-    setState((prev: Record<string, unknown>) => ({
-      ...prev,
-      [field.key]: val,
-    }));
-    setErrors((prev: Record<string, string>) => ({
-      ...prev,
-      [field.key]: validateField(field, val),
-    }));
+    setState((prev) => {
+      const nextState = {
+        ...prev,
+        [field.key]: val,
+      } as SongFormValues;
+      const nextErrors = validateSongForm(nextState).errors;
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        [field.key]: nextErrors[field.key],
+      }));
+      return nextState;
+    });
   };
 
   const baseClass = cn(
@@ -1094,7 +1089,11 @@ function RenderInput({
       field.key === "genre"
         ? Object.keys(genreColorMap)
         : Object.keys(typeColorMap);
-    const arr: string[] = Array.isArray(value) ? value : value ? [value] : [];
+    const arr = Array.isArray(value)
+      ? value.filter((item): item is string => typeof item === "string")
+      : typeof value === "string"
+        ? [value]
+        : [];
 
     return (
       <div className="space-y-2">
@@ -1145,7 +1144,11 @@ function RenderInput({
     return (
       <>
         <textarea
-          value={(value as string | number) ?? ""}
+          value={getInputValue(
+            typeof value === "string" || typeof value === "number"
+              ? value
+              : undefined,
+          )}
           onChange={(e) => update(e.target.value)}
           className={baseClass}
           rows={4}
@@ -1157,17 +1160,21 @@ function RenderInput({
   }
 
   if (field.type === "array") {
-    const arr = Array.isArray(value) ? value : value ? [value] : [];
+    const arr = Array.isArray(value)
+      ? value.filter((item): item is string => typeof item === "string")
+      : typeof value === "string"
+        ? [value]
+        : [];
     return (
       <div className="space-y-2">
         {arr.map((item: string, i: number) => (
           <div key={i} className="flex gap-2">
             <input
               value={item}
-              onChange={(e) => {
-                const next = [...arr];
-                next[i] = e.target.value;
-                update(next);
+            onChange={(e) => {
+              const next = [...arr];
+              next[i] = e.target.value;
+              update(next);
               }}
               className={baseClass}
             />
@@ -1227,10 +1234,10 @@ function RenderInput({
           </select>
         </div>
 
-        {isCover && value === true && (
+        {isCover && value === true && hasSongId(state.id) && (
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-100 dark:border-slate-800">
             <CoverUpload
-              songId={state.id as number}
+              songId={state.id}
               csrfToken={csrfToken}
               hasExistingFile={true} // We assume true if state is set, logic handled in component
               onUploadSuccess={() => void 0}
@@ -1239,10 +1246,10 @@ function RenderInput({
           </div>
         )}
 
-        {isScore && value === true && (
+        {isScore && value === true && hasSongId(state.id) && (
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-100 dark:border-slate-800">
             <ScoreUpload
-              songId={state.id as number}
+              songId={state.id}
               csrfToken={csrfToken}
               hasExistingFile={true}
               onUploadSuccess={() => void 0}
@@ -1265,10 +1272,18 @@ function RenderInput({
               ? "date"
               : "text"
         }
-        value={(value as string | number) ?? ""}
+        value={getInputValue(
+          typeof value === "string" || typeof value === "number"
+            ? value
+            : undefined,
+        )}
         onChange={(e) =>
           update(
-            field.type === "number" ? Number(e.target.value) : e.target.value,
+            field.type === "number"
+              ? e.target.value === ""
+                ? null
+                : Number(e.target.value)
+              : e.target.value,
           )
         }
         className={baseClass}

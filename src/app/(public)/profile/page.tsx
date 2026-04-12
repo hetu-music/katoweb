@@ -3,6 +3,7 @@
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import { useFavorites } from "@/context/FavoritesContext";
 import { useUserContext } from "@/context/UserContext";
+import { cn } from "@/lib/utils";
 import { getCoverUrl } from "@/lib/utils-song";
 import {
   ArrowLeft,
@@ -19,19 +20,23 @@ import {
   User,
 } from "lucide-react";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { Suspense, useCallback, useEffect, useState } from "react";
 
-function cn(...classes: (string | undefined | null | false)[]) {
-  return classes.filter(Boolean).join(" ");
-}
-
 type TabType = "favorites" | "account";
+const PROFILE_TABS = ["favorites", "account"] as const;
 
 function ProfileContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const initialTab = (searchParams.get("tab") as TabType) ?? "favorites";
+  const [activeTab, setActiveTab] = useQueryState(
+    "tab",
+    parseAsStringLiteral(PROFILE_TABS).withDefault("favorites").withOptions({
+      history: "push",
+      shallow: true,
+      throttleMs: 300,
+    }),
+  );
 
   const { user, loaded: userLoaded, logout, loggingOut } = useUserContext();
   const {
@@ -42,8 +47,6 @@ function ProfileContent() {
     refreshFavorites,
     loaded: favoritesLoaded,
   } = useFavorites();
-
-  const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [expandedReviews, setExpandedReviews] = useState<
     Record<number, boolean>
   >({});

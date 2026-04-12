@@ -1,13 +1,12 @@
 "use client";
 
 import { useFavorites } from "@/context/FavoritesContext";
-import { useUserContext } from "@/context/UserContext";
-import { useDebounce } from "@/hooks/useDebounce";
 import { extractLyricsSnippet, useLyricsIndex } from "@/hooks/useLyricsIndex";
 import { useMusicLibraryState } from "@/hooks/useMusicLibraryState";
 import { usePagination } from "@/hooks/usePagination";
 import { getTypeTagStyle } from "@/lib/constants";
 import { MusicLibraryClientProps, Song } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import { formatTime } from "@/lib/utils-common";
 import {
   calculateFilterOptions,
@@ -20,17 +19,16 @@ import {
   Clock,
   Disc,
   Heart,
-  Info,
   LayoutGrid,
   List,
   Mic2,
   RotateCcw,
   Search,
   SlidersHorizontal,
-  User,
   X,
   XCircle,
 } from "lucide-react";
+import { useDebouncedValue } from "@mantine/hooks";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, {
@@ -40,18 +38,13 @@ import React, {
   useRef,
   useState,
 } from "react";
+import AppNavbar from "../shared/AppNavbar";
 import FloatingActionButtons from "../shared/FloatingActionButtons";
 import Pagination from "../shared/Pagination";
-import ThemeToggle from "../shared/ThemeToggle";
 import About from "./About";
 import HeroSection from "./HeroSection";
 import MultiTagDisplay from "./MultiTagDisplay";
 import SongFilters from "./SongFilters";
-
-// 简易 classNames 工具 (替代 clsx/tailwind-merge)
-function cn(...classes: (string | undefined | null | false)[]) {
-  return classes.filter(Boolean).join(" ");
-}
 
 // 1. 封面组件
 const CoverArt = ({
@@ -386,24 +379,6 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   const [showAbout, setShowAbout] = useState(false);
   const [activeSongId, setActiveSongId] = useState<number | null>(null);
 
-  const { user } = useUserContext();
-
-  const openUserPanel = (tab: "account" | "favorites" = "favorites") => {
-    if (!user) {
-      const next = encodeURIComponent(
-        window.location.pathname + window.location.search,
-      );
-      router.push(`/login?next=${next}`);
-      return;
-    }
-    const d = parseInt(
-      sessionStorage.getItem("__katoweb_nav_depth") || "0",
-      10,
-    );
-    sessionStorage.setItem("__katoweb_nav_depth", String(d + 1));
-    router.push(`/profile?tab=${tab}`);
-  };
-
   /*
    * Force re-render key for list/grid content.
    * Incremented on pageshow (back navigation/bfcache) to replay entrance animations.
@@ -429,16 +404,14 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
   // Debounced values for expensive filtering operations
   // Debounced values for expensive filtering operations
-  const debouncedSearchQuery = useDebounce(
-    searchQuery,
-    300,
-    (val) => val === "",
-  );
-  const debouncedYearRangeIndices = useDebounce(
-    yearRangeIndices,
-    300,
-    (val) => val[0] === 0 && val[1] === sliderYears.length - 1,
-  );
+  const [debouncedSearchQuery] = useDebouncedValue(searchQuery, 300);
+  const resolvedSearchQuery =
+    searchQuery === "" ? searchQuery : debouncedSearchQuery;
+  const [debouncedYearRangeIndices] = useDebouncedValue(yearRangeIndices, 300);
+  const resolvedYearRangeIndices =
+    yearRangeIndices[0] === 0 && yearRangeIndices[1] === sliderYears.length - 1
+      ? yearRangeIndices
+      : debouncedYearRangeIndices;
 
   // 基础 Fuse 实例（不含歌词，首屏立即可用）
   const fuseInstance = useMemo(() => {
@@ -453,7 +426,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   } = useLyricsIndex(initialSongsData);
 
   // 搜索活跃时使用的 Fuse 实例：歌词索引就绪后自动升级
-  const activeFuseInstance = debouncedSearchQuery
+  const activeFuseInstance = resolvedSearchQuery
     ? (lyricsFuseInstance ?? fuseInstance)
     : fuseInstance;
 
@@ -462,7 +435,7 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     // Derive selected years from range
     let selectedYear: string | (string | number)[] = "全部";
     if (sliderYears.length > 0) {
-      const [start, end] = debouncedYearRangeIndices;
+       const [start, end] = resolvedYearRangeIndices;
       // If range covers everything, treat as "全部"
       if (start === 0 && end === sliderYears.length - 1) {
         selectedYear = "全部";
@@ -473,9 +446,9 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
 
     return filterSongs(
       initialSongsData,
-      debouncedSearchQuery,
-      filterType,
-      selectedYear,
+       resolvedSearchQuery,
+       filterType,
+       selectedYear,
       filterLyricist,
       filterComposer,
       filterArranger,
@@ -483,9 +456,9 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
     );
   }, [
     initialSongsData,
-    debouncedSearchQuery,
+    resolvedSearchQuery,
     filterType,
-    debouncedYearRangeIndices,
+    resolvedYearRangeIndices,
     sliderYears,
     filterLyricist,
     filterComposer,
@@ -630,39 +603,18 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500">
       {/* 顶部导航 */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <button
-            onClick={handleTitleReset}
-            className="text-2xl font-bold tracking-tight flex items-center gap-1 cursor-pointer transition-colors font-serif text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
-            title="点击刷新页面"
-          >
+      <AppNavbar
+        title={
+          <>
             河图
-            <span className="w-[2px] h-5 bg-blue-600 mx-2 rounded-full translate-y-[1.5px]" />
+            <span className="mx-2 h-5 w-[2px] translate-y-[1.5px] rounded-full bg-blue-600" />
             作品勘鉴
-          </button>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowAbout(true)}
-              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
-              title="关于"
-            >
-              <Info size={20} />
-            </button>
-            <button
-              onClick={() => openUserPanel("favorites")}
-              className="relative p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
-              title={user ? user.name : "登录"}
-            >
-              <User
-                size={20}
-                className={user ? "text-blue-500 dark:text-blue-400" : ""}
-              />
-            </button>
-            <ThemeToggle />
-          </div>
-        </div>
-      </nav>
+          </>
+        }
+        onTitleClick={handleTitleReset}
+        onAboutClick={() => setShowAbout(true)}
+        titleTooltip="点击刷新页面"
+      />
 
       <main className="pt-32 pb-20 max-w-7xl mx-auto px-6">
         {/* ── Hero ── */}
@@ -867,12 +819,12 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       song={work}
                       isActive={activeSongId === work.id}
                       lyricsSnippet={
-                        debouncedSearchQuery && lyricsState === "ready"
-                          ? extractLyricsSnippet(
-                              lyricsMap.get(work.id) || "",
-                              debouncedSearchQuery,
-                            )
-                          : undefined
+                         resolvedSearchQuery && lyricsState === "ready"
+                           ? extractLyricsSnippet(
+                               lyricsMap.get(work.id) || "",
+                               resolvedSearchQuery,
+                             )
+                           : undefined
                       }
                       onClick={() => {
                         setActiveSongId(work.id);
@@ -916,12 +868,12 @@ const MusicLibraryClient: React.FC<MusicLibraryClientProps> = ({
                       song={work}
                       isActive={activeSongId === work.id}
                       lyricsSnippet={
-                        debouncedSearchQuery && lyricsState === "ready"
-                          ? extractLyricsSnippet(
-                              lyricsMap.get(work.id) || "",
-                              debouncedSearchQuery,
-                            )
-                          : undefined
+                         resolvedSearchQuery && lyricsState === "ready"
+                           ? extractLyricsSnippet(
+                               lyricsMap.get(work.id) || "",
+                               resolvedSearchQuery,
+                             )
+                           : undefined
                       }
                       onClick={() => {
                         setActiveSongId(work.id);
