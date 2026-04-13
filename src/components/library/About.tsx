@@ -115,7 +115,13 @@ const fallbackColors = {
   text: "text-slate-600 dark:text-slate-400",
 };
 
-const WeiboIcon = ({ size = 16, className }: { size?: number; className?: string }) => (
+const WeiboIcon = ({
+  size = 16,
+  className,
+}: {
+  size?: number;
+  className?: string;
+}) => (
   <svg
     viewBox="0 0 24 24"
     width={size}
