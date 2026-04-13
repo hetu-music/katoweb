@@ -107,17 +107,17 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 </span>
 
                 {/* Hover 展开的说明面板 (画卷式向左侧缓慢延展展出) */}
-                <div className="absolute top-12 right-full mr-3 lg:mr-5 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-all duration-1200 ease-in-out group-hover:w-[210px] lg:group-hover:w-[240px] group-hover:opacity-100 z-10">
+                <div className="absolute top-12 right-full mr-3 lg:mr-5 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-all duration-1600 ease-out group-hover:w-[210px] lg:group-hover:w-[240px] group-hover:opacity-100 z-10">
                   <div className="flex w-max shrink-0 items-center gap-4 lg:gap-5 border-r border-slate-300/60 dark:border-slate-600/60 pr-4 lg:pr-5 py-1">
                     <div className="flex flex-col items-end">
-                      <span className="text-[15px] font-medium tracking-[0.25em] text-slate-900 dark:text-slate-100 mb-1 whitespace-nowrap transition-colors duration-1200 ease-in-out drop-shadow-sm">
+                      <span className="text-[15px] font-medium tracking-[0.25em] text-slate-900 dark:text-slate-100 mb-1 whitespace-nowrap transition-colors duration-1600 ease-out drop-shadow-sm">
                         {feature.label}
                       </span>
-                      <span className="text-[12px] font-light tracking-[0.15em] text-slate-500 dark:text-slate-400 whitespace-nowrap transition-colors duration-1200 ease-in-out">
+                      <span className="text-[12px] font-light tracking-[0.15em] text-slate-500 dark:text-slate-400 whitespace-nowrap transition-colors duration-1600 ease-out">
                         {feature.desc}
                       </span>
                     </div>
-                    <Icon size={18} strokeWidth={1.5} className="text-teal-600/80 dark:text-teal-400/80 shrink-0 transition-colors duration-1200 ease-in-out" />
+                    <Icon size={18} strokeWidth={1.5} className="text-teal-600/80 dark:text-teal-400/80 shrink-0 transition-colors duration-1600 ease-out" />
                   </div>
                 </div>
               </Link>
