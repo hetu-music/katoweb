@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
+import { useRef } from "react";
 import { timelineData } from "./data";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -129,10 +129,10 @@ export default function QingJinTianXia() {
         }}
       ></div>
 
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_transparent_0%,_rgba(0,0,0,0.9)_100%)] pointer-events-none z-0"></div>
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,transparent_0%,rgba(0,0,0,0.9)_100%)] pointer-events-none z-0"></div>
 
       {/* HERO SECTION */}
-      <section className="relative z-10 h-[100svh] flex flex-col items-center justify-center">
+      <section className="relative z-10 h-svh flex flex-col items-center justify-center">
         <div className="flex flex-col items-center gap-12 sm:gap-16 mt-[-10vh]">
           <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-light text-zinc-100 flex items-center justify-center pb-4 drop-shadow-[0_0_30px_rgba(255,255,255,0.1)] pl-[0.2em] sm:pl-[0.4em]">
             {"倾尽天下".split("").map((char, i) => (
@@ -158,7 +158,7 @@ export default function QingJinTianXia() {
           <span className="text-[10px] uppercase tracking-[0.4em] ml-[0.4em]">
             展开编年史
           </span>
-          <div className="w-[1px] h-16 bg-zinc-800 relative overflow-hidden">
+          <div className="w-px h-16 bg-zinc-800 relative overflow-hidden">
             <div className="scroll-hint-line absolute top-0 left-0 w-full h-full bg-zinc-400/50"></div>
           </div>
         </div>
@@ -168,8 +168,8 @@ export default function QingJinTianXia() {
       <main className="timeline-container relative w-full max-w-7xl mx-auto px-4 py-[15vh] z-10">
         {/* TIMELINE SPINES */}
         {/* Mobile: align left. Desktop: center */}
-        <div className="absolute left-14 md:left-1/2 top-0 bottom-0 w-[1px] bg-zinc-800/40 -translate-x-1/2 rounded"></div>
-        <div className="timeline-progress absolute left-14 md:left-1/2 top-0 bottom-0 w-[1px] bg-red-800/80 -translate-x-1/2 origin-top rounded scale-y-0 shadow-[0_0_10px_rgba(185,28,28,0.8)] z-10"></div>
+        <div className="absolute left-14 md:left-1/2 top-0 bottom-0 w-px bg-zinc-800/40 -translate-x-1/2 rounded"></div>
+        <div className="timeline-progress absolute left-14 md:left-1/2 top-0 bottom-0 w-px bg-red-800/80 -translate-x-1/2 origin-top rounded scale-y-0 shadow-[0_0_10px_rgba(185,28,28,0.8)] z-10"></div>
 
         {/* EVENTS LIST */}
         <div className="flex flex-col w-full relative pt-10 pb-40">
@@ -186,7 +186,7 @@ export default function QingJinTianXia() {
                 <div className="event-dot absolute left-10 md:left-1/2 top-1/2 origin-center -translate-x-1/2 -translate-y-1/2 w-[9px] h-[9px] md:w-[13px] md:h-[13px] rounded-full border border-zinc-500 bg-zinc-950 z-20"></div>
 
                 {/* --- MOBILE BLOCK (ALL ITEMS) --- */}
-                <div className="flex md:hidden w-full pl-[4.5rem] pr-2 justify-start">
+                <div className="flex md:hidden w-full pl-18 pr-2 justify-start">
                   <div className="flex items-center gap-4 sm:gap-6 flex-row">
                     <div className="flex flex-row items-end gap-2 text-zinc-300 transition-colors">
                       <div
@@ -208,7 +208,7 @@ export default function QingJinTianXia() {
                       {event.content.map((line, i) => (
                         <p
                           key={i}
-                          className={`text-sm font-light tracking-[0.1em] leading-[2] ${event.important ? "text-zinc-200 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] font-normal" : "text-zinc-400"}`}
+                          className={`text-sm font-light tracking-widest leading-loose ${event.important ? "text-zinc-200 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] font-normal" : "text-zinc-400"}`}
                         >
                           {line}
                         </p>
@@ -226,7 +226,7 @@ export default function QingJinTianXia() {
                       {event.content.map((line, i) => (
                         <p
                           key={i}
-                          className={`text-[15px] lg:text-base font-light tracking-[0.1em] lg:tracking-[0.2em] leading-[2] ${event.important ? "text-zinc-200 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] font-normal" : "text-zinc-400"}`}
+                          className={`text-[15px] lg:text-base font-light tracking-widest lg:tracking-[0.2em] leading-loose ${event.important ? "text-zinc-200 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] font-normal" : "text-zinc-400"}`}
                         >
                           {line}
                         </p>
@@ -276,7 +276,7 @@ export default function QingJinTianXia() {
                       {event.content.map((line, i) => (
                         <p
                           key={i}
-                          className={`text-[15px] lg:text-base font-light tracking-[0.1em] lg:tracking-[0.2em] leading-[2] ${event.important ? "text-zinc-200 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] font-normal" : "text-zinc-400"}`}
+                          className={`text-[15px] lg:text-base font-light tracking-widest lg:tracking-[0.2em] leading-loose ${event.important ? "text-zinc-200 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] font-normal" : "text-zinc-400"}`}
                         >
                           {line}
                         </p>
@@ -290,8 +290,8 @@ export default function QingJinTianXia() {
         </div>
       </main>
 
-      <footer className="relative z-10 pt-20 pb-16 text-center flex flex-col items-center gap-8 bg-gradient-to-t from-black to-transparent">
-        <div className="w-px h-16 bg-gradient-to-b from-transparent to-zinc-700/50"></div>
+      <footer className="relative z-10 pt-20 pb-16 text-center flex flex-col items-center gap-8 bg-linear-to-t from-black to-transparent">
+        <div className="w-px h-16 bg-linear-to-b from-transparent to-zinc-700/50"></div>
         <p className="text-zinc-500 text-xs sm:text-sm tracking-[0.5em] font-light">
           山河万里 · 故人长绝
         </p>
