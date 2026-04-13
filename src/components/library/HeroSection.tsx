@@ -125,26 +125,29 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
           })}
         </div>
 
-        {/* -- 移动端入口 (Mobile) - 极简发光点排列 -- */}
-        <div className="flex md:hidden flex-col gap-4 w-full mt-4">
+        {/* -- 移动端入口 (Mobile) - 与桌面端统一的青色系设计 -- */}
+        <div className="flex md:hidden flex-col gap-4 w-full mt-2">
+          {/* 主副标题与入口间的分界线 */}
+          <div className="w-full h-[1px] bg-slate-200/80 dark:bg-slate-800/60 mb-1" />
+
           {FEATURE_ENTRANCES.map((feature) => {
             return (
               <Link key={feature.id} href={feature.href} className="group flex items-center justify-between outline-none py-1 border-b border-slate-100 dark:border-slate-800/50 pb-3">
                 <div className="flex items-center gap-4">
-                  {/* 发光点 */}
-                  <div className="relative flex items-center justify-center ml-1">
-                    <div className="absolute h-4 w-4 rounded-full bg-blue-500/20 blur-[1px]" />
-                    <div className="h-1.5 w-1.5 rounded-full bg-blue-400 shadow-[0_0_6px_rgba(59,130,246,0.6)] animate-pulse" />
+                  {/* 发光晕影 (无实心中心，弱化呼吸) */}
+                  <div className="relative flex items-center justify-center top-[1px]">
+                    <div className="absolute h-5 w-5 rounded-full bg-teal-500/10 blur-[1px] transition-all group-active:scale-110" />
+                    <div className="h-1.5 w-1.5 rounded-full bg-teal-500/30 animate-pulse shadow-[0_0_6px_rgba(20,184,166,0.4)]" />
                   </div>
                   {/* 标题 */}
-                  <span className="text-[15px] font-serif tracking-[0.15em] text-slate-700 dark:text-slate-300">
+                  <span className="text-[15px] font-serif font-medium tracking-[0.15em] text-teal-600 dark:text-teal-300">
                     {feature.label}
                   </span>
                 </div>
                 {/* 描述说明 */}
-                <span className="text-[11px] font-light text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                <span className="text-[12px] font-light text-slate-400 dark:text-slate-400/80 flex items-center gap-1.5">
                   {feature.desc}
-                  <ArrowRight size={10} className="opacity-50" />
+                  <ArrowRight size={10} className="text-teal-600/60 dark:text-teal-400/60" />
                 </span>
               </Link>
             )
