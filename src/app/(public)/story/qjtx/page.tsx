@@ -1,54 +1,230 @@
 "use client";
 
 import { useGSAP } from "@gsap/react";
+import { motion, type Variants } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useRef } from "react";
+import Lenis from "lenis";
+import { useEffect, useRef } from "react";
 import { timelineData } from "./data";
 
 gsap.registerPlugin(ScrollTrigger);
 
+const motionEase = [0.22, 1, 0.36, 1] as const;
+
+const heroTitleVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.22,
+      delayChildren: 0.35,
+    },
+  },
+} satisfies Variants;
+
+const heroCharVariants = {
+  hidden: {
+    opacity: 0,
+    scale: 0.85,
+    filter: "blur(16px)",
+  },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    filter: "blur(0px)",
+    transition: {
+      duration: 1.6,
+      ease: motionEase,
+    },
+  },
+} satisfies Variants;
+
+const heroSubtitleVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.18,
+      delayChildren: 1,
+    },
+  },
+} satisfies Variants;
+
+const heroSubtitleLineVariants = {
+  hidden: {
+    opacity: 0,
+    y: 30,
+    filter: "blur(5px)",
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: {
+      duration: 1.2,
+      ease: motionEase,
+    },
+  },
+} satisfies Variants;
+
+const scrollHintVariants = {
+  hidden: {
+    opacity: 0,
+    y: -20,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 1,
+      delay: 1.45,
+      ease: motionEase,
+    },
+  },
+} satisfies Variants;
+
+const footerVariants = {
+  hidden: {
+    opacity: 0,
+    y: 40,
+    filter: "blur(8px)",
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: {
+      duration: 1,
+      ease: motionEase,
+    },
+  },
+} satisfies Variants;
+
+const verticalTextClass =
+  "[writing-mode:vertical-rl] [text-orientation:mixed] shrink-0 leading-none";
+
+function EventLines({
+  content,
+  important,
+  mobile = false,
+  align = "left",
+}: {
+  content: string[];
+  important?: boolean;
+  mobile?: boolean;
+  align?: "left" | "right";
+}) {
+  return (
+    <div
+      className={
+        mobile
+          ? "text-left flex flex-col gap-3 max-w-[16rem] sm:max-w-sm"
+          : `${align === "right" ? "text-right" : "text-left"} flex flex-col gap-4 max-w-sm xl:max-w-md`
+      }
+    >
+      {content.map((line, index) => (
+        <p
+          key={index}
+          className={`${
+            mobile
+              ? "text-sm tracking-widest"
+              : "text-[15px] lg:text-base tracking-widest lg:tracking-[0.2em]"
+          } font-light leading-loose ${
+            important
+              ? "text-zinc-200 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] font-normal"
+              : "text-zinc-400"
+          }`}
+        >
+          {line}
+        </p>
+      ))}
+    </div>
+  );
+}
+
+function EventDate({
+  year,
+  month,
+  monthFirst = false,
+  mobile = false,
+}: {
+  year: string;
+  month?: string;
+  monthFirst?: boolean;
+  mobile?: boolean;
+}) {
+  const monthNode = month ? (
+    <div
+      className={`${verticalTextClass} ${
+        mobile ? "text-sm" : "text-lg lg:text-xl"
+      } text-red-800/80 font-serif tracking-[0.3em]`}
+    >
+      {month}
+    </div>
+  ) : null;
+
+  const yearNode = (
+    <div
+      className={`${verticalTextClass} ${
+        mobile ? "text-xl" : "text-2xl lg:text-3xl"
+      } font-serif tracking-[0.3em] font-light text-zinc-300`}
+    >
+      {year}
+    </div>
+  );
+
+  return (
+    <div
+      className={`flex flex-row items-end ${
+        mobile ? "gap-2" : "gap-3 lg:gap-4"
+      } transition-colors`}
+    >
+      {monthFirst ? (
+        <>
+          {monthNode}
+          {yearNode}
+        </>
+      ) : (
+        <>
+          {yearNode}
+          {monthNode}
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function QingJinTianXia() {
   const container = useRef<HTMLDivElement>(null);
-  const scrollRevealRefs = useRef<(HTMLElement | null)[]>([]);
+
+  useEffect(() => {
+    const lenis = new Lenis({
+      autoRaf: false,
+      smoothWheel: true,
+      syncTouch: true,
+    });
+
+    const updateScrollTrigger = () => ScrollTrigger.update();
+    const raf = (time: number) => {
+      lenis.raf(time * 1000);
+    };
+    const handleRefresh = () => lenis.resize();
+
+    lenis.on("scroll", updateScrollTrigger);
+    gsap.ticker.add(raf);
+    gsap.ticker.lagSmoothing(0);
+    ScrollTrigger.addEventListener("refresh", handleRefresh);
+    ScrollTrigger.refresh();
+
+    return () => {
+      ScrollTrigger.removeEventListener("refresh", handleRefresh);
+      gsap.ticker.remove(raf);
+      lenis.off("scroll", updateScrollTrigger);
+      lenis.destroy();
+    };
+  }, []);
 
   useGSAP(
     () => {
-      const tl = gsap.timeline();
-
-      tl.to(".bg-noise", { opacity: 0.12, duration: 2, ease: "power2.inOut" })
-        .fromTo(
-          ".hero-title-char",
-          { opacity: 0, filter: "blur(16px)", scale: 0.85 },
-          {
-            opacity: 1,
-            filter: "blur(0px)",
-            scale: 1,
-            duration: 2.5,
-            stagger: 0.25,
-            ease: "power2.out",
-          },
-          "-=1.5",
-        )
-        .fromTo(
-          ".hero-subtitle",
-          { y: 30, opacity: 0, filter: "blur(5px)" },
-          {
-            y: 0,
-            opacity: 1,
-            filter: "blur(0px)",
-            duration: 2,
-            ease: "power2.out",
-          },
-          "-=1",
-        )
-        .fromTo(
-          ".scroll-hint",
-          { opacity: 0, y: -20 },
-          { opacity: 1, y: 0, duration: 1.5, ease: "power2.out" },
-          "-=1",
-        );
-
       gsap.to(".scroll-hint-line", {
         scaleY: 1.5,
         opacity: 0,
@@ -58,7 +234,6 @@ export default function QingJinTianXia() {
         ease: "power2.out",
       });
 
-      // Timeline Spine Animation
       gsap.to(".timeline-progress", {
         scaleY: 1,
         ease: "none",
@@ -70,19 +245,22 @@ export default function QingJinTianXia() {
         },
       });
 
-      // Timeline Events Reveal
-      scrollRevealRefs.current.forEach((el) => {
-        if (!el) return;
+      const events = gsap.utils.toArray<HTMLElement>(
+        ".timeline-event",
+        container.current,
+      );
+      const dots = gsap.utils.toArray<HTMLElement>(".event-dot", container.current);
 
+      events.forEach((event, index) => {
         gsap.fromTo(
-          el,
+          event,
           { opacity: 0, y: 70, filter: "blur(10px)" },
           {
             opacity: 1,
             y: 0,
             filter: "blur(0px)",
             scrollTrigger: {
-              trigger: el,
+              trigger: event,
               start: "top 85%",
               end: "top 50%",
               scrub: 1,
@@ -90,198 +268,159 @@ export default function QingJinTianXia() {
           },
         );
 
-        // Light up the timeline dot
-        const dot = el.querySelector(".event-dot");
-        if (dot) {
-          gsap.to(dot, {
-            borderColor: "#b91c1c", // border-red-700
-            backgroundColor: "#7f1d1d", // bg-red-900
-            boxShadow: "0 0 15px rgba(185,28,28,0.8)",
-            scrollTrigger: {
-              trigger: el,
-              start: "top 60%",
-              toggleActions: "play none none reverse",
-            },
-          });
+        const dot = dots[index];
+        if (!dot) {
+          return;
         }
+
+        gsap.to(dot, {
+          borderColor: "#b91c1c",
+          backgroundColor: "#7f1d1d",
+          boxShadow: "0 0 15px rgba(185,28,28,0.8)",
+          scrollTrigger: {
+            trigger: event,
+            start: "top 60%",
+            toggleActions: "play none none reverse",
+          },
+        });
       });
     },
     { scope: container },
   );
 
-  const addToRefs = (el: HTMLElement | null) => {
-    if (el && !scrollRevealRefs.current.includes(el)) {
-      scrollRevealRefs.current.push(el);
-    }
-  };
-
   return (
     <div
       ref={container}
-      className="relative bg-[#09090b] text-zinc-300 min-h-screen font-serif selection:bg-red-900 selection:text-white overflow-x-hidden"
+      className="relative min-h-screen overflow-x-hidden bg-[#09090b] font-serif text-zinc-300 selection:bg-red-900 selection:text-white"
     >
-      {/* SVG Noise Texture for Premium Feel */}
-      <div
-        className="bg-noise fixed inset-0 opacity-0 pointer-events-none z-0 mix-blend-overlay"
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.12 }}
+        transition={{ duration: 2, ease: motionEase }}
+        className="bg-noise pointer-events-none fixed inset-0 z-0 mix-blend-overlay"
         style={{
           backgroundImage:
             'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")',
         }}
-      ></div>
+      />
 
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,transparent_0%,rgba(0,0,0,0.9)_100%)] pointer-events-none z-0"></div>
+      <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(ellipse_at_top,transparent_0%,rgba(0,0,0,0.9)_100%)]" />
 
-      {/* HERO SECTION */}
-      <section className="relative z-10 h-svh flex flex-col items-center justify-center">
-        <div className="flex flex-col items-center gap-12 sm:gap-16 mt-[-10vh]">
-          <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-light text-zinc-100 flex items-center justify-center pb-4 drop-shadow-[0_0_30px_rgba(255,255,255,0.1)] pl-[0.2em] sm:pl-[0.4em]">
-            {"倾尽天下".split("").map((char, i) => (
-              <span
-                key={i}
-                className="hero-title-char inline-block tracking-[0.2em] sm:tracking-[0.4em] px-1 sm:px-2"
+      <section className="relative z-10 flex h-svh flex-col items-center justify-center">
+        <div className="mt-[-10vh] flex flex-col items-center gap-12 sm:gap-16">
+          <motion.h1
+            variants={heroTitleVariants}
+            initial="hidden"
+            animate="visible"
+            className="flex items-center justify-center pb-4 pl-[0.2em] text-5xl font-light text-zinc-100 drop-shadow-[0_0_30px_rgba(255,255,255,0.1)] sm:pl-[0.4em] sm:text-7xl md:text-8xl lg:text-9xl"
+          >
+            {"倾尽天下".split("").map((char) => (
+              <motion.span
+                key={char}
+                variants={heroCharVariants}
+                className="inline-block px-1 tracking-[0.2em] sm:px-2 sm:tracking-[0.4em]"
               >
                 {char}
-              </span>
+              </motion.span>
             ))}
-          </h1>
-          <div className="hero-subtitle flex flex-col items-center gap-6">
-            <p className="text-sm sm:text-lg md:text-xl tracking-[0.8em] sm:tracking-[1em] font-light text-red-700 pl-[0.8em] sm:pl-[1em] drop-shadow-[0_0_15px_rgba(185,28,28,0.5)]">
+          </motion.h1>
+
+          <motion.div
+            variants={heroSubtitleVariants}
+            initial="hidden"
+            animate="visible"
+            className="flex flex-col items-center gap-6"
+          >
+            <motion.p
+              variants={heroSubtitleLineVariants}
+              className="pl-[0.8em] text-sm font-light tracking-[0.8em] text-red-700 drop-shadow-[0_0_15px_rgba(185,28,28,0.5)] sm:pl-[1em] sm:text-lg sm:tracking-[1em] md:text-xl"
+            >
               血染江山的画
-            </p>
-            <p className="text-sm sm:text-lg md:text-xl tracking-[0.8em] sm:tracking-[1em] font-light text-zinc-400 pl-[0.8em] sm:pl-[1em]">
+            </motion.p>
+            <motion.p
+              variants={heroSubtitleLineVariants}
+              className="pl-[0.8em] text-sm font-light tracking-[0.8em] text-zinc-400 sm:pl-[1em] sm:text-lg sm:tracking-[1em] md:text-xl"
+            >
               怎敌你眉间一点朱砂
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
         </div>
 
-        <div className="scroll-hint absolute bottom-12 flex flex-col items-center gap-4 text-zinc-600">
-          <span className="text-[10px] uppercase tracking-[0.4em] ml-[0.4em]">
+        <motion.div
+          variants={scrollHintVariants}
+          initial="hidden"
+          animate="visible"
+          className="scroll-hint absolute bottom-12 flex flex-col items-center gap-4 text-zinc-600"
+        >
+          <span className="ml-[0.4em] text-[10px] uppercase tracking-[0.4em]">
             展开编年史
           </span>
-          <div className="w-px h-16 bg-zinc-800 relative overflow-hidden">
-            <div className="scroll-hint-line absolute top-0 left-0 w-full h-full bg-zinc-400/50"></div>
+          <div className="relative h-16 w-px overflow-hidden bg-zinc-800">
+            <div className="scroll-hint-line absolute top-0 left-0 h-full w-full bg-zinc-400/50" />
           </div>
-        </div>
+        </motion.div>
       </section>
 
-      {/* TIMELINE section */}
-      <main className="timeline-container relative w-full max-w-7xl mx-auto px-4 py-[15vh] z-10">
-        {/* TIMELINE SPINES */}
-        {/* Mobile: align left. Desktop: center */}
-        <div className="absolute left-14 md:left-1/2 top-0 bottom-0 w-px bg-zinc-800/40 -translate-x-1/2 rounded"></div>
-        <div className="timeline-progress absolute left-14 md:left-1/2 top-0 bottom-0 w-px bg-red-800/80 -translate-x-1/2 origin-top rounded scale-y-0 shadow-[0_0_10px_rgba(185,28,28,0.8)] z-10"></div>
+      <main className="timeline-container relative z-10 mx-auto w-full max-w-7xl px-4 py-[15vh]">
+        <div className="absolute top-0 bottom-0 left-14 w-px -translate-x-1/2 rounded bg-zinc-800/40 md:left-1/2" />
+        <div className="timeline-progress absolute top-0 bottom-0 left-14 z-10 w-px -translate-x-1/2 origin-top scale-y-0 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2" />
 
-        {/* EVENTS LIST */}
-        <div className="flex flex-col w-full relative pt-10 pb-40">
+        <div className="relative flex w-full flex-col pt-10 pb-40">
           {timelineData.map((event, index) => {
             const isLeft = index % 2 === 0;
 
             return (
               <div
                 key={event.id}
-                ref={addToRefs}
-                className="timeline-event relative w-full flex flex-col md:flex-row md:justify-center my-10 md:my-20 group"
+                className="timeline-event group relative my-10 flex w-full flex-col md:my-20 md:flex-row md:justify-center"
               >
-                {/* Timeline Dot */}
-                <div className="event-dot absolute left-10 md:left-1/2 top-1/2 origin-center -translate-x-1/2 -translate-y-1/2 w-[9px] h-[9px] md:w-[13px] md:h-[13px] rounded-full border border-zinc-500 bg-zinc-950 z-20"></div>
+                <div className="event-dot absolute top-1/2 left-10 z-20 h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 origin-center rounded-full border border-zinc-500 bg-zinc-950 md:left-1/2 md:h-[13px] md:w-[13px]" />
 
-                {/* --- MOBILE BLOCK (ALL ITEMS) --- */}
-                <div className="flex md:hidden w-full pl-18 pr-2 justify-start">
-                  <div className="flex items-center gap-4 sm:gap-6 flex-row">
-                    <div className="flex flex-row items-end gap-2 text-zinc-300 transition-colors">
-                      <div
-                        className="text-xl font-serif tracking-[0.3em] font-light"
-                        style={{ writingMode: "vertical-rl" }}
-                      >
-                        {event.year}
-                      </div>
-                      {event.month && (
-                        <div
-                          className="text-sm text-red-800/80 font-serif tracking-[0.3em]"
-                          style={{ writingMode: "vertical-rl" }}
-                        >
-                          {event.month}
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-left flex flex-col gap-3 max-w-[16rem] sm:max-w-sm">
-                      {event.content.map((line, i) => (
-                        <p
-                          key={i}
-                          className={`text-sm font-light tracking-widest leading-loose ${event.important ? "text-zinc-200 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] font-normal" : "text-zinc-400"}`}
-                        >
-                          {line}
-                        </p>
-                      ))}
-                    </div>
+                <div className="flex w-full justify-start pl-18 pr-2 md:hidden">
+                  <div className="flex flex-row items-center gap-4 sm:gap-6">
+                    <EventDate
+                      year={event.year}
+                      month={event.month}
+                      mobile
+                    />
+                    <EventLines
+                      content={event.content}
+                      important={event.important}
+                      mobile
+                    />
                   </div>
                 </div>
 
-                {/* --- DESKTOP LEFT BLOCK --- */}
                 <div
-                  className={`hidden md:flex w-1/2 pr-12 lg:pr-24 justify-end ${!isLeft ? "invisible" : ""}`}
+                  className={`hidden w-1/2 justify-end pr-12 md:flex lg:pr-24 ${
+                    !isLeft ? "invisible" : ""
+                  }`}
                 >
-                  <div className="flex items-center gap-8 lg:gap-12 flex-row">
-                    <div className="text-right flex flex-col gap-4 max-w-sm xl:max-w-md">
-                      {event.content.map((line, i) => (
-                        <p
-                          key={i}
-                          className={`text-[15px] lg:text-base font-light tracking-widest lg:tracking-[0.2em] leading-loose ${event.important ? "text-zinc-200 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] font-normal" : "text-zinc-400"}`}
-                        >
-                          {line}
-                        </p>
-                      ))}
-                    </div>
-                    <div className="flex flex-row items-end gap-3 lg:gap-4 text-zinc-300 transition-colors">
-                      {event.month && (
-                        <div
-                          className="text-lg lg:text-xl text-red-800/80 font-serif tracking-[0.3em]"
-                          style={{ writingMode: "vertical-rl" }}
-                        >
-                          {event.month}
-                        </div>
-                      )}
-                      <div
-                        className="text-2xl lg:text-3xl font-serif tracking-[0.3em] font-light"
-                        style={{ writingMode: "vertical-rl" }}
-                      >
-                        {event.year}
-                      </div>
-                    </div>
+                  <div className="flex flex-row items-center gap-8 lg:gap-12">
+                    <EventLines
+                      content={event.content}
+                      important={event.important}
+                      align="right"
+                    />
+                    <EventDate
+                      year={event.year}
+                      month={event.month}
+                      monthFirst
+                    />
                   </div>
                 </div>
 
-                {/* --- DESKTOP RIGHT BLOCK --- */}
                 <div
-                  className={`hidden md:flex w-1/2 pl-12 lg:pl-24 justify-start ${isLeft ? "invisible" : ""}`}
+                  className={`hidden w-1/2 justify-start pl-12 md:flex lg:pl-24 ${
+                    isLeft ? "invisible" : ""
+                  }`}
                 >
-                  <div className="flex items-center gap-8 lg:gap-12 flex-row">
-                    <div className="flex flex-row items-end gap-3 lg:gap-4 text-zinc-300 transition-colors">
-                      <div
-                        className="text-2xl lg:text-3xl font-serif tracking-[0.3em] font-light"
-                        style={{ writingMode: "vertical-rl" }}
-                      >
-                        {event.year}
-                      </div>
-                      {event.month && (
-                        <div
-                          className="text-lg lg:text-xl text-red-800/80 font-serif tracking-[0.3em]"
-                          style={{ writingMode: "vertical-rl" }}
-                        >
-                          {event.month}
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-left flex flex-col gap-4 max-w-sm xl:max-w-md">
-                      {event.content.map((line, i) => (
-                        <p
-                          key={i}
-                          className={`text-[15px] lg:text-base font-light tracking-widest lg:tracking-[0.2em] leading-loose ${event.important ? "text-zinc-200 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] font-normal" : "text-zinc-400"}`}
-                        >
-                          {line}
-                        </p>
-                      ))}
-                    </div>
+                  <div className="flex flex-row items-center gap-8 lg:gap-12">
+                    <EventDate year={event.year} month={event.month} />
+                    <EventLines
+                      content={event.content}
+                      important={event.important}
+                    />
                   </div>
                 </div>
               </div>
@@ -290,15 +429,21 @@ export default function QingJinTianXia() {
         </div>
       </main>
 
-      <footer className="relative z-10 pt-20 pb-16 text-center flex flex-col items-center gap-8 bg-linear-to-t from-black to-transparent">
-        <div className="w-px h-16 bg-linear-to-b from-transparent to-zinc-700/50"></div>
-        <p className="text-zinc-500 text-xs sm:text-sm tracking-[0.5em] font-light">
+      <motion.footer
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.5 }}
+        variants={footerVariants}
+        className="relative z-10 flex flex-col items-center gap-8 bg-linear-to-t from-black to-transparent pt-20 pb-16 text-center"
+      >
+        <div className="h-16 w-px bg-linear-to-b from-transparent to-zinc-700/50" />
+        <p className="text-xs font-light tracking-[0.5em] text-zinc-500 sm:text-sm">
           山河万里 · 故人长绝
         </p>
-        <p className="text-[10px] text-zinc-700 tracking-widest font-light mt-4">
+        <p className="mt-4 text-[10px] font-light tracking-widest text-zinc-700">
           河图作品勘鉴
         </p>
-      </footer>
+      </motion.footer>
     </div>
   );
 }
