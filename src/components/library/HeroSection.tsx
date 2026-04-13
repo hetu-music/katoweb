@@ -49,15 +49,15 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
   );
 
   return (
-    <div className="w-full flex flex-col md:flex-row md:items-end justify-between gap-8 md:gap-12 pt-1 md:pt-4">
+    <div className="w-full flex flex-col md:flex-row justify-between gap-8 md:gap-12 pt-1 md:pt-4" style={{ alignItems: 'stretch' }}>
 
       {/* 左侧：标题与子标题 */}
-      <div className="space-y-4 md:space-y-8 flex-1">
-        <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50 italic tracking-tight">
+      <div className="flex flex-col justify-between flex-1 py-1 gap-4 md:gap-0">
+        <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50 italic tracking-tight leading-[0.9]">
           谣歌 <span className="text-[1.3em] font-semibold">{songCount}</span>
         </h1>
 
-        <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
+        <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 mt-auto">
           <span className="text-blue-600 dark:text-blue-500 font-mono text-lg leading-none relative -top-[1.5px] select-none">
             &gt;
           </span>
@@ -106,17 +106,17 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 </span>
 
                 {/* Hover 展开的说明面板 (画卷式向左侧缓慢延展展出) */}
-                <div className="absolute top-6 right-full mr-3 lg:mr-5 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-all duration-[1000ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:w-[210px] lg:group-hover:w-[240px] group-hover:opacity-100 z-10">
+                <div className="absolute top-12 right-full mr-3 lg:mr-5 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-all duration-[1200ms] ease-in-out group-hover:w-[210px] lg:group-hover:w-[240px] group-hover:opacity-100 z-10">
                   <div className="flex w-max shrink-0 items-center gap-4 lg:gap-5 border-r border-slate-300/60 dark:border-slate-600/60 pr-4 lg:pr-5 py-1">
                     <div className="flex flex-col items-end">
-                       <span className="text-[14px] font-medium tracking-[0.2em] text-slate-800 dark:text-slate-200 mb-1 whitespace-nowrap transition-colors duration-[1000ms]">
+                       <span className="text-[14px] font-medium tracking-[0.2em] text-slate-800 dark:text-slate-200 mb-1 whitespace-nowrap transition-colors duration-[1200ms] ease-in-out">
                          {feature.label}
                        </span>
-                       <span className="text-[12px] font-light tracking-[0.1em] text-slate-500 dark:text-slate-400 whitespace-nowrap transition-colors duration-[1000ms]">
+                       <span className="text-[12px] font-light tracking-[0.1em] text-slate-500 dark:text-slate-400 whitespace-nowrap transition-colors duration-[1200ms] ease-in-out">
                          {feature.desc}
                        </span>
                     </div>
-                    <Icon size={18} strokeWidth={1.5} className="text-blue-500/70 dark:text-blue-400/80 shrink-0 transition-colors duration-[1000ms]" />
+                    <Icon size={18} strokeWidth={1.5} className="text-blue-500/70 dark:text-blue-400/80 shrink-0 transition-colors duration-[1200ms] ease-in-out" />
                   </div>
                 </div>
               </Link>
