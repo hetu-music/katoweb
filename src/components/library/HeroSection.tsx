@@ -129,13 +129,13 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
         <div className="flex md:hidden flex-col gap-4 w-full mt-1">
           {/* 主副标题与入口间的分界线 - 古典编排风格的高级分界线 */}
           <div className="flex items-center w-full mt-2 mb-1.5 opacity-80">
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent to-slate-300 dark:to-slate-700/60" />
-            <div className="mx-4 flex items-center justify-center gap-1.5 text-teal-600/60 dark:text-teal-400/50">
+            <div className="flex-1 h-px bg-linear-to-r from-transparent to-blue-600/30 dark:to-blue-400/20" />
+            <div className="mx-4 flex items-center justify-center gap-1.5 text-blue-600/60 dark:text-blue-500/50">
               <div className="h-[2px] w-[2px] rounded-full bg-current" />
               <div className="h-[4px] w-[4px] rounded-sm bg-current rotate-45" />
               <div className="h-[2px] w-[2px] rounded-full bg-current" />
             </div>
-            <div className="flex-1 h-px bg-gradient-to-l from-transparent to-slate-300 dark:to-slate-700/60" />
+            <div className="flex-1 h-px bg-linear-to-l from-transparent to-blue-600/30 dark:to-blue-400/20" />
           </div>
 
           {FEATURE_ENTRANCES.map((feature) => {
