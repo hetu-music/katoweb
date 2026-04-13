@@ -88,35 +88,35 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
       <div className="flex w-full md:w-auto h-full justify-start md:justify-end items-end md:items-start pt-6 md:pt-0">
         
         {/* -- 桌面端入口 (Desktop) - 极简竖排发光点 -- */}
-        <div className="hidden md:flex flex-row gap-10 lg:gap-14 justify-end">
+        <div className="hidden md:flex flex-row gap-10 lg:gap-14 justify-end mt-4 md:mt-0">
           {FEATURE_ENTRANCES.map((feature) => {
             const Icon = feature.icon;
             return (
               <Link key={feature.id} href={feature.href} className="group relative flex flex-col items-center outline-none">
                 {/* 顶部发光点 */}
-                <div className="relative mb-3 flex items-center justify-center">
-                  <div className="absolute h-5 w-5 rounded-full bg-blue-500/10 blur-[2px] transition-all duration-700 group-hover:bg-blue-500/30 group-hover:blur-sm group-hover:scale-150" />
+                <div className="relative mb-4 flex items-center justify-center">
+                  <div className="absolute h-6 w-6 rounded-full bg-blue-500/10 blur-[2px] transition-all duration-[800ms] ease-out group-hover:bg-blue-500/30 group-hover:blur-md group-hover:scale-150" />
                   <div className="absolute h-2.5 w-2.5 rounded-full bg-blue-500/30 animate-pulse" style={{ animationDuration: '2s' }} />
                   <div className="h-[3px] w-[3px] rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)] transition-all duration-500 group-hover:bg-blue-400 group-hover:shadow-[0_0_12px_rgba(59,130,246,1)]" />
                 </div>
 
-                {/* 竖排标题 */}
-                <span className="[writing-mode:vertical-rl] font-serif text-[15px] tracking-[0.4em] text-slate-500/90 dark:text-slate-400/90 transition-colors duration-500 group-hover:text-slate-900 dark:group-hover:text-white drop-shadow-xs pr-1">
+                {/* 竖排标题 - 增加字距 */}
+                <span className="[writing-mode:vertical-rl] font-serif text-[15px] tracking-[0.8em] text-slate-500/90 dark:text-slate-400/90 transition-colors duration-500 group-hover:text-slate-900 dark:group-hover:text-white drop-shadow-xs pr-1">
                   {feature.label}
                 </span>
 
-                {/* Hover 展开的说明面板 (向左侧弹出) */}
-                <div className="absolute top-8 right-full mr-4 lg:mr-6 flex items-center opacity-0 -translate-x-3 pointer-events-none transition-all duration-500 ease-out group-hover:opacity-100 group-hover:translate-x-0 w-max z-10">
-                  <div className="flex items-center gap-4 lg:gap-5 border-r border-slate-200/60 dark:border-slate-700/60 pr-5 py-2">
+                {/* Hover 展开的说明面板 (画卷式向左侧延展展开) */}
+                <div className="absolute top-8 right-full mr-3 lg:mr-5 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-all duration-[750ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:w-[210px] lg:group-hover:w-[240px] group-hover:opacity-100 z-10">
+                  <div className="flex w-max shrink-0 items-center gap-4 lg:gap-5 border-r border-slate-300/60 dark:border-slate-600/60 pr-4 lg:pr-5 py-1">
                     <div className="flex flex-col items-end">
-                       <span className="text-[14px] font-medium tracking-[0.15em] text-slate-800 dark:text-slate-200 mb-1">
+                       <span className="text-[14px] font-medium tracking-[0.2em] text-slate-800 dark:text-slate-200 mb-1 whitespace-nowrap">
                          {feature.label}
                        </span>
-                       <span className="text-[12px] font-light tracking-[0.05em] text-slate-500 dark:text-slate-400">
+                       <span className="text-[12px] font-light tracking-[0.1em] text-slate-500 dark:text-slate-400 whitespace-nowrap">
                          {feature.desc}
                        </span>
                     </div>
-                    <Icon size={18} strokeWidth={1.5} className="text-blue-500/70 dark:text-blue-400/80" />
+                    <Icon size={18} strokeWidth={1.5} className="text-blue-500/70 dark:text-blue-400/80 shrink-0" />
                   </div>
                 </div>
               </Link>
