@@ -11,13 +11,14 @@ import { timelineData } from "./data";
 gsap.registerPlugin(ScrollTrigger);
 
 const motionEase = [0.22, 1, 0.36, 1] as const;
+const animationSlowdown = 3;
 
 const heroTitleVariants = {
   hidden: {},
   visible: {
     transition: {
-      staggerChildren: 0.22,
-      delayChildren: 0.35,
+      staggerChildren: 0.22 * animationSlowdown,
+      delayChildren: 0.35 * animationSlowdown,
     },
   },
 } satisfies Variants;
@@ -33,7 +34,7 @@ const heroCharVariants = {
     scale: 1,
     filter: "blur(0px)",
     transition: {
-      duration: 1.6,
+      duration: 1.6 * animationSlowdown,
       ease: motionEase,
     },
   },
@@ -43,8 +44,8 @@ const heroSubtitleVariants = {
   hidden: {},
   visible: {
     transition: {
-      staggerChildren: 0.18,
-      delayChildren: 1,
+      staggerChildren: 0.18 * animationSlowdown,
+      delayChildren: 1 * animationSlowdown,
     },
   },
 } satisfies Variants;
@@ -60,7 +61,7 @@ const heroSubtitleLineVariants = {
     y: 0,
     filter: "blur(0px)",
     transition: {
-      duration: 1.2,
+      duration: 1.2 * animationSlowdown,
       ease: motionEase,
     },
   },
@@ -75,8 +76,8 @@ const scrollHintVariants = {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 1,
-      delay: 1.45,
+      duration: 1 * animationSlowdown,
+      delay: 1.45 * animationSlowdown,
       ease: motionEase,
     },
   },
@@ -93,7 +94,7 @@ const footerVariants = {
     y: 0,
     filter: "blur(0px)",
     transition: {
-      duration: 1,
+      duration: 1 * animationSlowdown,
       ease: motionEase,
     },
   },
@@ -124,15 +125,13 @@ function EventLines({
       {content.map((line, index) => (
         <p
           key={index}
-          className={`${
-            mobile
-              ? "text-sm tracking-widest"
-              : "text-[15px] lg:text-base tracking-widest lg:tracking-[0.2em]"
-          } font-light leading-loose ${
-            important
+          className={`${mobile
+            ? "text-sm tracking-widest"
+            : "text-[15px] lg:text-base tracking-widest lg:tracking-[0.2em]"
+            } font-light leading-loose ${important
               ? "text-zinc-200 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] font-normal"
               : "text-zinc-400"
-          }`}
+            }`}
         >
           {line}
         </p>
@@ -154,9 +153,8 @@ function EventDate({
 }) {
   const monthNode = month ? (
     <div
-      className={`${verticalTextClass} ${
-        mobile ? "text-sm" : "text-lg lg:text-xl"
-      } text-red-800/80 font-serif tracking-[0.3em]`}
+      className={`${verticalTextClass} ${mobile ? "text-sm" : "text-lg lg:text-xl"
+        } text-red-800/80 font-serif tracking-[0.3em]`}
     >
       {month}
     </div>
@@ -164,9 +162,8 @@ function EventDate({
 
   const yearNode = (
     <div
-      className={`${verticalTextClass} ${
-        mobile ? "text-xl" : "text-2xl lg:text-3xl"
-      } font-serif tracking-[0.3em] font-light text-zinc-300`}
+      className={`${verticalTextClass} ${mobile ? "text-xl" : "text-2xl lg:text-3xl"
+        } font-serif tracking-[0.3em] font-light text-zinc-300`}
     >
       {year}
     </div>
@@ -174,9 +171,8 @@ function EventDate({
 
   return (
     <div
-      className={`flex flex-row items-end ${
-        mobile ? "gap-2" : "gap-3 lg:gap-4"
-      } transition-colors`}
+      className={`flex flex-row items-end ${mobile ? "gap-2" : "gap-3 lg:gap-4"
+        } transition-colors`}
     >
       {monthFirst ? (
         <>
@@ -228,7 +224,7 @@ export default function QingJinTianXia() {
       gsap.to(".scroll-hint-line", {
         scaleY: 1.5,
         opacity: 0,
-        duration: 1.5,
+        duration: 1.5 * animationSlowdown,
         repeat: -1,
         transformOrigin: "top",
         ease: "power2.out",
@@ -241,7 +237,7 @@ export default function QingJinTianXia() {
           trigger: ".timeline-container",
           start: "top 60%",
           end: "bottom 80%",
-          scrub: 1,
+          scrub: 1 * animationSlowdown,
         },
       });
 
@@ -263,7 +259,7 @@ export default function QingJinTianXia() {
               trigger: event,
               start: "top 85%",
               end: "top 50%",
-              scrub: 1,
+              scrub: 1 * animationSlowdown,
             },
           },
         );
@@ -296,7 +292,7 @@ export default function QingJinTianXia() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.12 }}
-        transition={{ duration: 2, ease: motionEase }}
+        transition={{ duration: 2 * animationSlowdown, ease: motionEase }}
         className="bg-noise pointer-events-none fixed inset-0 z-0 mix-blend-overlay"
         style={{
           backgroundImage:
@@ -392,9 +388,8 @@ export default function QingJinTianXia() {
                 </div>
 
                 <div
-                  className={`hidden w-1/2 justify-end pr-12 md:flex lg:pr-24 ${
-                    !isLeft ? "invisible" : ""
-                  }`}
+                  className={`hidden w-1/2 justify-end pr-12 md:flex lg:pr-24 ${!isLeft ? "invisible" : ""
+                    }`}
                 >
                   <div className="flex flex-row items-center gap-8 lg:gap-12">
                     <EventLines
@@ -411,9 +406,8 @@ export default function QingJinTianXia() {
                 </div>
 
                 <div
-                  className={`hidden w-1/2 justify-start pl-12 md:flex lg:pl-24 ${
-                    isLeft ? "invisible" : ""
-                  }`}
+                  className={`hidden w-1/2 justify-start pl-12 md:flex lg:pl-24 ${isLeft ? "invisible" : ""
+                    }`}
                 >
                   <div className="flex flex-row items-center gap-8 lg:gap-12">
                     <EventDate year={event.year} month={event.month} />
