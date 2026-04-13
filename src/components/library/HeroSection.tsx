@@ -92,31 +92,31 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
           {FEATURE_ENTRANCES.map((feature) => {
             const Icon = feature.icon;
             return (
-              <Link key={feature.id} href={feature.href} className="group relative flex flex-col items-center outline-none">
+              <Link key={feature.id} href={feature.href} className="group relative flex flex-col items-center outline-none text-sm" style={{ gap: '1em' }}>
                 {/* 顶部发光点 */}
-                <div className="relative mb-4 flex items-center justify-center">
+                <div className="relative flex items-center justify-center h-4 w-4">
                   <div className="absolute h-6 w-6 rounded-full bg-blue-500/10 blur-[2px] transition-all duration-[800ms] ease-out group-hover:bg-blue-500/30 group-hover:blur-md group-hover:scale-150" />
                   <div className="absolute h-2.5 w-2.5 rounded-full bg-blue-500/30 animate-pulse" style={{ animationDuration: '2s' }} />
                   <div className="h-[3px] w-[3px] rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)] transition-all duration-500 group-hover:bg-blue-400 group-hover:shadow-[0_0_12px_rgba(59,130,246,1)]" />
                 </div>
 
-                {/* 竖排标题 - 增加字距 */}
-                <span className="[writing-mode:vertical-rl] font-serif text-[15px] tracking-[0.8em] text-slate-500/90 dark:text-slate-400/90 transition-colors duration-500 group-hover:text-slate-900 dark:group-hover:text-white drop-shadow-xs pr-1">
+                {/* 竖排标题 - 控制基础字号，利用 1em 的巨幅字距和 1em 的顶部真实 gap 使得发光点仿佛也是一个字 */}
+                <span className="[writing-mode:vertical-rl] font-serif tracking-[1em] text-slate-500/90 dark:text-slate-400/90 transition-colors duration-[1000ms] group-hover:text-slate-900 dark:group-hover:text-white drop-shadow-xs pr-1">
                   {feature.label}
                 </span>
 
-                {/* Hover 展开的说明面板 (画卷式向左侧延展展开) */}
-                <div className="absolute top-8 right-full mr-3 lg:mr-5 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-all duration-[750ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:w-[210px] lg:group-hover:w-[240px] group-hover:opacity-100 z-10">
+                {/* Hover 展开的说明面板 (画卷式向左侧缓慢延展展出) */}
+                <div className="absolute top-6 right-full mr-3 lg:mr-5 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-all duration-[1000ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:w-[210px] lg:group-hover:w-[240px] group-hover:opacity-100 z-10">
                   <div className="flex w-max shrink-0 items-center gap-4 lg:gap-5 border-r border-slate-300/60 dark:border-slate-600/60 pr-4 lg:pr-5 py-1">
                     <div className="flex flex-col items-end">
-                       <span className="text-[14px] font-medium tracking-[0.2em] text-slate-800 dark:text-slate-200 mb-1 whitespace-nowrap">
+                       <span className="text-[14px] font-medium tracking-[0.2em] text-slate-800 dark:text-slate-200 mb-1 whitespace-nowrap transition-colors duration-[1000ms]">
                          {feature.label}
                        </span>
-                       <span className="text-[12px] font-light tracking-[0.1em] text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                       <span className="text-[12px] font-light tracking-[0.1em] text-slate-500 dark:text-slate-400 whitespace-nowrap transition-colors duration-[1000ms]">
                          {feature.desc}
                        </span>
                     </div>
-                    <Icon size={18} strokeWidth={1.5} className="text-blue-500/70 dark:text-blue-400/80 shrink-0" />
+                    <Icon size={18} strokeWidth={1.5} className="text-blue-500/70 dark:text-blue-400/80 shrink-0 transition-colors duration-[1000ms]" />
                   </div>
                 </div>
               </Link>
