@@ -97,12 +97,12 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
               <Link key={feature.id} href={feature.href} className="group relative flex flex-col items-center outline-none text-sm" style={{ gap: '1em' }}>
                 {/* 顶部发光点 - 移除中心点，仅保留呼吸晕影 */}
                 <div className="relative flex items-center justify-center h-4 w-4">
-                  <div className="absolute h-6 w-6 rounded-full bg-teal-500/10 blur-[2px] transition-all duration-[800ms] ease-out group-hover:bg-teal-500/30 group-hover:blur-md group-hover:scale-150" />
+                  <div className="absolute h-6 w-6 rounded-full bg-teal-500/10 blur-[2px] transition-all duration-800 ease-out group-hover:bg-teal-500/30 group-hover:blur-md group-hover:scale-150" />
                   <div className="absolute h-2.5 w-2.5 rounded-full bg-teal-500/30 animate-pulse shadow-[0_0_8px_rgba(20,184,166,0.4)]" style={{ animationDuration: '2s' }} />
                 </div>
 
-                {/* 竖排标题 - 调整亮色模式色值，使其青色调更明显而不显沉闷 */}
-                <span className="[writing-mode:vertical-rl] font-serif font-medium tracking-[1em] -mb-[1em] text-teal-600 dark:text-teal-300 transition-all duration-1000 group-hover:text-teal-800 dark:group-hover:text-teal-100 group-hover:drop-shadow-[0_0_12px_rgba(20,184,166,0.3)] pr-1">
+                {/* 竖排标题 - 移除 pr-1 防止不对称 padding 导致的盒子偏移，确保文字和光点绝对中心对齐 */}
+                <span className="[writing-mode:vertical-rl] font-serif font-medium tracking-[1em] -mb-[1em] text-teal-600 dark:text-teal-300 transition-all duration-1000 group-hover:text-teal-800 dark:group-hover:text-teal-100 group-hover:drop-shadow-[0_0_12px_rgba(20,184,166,0.3)]">
                   {feature.label}
                 </span>
 
@@ -128,19 +128,19 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
         {/* -- 移动端入口 (Mobile) - 与桌面端统一的青色系设计 -- */}
         <div className="flex md:hidden flex-col gap-4 w-full mt-1">
           {/* 主副标题与入口间的分界线 */}
-          <div className="w-full h-[1px] bg-slate-200/80 dark:bg-slate-800/60 mb-1" />
+          <div className="w-full h-px bg-slate-200/80 dark:bg-slate-800/60 mb-1" />
 
           {FEATURE_ENTRANCES.map((feature) => {
             return (
               <Link key={feature.id} href={feature.href} className="group flex items-center justify-between outline-none py-2">
                 <div className="flex items-center gap-4">
                   {/* 发光晕影 (无实心中心，弱化呼吸) */}
-                  <div className="relative flex items-center justify-center top-[1px]">
+                  <div className="relative flex items-center justify-center h-4 w-4">
                     <div className="absolute h-5 w-5 rounded-full bg-teal-500/10 blur-[1px] transition-all group-active:scale-110" />
-                    <div className="h-1.5 w-1.5 rounded-full bg-teal-500/30 animate-pulse shadow-[0_0_6px_rgba(20,184,166,0.4)]" />
+                    <div className="absolute h-1.5 w-1.5 rounded-full bg-teal-500/30 animate-pulse shadow-[0_0_6px_rgba(20,184,166,0.4)]" />
                   </div>
                   {/* 标题 */}
-                  <span className="text-[15px] font-serif font-medium tracking-[0.15em] text-teal-600 dark:text-teal-300">
+                  <span className="text-[15px] font-serif font-medium tracking-[0.15em] text-teal-600 dark:text-teal-300 leading-none">
                     {feature.label}
                   </span>
                 </div>
