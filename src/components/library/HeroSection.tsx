@@ -101,8 +101,8 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                   <div className="absolute h-2.5 w-2.5 rounded-full bg-teal-500/30 animate-pulse shadow-[0_0_8px_rgba(20,184,166,0.4)]" style={{ animationDuration: '2s' }} />
                 </div>
 
-                {/* 竖排标题 - 色调改为深青色系以提升质感 */}
-                <span className="[writing-mode:vertical-rl] font-serif tracking-[1em] -mb-[1em] text-teal-800 dark:text-teal-300 transition-all duration-1000 group-hover:text-teal-950 dark:group-hover:text-teal-100 group-hover:drop-shadow-[0_0_12px_rgba(20,184,166,0.3)] pr-1">
+                {/* 竖排标题 - 色调改为深青色系并加粗以提升质感 */}
+                <span className="[writing-mode:vertical-rl] font-serif font-medium tracking-[1em] -mb-[1em] text-teal-800 dark:text-teal-300 transition-all duration-1000 group-hover:text-teal-950 dark:group-hover:text-teal-100 group-hover:drop-shadow-[0_0_12px_rgba(20,184,166,0.3)] pr-1">
                   {feature.label}
                 </span>
 
