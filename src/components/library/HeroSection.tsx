@@ -103,7 +103,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 </div>
 
                 {/* 竖排标题 - 使用 -mb-[1em] 巧妙吃掉 tracking-[1em] 在最后一个字下方产生的巨大不可见占位，确保底部视觉重合 */}
-                <span className="[writing-mode:vertical-rl] font-serif tracking-[1em] -mb-[1em] text-slate-500/90 dark:text-slate-400/90 transition-colors duration-1000 group-hover:text-slate-900 dark:group-hover:text-white drop-shadow-xs pr-1">
+                <span className="[writing-mode:vertical-rl] font-serif tracking-[1em] -mb-[1em] text-slate-500/90 dark:text-slate-400/90 transition-all duration-1000 group-hover:text-slate-800 dark:group-hover:text-slate-100 group-hover:drop-shadow-[0_0_12px_rgba(59,130,246,0.3)] dark:group-hover:drop-shadow-[0_0_12px_rgba(59,130,246,0.4)] pr-1">
                   {feature.label}
                 </span>
 
@@ -111,14 +111,14 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 <div className="absolute top-12 right-full mr-3 lg:mr-5 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-all duration-1200 ease-in-out group-hover:w-[210px] lg:group-hover:w-[240px] group-hover:opacity-100 z-10">
                   <div className="flex w-max shrink-0 items-center gap-4 lg:gap-5 border-r border-slate-300/60 dark:border-slate-600/60 pr-4 lg:pr-5 py-1">
                     <div className="flex flex-col items-end">
-                      <span className="text-[14px] font-medium tracking-[0.2em] text-slate-800 dark:text-slate-200 mb-1 whitespace-nowrap transition-colors duration-1200 ease-in-out">
+                      <span className="text-[15px] font-serif font-medium tracking-[0.25em] text-slate-900 dark:text-slate-100 mb-1 whitespace-nowrap transition-colors duration-1200 ease-in-out drop-shadow-sm">
                         {feature.label}
                       </span>
-                      <span className="text-[12px] font-light tracking-widest text-slate-500 dark:text-slate-400 whitespace-nowrap transition-colors duration-1200 ease-in-out">
+                      <span className="text-[12px] font-serif font-light tracking-[0.15em] text-slate-500 dark:text-slate-400 whitespace-nowrap transition-colors duration-1200 ease-in-out">
                         {feature.desc}
                       </span>
                     </div>
-                    <Icon size={18} strokeWidth={1.5} className="text-blue-500/70 dark:text-blue-400/80 shrink-0 transition-colors duration-1200 ease-in-out" />
+                    <Icon size={18} strokeWidth={1.5} className="text-blue-500/80 dark:text-blue-400/80 shrink-0 transition-colors duration-1200 ease-in-out" />
                   </div>
                 </div>
               </Link>
