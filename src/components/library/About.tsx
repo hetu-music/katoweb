@@ -115,6 +115,18 @@ const fallbackColors = {
   text: "text-slate-600 dark:text-slate-400",
 };
 
+const WeiboIcon = ({ size = 16, className }: { size?: number; className?: string }) => (
+  <svg
+    viewBox="0 0 16 16"
+    width={size}
+    height={size}
+    fill="currentColor"
+    className={className}
+  >
+    <path d="M7.992 14.286c-4.413 0-7.292-2.34-7.292-4.693 0-1.355.971-2.67 2.735-3.534-.1-.305-.156-.621-.156-.953 0-1.71 1.538-3.1 3.435-3.1 1.285 0 2.398.63 3.003 1.58.562-.1 1.135-.149 1.707-.149 4.413 0 7.292 2.341 7.292 4.693 0 2.352-2.879 4.693-7.292 4.693l-.432-.037c-.336.197-.672.393-1.01.59l.01-.097zM2.512 8.852c0 1.902 2.017 3.445 4.505 3.445s4.505-1.543 4.505-3.445c0-1.903-2.017-3.446-4.505-3.446s-4.505 1.543-4.505 3.446zm7.49-3.956c.147.15.34.22.535.22.195 0 .39-.071.537-.216.297-.291.297-.764 0-1.055-.297-.291-.778-.291-1.075 0-.297.291-.297.764 0 1.05zm-.827-1.472c.148.15.34.22.536.22.196 0 .39-.071.537-.217.297-.291.297-.763 0-1.054-.297-.291-.779-.291-1.076 0-.297.291-.297.763 0 1.051zm3.84 5.428c.148.15.34.22.536.22.196 0 .39-.071.537-.217.297-.291.297-.763 0-1.054-.297-.291-.778-.291-1.076 0-.297.291-.297.763 0 1.051zm-.826-1.471c.147.15.34.22.536.22.196 0 .39-.071.537-.217.297-.291.297-.763 0-1.054-.297-.291-.778-.291-1.076 0-.297.291-.297.763 0 1.051z" />
+  </svg>
+);
+
 const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [contributorsLoading, setContributorsLoading] = useState(false);
@@ -203,15 +215,26 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     数据与反馈
                   </h3>
                   <p>
-                    数据来源于创作者微博及各大音乐平台。若发现误漏或有意共同维护数据，欢迎邮件联系。
+                    数据来源于创作者微博及各大音乐平台。若发现误漏或有意共同维护数据，欢迎邮件或微博联系。
                   </p>
-                  <a
-                    href="mailto:feedback@hetu-music.com"
-                    className="inline-flex items-center gap-2 px-4 py-2 mt-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-blue-600 dark:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200 dark:border-slate-700"
-                  >
-                    <Mail size={16} />
-                    <span>feedback@hetu-music.com</span>
-                  </a>
+                  <div className="flex flex-col gap-2 mt-2">
+                    <a
+                      href="mailto:feedback@hetu-music.com"
+                      className="w-fit inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-blue-600 dark:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200 dark:border-slate-700 shadow-sm"
+                    >
+                      <Mail size={16} />
+                      <span>feedback@hetu-music.com</span>
+                    </a>
+                    <a
+                      href="https://weibo.com/hetumusic"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-fit inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-[#e6162d] dark:text-[#ff4d4f] hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200 dark:border-slate-700 shadow-sm"
+                    >
+                      <WeiboIcon size={18} />
+                      <span>官方微博</span>
+                    </a>
+                  </div>
                 </div>
 
                 <div className="p-5 rounded-xl bg-linear-to-br from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 border border-amber-100 dark:border-amber-900/20 text-sm">
