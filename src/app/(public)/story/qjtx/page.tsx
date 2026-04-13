@@ -208,101 +208,66 @@ function TimelineDetailSection({
   const { detail } = event;
 
   return (
-    <section className="timeline-detail-section relative my-8 h-[260vh] w-full md:my-16 md:h-[300vh]">
-      <div className="timeline-detail-backdrop pointer-events-none absolute inset-0 z-0 opacity-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(127,29,29,0.22)_0%,rgba(9,9,11,0.08)_42%,rgba(9,9,11,0)_72%)]" />
-        <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-red-800/45 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-px bg-linear-to-r from-transparent via-red-950/40 to-transparent" />
-      </div>
-
-      <div className="timeline-detail-stage sticky top-0 z-20 flex h-svh items-center justify-center overflow-hidden">
-        <div className="timeline-detail-shell relative flex h-full w-full items-center justify-center p-4 md:p-8">
-          <article className="timeline-detail-panel relative flex h-full w-full flex-col overflow-hidden rounded-[2.25rem] border border-red-900/35 bg-[linear-gradient(180deg,rgba(20,20,22,0.98)_0%,rgba(9,9,11,0.96)_100%)] shadow-[0_40px_120px_rgba(0,0,0,0.45)]">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(245,158,11,0.08),transparent_42%)]" />
-            <div className="pointer-events-none absolute inset-0 border border-white/5" />
-
-            <div className="timeline-detail-header relative z-10 flex flex-col gap-5 border-b border-white/8 px-6 pt-10 pb-7 md:px-12 md:pt-16 md:pb-10">
-              <div className="flex items-start justify-between gap-6">
-                <div className="space-y-3">
-                  <p className="text-[10px] font-light tracking-[0.6em] text-red-700/85 md:text-xs">
-                    {detail.eyebrow}
-                  </p>
-                  <h2 className="text-3xl font-light tracking-[0.18em] text-zinc-100 md:text-5xl md:tracking-[0.22em]">
-                    {detail.title}
-                  </h2>
-                </div>
-
-                <div className="hidden items-end gap-3 text-zinc-400 md:flex">
-                  <EventDate
-                    year={event.year}
-                    month={event.month}
-                    monthFirst
-                  />
-                </div>
-              </div>
-
-              {detail.quote ? (
-                <p className="timeline-detail-line max-w-3xl text-base font-light leading-loose tracking-[0.12em] text-zinc-300/95 md:text-xl md:leading-[2.1]">
-                  {detail.quote}
-                </p>
-              ) : null}
-            </div>
-
-            <div className="relative z-10 flex-1 overflow-hidden">
-              <div className="timeline-detail-copy flex min-h-full flex-col gap-6 px-6 pt-8 pb-12 md:px-12 md:pt-10 md:pb-18">
-                <div className="grid gap-10 md:grid-cols-[minmax(0,1.25fr)_minmax(14rem,0.75fr)] md:gap-12">
-                  <div className="space-y-5 md:space-y-6">
-                    {detail.lead ? (
-                      <p className="timeline-detail-line text-lg font-light leading-loose tracking-[0.14em] text-zinc-200 md:text-2xl md:leading-[2.15]">
-                        {detail.lead}
-                      </p>
-                    ) : null}
-
-                    {detail.body.map((paragraph, index) => (
-                      <p
-                        key={index}
-                        className="timeline-detail-line text-sm font-light leading-[2.1] tracking-[0.14em] text-zinc-400 md:text-[15px]"
-                      >
-                        {paragraph}
-                      </p>
-                    ))}
-
-                    {detail.closing ? (
-                      <p className="timeline-detail-line pt-4 text-sm font-light tracking-[0.5em] text-red-700/80 md:text-[13px]">
-                        {detail.closing}
-                      </p>
-                    ) : null}
-                  </div>
-
-                  <aside className="timeline-detail-line flex flex-col justify-between border-t border-white/8 pt-6 md:border-t-0 md:border-l md:pt-0 md:pl-10">
-                    <div className="space-y-4">
-                      <p className="text-[10px] font-light tracking-[0.55em] text-zinc-600 md:text-xs">
-                        节点坐标
-                      </p>
-                      <div className="flex items-center gap-4 md:hidden">
-                        <EventDate
-                          year={event.year}
-                          month={event.month}
-                          monthFirst
-                        />
-                      </div>
-                      <p className="text-sm font-light leading-loose tracking-[0.14em] text-zinc-500">
-                        沉浸阅读会在滚动中短暂停驻，展开这一段被时间轴折叠起来的余音。
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-3 pt-8 text-zinc-700">
-                      <div className="h-px flex-1 bg-linear-to-r from-red-900/45 to-transparent" />
-                      <span className="text-[10px] font-light tracking-[0.45em] text-zinc-600">
-                        QJTX
-                      </span>
-                    </div>
-                  </aside>
-                </div>
-              </div>
-            </div>
-          </article>
+    <section className="timeline-detail-section pointer-events-none relative h-[420vh] w-full">
+      <div className="timeline-detail-stage fixed inset-0 z-30 h-svh w-full opacity-0">
+        <div className="timeline-detail-backdrop absolute inset-0 opacity-0">
+          <div className="absolute inset-0 bg-zinc-950" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(161,40,40,0.18)_0%,rgba(39,39,42,0.08)_36%,rgba(9,9,11,0.96)_100%)]" />
         </div>
+
+        <article className="timeline-detail-panel absolute top-1/2 left-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border border-red-900/55 bg-zinc-950 shadow-[0_0_0_rgba(0,0,0,0)]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(185,28,28,0.24)_0%,rgba(9,9,11,0.95)_78%)]" />
+
+          <div className="timeline-detail-content absolute inset-0 flex flex-col opacity-0">
+            <div className="flex items-start justify-between gap-6 px-6 pt-10 md:px-14 md:pt-14">
+              <div className="timeline-detail-line space-y-4">
+                <p className="text-[10px] font-light tracking-[0.7em] text-red-800/85 md:text-xs">
+                  {detail.eyebrow}
+                </p>
+                <h2 className="text-3xl font-light tracking-[0.28em] text-zinc-100 md:text-5xl md:tracking-[0.36em]">
+                  {detail.title}
+                </h2>
+              </div>
+
+              <div className="timeline-detail-line hidden md:block">
+                <EventDate year={event.year} month={event.month} monthFirst />
+              </div>
+            </div>
+
+            <div className="timeline-detail-copy relative flex-1 overflow-hidden px-6 pt-8 pb-12 md:px-14 md:pt-12 md:pb-16">
+              <div className="timeline-detail-reading h-full overflow-hidden rounded-[1.5rem] border border-white/6 bg-white/[0.02] px-5 py-6 md:px-8 md:py-8">
+                <div className="timeline-detail-columns flex h-full flex-row-reverse gap-6 overflow-hidden [writing-mode:vertical-rl] [text-orientation:mixed] md:gap-10">
+                  {detail.quote ? (
+                    <p className="timeline-detail-line max-h-full text-base leading-[2.8] tracking-[0.45em] text-zinc-200 md:text-xl md:leading-[3] md:tracking-[0.5em]">
+                      {detail.quote}
+                    </p>
+                  ) : null}
+
+                  {detail.lead ? (
+                    <p className="timeline-detail-line max-h-full text-sm leading-[2.8] tracking-[0.42em] text-zinc-300 md:text-lg md:leading-[3] md:tracking-[0.48em]">
+                      {detail.lead}
+                    </p>
+                  ) : null}
+
+                  {detail.body.map((paragraph, index) => (
+                    <p
+                      key={index}
+                      className="timeline-detail-line max-h-full text-[13px] leading-[2.65] tracking-[0.4em] text-zinc-400 md:text-[15px] md:leading-[2.9] md:tracking-[0.45em]"
+                    >
+                      {paragraph}
+                    </p>
+                  ))}
+
+                  {detail.closing ? (
+                    <p className="timeline-detail-line max-h-full text-[12px] leading-[2.8] tracking-[0.55em] text-red-800/80 md:text-sm">
+                      {detail.closing}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
       </div>
     </section>
   );
@@ -361,6 +326,10 @@ export default function QingJinTianXia() {
       );
       const detailSections = gsap.utils.toArray<HTMLElement>(
         ".timeline-detail-section",
+        container.current,
+      );
+      const timelineSpines = gsap.utils.toArray<HTMLElement>(
+        ".timeline-spine, .timeline-progress",
         container.current,
       );
       const dots = gsap.utils.toArray<HTMLElement>(".event-dot", container.current);
@@ -437,13 +406,19 @@ export default function QingJinTianXia() {
 
       detailSections.forEach((section) => {
         const sectionQuery = gsap.utils.selector(section);
+        const originDot =
+          section.previousElementSibling?.querySelector<HTMLElement>(".event-dot") ??
+          null;
+        const stage = sectionQuery(".timeline-detail-stage")[0] as
+          | HTMLElement
+          | undefined;
         const backdrop = sectionQuery(".timeline-detail-backdrop")[0] as
           | HTMLElement
           | undefined;
-        const header = sectionQuery(".timeline-detail-header")[0] as
+        const panel = sectionQuery(".timeline-detail-panel")[0] as
           | HTMLElement
           | undefined;
-        const panel = sectionQuery(".timeline-detail-panel")[0] as
+        const content = sectionQuery(".timeline-detail-content")[0] as
           | HTMLElement
           | undefined;
         const copy = sectionQuery(".timeline-detail-copy")[0] as
@@ -451,102 +426,150 @@ export default function QingJinTianXia() {
           | undefined;
         const lines = sectionQuery(".timeline-detail-line");
 
-        if (!panel || !copy) {
+        if (!stage || !panel || !content || !copy) {
           return;
         }
 
-        gsap.set(panel, { scale: 0.78, borderRadius: 36 });
+        gsap.set(stage, { autoAlpha: 0 });
+        if (backdrop) {
+          gsap.set(backdrop, { opacity: 0 });
+        }
+        gsap.set(panel, {
+          width: 12,
+          height: 12,
+          borderRadius: 999,
+          boxShadow: "0 0 0 rgba(0,0,0,0)",
+        });
+        gsap.set(content, { autoAlpha: 0 });
         gsap.set(copy, { yPercent: 0 });
 
         const detailTimeline = gsap.timeline({
           scrollTrigger: {
-            trigger: section,
-            start: "top top",
-            end: "+=220%",
-            scrub: 0.9 * animationSlowdown,
-            pin: true,
+            trigger: originDot ?? section,
+            start: originDot ? "center center" : "top center",
+            end: "+=4200",
+            scrub: true,
+            pin: section,
             anticipatePin: 1,
+            pinSpacing: true,
             invalidateOnRefresh: true,
           },
         });
 
-        if (backdrop) {
-          detailTimeline.fromTo(
-            backdrop,
-            { opacity: 0 },
-            { opacity: 1, duration: 0.16, ease: "none" },
+        detailTimeline
+          .set(stage, { autoAlpha: 1 }, 0)
+          .to(
+            timelineSpines,
+            { opacity: 0, duration: 0.06, ease: "none" },
             0,
+          );
+
+        if (backdrop) {
+          detailTimeline.to(
+            backdrop,
+            { opacity: 1, duration: 0.18, ease: "none" },
+            0.02,
           );
         }
 
         detailTimeline.to(
           panel,
           {
-            scale: 1,
+            width: () => window.innerWidth,
+            height: () => window.innerHeight,
             borderRadius: 0,
-            duration: 0.22,
-            ease: "none",
+            boxShadow: "0 40px 120px rgba(0,0,0,0.5)",
+            duration: 0.24,
+            ease: "power2.inOut",
           },
-          0.02,
+          0,
         );
 
-        if (header) {
-          detailTimeline.fromTo(
-            header,
-            { opacity: 0.65, y: 28, filter: "blur(10px)" },
-            {
-              opacity: 1,
-              y: 0,
-              filter: "blur(0px)",
-              duration: 0.18,
-              ease: "none",
-            },
-            0.08,
-          );
-        }
+        detailTimeline.to(
+          content,
+          {
+            autoAlpha: 1,
+            duration: 0.14,
+            ease: "none",
+          },
+          0.16,
+        );
 
         detailTimeline.fromTo(
           lines,
-          { opacity: 0, y: 32, filter: "blur(10px)" },
+          { opacity: 0, y: 36, filter: "blur(10px)" },
           {
             opacity: 1,
             y: 0,
             filter: "blur(0px)",
-            duration: 0.24,
-            stagger: 0.06,
+            duration: 0.18,
+            stagger: 0.04,
             ease: "none",
           },
-          0.18,
+          0.2,
         );
+
+        detailTimeline.to({}, { duration: 0.34 }, 0.38);
 
         detailTimeline.to(
           copy,
           {
-            yPercent: -18,
-            duration: 0.34,
+            yPercent: -10,
+            duration: 0.14,
             ease: "none",
           },
-          0.42,
+          0.72,
+        );
+
+        detailTimeline.to(
+          lines,
+          {
+            opacity: 0,
+            filter: "blur(12px)",
+            duration: 0.12,
+            ease: "none",
+          },
+          0.82,
+        );
+
+        detailTimeline.to(
+          content,
+          {
+            autoAlpha: 0,
+            duration: 0.1,
+            ease: "none",
+          },
+          0.86,
         );
 
         detailTimeline.to(
           panel,
           {
-            scale: 0.84,
-            borderRadius: 28,
-            duration: 0.2,
-            ease: "none",
+            width: 12,
+            height: 12,
+            borderRadius: 999,
+            boxShadow: "0 0 0 rgba(0,0,0,0)",
+            duration: 0.16,
+            ease: "power2.inOut",
           },
-          0.8,
+          0.84,
         );
 
         if (backdrop) {
           detailTimeline.to(
             backdrop,
-            { opacity: 0, duration: 0.18, ease: "none" },
-            0.82,
+            { opacity: 0, duration: 0.12, ease: "none" },
+            0.88,
           );
         }
+
+        detailTimeline.to(
+          timelineSpines,
+          { opacity: 1, duration: 0.08, ease: "none" },
+          0.98,
+        );
+
+        detailTimeline.set(stage, { autoAlpha: 0 }, 1);
       });
 
       updateDotsByProgressLine();
@@ -654,7 +677,7 @@ export default function QingJinTianXia() {
       </section>
 
       <main className="timeline-container relative z-10 mx-auto w-full max-w-7xl px-4 py-[15vh]">
-        <div className="absolute top-0 bottom-0 left-14 w-px -translate-x-1/2 rounded bg-zinc-800/40 md:left-1/2" />
+        <div className="timeline-spine absolute top-0 bottom-0 left-14 w-px -translate-x-1/2 rounded bg-zinc-800/40 md:left-1/2" />
         <div className="timeline-progress absolute top-0 bottom-0 left-14 z-10 w-px -translate-x-1/2 origin-top scale-y-0 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2" />
 
         <div className="relative flex w-full flex-col pt-10 pb-40">
