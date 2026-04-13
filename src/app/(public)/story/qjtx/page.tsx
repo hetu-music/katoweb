@@ -236,24 +236,65 @@ export default function QingJinTianXia() {
         ease: "power2.out",
       });
 
-      gsap.to(".timeline-progress", {
-        scaleY: 1,
-        ease: "none",
-        scrollTrigger: {
-          trigger: ".timeline-container",
-          start: "top 60%",
-          end: "bottom 80%",
-          scrub: 1 * animationSlowdown,
-        },
-      });
-
       const events = gsap.utils.toArray<HTMLElement>(
         ".timeline-event",
         container.current,
       );
       const dots = gsap.utils.toArray<HTMLElement>(".event-dot", container.current);
+      const progressLine = container.current?.querySelector<HTMLElement>(
+        ".timeline-progress",
+      );
 
-      events.forEach((event, index) => {
+      const setDotState = (dot: HTMLElement, active: boolean) => {
+        const nextState = active ? "active" : "inactive";
+
+        if (dot.dataset.state === nextState) {
+          return;
+        }
+
+        dot.dataset.state = nextState;
+        gsap.to(dot, {
+          duration: 0.35,
+          borderColor: active ? "#b91c1c" : "#71717a",
+          backgroundColor: active ? "#7f1d1d" : "#09090b",
+          boxShadow: active ? "0 0 15px rgba(185,28,28,0.8)" : "0 0 0 rgba(0,0,0,0)",
+          overwrite: true,
+        });
+      };
+
+      dots.forEach((dot) => setDotState(dot, false));
+
+      const updateDotsByProgressLine = () => {
+        if (!progressLine) {
+          return;
+        }
+
+        const progressRect = progressLine.getBoundingClientRect();
+        const lineBottom = progressRect.top + progressRect.height;
+
+        dots.forEach((dot) => {
+          const dotRect = dot.getBoundingClientRect();
+          const dotCenter = dotRect.top + dotRect.height / 2;
+          setDotState(dot, lineBottom >= dotCenter);
+        });
+      };
+
+      if (progressLine) {
+        gsap.to(progressLine, {
+          scaleY: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: ".timeline-container",
+            start: "top 60%",
+            end: "bottom 80%",
+            scrub: 1 * animationSlowdown,
+            onUpdate: updateDotsByProgressLine,
+            onRefresh: updateDotsByProgressLine,
+          },
+        });
+      }
+
+      events.forEach((event) => {
         gsap.fromTo(
           event,
           { opacity: 0, y: 70, filter: "blur(10px)" },
@@ -269,23 +310,9 @@ export default function QingJinTianXia() {
             },
           },
         );
-
-        const dot = dots[index];
-        if (!dot) {
-          return;
-        }
-
-        gsap.to(dot, {
-          borderColor: "#b91c1c",
-          backgroundColor: "#7f1d1d",
-          boxShadow: "0 0 15px rgba(185,28,28,0.8)",
-          scrollTrigger: {
-            trigger: event,
-            start: "top 60%",
-            toggleActions: "play none none reverse",
-          },
-        });
       });
+
+      updateDotsByProgressLine();
     },
     { scope: container },
   );
