@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
@@ -52,16 +51,19 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
     <div className="w-full flex flex-col md:flex-row justify-between gap-8 md:gap-12 pt-1 md:pt-4" style={{ alignItems: 'stretch' }}>
 
       {/* 左侧：标题与子标题 */}
-      <div className="flex flex-col justify-between flex-1 py-1 gap-4 md:gap-0">
-        <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50 italic tracking-tight leading-[0.9]">
+      {/* 移除 py-1 彻底消除上下预留 gap */}
+      <div className="flex flex-col justify-between flex-1 gap-4 md:gap-0">
+        {/* 使用 leading-[0.8] 和负 margin (-mt-1 到 -mt-2) 削掉中文字体本身的顶部字距 (Ascender) */}
+        <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50 italic tracking-tight leading-[0.8] -mt-1 lg:-mt-1.5">
           谣歌 <span className="text-[1.3em] font-semibold">{songCount}</span>
         </h1>
 
-        <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 mt-auto">
+        {/* 使用 -mb-1 削弱文字行高产生的底部兜底空间 */}
+        <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 mt-auto -mb-1 lg:-mb-1.5">
           <span className="text-blue-600 dark:text-blue-500 font-mono text-lg leading-none relative -top-[1.5px] select-none">
             &gt;
           </span>
-          <p className="font-light tracking-[0.15em] text-sm md:text-[15px] leading-relaxed">
+          <p className="font-light tracking-[0.15em] text-sm md:text-[15px] leading-relaxed mb-0">
             你一定想知道，戏里讲了什么故事
             {isHoverDevice ? (
               <motion.span
@@ -86,7 +88,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
 
       {/* 右侧：功能入口区 (Feature Entrances) */}
       <div className="flex w-full md:w-auto h-full justify-start md:justify-end items-end md:items-start pt-6 md:pt-0">
-        
+
         {/* -- 桌面端入口 (Desktop) - 极简竖排发光点 -- */}
         <div className="hidden md:flex flex-row gap-10 lg:gap-14 justify-end mt-4 md:mt-0">
           {FEATURE_ENTRANCES.map((feature) => {
@@ -95,28 +97,28 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
               <Link key={feature.id} href={feature.href} className="group relative flex flex-col items-center outline-none text-sm" style={{ gap: '1em' }}>
                 {/* 顶部发光点 */}
                 <div className="relative flex items-center justify-center h-4 w-4">
-                  <div className="absolute h-6 w-6 rounded-full bg-blue-500/10 blur-[2px] transition-all duration-[800ms] ease-out group-hover:bg-blue-500/30 group-hover:blur-md group-hover:scale-150" />
+                  <div className="absolute h-6 w-6 rounded-full bg-blue-500/10 blur-[2px] transition-all duration-800 ease-out group-hover:bg-blue-500/30 group-hover:blur-md group-hover:scale-150" />
                   <div className="absolute h-2.5 w-2.5 rounded-full bg-blue-500/30 animate-pulse" style={{ animationDuration: '2s' }} />
                   <div className="h-[3px] w-[3px] rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)] transition-all duration-500 group-hover:bg-blue-400 group-hover:shadow-[0_0_12px_rgba(59,130,246,1)]" />
                 </div>
 
-                {/* 竖排标题 - 控制基础字号，利用 1em 的巨幅字距和 1em 的顶部真实 gap 使得发光点仿佛也是一个字 */}
-                <span className="[writing-mode:vertical-rl] font-serif tracking-[1em] text-slate-500/90 dark:text-slate-400/90 transition-colors duration-[1000ms] group-hover:text-slate-900 dark:group-hover:text-white drop-shadow-xs pr-1">
+                {/* 竖排标题 - 使用 -mb-[1em] 巧妙吃掉 tracking-[1em] 在最后一个字下方产生的巨大不可见占位，确保底部视觉重合 */}
+                <span className="[writing-mode:vertical-rl] font-serif tracking-[1em] -mb-[1em] text-slate-500/90 dark:text-slate-400/90 transition-colors duration-1000 group-hover:text-slate-900 dark:group-hover:text-white drop-shadow-xs pr-1">
                   {feature.label}
                 </span>
 
                 {/* Hover 展开的说明面板 (画卷式向左侧缓慢延展展出) */}
-                <div className="absolute top-12 right-full mr-3 lg:mr-5 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-all duration-[1200ms] ease-in-out group-hover:w-[210px] lg:group-hover:w-[240px] group-hover:opacity-100 z-10">
+                <div className="absolute top-12 right-full mr-3 lg:mr-5 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-all duration-1200 ease-in-out group-hover:w-[210px] lg:group-hover:w-[240px] group-hover:opacity-100 z-10">
                   <div className="flex w-max shrink-0 items-center gap-4 lg:gap-5 border-r border-slate-300/60 dark:border-slate-600/60 pr-4 lg:pr-5 py-1">
                     <div className="flex flex-col items-end">
-                       <span className="text-[14px] font-medium tracking-[0.2em] text-slate-800 dark:text-slate-200 mb-1 whitespace-nowrap transition-colors duration-[1200ms] ease-in-out">
-                         {feature.label}
-                       </span>
-                       <span className="text-[12px] font-light tracking-[0.1em] text-slate-500 dark:text-slate-400 whitespace-nowrap transition-colors duration-[1200ms] ease-in-out">
-                         {feature.desc}
-                       </span>
+                      <span className="text-[14px] font-medium tracking-[0.2em] text-slate-800 dark:text-slate-200 mb-1 whitespace-nowrap transition-colors duration-1200 ease-in-out">
+                        {feature.label}
+                      </span>
+                      <span className="text-[12px] font-light tracking-widest text-slate-500 dark:text-slate-400 whitespace-nowrap transition-colors duration-1200 ease-in-out">
+                        {feature.desc}
+                      </span>
                     </div>
-                    <Icon size={18} strokeWidth={1.5} className="text-blue-500/70 dark:text-blue-400/80 shrink-0 transition-colors duration-[1200ms] ease-in-out" />
+                    <Icon size={18} strokeWidth={1.5} className="text-blue-500/70 dark:text-blue-400/80 shrink-0 transition-colors duration-1200 ease-in-out" />
                   </div>
                 </div>
               </Link>
@@ -126,28 +128,28 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
 
         {/* -- 移动端入口 (Mobile) - 极简发光点排列 -- */}
         <div className="flex md:hidden flex-col gap-4 w-full mt-4">
-           {FEATURE_ENTRANCES.map((feature) => {
-             return (
-               <Link key={feature.id} href={feature.href} className="group flex items-center justify-between outline-none py-1 border-b border-slate-100 dark:border-slate-800/50 pb-3">
-                 <div className="flex items-center gap-4">
-                   {/* 发光点 */}
-                   <div className="relative flex items-center justify-center ml-1">
-                     <div className="absolute h-4 w-4 rounded-full bg-blue-500/20 blur-[1px]" />
-                     <div className="h-1.5 w-1.5 rounded-full bg-blue-400 shadow-[0_0_6px_rgba(59,130,246,0.6)] animate-pulse" />
-                   </div>
-                   {/* 标题 */}
-                   <span className="text-[15px] font-serif tracking-[0.15em] text-slate-700 dark:text-slate-300">
-                     {feature.label}
-                   </span>
-                 </div>
-                 {/* 描述说明 */}
-                 <span className="text-[11px] font-light text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
-                   {feature.desc}
-                   <ArrowRight size={10} className="opacity-50" />
-                 </span>
-               </Link>
-             )
-           })}
+          {FEATURE_ENTRANCES.map((feature) => {
+            return (
+              <Link key={feature.id} href={feature.href} className="group flex items-center justify-between outline-none py-1 border-b border-slate-100 dark:border-slate-800/50 pb-3">
+                <div className="flex items-center gap-4">
+                  {/* 发光点 */}
+                  <div className="relative flex items-center justify-center ml-1">
+                    <div className="absolute h-4 w-4 rounded-full bg-blue-500/20 blur-[1px]" />
+                    <div className="h-1.5 w-1.5 rounded-full bg-blue-400 shadow-[0_0_6px_rgba(59,130,246,0.6)] animate-pulse" />
+                  </div>
+                  {/* 标题 */}
+                  <span className="text-[15px] font-serif tracking-[0.15em] text-slate-700 dark:text-slate-300">
+                    {feature.label}
+                  </span>
+                </div>
+                {/* 描述说明 */}
+                <span className="text-[11px] font-light text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                  {feature.desc}
+                  <ArrowRight size={10} className="opacity-50" />
+                </span>
+              </Link>
+            )
+          })}
         </div>
       </div>
 
