@@ -223,6 +223,7 @@ const WordItem = memo(function WordItem({
       >
         <button
           data-item-id={data.item.id}
+          aria-label={`意象：${data.item.name}，出现 ${data.item.count} 次`}
           className={`font-serif leading-none transition-opacity duration-200 word-breathe-anim ${isSelected ? "word-breathe-force-run" : ""} ${data.paletteText} ${isSelected ? "opacity-100" : "opacity-70 hover:opacity-100"}`}
           style={
             {
