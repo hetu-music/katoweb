@@ -193,6 +193,8 @@ export default function QingJinTianXia() {
   const container = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
     const lenis = new Lenis({
       autoRaf: false,
       smoothWheel: true,
@@ -205,6 +207,8 @@ export default function QingJinTianXia() {
     };
     const handleRefresh = () => lenis.resize();
 
+    html.classList.add("qjtx-story-page");
+    body.classList.add("qjtx-story-page");
     lenis.on("scroll", updateScrollTrigger);
     gsap.ticker.add(raf);
     gsap.ticker.lagSmoothing(0);
@@ -212,6 +216,8 @@ export default function QingJinTianXia() {
     ScrollTrigger.refresh();
 
     return () => {
+      html.classList.remove("qjtx-story-page");
+      body.classList.remove("qjtx-story-page");
       ScrollTrigger.removeEventListener("refresh", handleRefresh);
       gsap.ticker.remove(raf);
       lenis.off("scroll", updateScrollTrigger);
@@ -289,6 +295,32 @@ export default function QingJinTianXia() {
       ref={container}
       className="relative min-h-screen overflow-x-hidden bg-[#09090b] font-serif text-zinc-300 selection:bg-red-900 selection:text-white"
     >
+      <style jsx global>{`
+        html.qjtx-story-page,
+        html.qjtx-story-page body {
+          height: auto;
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+
+        html.qjtx-story-page::-webkit-scrollbar,
+        html.qjtx-story-page body::-webkit-scrollbar {
+          display: none;
+        }
+
+        html.qjtx-story-page.lenis.lenis-smooth {
+          scroll-behavior: auto !important;
+        }
+
+        html.qjtx-story-page.lenis.lenis-stopped {
+          overflow: hidden;
+        }
+
+        html.qjtx-story-page.lenis.lenis-smooth [data-lenis-prevent] {
+          overscroll-behavior: contain;
+        }
+      `}</style>
+
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.12 }}

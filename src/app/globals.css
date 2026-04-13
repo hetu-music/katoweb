@@ -111,24 +111,6 @@ button {
   display: none;
 }
 
-/* Lenis root-scroll integration */
-html.lenis,
-html.lenis body {
-  height: auto;
-}
-
-html.lenis.lenis-smooth {
-  scroll-behavior: auto !important;
-}
-
-html.lenis.lenis-stopped {
-  overflow: hidden;
-}
-
-html.lenis.lenis-smooth [data-lenis-prevent] {
-  overscroll-behavior: contain;
-}
-
 /* ============================================================================
    6. 业务动画 (Animations)
    ============================================================================ */
