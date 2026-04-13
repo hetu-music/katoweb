@@ -95,15 +95,14 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
             const Icon = feature.icon;
             return (
               <Link key={feature.id} href={feature.href} className="group relative flex flex-col items-center outline-none text-sm" style={{ gap: '1em' }}>
-                {/* 顶部发光点 */}
+                {/* 顶部发光点 - 移除中心点，仅保留呼吸晕影 */}
                 <div className="relative flex items-center justify-center h-4 w-4">
-                  <div className="absolute h-6 w-6 rounded-full bg-blue-500/10 blur-[2px] transition-all duration-800 ease-out group-hover:bg-blue-500/30 group-hover:blur-md group-hover:scale-150" />
-                  <div className="absolute h-2.5 w-2.5 rounded-full bg-blue-500/30 animate-pulse" style={{ animationDuration: '2s' }} />
-                  <div className="h-[3px] w-[3px] rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)] transition-all duration-500 group-hover:bg-blue-400 group-hover:shadow-[0_0_12px_rgba(59,130,246,1)]" />
+                  <div className="absolute h-6 w-6 rounded-full bg-teal-500/10 blur-[2px] transition-all duration-[800ms] ease-out group-hover:bg-teal-500/30 group-hover:blur-md group-hover:scale-150" />
+                  <div className="absolute h-2.5 w-2.5 rounded-full bg-teal-500/30 animate-pulse shadow-[0_0_8px_rgba(20,184,166,0.4)]" style={{ animationDuration: '2s' }} />
                 </div>
 
-                {/* 竖排标题 - 使用 -mb-[1em] 巧妙吃掉 tracking-[1em] 在最后一个字下方产生的巨大不可见占位，确保底部视觉重合 */}
-                <span className="[writing-mode:vertical-rl] font-serif tracking-[1em] -mb-[1em] text-slate-500/90 dark:text-slate-400/90 transition-all duration-1000 group-hover:text-slate-800 dark:group-hover:text-slate-100 group-hover:drop-shadow-[0_0_12px_rgba(59,130,246,0.3)] dark:group-hover:drop-shadow-[0_0_12px_rgba(59,130,246,0.4)] pr-1">
+                {/* 竖排标题 - 色调改为深青色系以提升质感 */}
+                <span className="[writing-mode:vertical-rl] font-serif tracking-[1em] -mb-[1em] text-teal-800 dark:text-teal-300 transition-all duration-1000 group-hover:text-teal-950 dark:group-hover:text-teal-100 group-hover:drop-shadow-[0_0_12px_rgba(20,184,166,0.3)] pr-1">
                   {feature.label}
                 </span>
 
@@ -111,14 +110,14 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 <div className="absolute top-12 right-full mr-3 lg:mr-5 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-all duration-1200 ease-in-out group-hover:w-[210px] lg:group-hover:w-[240px] group-hover:opacity-100 z-10">
                   <div className="flex w-max shrink-0 items-center gap-4 lg:gap-5 border-r border-slate-300/60 dark:border-slate-600/60 pr-4 lg:pr-5 py-1">
                     <div className="flex flex-col items-end">
-                      <span className="text-[15px] font-serif font-medium tracking-[0.25em] text-slate-900 dark:text-slate-100 mb-1 whitespace-nowrap transition-colors duration-1200 ease-in-out drop-shadow-sm">
+                      <span className="text-[15px] font-medium tracking-[0.25em] text-slate-900 dark:text-slate-100 mb-1 whitespace-nowrap transition-colors duration-1200 ease-in-out drop-shadow-sm">
                         {feature.label}
                       </span>
-                      <span className="text-[12px] font-serif font-light tracking-[0.15em] text-slate-500 dark:text-slate-400 whitespace-nowrap transition-colors duration-1200 ease-in-out">
+                      <span className="text-[12px] font-light tracking-[0.15em] text-slate-500 dark:text-slate-400 whitespace-nowrap transition-colors duration-1200 ease-in-out">
                         {feature.desc}
                       </span>
                     </div>
-                    <Icon size={18} strokeWidth={1.5} className="text-blue-500/80 dark:text-blue-400/80 shrink-0 transition-colors duration-1200 ease-in-out" />
+                    <Icon size={18} strokeWidth={1.5} className="text-teal-600/80 dark:text-teal-400/80 shrink-0 transition-colors duration-1200 ease-in-out" />
                   </div>
                 </div>
               </Link>
