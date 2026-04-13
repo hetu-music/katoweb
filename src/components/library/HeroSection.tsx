@@ -48,11 +48,11 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
   );
 
   return (
-    <div className="w-full flex flex-col md:flex-row justify-between gap-8 md:gap-12 pt-1 md:pt-4" style={{ alignItems: 'stretch' }}>
+    <div className="w-full flex flex-col md:flex-row justify-between gap-5 md:gap-12 pt-1 md:pt-4" style={{ alignItems: 'stretch' }}>
 
       {/* 左侧：标题与子标题 */}
-      {/* 移除 py-1 彻底消除上下预留 gap */}
-      <div className="flex flex-col justify-between flex-1 gap-4 md:gap-0">
+      {/* 移除 py-1 彻底消除上下预留 gap。移动端拉大主副标题间距为 gap-8 */}
+      <div className="flex flex-col justify-between flex-1 gap-8 md:gap-0">
         {/* 使用 leading-[0.8] 和负 margin (-mt-1 到 -mt-2) 削掉中文字体本身的顶部字距 (Ascender) */}
         <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50 italic tracking-tight leading-[0.8] -mt-1 lg:-mt-1.5">
           谣歌 <span className="text-[1.3em] font-semibold">{songCount}</span>
@@ -87,7 +87,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
       </div>
 
       {/* 右侧：功能入口区 (Feature Entrances) */}
-      <div className="flex w-full md:w-auto h-full justify-start md:justify-end items-end md:items-start pt-6 md:pt-0">
+      <div className="flex w-full md:w-auto h-full justify-start md:justify-end items-end md:items-start pt-1 md:pt-0">
 
         {/* -- 桌面端入口 (Desktop) - 极简竖排发光点 -- */}
         <div className="hidden md:flex flex-row gap-10 lg:gap-14 justify-end mt-4 md:mt-0">
@@ -126,13 +126,13 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
         </div>
 
         {/* -- 移动端入口 (Mobile) - 与桌面端统一的青色系设计 -- */}
-        <div className="flex md:hidden flex-col gap-4 w-full mt-2">
+        <div className="flex md:hidden flex-col gap-4 w-full mt-1">
           {/* 主副标题与入口间的分界线 */}
           <div className="w-full h-[1px] bg-slate-200/80 dark:bg-slate-800/60 mb-1" />
 
           {FEATURE_ENTRANCES.map((feature) => {
             return (
-              <Link key={feature.id} href={feature.href} className="group flex items-center justify-between outline-none py-1 border-b border-slate-100 dark:border-slate-800/50 pb-3">
+              <Link key={feature.id} href={feature.href} className="group flex items-center justify-between outline-none py-2">
                 <div className="flex items-center gap-4">
                   {/* 发光晕影 (无实心中心，弱化呼吸) */}
                   <div className="relative flex items-center justify-center top-[1px]">
