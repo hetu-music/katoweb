@@ -14,7 +14,7 @@ const FEATURE_ENTRANCES = [
   {
     id: "imagery",
     label: "意象词云",
-    desc: "探索词作的万千意象",
+    desc: "探索词中万千意象",
     href: "/imagery",
     icon: Sparkles,
     gradient: "from-blue-500/10 to-indigo-500/10",
@@ -60,7 +60,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
 
         {/* 使用 -mb-1 削弱文字行高产生的底部兜底空间 */}
         <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 mt-auto -mb-1 lg:-mb-1.5">
-          <span className="text-blue-600 dark:text-blue-500 font-mono text-lg leading-none relative -top-[1.5px] select-none">
+          <span className="text-blue-600 dark:text-blue-500 font-mono text-lg leading-none relative top-0 md:-top-[1.5px] select-none">
             &gt;
           </span>
           <p className="font-light tracking-[0.15em] text-sm md:text-[15px] leading-relaxed mb-0">
