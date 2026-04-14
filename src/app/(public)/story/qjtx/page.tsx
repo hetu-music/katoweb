@@ -5,8 +5,8 @@ import { motion, type Variants } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
-import { Fragment, useEffect, useRef } from "react";
-import { timelineData, type TimelineEvent } from "./data";
+import { useEffect, useRef } from "react";
+import { timelineData } from "./data";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -108,13 +108,11 @@ function EventLines({
   important,
   mobile = false,
   align = "left",
-  hasDetail = false,
 }: {
   content: string[];
   important?: boolean;
   mobile?: boolean;
   align?: "left" | "right";
-  hasDetail?: boolean;
 }) {
   return (
     <div
@@ -138,11 +136,6 @@ function EventLines({
           {line}
         </p>
       ))}
-      {hasDetail ? (
-        <p className="pt-2 text-[10px] font-light tracking-[0.55em] text-red-700/75 sm:text-[11px]">
-          卷展详读
-        </p>
-      ) : null}
     </div>
   );
 }
@@ -196,83 +189,6 @@ function EventDate({
   );
 }
 
-function TimelineDetailSection({
-  event,
-}: {
-  event: TimelineEvent;
-}) {
-  if (!event.detail) {
-    return null;
-  }
-
-  const { detail } = event;
-
-  return (
-    <section className="timeline-detail-section pointer-events-none relative h-[420vh] w-full">
-      <div className="timeline-detail-stage fixed inset-0 z-30 h-svh w-full opacity-0">
-        <div className="timeline-detail-backdrop absolute inset-0 opacity-0">
-          <div className="absolute inset-0 bg-zinc-950" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(161,40,40,0.18)_0%,rgba(39,39,42,0.08)_36%,rgba(9,9,11,0.96)_100%)]" />
-        </div>
-
-        <article className="timeline-detail-panel absolute top-1/2 left-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border border-red-900/55 bg-zinc-950 shadow-[0_0_0_rgba(0,0,0,0)]">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(185,28,28,0.24)_0%,rgba(9,9,11,0.95)_78%)]" />
-
-          <div className="timeline-detail-content absolute inset-0 flex flex-col opacity-0">
-            <div className="flex items-start justify-between gap-6 px-6 pt-10 md:px-14 md:pt-14">
-              <div className="timeline-detail-line space-y-4">
-                <p className="text-[10px] font-light tracking-[0.7em] text-red-800/85 md:text-xs">
-                  {detail.eyebrow}
-                </p>
-                <h2 className="text-3xl font-light tracking-[0.28em] text-zinc-100 md:text-5xl md:tracking-[0.36em]">
-                  {detail.title}
-                </h2>
-              </div>
-
-              <div className="timeline-detail-line hidden md:block">
-                <EventDate year={event.year} month={event.month} monthFirst />
-              </div>
-            </div>
-
-            <div className="timeline-detail-copy relative flex-1 overflow-hidden px-6 pt-8 pb-12 md:px-14 md:pt-12 md:pb-16">
-              <div className="timeline-detail-reading h-full overflow-hidden rounded-[1.5rem] border border-white/6 bg-white/[0.02] px-5 py-6 md:px-8 md:py-8">
-                <div className="timeline-detail-columns flex h-full flex-row-reverse gap-6 overflow-hidden [writing-mode:vertical-rl] [text-orientation:mixed] md:gap-10">
-                  {detail.quote ? (
-                    <p className="timeline-detail-line max-h-full text-base leading-[2.8] tracking-[0.45em] text-zinc-200 md:text-xl md:leading-[3] md:tracking-[0.5em]">
-                      {detail.quote}
-                    </p>
-                  ) : null}
-
-                  {detail.lead ? (
-                    <p className="timeline-detail-line max-h-full text-sm leading-[2.8] tracking-[0.42em] text-zinc-300 md:text-lg md:leading-[3] md:tracking-[0.48em]">
-                      {detail.lead}
-                    </p>
-                  ) : null}
-
-                  {detail.body.map((paragraph, index) => (
-                    <p
-                      key={index}
-                      className="timeline-detail-line max-h-full text-[13px] leading-[2.65] tracking-[0.4em] text-zinc-400 md:text-[15px] md:leading-[2.9] md:tracking-[0.45em]"
-                    >
-                      {paragraph}
-                    </p>
-                  ))}
-
-                  {detail.closing ? (
-                    <p className="timeline-detail-line max-h-full text-[12px] leading-[2.8] tracking-[0.55em] text-red-800/80 md:text-sm">
-                      {detail.closing}
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-          </div>
-        </article>
-      </div>
-    </section>
-  );
-}
-
 export default function QingJinTianXia() {
   const container = useRef<HTMLDivElement>(null);
 
@@ -322,14 +238,6 @@ export default function QingJinTianXia() {
 
       const events = gsap.utils.toArray<HTMLElement>(
         ".timeline-event",
-        container.current,
-      );
-      const detailSections = gsap.utils.toArray<HTMLElement>(
-        ".timeline-detail-section",
-        container.current,
-      );
-      const timelineSpines = gsap.utils.toArray<HTMLElement>(
-        ".timeline-spine, .timeline-progress",
         container.current,
       );
       const dots = gsap.utils.toArray<HTMLElement>(".event-dot", container.current);
@@ -402,174 +310,6 @@ export default function QingJinTianXia() {
             },
           },
         );
-      });
-
-      detailSections.forEach((section) => {
-        const sectionQuery = gsap.utils.selector(section);
-        const originDot =
-          section.previousElementSibling?.querySelector<HTMLElement>(".event-dot") ??
-          null;
-        const stage = sectionQuery(".timeline-detail-stage")[0] as
-          | HTMLElement
-          | undefined;
-        const backdrop = sectionQuery(".timeline-detail-backdrop")[0] as
-          | HTMLElement
-          | undefined;
-        const panel = sectionQuery(".timeline-detail-panel")[0] as
-          | HTMLElement
-          | undefined;
-        const content = sectionQuery(".timeline-detail-content")[0] as
-          | HTMLElement
-          | undefined;
-        const copy = sectionQuery(".timeline-detail-copy")[0] as
-          | HTMLElement
-          | undefined;
-        const lines = sectionQuery(".timeline-detail-line");
-
-        if (!stage || !panel || !content || !copy) {
-          return;
-        }
-
-        gsap.set(stage, { autoAlpha: 0 });
-        if (backdrop) {
-          gsap.set(backdrop, { opacity: 0 });
-        }
-        gsap.set(panel, {
-          width: 12,
-          height: 12,
-          borderRadius: 999,
-          boxShadow: "0 0 0 rgba(0,0,0,0)",
-        });
-        gsap.set(content, { autoAlpha: 0 });
-        gsap.set(copy, { yPercent: 0 });
-
-        const detailTimeline = gsap.timeline({
-          scrollTrigger: {
-            trigger: originDot ?? section,
-            start: originDot ? "center center" : "top center",
-            end: "+=4200",
-            scrub: true,
-            pin: section,
-            anticipatePin: 1,
-            pinSpacing: true,
-            invalidateOnRefresh: true,
-          },
-        });
-
-        detailTimeline
-          .set(stage, { autoAlpha: 1 }, 0)
-          .to(
-            timelineSpines,
-            { opacity: 0, duration: 0.06, ease: "none" },
-            0,
-          );
-
-        if (backdrop) {
-          detailTimeline.to(
-            backdrop,
-            { opacity: 1, duration: 0.18, ease: "none" },
-            0.02,
-          );
-        }
-
-        detailTimeline.to(
-          panel,
-          {
-            width: () => window.innerWidth,
-            height: () => window.innerHeight,
-            borderRadius: 0,
-            boxShadow: "0 40px 120px rgba(0,0,0,0.5)",
-            duration: 0.24,
-            ease: "power2.inOut",
-          },
-          0,
-        );
-
-        detailTimeline.to(
-          content,
-          {
-            autoAlpha: 1,
-            duration: 0.14,
-            ease: "none",
-          },
-          0.16,
-        );
-
-        detailTimeline.fromTo(
-          lines,
-          { opacity: 0, y: 36, filter: "blur(10px)" },
-          {
-            opacity: 1,
-            y: 0,
-            filter: "blur(0px)",
-            duration: 0.18,
-            stagger: 0.04,
-            ease: "none",
-          },
-          0.2,
-        );
-
-        detailTimeline.to({}, { duration: 0.34 }, 0.38);
-
-        detailTimeline.to(
-          copy,
-          {
-            yPercent: -10,
-            duration: 0.14,
-            ease: "none",
-          },
-          0.72,
-        );
-
-        detailTimeline.to(
-          lines,
-          {
-            opacity: 0,
-            filter: "blur(12px)",
-            duration: 0.12,
-            ease: "none",
-          },
-          0.82,
-        );
-
-        detailTimeline.to(
-          content,
-          {
-            autoAlpha: 0,
-            duration: 0.1,
-            ease: "none",
-          },
-          0.86,
-        );
-
-        detailTimeline.to(
-          panel,
-          {
-            width: 12,
-            height: 12,
-            borderRadius: 999,
-            boxShadow: "0 0 0 rgba(0,0,0,0)",
-            duration: 0.16,
-            ease: "power2.inOut",
-          },
-          0.84,
-        );
-
-        if (backdrop) {
-          detailTimeline.to(
-            backdrop,
-            { opacity: 0, duration: 0.12, ease: "none" },
-            0.88,
-          );
-        }
-
-        detailTimeline.to(
-          timelineSpines,
-          { opacity: 1, duration: 0.08, ease: "none" },
-          0.98,
-        );
-
-        detailTimeline.set(stage, { autoAlpha: 0 }, 1);
       });
 
       updateDotsByProgressLine();
@@ -677,7 +417,7 @@ export default function QingJinTianXia() {
       </section>
 
       <main className="timeline-container relative z-10 mx-auto w-full max-w-7xl px-4 py-[15vh]">
-        <div className="timeline-spine absolute top-0 bottom-0 left-14 w-px -translate-x-1/2 rounded bg-zinc-800/40 md:left-1/2" />
+        <div className="absolute top-0 bottom-0 left-14 w-px -translate-x-1/2 rounded bg-zinc-800/40 md:left-1/2" />
         <div className="timeline-progress absolute top-0 bottom-0 left-14 z-10 w-px -translate-x-1/2 origin-top scale-y-0 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2" />
 
         <div className="relative flex w-full flex-col pt-10 pb-40">
@@ -685,64 +425,58 @@ export default function QingJinTianXia() {
             const isLeft = index % 2 === 0;
 
             return (
-              <Fragment key={event.id}>
-                <div className="timeline-event group relative my-10 flex w-full flex-col md:my-20 md:flex-row md:justify-center">
-                  <div className="event-dot absolute top-1/2 left-10 z-20 h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 origin-center rounded-full border border-zinc-500 bg-zinc-950 md:left-1/2 md:h-[13px] md:w-[13px]" />
+              <div
+                key={event.id}
+                className="timeline-event group relative my-10 flex w-full flex-col md:my-20 md:flex-row md:justify-center"
+              >
+                <div className="event-dot absolute top-1/2 left-10 z-20 h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 origin-center rounded-full border border-zinc-500 bg-zinc-950 md:left-1/2 md:h-[13px] md:w-[13px]" />
 
-                  <div className="flex w-full justify-start pl-18 pr-2 md:hidden">
-                    <div className="flex flex-row items-center gap-4 sm:gap-6">
-                      <EventDate
-                        year={event.year}
-                        month={event.month}
-                        mobile
-                      />
-                      <EventLines
-                        content={event.content}
-                        important={event.important}
-                        mobile
-                        hasDetail={Boolean(event.detail)}
-                      />
-                    </div>
-                  </div>
-
-                  <div
-                    className={`hidden w-1/2 justify-end pr-12 md:flex lg:pr-24 ${
-                      !isLeft ? "invisible" : ""
-                    }`}
-                  >
-                    <div className="flex flex-row items-center gap-8 lg:gap-12">
-                      <EventLines
-                        content={event.content}
-                        important={event.important}
-                        align="right"
-                        hasDetail={Boolean(event.detail)}
-                      />
-                      <EventDate
-                        year={event.year}
-                        month={event.month}
-                        monthFirst
-                      />
-                    </div>
-                  </div>
-
-                  <div
-                    className={`hidden w-1/2 justify-start pl-12 md:flex lg:pl-24 ${
-                      isLeft ? "invisible" : ""
-                    }`}
-                  >
-                    <div className="flex flex-row items-center gap-8 lg:gap-12">
-                      <EventDate year={event.year} month={event.month} />
-                      <EventLines
-                        content={event.content}
-                        important={event.important}
-                        hasDetail={Boolean(event.detail)}
-                      />
-                    </div>
+                <div className="flex w-full justify-start pl-18 pr-2 md:hidden">
+                  <div className="flex flex-row items-center gap-4 sm:gap-6">
+                    <EventDate
+                      year={event.year}
+                      month={event.month}
+                      mobile
+                    />
+                    <EventLines
+                      content={event.content}
+                      important={event.important}
+                      mobile
+                    />
                   </div>
                 </div>
 
-                {event.detail ? <TimelineDetailSection event={event} /> : null}
-              </Fragment>
+                <div
+                  className={`hidden w-1/2 justify-end pr-12 md:flex lg:pr-24 ${!isLeft ? "invisible" : ""
+                    }`}
+                >
+                  <div className="flex flex-row items-center gap-8 lg:gap-12">
+                    <EventLines
+                      content={event.content}
+                      important={event.important}
+                      align="right"
+                    />
+                    <EventDate
+                      year={event.year}
+                      month={event.month}
+                      monthFirst
+                    />
+                  </div>
+                </div>
+
+                <div
+                  className={`hidden w-1/2 justify-start pl-12 md:flex lg:pl-24 ${isLeft ? "invisible" : ""
+                    }`}
+                >
+                  <div className="flex flex-row items-center gap-8 lg:gap-12">
+                    <EventDate year={event.year} month={event.month} />
+                    <EventLines
+                      content={event.content}
+                      important={event.important}
+                    />
+                  </div>
+                </div>
+              </div>
             );
           })}
         </div>
