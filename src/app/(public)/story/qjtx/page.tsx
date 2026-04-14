@@ -11,7 +11,6 @@ import { timelineData } from "./data";
 gsap.registerPlugin(ScrollTrigger);
 
 const motionEase = [0.22, 1, 0.36, 1] as const;
-const animationSlowdown = 3;
 const goldenViewportRatio = 0.45;
 const preheatViewportRatio = 0.15;
 const activeViewportRatio = 0.05;
@@ -51,8 +50,8 @@ const heroTitleVariants = {
   hidden: {},
   visible: {
     transition: {
-      staggerChildren: 0.22 * animationSlowdown,
-      delayChildren: 0.35 * animationSlowdown,
+      staggerChildren: 0.66,
+      delayChildren: 1.05,
     },
   },
 } satisfies Variants;
@@ -68,7 +67,7 @@ const heroCharVariants = {
     scale: 1,
     filter: "blur(0px)",
     transition: {
-      duration: 1.6 * animationSlowdown,
+      duration: 4.8,
       ease: motionEase,
     },
   },
@@ -78,8 +77,8 @@ const heroSubtitleVariants = {
   hidden: {},
   visible: {
     transition: {
-      staggerChildren: 0.18 * animationSlowdown,
-      delayChildren: 1 * animationSlowdown,
+      staggerChildren: 0.54,
+      delayChildren: 3,
     },
   },
 } satisfies Variants;
@@ -95,7 +94,7 @@ const heroSubtitleLineVariants = {
     y: 0,
     filter: "blur(0px)",
     transition: {
-      duration: 1.2 * animationSlowdown,
+      duration: 3.6,
       ease: motionEase,
     },
   },
@@ -110,8 +109,8 @@ const scrollHintVariants = {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 1 * animationSlowdown,
-      delay: 1.45 * animationSlowdown,
+      duration: 3,
+      delay: 4.35,
       ease: motionEase,
     },
   },
@@ -128,7 +127,7 @@ const footerVariants = {
     y: 0,
     filter: "blur(0px)",
     transition: {
-      duration: 1 * animationSlowdown,
+      duration: 3,
       ease: motionEase,
     },
   },
@@ -272,7 +271,7 @@ export default function QingJinTianXia() {
       gsap.to(".scroll-hint-line", {
         scaleY: 1.5,
         opacity: 0,
-        duration: 1.5 * animationSlowdown,
+        duration: 4.5,
         repeat: -1,
         transformOrigin: "top",
         ease: "power2.out",
@@ -490,7 +489,7 @@ export default function QingJinTianXia() {
           renderScene(self.progress * metrics.travelDistance, metrics);
         },
         pin: true,
-        scrub: 1 * animationSlowdown,
+        scrub: 3,
         start: "top top",
         trigger: timelineContainer,
       });
@@ -538,7 +537,7 @@ export default function QingJinTianXia() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.12 }}
-        transition={{ duration: 2 * animationSlowdown, ease: motionEase }}
+        transition={{ duration: 6, ease: motionEase }}
         className="bg-noise pointer-events-none fixed inset-0 z-0 mix-blend-overlay"
         style={{
           backgroundImage:
