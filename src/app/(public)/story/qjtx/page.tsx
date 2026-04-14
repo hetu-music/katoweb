@@ -307,6 +307,7 @@ export default function QingJinTianXia() {
               start: "top 85%",
               end: "top 50%",
               scrub: 1 * animationSlowdown,
+              pinnedContainer: ".timeline-container",
             },
           },
         );
@@ -330,7 +331,7 @@ export default function QingJinTianXia() {
             start: "center center",
             end: "+=4000",
             scrub: 1,
-            pin: true,
+            pin: ".timeline-container",
           },
         });
 
