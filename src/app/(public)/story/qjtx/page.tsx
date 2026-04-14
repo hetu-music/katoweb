@@ -12,6 +12,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 const motionEase = [0.22, 1, 0.36, 1] as const;
 const animationSlowdown = 3;
+const masterScrollSpan = Math.max(10000, timelineData.length * 360);
 
 const heroTitleVariants = {
   hidden: {},
@@ -102,6 +103,25 @@ const footerVariants = {
 
 const verticalTextClass =
   "[writing-mode:vertical-rl] [text-orientation:mixed] shrink-0 leading-none";
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
+
+const mapRange = (
+  value: number,
+  inMin: number,
+  inMax: number,
+  outMin: number,
+  outMax: number,
+) => {
+  if (inMax === inMin) {
+    return outMin;
+  }
+
+  const progress = (value - inMin) / (inMax - inMin);
+
+  return outMin + (outMax - outMin) * progress;
+};
 
 function EventLines({
   content,
@@ -241,6 +261,15 @@ export default function QingJinTianXia() {
         container.current,
       );
       const dots = gsap.utils.toArray<HTMLElement>(".event-dot", container.current);
+      const timelineContainer = container.current?.querySelector<HTMLElement>(
+        ".timeline-container",
+      );
+      const timelineStage = container.current?.querySelector<HTMLElement>(
+        ".timeline-stage",
+      );
+      const timelineTrack = container.current?.querySelector<HTMLElement>(
+        ".timeline-track",
+      );
       const progressLine = container.current?.querySelector<HTMLElement>(
         ".timeline-progress",
       );
@@ -279,40 +308,124 @@ export default function QingJinTianXia() {
         });
       };
 
-      if (progressLine) {
-        gsap.to(progressLine, {
-          scaleY: 1,
-          ease: "none",
+      if (
+        !timelineContainer ||
+        !timelineStage ||
+        !timelineTrack ||
+        !progressLine ||
+        events.length === 0
+      ) {
+        return;
+      }
+
+      let masterTimeline: gsap.core.Timeline | null = null;
+
+      const buildMasterTimeline = () => {
+        masterTimeline?.scrollTrigger?.kill();
+        masterTimeline?.kill();
+
+        const stageHeight = timelineStage.clientHeight;
+        const trackHeight = timelineTrack.scrollHeight;
+        const trackTravel = Math.max(trackHeight - stageHeight, 1);
+
+        gsap.set(timelineTrack, { y: 0 });
+        gsap.set(progressLine, { scaleY: 0 });
+        gsap.set(events, { opacity: 0, y: 70, filter: "blur(10px)" });
+        dots.forEach((dot) => {
+          dot.dataset.state = "";
+          setDotState(dot, false);
+        });
+
+        masterTimeline = gsap.timeline({
           scrollTrigger: {
-            trigger: ".timeline-container",
-            start: "top 60%",
-            end: "bottom 80%",
+            trigger: timelineContainer,
+            start: "top top",
+            end: `+=${masterScrollSpan}`,
+            pin: true,
             scrub: 1 * animationSlowdown,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
             onUpdate: updateDotsByProgressLine,
             onRefresh: updateDotsByProgressLine,
           },
         });
-      }
 
-      events.forEach((event) => {
-        gsap.fromTo(
-          event,
-          { opacity: 0, y: 70, filter: "blur(10px)" },
+        const orchestration = masterTimeline;
+
+        orchestration.to(
+          timelineTrack,
           {
-            opacity: 1,
-            y: 0,
-            filter: "blur(0px)",
-            scrollTrigger: {
-              trigger: event,
-              start: "top 85%",
-              end: "top 50%",
-              scrub: 1 * animationSlowdown,
-            },
+            y: -trackTravel,
+            ease: "none",
+            duration: masterScrollSpan,
           },
+          0,
         );
-      });
 
-      updateDotsByProgressLine();
+        orchestration.to(
+          progressLine,
+          {
+            scaleY: 1,
+            ease: "none",
+            duration: masterScrollSpan,
+            onUpdate: updateDotsByProgressLine,
+          },
+          0,
+        );
+
+        events.forEach((event, index) => {
+          const revealStartDistance = clamp(
+            event.offsetTop - stageHeight * 0.85,
+            0,
+            trackTravel,
+          );
+          const revealEndDistance = clamp(
+            event.offsetTop - stageHeight * 0.5,
+            revealStartDistance + 1,
+            trackTravel,
+          );
+          const revealStart = mapRange(
+            revealStartDistance,
+            0,
+            trackTravel,
+            0,
+            masterScrollSpan,
+          );
+          const revealEnd = mapRange(
+            revealEndDistance,
+            0,
+            trackTravel,
+            0,
+            masterScrollSpan,
+          );
+          const revealDuration = Math.max(revealEnd - revealStart, 1);
+
+          orchestration.addLabel(`event-${event.dataset.eventId ?? index}`, revealStart);
+          orchestration.to(
+            event,
+            {
+              opacity: 1,
+              y: 0,
+              filter: "blur(0px)",
+              ease: "power2.out",
+              duration: revealDuration,
+            },
+            revealStart,
+          );
+        });
+
+        updateDotsByProgressLine();
+      };
+
+      buildMasterTimeline();
+      ScrollTrigger.addEventListener("refreshInit", buildMasterTimeline);
+
+      return () => {
+        ScrollTrigger.removeEventListener("refreshInit", buildMasterTimeline);
+        masterTimeline?.scrollTrigger?.kill();
+        masterTimeline?.kill();
+        masterTimeline = null;
+      };
     },
     { scope: container },
   );
@@ -320,7 +433,7 @@ export default function QingJinTianXia() {
   return (
     <div
       ref={container}
-      className="relative min-h-screen overflow-x-hidden bg-[#09090b] font-serif text-zinc-300 selection:bg-red-900 selection:text-white"
+      className="relative min-h-screen overflow-x-hidden bg-zinc-950 font-serif text-zinc-200 selection:bg-red-900 selection:text-white"
     >
       <style jsx global>{`
         html.qjtx-story-page,
@@ -416,69 +529,72 @@ export default function QingJinTianXia() {
         </motion.div>
       </section>
 
-      <main className="timeline-container relative z-10 mx-auto w-full max-w-7xl px-4 py-[15vh]">
-        <div className="absolute top-0 bottom-0 left-14 w-px -translate-x-1/2 rounded bg-zinc-800/40 md:left-1/2" />
-        <div className="timeline-progress absolute top-0 bottom-0 left-14 z-10 w-px -translate-x-1/2 origin-top scale-y-0 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2" />
+      <main className="timeline-container relative z-10 mx-auto w-full max-w-7xl px-4">
+        <div className="timeline-stage relative h-svh overflow-hidden py-[15vh]">
+          <div className="absolute top-[15vh] bottom-[15vh] left-14 w-px -translate-x-1/2 rounded bg-zinc-800/40 md:left-1/2" />
+          <div className="timeline-progress absolute top-[15vh] bottom-[15vh] left-14 z-10 w-px -translate-x-1/2 origin-top scale-y-0 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2" />
 
-        <div className="relative flex w-full flex-col pt-10 pb-40">
-          {timelineData.map((event, index) => {
-            const isLeft = index % 2 === 0;
+          <div className="timeline-track relative flex w-full flex-col pt-10 pb-40">
+            {timelineData.map((event, index) => {
+              const isLeft = index % 2 === 0;
 
-            return (
-              <div
-                key={event.id}
-                className="timeline-event group relative my-10 flex w-full flex-col md:my-20 md:flex-row md:justify-center"
-              >
-                <div className="event-dot absolute top-1/2 left-10 z-20 h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 origin-center rounded-full border border-zinc-500 bg-zinc-950 md:left-1/2 md:h-[13px] md:w-[13px]" />
-
-                <div className="flex w-full justify-start pl-18 pr-2 md:hidden">
-                  <div className="flex flex-row items-center gap-4 sm:gap-6">
-                    <EventDate
-                      year={event.year}
-                      month={event.month}
-                      mobile
-                    />
-                    <EventLines
-                      content={event.content}
-                      important={event.important}
-                      mobile
-                    />
-                  </div>
-                </div>
-
+              return (
                 <div
-                  className={`hidden w-1/2 justify-end pr-12 md:flex lg:pr-24 ${!isLeft ? "invisible" : ""
-                    }`}
+                  key={event.id}
+                  data-event-id={event.id}
+                  className="timeline-event group relative my-10 flex w-full flex-col md:my-20 md:flex-row md:justify-center"
                 >
-                  <div className="flex flex-row items-center gap-8 lg:gap-12">
-                    <EventLines
-                      content={event.content}
-                      important={event.important}
-                      align="right"
-                    />
-                    <EventDate
-                      year={event.year}
-                      month={event.month}
-                      monthFirst
-                    />
-                  </div>
-                </div>
+                  <div className="event-dot absolute top-1/2 left-10 z-20 h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 origin-center rounded-full border border-zinc-500 bg-zinc-950 md:left-1/2 md:h-[13px] md:w-[13px]" />
 
-                <div
-                  className={`hidden w-1/2 justify-start pl-12 md:flex lg:pl-24 ${isLeft ? "invisible" : ""
-                    }`}
-                >
-                  <div className="flex flex-row items-center gap-8 lg:gap-12">
-                    <EventDate year={event.year} month={event.month} />
-                    <EventLines
-                      content={event.content}
-                      important={event.important}
-                    />
+                  <div className="flex w-full justify-start pl-18 pr-2 md:hidden">
+                    <div className="flex flex-row items-center gap-4 sm:gap-6">
+                      <EventDate
+                        year={event.year}
+                        month={event.month}
+                        mobile
+                      />
+                      <EventLines
+                        content={event.content}
+                        important={event.important}
+                        mobile
+                      />
+                    </div>
+                  </div>
+
+                  <div
+                    className={`hidden w-1/2 justify-end pr-12 md:flex lg:pr-24 ${!isLeft ? "invisible" : ""
+                      }`}
+                  >
+                    <div className="flex flex-row items-center gap-8 lg:gap-12">
+                      <EventLines
+                        content={event.content}
+                        important={event.important}
+                        align="right"
+                      />
+                      <EventDate
+                        year={event.year}
+                        month={event.month}
+                        monthFirst
+                      />
+                    </div>
+                  </div>
+
+                  <div
+                    className={`hidden w-1/2 justify-start pl-12 md:flex lg:pl-24 ${isLeft ? "invisible" : ""
+                      }`}
+                  >
+                    <div className="flex flex-row items-center gap-8 lg:gap-12">
+                      <EventDate year={event.year} month={event.month} />
+                      <EventLines
+                        content={event.content}
+                        important={event.important}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </main>
 
