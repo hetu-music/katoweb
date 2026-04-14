@@ -12,8 +12,9 @@ gsap.registerPlugin(ScrollTrigger);
 
 const motionEase = [0.22, 1, 0.36, 1] as const;
 const goldenViewportRatio = 0.45;
-const preheatViewportRatio = 0.15;
+const preheatViewportRatio = 0.42;
 const activeViewportRatio = 0.05;
+const introViewportRatio = 0.14;
 const trackTopPaddingRatio = 0.45;
 const trackBottomPaddingRatio = 0.38;
 const inactiveDotBorder = "#71717a";
@@ -28,9 +29,8 @@ const activeEase = gsap.parseEase("power3.out");
 interface TimelineSceneMetrics {
   activeDistance: number;
   anchorY: number;
-  bottomPadding: number;
+  introDistance: number;
   preheatDistance: number;
-  topPadding: number;
   trackHeight: number;
   travelDistance: number;
 }
@@ -284,6 +284,8 @@ export default function QingJinTianXia() {
         container.current?.querySelector<HTMLElement>(".timeline-track");
       const progressLine =
         container.current?.querySelector<HTMLElement>(".timeline-progress");
+      const flowTarget =
+        container.current?.querySelector<HTMLElement>("[data-flow-target]");
       const timelineEvents = timelineData
         .map<TimelineSceneEvent | null>((event) => {
           const dot = container.current?.querySelector<HTMLElement>(
@@ -315,6 +317,7 @@ export default function QingJinTianXia() {
         !timelineContainer ||
         !timelineTrack ||
         !progressLine ||
+        !flowTarget ||
         timelineEvents.length === 0
       ) {
         return;
@@ -336,10 +339,11 @@ export default function QingJinTianXia() {
             y: 70,
           });
           gsap.set(event.dot, {
+            autoAlpha: 0,
             backgroundColor: inactiveDotFill,
             borderColor: inactiveDotBorder,
             boxShadow: "0 0 0 rgba(0,0,0,0)",
-            scale: 1,
+            scale: 0.5,
           });
           gsap.set(event.months, {
             color: inactiveMonthColor,
@@ -353,6 +357,7 @@ export default function QingJinTianXia() {
 
         const viewportHeight = window.innerHeight;
         const anchorY = viewportHeight * goldenViewportRatio;
+        const introDistance = Math.max(viewportHeight * introViewportRatio, 72);
         const topPadding = viewportHeight * trackTopPaddingRatio;
         const bottomPadding = viewportHeight * trackBottomPaddingRatio;
 
@@ -367,17 +372,21 @@ export default function QingJinTianXia() {
           event.dotCenter = dotRect.top - trackRect.top + dotRect.height / 2;
         });
 
+        const flowTargetRect = flowTarget.getBoundingClientRect();
+        const flowTargetY = flowTargetRect.top - trackRect.top;
         const lastDotCenter = timelineEvents.at(-1)?.dotCenter ?? anchorY;
-        const travelDistance = Math.max(1, lastDotCenter - anchorY);
+        const flowDistance = Math.max(
+          1,
+          Math.max(lastDotCenter, flowTargetY) - anchorY,
+        );
 
         return {
           activeDistance: Math.max(viewportHeight * activeViewportRatio, 40),
           anchorY,
-          bottomPadding,
-          preheatDistance: viewportHeight * preheatViewportRatio,
-          topPadding,
+          introDistance,
+          preheatDistance: Math.max(viewportHeight * preheatViewportRatio, 260),
           trackHeight: timelineTrack.offsetHeight,
-          travelDistance,
+          travelDistance: introDistance + flowDistance,
         };
       };
 
@@ -389,13 +398,18 @@ export default function QingJinTianXia() {
           0,
           Math.min(scrollDistance, metrics.travelDistance),
         );
-        const progressHeight = Math.min(
-          metrics.trackHeight,
-          metrics.anchorY + clampedDistance,
+        const introProgress = clamp01(clampedDistance / metrics.introDistance);
+        const flowDistance = Math.max(
+          0,
+          clampedDistance - metrics.introDistance,
         );
+        const progressHeight =
+          clampedDistance < metrics.introDistance
+            ? metrics.anchorY * ghostEase(introProgress)
+            : Math.min(metrics.trackHeight, metrics.anchorY + flowDistance);
 
         gsap.set(timelineTrack, {
-          y: -clampedDistance,
+          y: -flowDistance,
         });
         gsap.set(progressLine, {
           height: progressHeight,
@@ -412,17 +426,17 @@ export default function QingJinTianXia() {
           );
           const preheatRange = Math.max(triggerDistance - preheatStart, 1);
           const preheatMix = clamp01(
-            (clampedDistance - preheatStart) / preheatRange,
+            (flowDistance - preheatStart) / preheatRange,
           );
           const activeMix = clamp01(
-            (clampedDistance - triggerDistance) / metrics.activeDistance,
+            (flowDistance - triggerDistance) / metrics.activeDistance,
           );
 
           let opacity = 0;
           let y = 70;
           let blur = 10;
 
-          if (clampedDistance < triggerDistance) {
+          if (flowDistance < triggerDistance) {
             const easedPreheat = ghostEase(preheatMix);
 
             opacity = interpolate(0, 0.4, easedPreheat);
@@ -436,8 +450,9 @@ export default function QingJinTianXia() {
             blur = interpolate(4, 0, easedActive);
           }
 
+          const dotPresence = ghostEase(preheatMix);
           const activationMix =
-            clampedDistance < triggerDistance
+            flowDistance < triggerDistance
               ? 0
               : 0.45 + activeEase(activeMix) * 0.55;
           const redGlow = 16 * activationMix;
@@ -448,6 +463,7 @@ export default function QingJinTianXia() {
             y,
           });
           gsap.set(event.dot, {
+            autoAlpha: dotPresence,
             backgroundColor: gsap.utils.interpolate(
               inactiveDotFill,
               activeDotFill,
@@ -459,7 +475,9 @@ export default function QingJinTianXia() {
               activationMix,
             ),
             boxShadow: `0 0 ${redGlow}px rgba(185,28,28,${0.78 * activationMix})`,
-            scale: interpolate(1, 1.12, activationMix),
+            scale:
+              interpolate(0.5, 1, dotPresence) +
+              interpolate(0, 0.12, activationMix),
           });
           gsap.set(event.months, {
             color: gsap.utils.interpolate(
@@ -695,6 +713,13 @@ export default function QingJinTianXia() {
                   </div>
                 );
               })}
+
+              <div className="timeline-tail relative h-[24vh] md:h-[30vh]">
+                <div
+                  data-flow-target
+                  className="absolute bottom-0 left-14 h-px w-px -translate-x-1/2 md:left-1/2"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -705,15 +730,18 @@ export default function QingJinTianXia() {
         whileInView="visible"
         viewport={{ once: true, amount: 0.5 }}
         variants={footerVariants}
-        className="relative z-10 flex flex-col items-center gap-8 bg-linear-to-t from-black to-transparent pt-20 pb-16 text-center"
+        className="relative z-10 bg-linear-to-t from-black to-transparent pt-20 pb-16"
       >
-        <div className="h-16 w-px bg-linear-to-b from-transparent to-zinc-700/50" />
-        <p className="text-xs font-light tracking-[0.5em] text-zinc-500 sm:text-sm">
-          山河万里 · 故人长绝
-        </p>
-        <p className="mt-4 text-[10px] font-light tracking-widest text-zinc-700">
-          河图作品勘鉴
-        </p>
+        <div className="relative mx-auto flex w-full max-w-7xl flex-col items-center gap-8 px-4 text-center">
+          <div className="pointer-events-none absolute top-0 left-14 h-16 w-px -translate-x-1/2 bg-linear-to-b from-transparent to-zinc-700/50 md:left-1/2" />
+          <div className="h-16 w-px opacity-0" aria-hidden />
+          <p className="text-xs font-light tracking-[0.5em] text-zinc-500 sm:text-sm">
+            山河万里 · 故人长绝
+          </p>
+          <p className="mt-4 text-[10px] font-light tracking-widest text-zinc-700">
+            河图作品勘鉴
+          </p>
+        </div>
       </motion.footer>
     </div>
   );
