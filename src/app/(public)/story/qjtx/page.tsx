@@ -312,6 +312,86 @@ export default function QingJinTianXia() {
         );
       });
 
+      const scrollyTellingEvents = gsap.utils.toArray<HTMLElement>(
+        ".has-detail",
+        container.current,
+      );
+
+      scrollyTellingEvents.forEach((eventContainer) => {
+        const detailBg = eventContainer.querySelector(".detail-bg");
+        const mask = eventContainer.querySelector(".detail-mask");
+        const content = eventContainer.querySelector(".detail-content");
+
+        if (!detailBg || !mask || !content) return;
+
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: eventContainer,
+            start: "center center",
+            end: "+=4000",
+            scrub: 1,
+            pin: true,
+          },
+        });
+
+        const isMobile = window.innerWidth < 768;
+        const initialLeft = isMobile ? "2.5rem" : "50%";
+        const initialSize = isMobile ? "9px" : "13px";
+
+        tl.to(detailBg, {
+          width: "100vw",
+          height: "100vh",
+          left: "50%",
+          borderRadius: "0%",
+          ease: "power2.inOut",
+          duration: 1.5,
+        })
+          .to(
+            mask,
+            {
+              opacity: 1,
+              duration: 1,
+              ease: "power1.inOut",
+            },
+            "<0.5",
+          )
+          .fromTo(
+            content,
+            { opacity: 0, y: 50 },
+            {
+              opacity: 1,
+              y: 0,
+              ease: "power2.out",
+              duration: 1.5,
+            },
+            "<0.2",
+          )
+          .to({}, { duration: 4 })
+          .to(content, {
+            opacity: 0,
+            y: -50,
+            ease: "power2.in",
+            duration: 1,
+          })
+          .to(
+            mask,
+            {
+              opacity: 0,
+              ease: "power1.inOut",
+              duration: 1,
+            },
+            "<",
+          )
+          .to(detailBg, {
+            width: initialSize,
+            height: initialSize,
+            left: initialLeft,
+            borderRadius: "50%",
+            ease: "power2.inOut",
+            duration: 1.5,
+          });
+      });
+
       updateDotsByProgressLine();
     },
     { scope: container },
@@ -427,9 +507,46 @@ export default function QingJinTianXia() {
             return (
               <div
                 key={event.id}
-                className="timeline-event group relative my-10 flex w-full flex-col md:my-20 md:flex-row md:justify-center"
+                className={`timeline-event group relative my-10 flex w-full flex-col md:my-20 md:flex-row md:justify-center ${
+                  event.detail ? "has-detail" : ""
+                }`}
               >
                 <div className="event-dot absolute top-1/2 left-10 z-20 h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 origin-center rounded-full border border-zinc-500 bg-zinc-950 md:left-1/2 md:h-[13px] md:w-[13px]" />
+
+                {event.detail && (
+                  <div className="detail-bg pointer-events-none absolute top-1/2 left-10 z-50 flex h-[9px] w-[9px] -translate-y-1/2 -translate-x-1/2 origin-center items-center justify-center overflow-hidden rounded-full bg-zinc-950 md:left-1/2 md:h-[13px] md:w-[13px]">
+                    <div className="detail-mask absolute inset-0 opacity-0 bg-[radial-gradient(ellipse_at_center,rgba(39,39,42,0.25)_0%,rgba(9,9,11,1)_80%)]" />
+                    
+                    <div className="detail-content absolute inset-0 flex opacity-0 flex-row-reverse items-center justify-center gap-4 sm:gap-8 md:gap-16 w-full px-2 sm:px-8 md:px-16 lg:px-24 box-border max-w-[100vw]">
+                      <div className="flex shrink-0 flex-col items-center justify-center gap-4 md:gap-6 [writing-mode:vertical-rl]">
+                        <span className="font-serif text-lg md:text-2xl tracking-[0.3em] text-red-800/80">
+                          {event.detail.eyebrow}
+                        </span>
+                        <h3 className="font-serif text-3xl md:text-5xl lg:text-6xl tracking-[0.2em] text-zinc-100 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                          {event.detail.title}
+                        </h3>
+                      </div>
+                      
+                      {event.detail.quote && (
+                        <div className="shrink-0 border-l border-zinc-800 py-3 md:py-4 pl-3 md:pl-6 text-xs md:text-base font-light tracking-[0.25em] text-zinc-400 max-h-[60vh] [writing-mode:vertical-rl]">
+                          {event.detail.quote}
+                        </div>
+                      )}
+
+                      <div className="flex shrink-0 flex-wrap content-center justify-start gap-x-6 md:gap-x-10 text-xs md:text-[15px] leading-[2] md:leading-[3] tracking-[0.2em] text-zinc-400 max-h-[70vh] [writing-mode:vertical-rl]">
+                        {event.detail.body.map((p, i) => (
+                          <p key={i}>{p}</p>
+                        ))}
+                      </div>
+                      
+                      {event.detail.closing && (
+                        <div className="shrink-0 mt-4 md:mt-8 text-[10px] md:text-sm font-light tracking-[0.4em] text-zinc-600 [writing-mode:vertical-rl]">
+                          {event.detail.closing}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex w-full justify-start pl-18 pr-2 md:hidden">
                   <div className="flex flex-row items-center gap-4 sm:gap-6">
