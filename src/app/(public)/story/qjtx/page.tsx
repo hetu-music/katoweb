@@ -13,6 +13,7 @@ gsap.registerPlugin(ScrollTrigger);
 const motionEase = [0.22, 1, 0.36, 1] as const;
 const animationSlowdown = 3;
 const masterScrollSpan = Math.max(10000, timelineData.length * 360);
+const masterTimelineScrub = 0.45;
 
 const heroTitleVariants = {
   hidden: {},
@@ -342,7 +343,7 @@ export default function QingJinTianXia() {
             start: "top top",
             end: `+=${masterScrollSpan}`,
             pin: true,
-            scrub: 1 * animationSlowdown,
+            scrub: masterTimelineScrub,
             anticipatePin: 1,
             invalidateOnRefresh: true,
             onUpdate: updateDotsByProgressLine,
@@ -532,9 +533,10 @@ export default function QingJinTianXia() {
       <main className="timeline-container relative z-10 mx-auto w-full max-w-7xl px-4">
         <div className="timeline-stage relative h-svh overflow-hidden py-[15vh]">
           <div className="absolute top-[15vh] bottom-[15vh] left-14 w-px -translate-x-1/2 rounded bg-zinc-800/40 md:left-1/2" />
-          <div className="timeline-progress absolute top-[15vh] bottom-[15vh] left-14 z-10 w-px -translate-x-1/2 origin-top scale-y-0 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2" />
 
           <div className="timeline-track relative flex w-full flex-col pt-10 pb-40">
+            <div className="timeline-progress absolute top-0 bottom-0 left-14 z-10 w-px -translate-x-1/2 origin-top scale-y-0 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2" />
+
             {timelineData.map((event, index) => {
               const isLeft = index % 2 === 0;
 
