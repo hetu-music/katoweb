@@ -279,19 +279,39 @@ export default function QingJinTianXia() {
         });
       };
 
-      if (progressLine) {
-        gsap.to(progressLine, {
-          scaleY: 1,
-          ease: "none",
-          scrollTrigger: {
+      if (progressLine && container.current) {
+        const tlContainer = container.current.querySelector(
+          ".timeline-container",
+        ) as HTMLElement;
+
+        if (tlContainer) {
+          const calculateProgress = () => {
+            const rect = tlContainer.getBoundingClientRect();
+            const vh = window.innerHeight;
+            // Match the previous top 60% and bottom 80% logic using DOM rect visually
+            const p = (vh * 0.6 - rect.top) / (rect.height - vh * 0.2);
+            return Math.max(0, Math.min(1, p));
+          };
+
+          ScrollTrigger.create({
             trigger: ".timeline-container",
-            start: "top 60%",
-            end: "bottom 80%",
-            scrub: 1 * animationSlowdown,
-            onUpdate: updateDotsByProgressLine,
-            onRefresh: updateDotsByProgressLine,
-          },
-        });
+            start: "top bottom",
+            end: "bottom top",
+            onUpdate: () => {
+              gsap.to(progressLine, {
+                scaleY: calculateProgress(),
+                duration: 1 * animationSlowdown,
+                ease: "power2.out",
+                overwrite: "auto",
+                onUpdate: updateDotsByProgressLine,
+              });
+            },
+            onRefresh: () => {
+              gsap.set(progressLine, { scaleY: calculateProgress() });
+              updateDotsByProgressLine();
+            },
+          });
+        }
       }
 
       events.forEach((event) => {
