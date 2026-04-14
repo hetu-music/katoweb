@@ -12,6 +12,40 @@ gsap.registerPlugin(ScrollTrigger);
 
 const motionEase = [0.22, 1, 0.36, 1] as const;
 const animationSlowdown = 3;
+const goldenViewportRatio = 0.45;
+const preheatViewportRatio = 0.15;
+const activeViewportRatio = 0.05;
+const trackTopPaddingRatio = 0.45;
+const trackBottomPaddingRatio = 0.38;
+const inactiveDotBorder = "#71717a";
+const inactiveDotFill = "#09090b";
+const activeDotBorder = "#dc2626";
+const activeDotFill = "#7f1d1d";
+const inactiveMonthColor = "rgba(153, 27, 27, 0.72)";
+const activeMonthColor = "#ef4444";
+const ghostEase = gsap.parseEase("power2.out");
+const activeEase = gsap.parseEase("power3.out");
+
+interface TimelineSceneMetrics {
+  activeDistance: number;
+  anchorY: number;
+  bottomPadding: number;
+  preheatDistance: number;
+  topPadding: number;
+  trackHeight: number;
+  travelDistance: number;
+}
+
+interface TimelineSceneEvent {
+  content: HTMLElement[];
+  dot: HTMLElement;
+  dotCenter: number;
+  months: HTMLElement[];
+}
+
+const clamp01 = (value: number) => gsap.utils.clamp(0, 1, value);
+const interpolate = (from: number, to: number, progress: number) =>
+  from + (to - from) * progress;
 
 const heroTitleVariants = {
   hidden: {},
@@ -125,13 +159,15 @@ function EventLines({
       {content.map((line, index) => (
         <p
           key={index}
-          className={`${mobile
-            ? "text-sm tracking-widest"
-            : "text-[15px] lg:text-base tracking-widest lg:tracking-[0.2em]"
-            } font-light leading-loose ${important
+          className={`${
+            mobile
+              ? "text-sm tracking-widest"
+              : "text-[15px] lg:text-base tracking-widest lg:tracking-[0.2em]"
+          } font-light leading-loose ${
+            important
               ? "text-zinc-200 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] font-normal"
               : "text-zinc-400"
-            }`}
+          }`}
         >
           {line}
         </p>
@@ -141,11 +177,13 @@ function EventLines({
 }
 
 function EventDate({
+  eventId,
   year,
   month,
   monthFirst = false,
   mobile = false,
 }: {
+  eventId: string;
   year: string;
   month?: string;
   monthFirst?: boolean;
@@ -153,8 +191,10 @@ function EventDate({
 }) {
   const monthNode = month ? (
     <div
-      className={`${verticalTextClass} ${mobile ? "text-sm" : "text-lg lg:text-xl"
-        } text-red-800/80 font-serif tracking-[0.3em]`}
+      data-event-month={eventId}
+      className={`${verticalTextClass} ${
+        mobile ? "text-sm" : "text-lg lg:text-xl"
+      } text-red-800/80 font-serif tracking-[0.3em]`}
     >
       {month}
     </div>
@@ -162,8 +202,9 @@ function EventDate({
 
   const yearNode = (
     <div
-      className={`${verticalTextClass} ${mobile ? "text-xl" : "text-2xl lg:text-3xl"
-        } font-serif tracking-[0.3em] font-light text-zinc-300`}
+      className={`${verticalTextClass} ${
+        mobile ? "text-xl" : "text-2xl lg:text-3xl"
+      } font-serif tracking-[0.3em] font-light text-zinc-300`}
     >
       {year}
     </div>
@@ -171,8 +212,9 @@ function EventDate({
 
   return (
     <div
-      className={`flex flex-row items-end ${mobile ? "gap-2" : "gap-3 lg:gap-4"
-        } transition-colors`}
+      className={`flex flex-row items-end ${
+        mobile ? "gap-2" : "gap-3 lg:gap-4"
+      } transition-colors`}
     >
       {monthFirst ? (
         <>
@@ -236,83 +278,228 @@ export default function QingJinTianXia() {
         ease: "power2.out",
       });
 
-      const events = gsap.utils.toArray<HTMLElement>(
-        ".timeline-event",
-        container.current,
+      const timelineContainer = container.current?.querySelector<HTMLElement>(
+        ".timeline-container",
       );
-      const dots = gsap.utils.toArray<HTMLElement>(".event-dot", container.current);
-      const progressLine = container.current?.querySelector<HTMLElement>(
-        ".timeline-progress",
-      );
+      const timelineTrack =
+        container.current?.querySelector<HTMLElement>(".timeline-track");
+      const progressLine =
+        container.current?.querySelector<HTMLElement>(".timeline-progress");
+      const timelineEvents = timelineData
+        .map<TimelineSceneEvent | null>((event) => {
+          const dot = container.current?.querySelector<HTMLElement>(
+            `[data-event-dot="${event.id}"]`,
+          );
+          const content = gsap.utils.toArray<HTMLElement>(
+            `[data-event-content="${event.id}"]`,
+            container.current,
+          );
+          const months = gsap.utils.toArray<HTMLElement>(
+            `[data-event-month="${event.id}"]`,
+            container.current,
+          );
 
-      const setDotState = (dot: HTMLElement, active: boolean) => {
-        const nextState = active ? "active" : "inactive";
+          if (!dot || content.length === 0) {
+            return null;
+          }
 
-        if (dot.dataset.state === nextState) {
-          return;
-        }
+          return {
+            content,
+            dot,
+            dotCenter: 0,
+            months,
+          };
+        })
+        .filter((event): event is TimelineSceneEvent => event !== null);
 
-        dot.dataset.state = nextState;
-        gsap.to(dot, {
-          duration: 0.35,
-          borderColor: active ? "#b91c1c" : "#71717a",
-          backgroundColor: active ? "#7f1d1d" : "#09090b",
-          boxShadow: active ? "0 0 15px rgba(185,28,28,0.8)" : "0 0 0 rgba(0,0,0,0)",
-          overwrite: true,
-        });
-      };
-
-      dots.forEach((dot) => setDotState(dot, false));
-
-      const updateDotsByProgressLine = () => {
-        if (!progressLine) {
-          return;
-        }
-
-        const progressRect = progressLine.getBoundingClientRect();
-        const lineBottom = progressRect.top + progressRect.height;
-
-        dots.forEach((dot) => {
-          const dotRect = dot.getBoundingClientRect();
-          const dotCenter = dotRect.top + dotRect.height / 2;
-          setDotState(dot, lineBottom >= dotCenter);
-        });
-      };
-
-      if (progressLine) {
-        gsap.to(progressLine, {
-          scaleY: 1,
-          ease: "none",
-          scrollTrigger: {
-            trigger: ".timeline-container",
-            start: "top 60%",
-            end: "bottom 80%",
-            scrub: 1 * animationSlowdown,
-            onUpdate: updateDotsByProgressLine,
-            onRefresh: updateDotsByProgressLine,
-          },
-        });
+      if (
+        !timelineContainer ||
+        !timelineTrack ||
+        !progressLine ||
+        timelineEvents.length === 0
+      ) {
+        return;
       }
 
-      events.forEach((event) => {
-        gsap.fromTo(
-          event,
-          { opacity: 0, y: 70, filter: "blur(10px)" },
-          {
-            opacity: 1,
-            y: 0,
-            filter: "blur(0px)",
-            scrollTrigger: {
-              trigger: event,
-              start: "top 85%",
-              end: "top 50%",
-              scrub: 1 * animationSlowdown,
-            },
-          },
+      const resetScene = () => {
+        gsap.set(timelineTrack, {
+          clearProps: "y",
+        });
+        gsap.set(progressLine, {
+          clearProps: "height",
+          height: 0,
+        });
+
+        timelineEvents.forEach((event) => {
+          gsap.set(event.content, {
+            filter: "blur(10px)",
+            opacity: 0,
+            y: 70,
+          });
+          gsap.set(event.dot, {
+            backgroundColor: inactiveDotFill,
+            borderColor: inactiveDotBorder,
+            boxShadow: "0 0 0 rgba(0,0,0,0)",
+            scale: 1,
+          });
+          gsap.set(event.months, {
+            color: inactiveMonthColor,
+            textShadow: "0 0 0 rgba(239,68,68,0)",
+          });
+        });
+      };
+
+      const measureScene = (): TimelineSceneMetrics => {
+        resetScene();
+
+        const viewportHeight = window.innerHeight;
+        const anchorY = viewportHeight * goldenViewportRatio;
+        const topPadding = viewportHeight * trackTopPaddingRatio;
+        const bottomPadding = viewportHeight * trackBottomPaddingRatio;
+
+        gsap.set(timelineTrack, {
+          paddingBottom: bottomPadding,
+          paddingTop: topPadding,
+        });
+
+        const trackRect = timelineTrack.getBoundingClientRect();
+        timelineEvents.forEach((event) => {
+          const dotRect = event.dot.getBoundingClientRect();
+          event.dotCenter = dotRect.top - trackRect.top + dotRect.height / 2;
+        });
+
+        const lastDotCenter = timelineEvents.at(-1)?.dotCenter ?? anchorY;
+        const travelDistance = Math.max(1, lastDotCenter - anchorY);
+
+        return {
+          activeDistance: Math.max(viewportHeight * activeViewportRatio, 40),
+          anchorY,
+          bottomPadding,
+          preheatDistance: viewportHeight * preheatViewportRatio,
+          topPadding,
+          trackHeight: timelineTrack.offsetHeight,
+          travelDistance,
+        };
+      };
+
+      const renderScene = (
+        scrollDistance: number,
+        metrics: TimelineSceneMetrics,
+      ) => {
+        const clampedDistance = Math.max(
+          0,
+          Math.min(scrollDistance, metrics.travelDistance),
         );
+        const progressHeight = Math.min(
+          metrics.trackHeight,
+          metrics.anchorY + clampedDistance,
+        );
+
+        gsap.set(timelineTrack, {
+          y: -clampedDistance,
+        });
+        gsap.set(progressLine, {
+          height: progressHeight,
+        });
+
+        timelineEvents.forEach((event) => {
+          const triggerDistance = Math.max(
+            0,
+            event.dotCenter - metrics.anchorY,
+          );
+          const preheatStart = Math.max(
+            0,
+            triggerDistance - metrics.preheatDistance,
+          );
+          const preheatRange = Math.max(triggerDistance - preheatStart, 1);
+          const preheatMix = clamp01(
+            (clampedDistance - preheatStart) / preheatRange,
+          );
+          const activeMix = clamp01(
+            (clampedDistance - triggerDistance) / metrics.activeDistance,
+          );
+
+          let opacity = 0;
+          let y = 70;
+          let blur = 10;
+
+          if (clampedDistance < triggerDistance) {
+            const easedPreheat = ghostEase(preheatMix);
+
+            opacity = interpolate(0, 0.4, easedPreheat);
+            y = interpolate(70, 0, easedPreheat);
+            blur = interpolate(10, 4, easedPreheat);
+          } else {
+            const easedActive = activeEase(activeMix);
+
+            opacity = interpolate(0.4, 1, easedActive);
+            y = 0;
+            blur = interpolate(4, 0, easedActive);
+          }
+
+          const activationMix =
+            clampedDistance < triggerDistance
+              ? 0
+              : 0.45 + activeEase(activeMix) * 0.55;
+          const redGlow = 16 * activationMix;
+
+          gsap.set(event.content, {
+            filter: `blur(${blur}px)`,
+            opacity,
+            y,
+          });
+          gsap.set(event.dot, {
+            backgroundColor: gsap.utils.interpolate(
+              inactiveDotFill,
+              activeDotFill,
+              activationMix,
+            ),
+            borderColor: gsap.utils.interpolate(
+              inactiveDotBorder,
+              activeDotBorder,
+              activationMix,
+            ),
+            boxShadow: `0 0 ${redGlow}px rgba(185,28,28,${0.78 * activationMix})`,
+            scale: interpolate(1, 1.12, activationMix),
+          });
+          gsap.set(event.months, {
+            color: gsap.utils.interpolate(
+              inactiveMonthColor,
+              activeMonthColor,
+              activationMix,
+            ),
+            textShadow: `0 0 ${12 * activationMix}px rgba(239,68,68,${0.45 * activationMix})`,
+          });
+        });
+      };
+
+      let metrics = measureScene();
+
+      const sceneTrigger = ScrollTrigger.create({
+        anticipatePin: 1,
+        end: () => {
+          metrics = measureScene();
+          return `+=${metrics.travelDistance}`;
+        },
+        invalidateOnRefresh: true,
+        onRefresh: (self) => {
+          metrics = measureScene();
+          renderScene(self.progress * metrics.travelDistance, metrics);
+        },
+        onUpdate: (self) => {
+          renderScene(self.progress * metrics.travelDistance, metrics);
+        },
+        pin: true,
+        scrub: 1 * animationSlowdown,
+        start: "top top",
+        trigger: timelineContainer,
       });
 
-      updateDotsByProgressLine();
+      renderScene(0, metrics);
+
+      return () => {
+        sceneTrigger.kill();
+      };
     },
     { scope: container },
   );
@@ -416,69 +603,93 @@ export default function QingJinTianXia() {
         </motion.div>
       </section>
 
-      <main className="timeline-container relative z-10 mx-auto w-full max-w-7xl px-4 py-[15vh]">
-        <div className="absolute top-0 bottom-0 left-14 w-px -translate-x-1/2 rounded bg-zinc-800/40 md:left-1/2" />
-        <div className="timeline-progress absolute top-0 bottom-0 left-14 z-10 w-px -translate-x-1/2 origin-top scale-y-0 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2" />
+      <main className="timeline-container relative z-10 h-svh overflow-hidden">
+        <div className="timeline-viewport mx-auto h-full w-full max-w-7xl px-4">
+          <div className="timeline-track relative flex w-full flex-col will-change-transform">
+            <div className="absolute top-0 bottom-0 left-14 w-px -translate-x-1/2 rounded bg-zinc-800/40 md:left-1/2" />
+            <div className="timeline-progress absolute top-0 left-14 z-10 h-0 w-px -translate-x-1/2 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2" />
 
-        <div className="relative flex w-full flex-col pt-10 pb-40">
-          {timelineData.map((event, index) => {
-            const isLeft = index % 2 === 0;
+            <div className="relative flex w-full flex-col pb-10">
+              {timelineData.map((event, index) => {
+                const isLeft = index % 2 === 0;
 
-            return (
-              <div
-                key={event.id}
-                className="timeline-event group relative my-10 flex w-full flex-col md:my-20 md:flex-row md:justify-center"
-              >
-                <div className="event-dot absolute top-1/2 left-10 z-20 h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 origin-center rounded-full border border-zinc-500 bg-zinc-950 md:left-1/2 md:h-[13px] md:w-[13px]" />
-
-                <div className="flex w-full justify-start pl-18 pr-2 md:hidden">
-                  <div className="flex flex-row items-center gap-4 sm:gap-6">
-                    <EventDate
-                      year={event.year}
-                      month={event.month}
-                      mobile
+                return (
+                  <div
+                    key={event.id}
+                    className="timeline-event group relative my-10 flex w-full flex-col md:my-20 md:flex-row md:justify-center"
+                  >
+                    <div
+                      data-event-dot={event.id}
+                      className="event-dot absolute top-1/2 left-10 z-20 h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 origin-center rounded-full border border-zinc-500 bg-zinc-950 md:left-1/2 md:h-[13px] md:w-[13px]"
                     />
-                    <EventLines
-                      content={event.content}
-                      important={event.important}
-                      mobile
-                    />
+
+                    <div className="flex w-full justify-start pl-18 pr-2 md:hidden">
+                      <div
+                        data-event-content={event.id}
+                        className="flex flex-row items-center gap-4 sm:gap-6 will-change-transform"
+                      >
+                        <EventDate
+                          eventId={event.id}
+                          year={event.year}
+                          month={event.month}
+                          mobile
+                        />
+                        <EventLines
+                          content={event.content}
+                          important={event.important}
+                          mobile
+                        />
+                      </div>
+                    </div>
+
+                    <div
+                      className={`hidden w-1/2 justify-end pr-12 md:flex lg:pr-24 ${
+                        !isLeft ? "invisible" : ""
+                      }`}
+                    >
+                      <div
+                        data-event-content={isLeft ? event.id : undefined}
+                        className="flex flex-row items-center gap-8 lg:gap-12 will-change-transform"
+                      >
+                        <EventLines
+                          content={event.content}
+                          important={event.important}
+                          align="right"
+                        />
+                        <EventDate
+                          eventId={event.id}
+                          year={event.year}
+                          month={event.month}
+                          monthFirst
+                        />
+                      </div>
+                    </div>
+
+                    <div
+                      className={`hidden w-1/2 justify-start pl-12 md:flex lg:pl-24 ${
+                        isLeft ? "invisible" : ""
+                      }`}
+                    >
+                      <div
+                        data-event-content={isLeft ? undefined : event.id}
+                        className="flex flex-row items-center gap-8 lg:gap-12 will-change-transform"
+                      >
+                        <EventDate
+                          eventId={event.id}
+                          year={event.year}
+                          month={event.month}
+                        />
+                        <EventLines
+                          content={event.content}
+                          important={event.important}
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-
-                <div
-                  className={`hidden w-1/2 justify-end pr-12 md:flex lg:pr-24 ${!isLeft ? "invisible" : ""
-                    }`}
-                >
-                  <div className="flex flex-row items-center gap-8 lg:gap-12">
-                    <EventLines
-                      content={event.content}
-                      important={event.important}
-                      align="right"
-                    />
-                    <EventDate
-                      year={event.year}
-                      month={event.month}
-                      monthFirst
-                    />
-                  </div>
-                </div>
-
-                <div
-                  className={`hidden w-1/2 justify-start pl-12 md:flex lg:pl-24 ${isLeft ? "invisible" : ""
-                    }`}
-                >
-                  <div className="flex flex-row items-center gap-8 lg:gap-12">
-                    <EventDate year={event.year} month={event.month} />
-                    <EventLines
-                      content={event.content}
-                      important={event.important}
-                    />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          </div>
         </div>
       </main>
 
