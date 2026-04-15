@@ -276,13 +276,13 @@ export default function QingJinTianXia() {
         let lineTargetHeight = triggerY - rect.top;
         lineTargetHeight = Math.max(0, Math.min(lineTargetHeight, rect.height));
 
-        const scale = rect.height > 0 ? lineTargetHeight / rect.height : 0;
-        gsap.set(progressLine, { transformOrigin: "top center", scaleY: scale });
+        progressLine.style.height = `${lineTargetHeight}px`;
+        progressLine.style.transform = `translateX(-50%)`;
 
         dots.forEach((dot) => {
           const dotRect = dot.getBoundingClientRect();
           const dotCenter = dotRect.top + dotRect.height / 2;
-          setDotState(dot, dotCenter <= triggerY + 2);
+          setDotState(dot, dotCenter <= triggerY + 10);
         });
       };
 
@@ -334,14 +334,16 @@ export default function QingJinTianXia() {
                 scrollyBg,
                 {
                   clipPath: () => {
+                    const triggerY = window.innerHeight * 0.6;
                     const dotRect = dot.getBoundingClientRect();
-                    return `circle(0px at ${dotRect.left + dotRect.width / 2}px ${dotRect.top + dotRect.height / 2}px)`;
+                    return `circle(0px at ${dotRect.left + dotRect.width / 2}px ${triggerY}px)`;
                   },
                 },
                 {
                   clipPath: () => {
+                    const triggerY = window.innerHeight * 0.6;
                     const dotRect = dot.getBoundingClientRect();
-                    return `circle(150vw at ${dotRect.left + dotRect.width / 2}px ${dotRect.top + dotRect.height / 2}px)`;
+                    return `circle(150vw at ${dotRect.left + dotRect.width / 2}px ${triggerY}px)`;
                   },
                   duration: 1.5,
                   ease: "power2.inOut",
@@ -364,8 +366,9 @@ export default function QingJinTianXia() {
               })
               .to(scrollyBg, {
                 clipPath: () => {
+                  const triggerY = window.innerHeight * 0.6;
                   const dotRect = dot.getBoundingClientRect();
-                  return `circle(0px at ${dotRect.left + dotRect.width / 2}px ${dotRect.top + dotRect.height / 2}px)`;
+                  return `circle(0px at ${dotRect.left + dotRect.width / 2}px ${triggerY}px)`;
                 },
                 duration: 1.2,
                 ease: "power2.inOut",
@@ -433,37 +436,6 @@ export default function QingJinTianXia() {
 
       <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(ellipse_at_top,transparent_0%,rgba(0,0,0,0.9)_100%)]" />
 
-      {/* Scrollytelling Content layers */}
-      {timelineData.map((event) => {
-        if (!event.detail) return null;
-        return (
-          <div
-            key={`detail-${event.id}`}
-            id={`detail-${event.id}`}
-            className="fixed inset-0 z-50 pointer-events-none flex-col items-center justify-center hidden"
-          >
-            <div
-              className={`scrolly-bg-${event.id} absolute inset-0 bg-zinc-950 bg-[radial-gradient(ellipse_at_center,rgba(40,40,43,0.3)_0%,rgba(9,9,11,1)_100%)] z-0`}
-              style={{ clipPath: "circle(0px at 50vw 60vh)" }}
-            />
-            <div className={`scrolly-text-${event.id} relative z-10 flex flex-col items-center w-full max-w-4xl px-4 md:px-20`}>
-              <h3 className="text-sm md:text-xl text-red-800/80 mb-6 tracking-[0.4em] text-center font-light drop-shadow-[0_0_15px_rgba(185,28,28,0.5)]">{event.detail.eyebrow}</h3>
-              <h2 className="text-3xl md:text-5xl font-serif text-white tracking-[0.4em] mb-10 md:mb-14 text-center drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">{event.detail.title}</h2>
-              {event.detail.lead && (
-                <p className="text-base md:text-xl leading-[2.6em] tracking-[0.3em] font-light text-zinc-200 font-serif mb-8 w-full text-center">{event.detail.lead}</p>
-              )}
-              <div className="flex flex-col items-center gap-6 text-sm md:text-base leading-[2.6em] tracking-[0.2em] font-light text-zinc-400 font-serif w-full text-left md:text-justify">
-                {event.detail.body.map((p, i) => (
-                  <p key={i} className="w-full">{p}</p>
-                ))}
-              </div>
-              {event.detail.closing && (
-                <p className="mt-12 text-sm md:text-base leading-[2em] tracking-[0.4em] text-zinc-500 font-light italic text-center">{event.detail.closing}</p>
-              )}
-            </div>
-          </div>
-        );
-      })}
 
       <section className="relative z-10 flex h-svh flex-col items-center justify-center">
         <div className="mt-[-10vh] flex flex-col items-center gap-12 sm:gap-16">
@@ -522,7 +494,7 @@ export default function QingJinTianXia() {
 
       <main className="timeline-container relative z-10 mx-auto w-full max-w-7xl px-4 py-[15vh]">
         <div className="absolute top-0 bottom-0 left-14 w-px -translate-x-1/2 rounded bg-zinc-800/40 md:left-1/2" />
-        <div className="timeline-progress absolute top-0 bottom-0 left-14 z-10 w-px -translate-x-1/2 origin-top scale-y-0 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2" />
+        <div className="timeline-progress absolute top-0 left-14 z-10 w-px -translate-x-1/2 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2" />
 
         <div className="relative flex w-full flex-col pt-10 pb-40">
           {timelineData.map((event, index) => {
@@ -587,6 +559,42 @@ export default function QingJinTianXia() {
           })}
         </div>
       </main>
+
+      {/* Scrollytelling Content layers (Rendered strictly after main container to guarantee z-100 overlay during GSAP pins) */}
+      {timelineData.map((event) => {
+        if (!event.detail) return null;
+        return (
+          <div
+            key={`detail-${event.id}`}
+            id={`detail-${event.id}`}
+            className="fixed inset-0 w-screen h-screen m-0 p-0 z-[100] pointer-events-none flex-col items-center justify-center hidden"
+          >
+            <div
+              className={`scrolly-bg-${event.id} absolute inset-0 w-full h-full bg-[#09090b] z-0 overflow-hidden`}
+              style={{ clipPath: "circle(0px at 50vw 60vh)" }}
+            >
+              {/* Soft radial overlay to replace heavy banding gradient, explicitly nested inside the masked background to avoid screen pollution */}
+              <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,rgba(63,63,70,0.18)_0%,transparent_70%)] opacity-80 pointer-events-none" />
+            </div>
+            
+            <div className={`scrolly-text-${event.id} relative z-10 flex flex-col items-center w-full max-w-4xl px-4 md:px-20`}>
+              <h3 className="text-sm md:text-xl text-red-800/80 mb-6 tracking-[0.4em] text-center font-light drop-shadow-[0_0_15px_rgba(185,28,28,0.5)]">{event.detail.eyebrow}</h3>
+              <h2 className="text-3xl md:text-5xl font-serif text-white tracking-[0.4em] mb-10 md:mb-14 text-center drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">{event.detail.title}</h2>
+              {event.detail.lead && (
+                <p className="text-base md:text-xl leading-[2.6em] tracking-[0.3em] font-light text-zinc-200 font-serif mb-8 w-full text-center">{event.detail.lead}</p>
+              )}
+              <div className="flex flex-col items-center gap-6 text-sm md:text-base leading-[2.6em] tracking-[0.2em] font-light text-zinc-400 font-serif w-full text-left md:text-justify">
+                {event.detail.body.map((p, i) => (
+                  <p key={i} className="w-full">{p}</p>
+                ))}
+              </div>
+              {event.detail.closing && (
+                <p className="mt-12 text-sm md:text-base leading-[2em] tracking-[0.4em] text-zinc-500 font-light italic text-center">{event.detail.closing}</p>
+              )}
+            </div>
+          </div>
+        );
+      })}
 
       <motion.footer
         initial="hidden"
