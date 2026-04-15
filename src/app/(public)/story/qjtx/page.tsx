@@ -347,38 +347,27 @@ export default function QingJinTianXia() {
             const snowLayer = scrollyBg.querySelector<HTMLElement>(`.scrolly-snow-${event.dataset.id}`);
 
             if (textHeader && textContent) {
-              const timelineDuration = 10;
-              
               tl.set(detailContent, { display: "flex" });
-
-              if (snowLayer) {
-                tl.fromTo(
-                  snowLayer,
-                  { backgroundPosition: "0px 0px" },
-                  { backgroundPosition: "-40px 150px", duration: timelineDuration, ease: "none" },
-                  0
-                );
-              }
 
               tl.fromTo(
                   scrollyBg,
                   { "--radius": "0px" },
-                  { "--radius": "450vw", duration: 1.8, ease: "power2.inOut" },
+                  { "--radius": "450vw", duration: 1.5, ease: "power2.in" },
                   0
                 )
                 .fromTo(
                   textHeader.children,
                   { opacity: 0, y: 30, filter: "blur(12px)" },
-                  { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.0, stagger: 0.2, ease: "power3.out" },
-                  "-=1.4"
+                  { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.0, stagger: 0.2, ease: "power2.out" },
+                  "-=1.1"
                 )
                 .fromTo(
                   textContent,
                   { opacity: 0, y: 60, filter: "blur(8px)" },
-                  { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.2, ease: "power3.out" },
-                  "-=1.0"
+                  { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.2, ease: "power2.out" },
+                  "-=0.9"
                 )
-                .to(textContent, { y: "-40%", duration: 4, ease: "none" })
+                .to(textContent, { y: "-40%", duration: 4.5, ease: "none" })
                 .to([textHeader, textContent], {
                   opacity: 0,
                   y: "-=30",
@@ -390,8 +379,19 @@ export default function QingJinTianXia() {
                   "--radius": "0px",
                   duration: 1.5,
                   ease: "power2.inOut",
-                }, "-=0.6")
-                .set(detailContent, { display: "none" });
+                }, "-=0.6");
+
+              if (snowLayer) {
+                // Insert the full-duration snow drift securely at the background layer's start without hijacking GSAP's offset cursor
+                tl.fromTo(
+                  snowLayer,
+                  { backgroundPosition: "0px 0px" },
+                  { backgroundPosition: "-40px 150px", duration: tl.duration(), ease: "none" },
+                  0
+                );
+              }
+              
+              tl.set(detailContent, { display: "none" });
             }
           }
         }
