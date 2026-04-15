@@ -310,10 +310,10 @@ export default function QingJinTianXia() {
 
         const isImportant = event.dataset.important === "true";
         if (isImportant) {
-          const detailContent = container.current?.querySelector(`#detail-${event.dataset.id}`);
-          const scrollyBg = detailContent?.querySelector(`.scrolly-bg-${event.dataset.id}`);
-          const scrollyText = detailContent?.querySelector(`.scrolly-text-${event.dataset.id}`);
-          const dot = event.querySelector(".event-dot");
+          const detailContent = container.current?.querySelector<HTMLElement>(`#detail-${event.dataset.id}`);
+          const scrollyBg = detailContent?.querySelector<HTMLElement>(`.scrolly-bg-${event.dataset.id}`);
+          const scrollyText = detailContent?.querySelector<HTMLElement>(`.scrolly-text-${event.dataset.id}`);
+          const dot = event.querySelector<HTMLElement>(".event-dot");
 
           if (detailContent && scrollyBg && scrollyText && dot) {
             const setCirclePos = () => {
@@ -337,33 +337,43 @@ export default function QingJinTianXia() {
               },
             });
 
-            tl.set(detailContent, { display: "flex" })
-              .fromTo(
-                scrollyBg,
-                { "--radius": "0px" },
-                { "--radius": "150vw", duration: 1.5, ease: "power2.inOut" }
-              )
-              .fromTo(
-                scrollyText.children,
-                { opacity: 0, y: 40, filter: "blur(8px)" },
-                { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.2, stagger: 0.2, ease: "power2.out" },
-                "-=0.5"
-              )
-              .to({}, { duration: 3 })
-              .to(scrollyText.children, {
-                opacity: 0,
-                y: -30,
-                filter: "blur(8px)",
-                duration: 1,
-                stagger: 0.1,
-                ease: "power2.in",
-              })
-              .to(scrollyBg, {
-                "--radius": "0px",
-                duration: 1.2,
-                ease: "power2.inOut",
-              })
-              .set(detailContent, { display: "none" });
+            const textHeader = scrollyText.querySelector<HTMLElement>(".scrolly-header");
+            const textContent = scrollyText.querySelector<HTMLElement>(`.scrolly-text-content-${event.dataset.id}`);
+
+            if (textHeader && textContent) {
+              tl.set(detailContent, { display: "flex" })
+                .fromTo(
+                  scrollyBg,
+                  { "--radius": "0px" },
+                  { "--radius": "150vw", duration: 1.5, ease: "power2.inOut" }
+                )
+                .fromTo(
+                  textHeader.children,
+                  { opacity: 0, y: 30, filter: "blur(10px)" },
+                  { opacity: 1, y: 0, filter: "blur(0px)", duration: 1, stagger: 0.2, ease: "power2.out" },
+                  "-=0.5"
+                )
+                .fromTo(
+                  textContent,
+                  { opacity: 0, y: 60 },
+                  { opacity: 1, y: 0, duration: 1.2, ease: "power2.out" },
+                  "-=0.5"
+                )
+                .to(textContent, { y: "-40%", duration: 4, ease: "none" })
+                .to([textHeader, textContent], {
+                  opacity: 0,
+                  y: "-=30",
+                  filter: "blur(8px)",
+                  duration: 1,
+                  ease: "power2.in",
+                })
+                .to(scrollyBg, {
+                  "--radius": "0px",
+                  duration: 1.2,
+                  ease: "power2.inOut",
+                }, "-=0.5")
+                .set(detailContent, { display: "none" });
+            }
           }
         }
       });
@@ -565,22 +575,55 @@ export default function QingJinTianXia() {
             >
               {/* Soft radial overlay to replace heavy banding gradient, explicitly nested inside the masked background to avoid screen pollution */}
               <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,rgba(63,63,70,0.18)_0%,transparent_70%)] opacity-80 pointer-events-none" />
+              {/* Cinematic noise specifically for immersive view */}
+              <div
+                className="absolute inset-0 z-0 mix-blend-overlay opacity-30 pointer-events-none"
+                style={{
+                  backgroundImage:
+                    'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")',
+                }}
+              />
             </div>
             
-            <div className={`scrolly-text-${event.id} relative z-10 flex flex-col items-center w-full max-w-4xl px-4 md:px-20`}>
-              <h3 className="text-sm md:text-xl text-red-800/80 mb-6 tracking-[0.4em] text-center font-light drop-shadow-[0_0_15px_rgba(185,28,28,0.5)]">{event.detail.eyebrow}</h3>
-              <h2 className="text-3xl md:text-5xl font-serif text-white tracking-[0.4em] mb-10 md:mb-14 text-center drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">{event.detail.title}</h2>
-              {event.detail.lead && (
-                <p className="text-base md:text-xl leading-[2.6em] tracking-[0.3em] font-light text-zinc-200 font-serif mb-8 w-full text-center">{event.detail.lead}</p>
-              )}
-              <div className="flex flex-col items-center gap-6 text-sm md:text-base leading-[2.6em] tracking-[0.2em] font-light text-zinc-400 font-serif w-full text-left md:text-justify">
-                {event.detail.body.map((p, i) => (
-                  <p key={i} className="w-full">{p}</p>
-                ))}
+            <div className={`scrolly-text-${event.id} relative z-10 flex flex-col items-center w-full max-w-2xl px-6 md:px-0 h-full py-[15vh]`}>
+              
+              {/* Header Title Block */}
+              <div className="scrolly-header flex flex-col items-center mb-8 md:mb-12 shrink-0">
+                <div className="w-px h-8 md:h-12 bg-linear-to-b from-transparent to-red-800/80 mb-6" />
+                <h3 className="text-xs md:text-sm text-red-700 mb-6 tracking-[0.5em] text-center font-light uppercase drop-shadow-[0_0_10px_rgba(185,28,28,0.5)]">{event.detail.eyebrow}</h3>
+                <h2 className="text-2xl md:text-4xl font-serif text-zinc-100 tracking-[0.3em] text-center drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]">{event.detail.title}</h2>
               </div>
-              {event.detail.closing && (
-                <p className="mt-12 text-sm md:text-base leading-[2em] tracking-[0.4em] text-zinc-500 font-light italic text-center">{event.detail.closing}</p>
-              )}
+
+              {/* Scrolling Content Block */}
+              <div className="relative w-full flex-1 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)]">
+                <div className={`scrolly-text-content-${event.id} flex flex-col items-center w-full gap-8 pb-[30vh] pt-[5vh]`}>
+                  {event.detail.quote && (
+                    <div className="text-base md:text-xl leading-relaxed tracking-widest font-serif text-zinc-300 italic text-center px-4 md:px-8 border-l border-r border-zinc-800/60 py-4 my-2">
+                      <p>"{event.detail.quote}"</p>
+                    </div>
+                  )}
+                  {event.detail.lead && (
+                    <p className="text-sm md:text-base leading-loose tracking-[0.2em] font-light text-zinc-300 text-center">
+                      {event.detail.lead}
+                    </p>
+                  )}
+                  {event.detail.lead && <div className="w-8 h-px bg-zinc-800 my-2" />}
+                  
+                  <div className="flex flex-col gap-6 text-sm md:text-[15px] leading-loose tracking-[0.1em] font-light text-zinc-400 text-justify w-full">
+                    {event.detail.body.map((p, i) => (
+                      <p key={i}>{p}</p>
+                    ))}
+                  </div>
+                  
+                  {event.detail.closing && (
+                    <div className="mt-8 flex flex-col items-center opacity-80">
+                      <div className="w-1 h-1 rounded-full bg-zinc-700 mb-6" />
+                      <p className="text-xs tracking-[0.3em] text-zinc-500 font-light text-center">{event.detail.closing}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
             </div>
           </div>
         );
