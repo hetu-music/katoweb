@@ -350,22 +350,22 @@ export default function QingJinTianXia() {
               tl.set(detailContent, { display: "flex" });
 
               tl.fromTo(
-                  scrollyBg,
-                  { "--radius": "0px" },
-                  { "--radius": "450vw", duration: 1.5, ease: "power2.in" },
-                  0
-                )
+                scrollyBg,
+                { "--radius": "0px" },
+                { "--radius": "450vw", duration: 1.5, ease: "power2.in" },
+                0
+              )
                 .fromTo(
                   textHeader.children,
                   { opacity: 0, y: 30, filter: "blur(12px)" },
                   { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.0, stagger: 0.2, ease: "power2.out" },
-                  "-=1.1"
+                  "-=0.7"
                 )
                 .fromTo(
                   textContent,
                   { opacity: 0, y: 60, filter: "blur(8px)" },
                   { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.2, ease: "power2.out" },
-                  "-=0.9"
+                  "-=0.7"
                 )
                 .to(textContent, { y: "-40%", duration: 4.5, ease: "none" })
                 .to([textHeader, textContent], {
@@ -390,7 +390,7 @@ export default function QingJinTianXia() {
                   0
                 );
               }
-              
+
               tl.set(detailContent, { display: "none" });
             }
           }
@@ -586,7 +586,7 @@ export default function QingJinTianXia() {
           <div
             key={`detail-${event.id}`}
             id={`detail-${event.id}`}
-            className="fixed inset-0 w-screen h-screen m-0 p-0 z-[100] pointer-events-none flex-col items-center justify-center hidden"
+            className="fixed inset-0 w-screen h-screen m-0 p-0 z-100 pointer-events-none flex-col items-center justify-center hidden"
           >
             {/* Elegant Snow-night Background (Snowflake Shape Expansion) */}
             <div
@@ -604,16 +604,16 @@ export default function QingJinTianXia() {
             >
               {/* Moonlight / Frost Center Glow */}
               <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,rgba(226,232,240,0.06)_0%,transparent_70%)] opacity-100 pointer-events-none" />
-              
+
               {/* Elegant slow-spinning astrological/lore emblem background */}
               <div className="absolute inset-0 z-0 flex items-center justify-center opacity-[0.025] pointer-events-none mix-blend-screen">
                 <svg viewBox="0 0 200 200" className="w-[150vw] h-[150vw] md:w-[60vw] md:h-[60vw] animate-[spin_80s_linear_infinite] text-white">
-                  <circle cx="100" cy="100" r="95" fill="none" stroke="currentColor" strokeWidth="0.5"/>
-                  <circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2 6"/>
-                  <circle cx="100" cy="100" r="60" fill="none" stroke="currentColor" strokeWidth="0.5"/>
-                  <path d="M100 5 L100 195 M5 100 L195 100 M33 33 L167 167 M33 167 L167 33" stroke="currentColor" strokeWidth="0.2"/>
-                  <polygon points="100,20 180,100 100,180 20,100" fill="none" stroke="currentColor" strokeWidth="0.3"/>
-                  <polygon points="100,40 160,100 100,160 40,100" fill="none" stroke="currentColor" strokeWidth="0.3"/>
+                  <circle cx="100" cy="100" r="95" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                  <circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2 6" />
+                  <circle cx="100" cy="100" r="60" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                  <path d="M100 5 L100 195 M5 100 L195 100 M33 33 L167 167 M33 167 L167 33" stroke="currentColor" strokeWidth="0.2" />
+                  <polygon points="100,20 180,100 100,180 20,100" fill="none" stroke="currentColor" strokeWidth="0.3" />
+                  <polygon points="100,40 160,100 100,160 40,100" fill="none" stroke="currentColor" strokeWidth="0.3" />
                 </svg>
               </div>
 
@@ -648,7 +648,7 @@ export default function QingJinTianXia() {
               </div>
 
               {/* Scrolling Content Block */}
-              <div className="relative w-full flex-1 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)]">
+              <div className="relative w-full flex-1 overflow-hidden mask-[linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)]">
                 <div className={`scrolly-text-content-${event.id} flex flex-col items-center w-full gap-8 pb-[30vh] pt-[5vh]`}>
                   {event.detail.quote && (
                     <div className="text-base md:text-xl leading-relaxed tracking-widest font-serif text-zinc-200 italic text-center px-4 md:px-8 border-l border-r border-zinc-600/40 py-4 my-2">
@@ -662,7 +662,7 @@ export default function QingJinTianXia() {
                   )}
                   {event.detail.lead && <div className="w-8 h-px bg-zinc-800 my-2" />}
 
-                  <div className="flex flex-col gap-6 text-sm md:text-[15px] leading-loose tracking-[0.1em] font-light text-zinc-400 text-justify w-full">
+                  <div className="flex flex-col gap-6 text-sm md:text-[15px] leading-loose tracking-widest font-light text-zinc-400 text-justify w-full">
                     {event.detail.body.map((p, i) => (
                       <p key={i}>{p}</p>
                     ))}
