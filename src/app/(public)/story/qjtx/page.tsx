@@ -294,8 +294,8 @@ export default function QingJinTianXia() {
           scrollTrigger: {
             trigger: ".timeline-container",
             start: "top 60%",
-            end: "bottom 80%",
-            scrub: 0.8,
+            end: "bottom 60%",
+            scrub: 1.5,
             onUpdate: (self) => updateDotsByProgress(self.progress),
             onRefresh: (self) => updateDotsByProgress(self.progress),
           },
@@ -313,9 +313,9 @@ export default function QingJinTianXia() {
             filter: "blur(0px)",
             scrollTrigger: {
               trigger: event,
-              start: "top 85%",
-              end: "top 50%",
-              scrub: 3,
+              start: "top 90%",
+              end: "center 60%",
+              scrub: 1.5,
             },
           },
         );
