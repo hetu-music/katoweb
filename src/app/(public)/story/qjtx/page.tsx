@@ -311,12 +311,11 @@ export default function QingJinTianXia() {
         const isImportant = event.dataset.important === "true";
         if (isImportant) {
           const detailContent = container.current?.querySelector<HTMLElement>(`#detail-${event.dataset.id}`);
-          const scrollyRipple = detailContent?.querySelector<HTMLElement>(`.scrolly-ripple-${event.dataset.id}`);
           const scrollyBg = detailContent?.querySelector<HTMLElement>(`.scrolly-bg-${event.dataset.id}`);
           const scrollyText = detailContent?.querySelector<HTMLElement>(`.scrolly-text-${event.dataset.id}`);
           const dot = event.querySelector<HTMLElement>(".event-dot");
 
-          if (detailContent && scrollyRipple && scrollyBg && scrollyText && dot) {
+          if (detailContent && scrollyBg && scrollyText && dot) {
             const setCirclePos = () => {
               const dotRect = dot.getBoundingClientRect();
               // 核心魔法：获取此时此刻 event 身上因为 scrub 还没走完的 y 轴偏移量
@@ -345,19 +344,27 @@ export default function QingJinTianXia() {
 
             const textHeader = scrollyText.querySelector<HTMLElement>(".scrolly-header");
             const textContent = scrollyText.querySelector<HTMLElement>(`.scrolly-text-content-${event.dataset.id}`);
+            const snowLayer = scrollyBg.querySelector<HTMLElement>(`.scrolly-snow-${event.dataset.id}`);
 
             if (textHeader && textContent) {
-              tl.set(detailContent, { display: "flex" })
-                .fromTo(
-                  scrollyRipple,
-                  { "--radius": "0px" },
-                  { "--radius": "150vw", duration: 1.6, ease: "power3.inOut" }
-                )
-                .fromTo(
+              const timelineDuration = 10;
+              
+              tl.set(detailContent, { display: "flex" });
+
+              if (snowLayer) {
+                tl.fromTo(
+                  snowLayer,
+                  { backgroundPosition: "0px 0px" },
+                  { backgroundPosition: "-40px 150px", duration: timelineDuration, ease: "none" },
+                  0
+                );
+              }
+
+              tl.fromTo(
                   scrollyBg,
                   { "--radius": "0px" },
-                  { "--radius": "150vw", duration: 1.4, ease: "power2.inOut" },
-                  "-=1.35"
+                  { "--radius": "150vw", duration: 1.8, ease: "sine.inOut" },
+                  0
                 )
                 .fromTo(
                   textHeader.children,
@@ -381,14 +388,9 @@ export default function QingJinTianXia() {
                 })
                 .to(scrollyBg, {
                   "--radius": "0px",
-                  duration: 1.3,
-                  ease: "power2.inOut",
-                }, "-=0.4")
-                .to(scrollyRipple, {
-                  "--radius": "0px",
                   duration: 1.5,
-                  ease: "power3.inOut",
-                }, "-=1.15")
+                  ease: "sine.inOut",
+                }, "-=0.2")
                 .set(detailContent, { display: "none" });
             }
           }
@@ -586,24 +588,28 @@ export default function QingJinTianXia() {
             id={`detail-${event.id}`}
             className="fixed inset-0 w-screen h-screen m-0 p-0 z-[100] pointer-events-none flex-col items-center justify-center hidden"
           >
-            {/* Layer 1: Blood Ripple tracking the expansion */}
+            {/* Elegant Snow-night Background */}
             <div
-              className={`scrolly-ripple-${event.id} absolute inset-0 w-full h-full bg-red-950 z-0 overflow-hidden`}
+              className={`scrolly-bg-${event.id} absolute inset-0 w-full h-full bg-[#030508] z-0 overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,1)]`}
               style={{ clipPath: "circle(var(--radius, 0px) at var(--x, 50vw) var(--y, 60vh))" } as React.CSSProperties}
             >
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(220,38,38,0.4)_0%,transparent_60%)]" />
-            </div>
-
-            {/* Layer 2: Core dark scrolly background */}
-            <div
-              className={`scrolly-bg-${event.id} absolute inset-0 w-full h-full bg-[#09090b] z-0 overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,1)]`}
-              style={{ clipPath: "circle(var(--radius, 0px) at var(--x, 50vw) var(--y, 60vh))" } as React.CSSProperties}
-            >
-              {/* Refined Crimson Center Glow (Replaces the boring gray) */}
-              <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,rgba(153,27,27,0.08)_0%,transparent_70%)] opacity-90 pointer-events-none" />
-              {/* Cinematic noise specifically for immersive view */}
+              {/* Moonlight / Frost Center Glow */}
+              <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,rgba(226,232,240,0.06)_0%,transparent_70%)] opacity-100 pointer-events-none" />
+              
+              {/* Subtle Falling Snow SVG pattern overlay - drifts smoothly via GSAP */}
               <div
-                className="absolute inset-0 z-0 mix-blend-overlay opacity-30 pointer-events-none"
+                className={`scrolly-snow-${event.id} absolute inset-0 z-0 opacity-40 pointer-events-none`}
+                style={{
+                  backgroundImage:
+                    'url("data:image/svg+xml,%3Csvg viewBox=%220 0 400 400%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cpath d=%22M50 50h1v1h-1zM150 120h1.5v1.5h-1.5zM250 80h1v1h-1zM350 180h2v2h-2zM80 250h1.5v1.5h-1.5zM180 320h1v1h-1zM280 220h1.5v1.5h-1.5zM320 350h1v1h-1zM20 180h1.5v1.5h-1.5zM120 280h1v1h-1zM220 150h2v2h-2zM380 50h1v1h-1zM90 380h1.5v1.5h-1.5z%22 fill=%22rgba(255,255,255,0.8)%22/%3E%3C/svg%3E")',
+                  backgroundSize: '150px 150px',
+                  backgroundPosition: '0px 0px',
+                }}
+              />
+
+              {/* Cold Cinematic film noise */}
+              <div
+                className="absolute inset-0 z-0 mix-blend-overlay opacity-20 pointer-events-none"
                 style={{
                   backgroundImage:
                     'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")',
@@ -615,16 +621,16 @@ export default function QingJinTianXia() {
 
               {/* Header Title Block */}
               <div className="scrolly-header flex flex-col items-center mb-8 md:mb-12 shrink-0">
-                <div className="w-px h-8 md:h-12 bg-linear-to-b from-transparent to-red-800/80 mb-6" />
-                <h3 className="text-xs md:text-sm text-red-700 mb-6 tracking-[0.5em] text-center font-light uppercase drop-shadow-[0_0_10px_rgba(185,28,28,0.5)]">{event.detail.eyebrow}</h3>
-                <h2 className="text-2xl md:text-4xl font-serif text-zinc-100 tracking-[0.3em] text-center drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]">{event.detail.title}</h2>
+                <div className="w-px h-8 md:h-12 bg-linear-to-b from-transparent to-zinc-400/50 mb-6" />
+                <h3 className="text-xs md:text-sm text-zinc-300 mb-6 tracking-[0.5em] text-center font-light uppercase drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">{event.detail.eyebrow}</h3>
+                <h2 className="text-2xl md:text-4xl font-serif text-white tracking-[0.3em] text-center drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">{event.detail.title}</h2>
               </div>
 
               {/* Scrolling Content Block */}
               <div className="relative w-full flex-1 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)]">
                 <div className={`scrolly-text-content-${event.id} flex flex-col items-center w-full gap-8 pb-[30vh] pt-[5vh]`}>
                   {event.detail.quote && (
-                    <div className="text-base md:text-xl leading-relaxed tracking-widest font-serif text-zinc-300 italic text-center px-4 md:px-8 border-l border-r border-zinc-800/60 py-4 my-2">
+                    <div className="text-base md:text-xl leading-relaxed tracking-widest font-serif text-zinc-200 italic text-center px-4 md:px-8 border-l border-r border-zinc-600/40 py-4 my-2">
                       <p>"{event.detail.quote}"</p>
                     </div>
                   )}
