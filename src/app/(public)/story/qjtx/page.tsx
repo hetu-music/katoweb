@@ -264,43 +264,30 @@ export default function QingJinTianXia() {
 
       dots.forEach((dot) => setDotState(dot, false));
 
-      // REFACTOR: dot 激活改由 ScrollTrigger 的 progress (0-1) 驱动，
-      // 不再读取进度线的 getBoundingClientRect，避免 transform 状态与视觉位置之间的一帧滞后。
-      // progress=0 对应进度线起点，progress=1 对应终点（scaleY=1）。
-      // dot 的触发阈值 = dot 中心在 timeline-container 内的高度占比，与 progress 直接比较。
-      const updateDotsByProgress = (progress: number) => {
+      const updateLinesAndDots = () => {
         if (!container.current) return;
-        const containerEl =
-          container.current.querySelector<HTMLElement>(".timeline-container");
-        if (!containerEl) return;
+        const containerEl = container.current.querySelector<HTMLElement>(".timeline-container");
+        const progressLine = container.current.querySelector<HTMLElement>(".timeline-progress");
+        if (!containerEl || !progressLine) return;
 
-        const containerRect = containerEl.getBoundingClientRect();
+        const rect = containerEl.getBoundingClientRect();
+        const triggerY = window.innerHeight * 0.6;
+        
+        let lineTargetHeight = triggerY - rect.top;
+        lineTargetHeight = Math.max(0, Math.min(lineTargetHeight, rect.height));
+
+        gsap.set(progressLine, { height: lineTargetHeight });
 
         dots.forEach((dot) => {
           const dotRect = dot.getBoundingClientRect();
-          const dotRelativeY =
-            dotRect.top + dotRect.height / 2 - containerRect.top;
-          const dotFraction = dotRelativeY / containerRect.height;
-          setDotState(dot, progress >= dotFraction);
+          const dotCenter = dotRect.top + dotRect.height / 2;
+          setDotState(dot, dotCenter <= triggerY + 2);
         });
       };
 
-      if (progressLine) {
-        // REFACTOR: scrub 固定为 0.8，不再乘以 animationSlowdown（原值 3 导致停止滚动后拖尾 3 秒）。
-        // onUpdate / onRefresh 均传入 self.progress，与进度线 scaleY 保持同步。
-        gsap.to(progressLine, {
-          scaleY: 1,
-          ease: "none",
-          scrollTrigger: {
-            trigger: ".timeline-container",
-            start: "top 60%",
-            end: "bottom 60%",
-            scrub: 1.5,
-            onUpdate: (self) => updateDotsByProgress(self.progress),
-            onRefresh: (self) => updateDotsByProgress(self.progress),
-          },
-        });
-      }
+      ScrollTrigger.addEventListener("scroll", updateLinesAndDots);
+      ScrollTrigger.addEventListener("refresh", updateLinesAndDots);
+      updateLinesAndDots();
 
       // REFACTOR: scrub 固定为 0.8，不再乘以 animationSlowdown。
       events.forEach((event) => {
@@ -313,15 +300,80 @@ export default function QingJinTianXia() {
             filter: "blur(0px)",
             scrollTrigger: {
               trigger: event,
+              pinnedContainer: ".timeline-container",
               start: "top 90%",
               end: "center 60%",
               scrub: 1.5,
             },
           },
         );
-      });
 
-      updateDotsByProgress(0);
+        const isImportant = event.dataset.important === "true";
+        if (isImportant) {
+          const detailContent = container.current?.querySelector(`#detail-${event.dataset.id}`);
+          const scrollyBg = detailContent?.querySelector(`.scrolly-bg-${event.dataset.id}`);
+          const scrollyText = detailContent?.querySelector(`.scrolly-text-${event.dataset.id}`);
+          const dot = event.querySelector(".event-dot");
+
+          if (detailContent && scrollyBg && scrollyText && dot) {
+            const tl = gsap.timeline({
+              scrollTrigger: {
+                trigger: event,
+                pinnedContainer: ".timeline-container",
+                start: "center 60%", // exactly on the line
+                end: "+=4000",
+                scrub: true,
+                pin: ".timeline-container",
+                pinSpacing: true,
+                invalidateOnRefresh: true,
+              },
+            });
+
+            tl.set(detailContent, { display: "flex" })
+              .fromTo(
+                scrollyBg,
+                {
+                  clipPath: () => {
+                    const dotRect = dot.getBoundingClientRect();
+                    return `circle(0px at ${dotRect.left + dotRect.width / 2}px 60vh)`;
+                  },
+                },
+                {
+                  clipPath: () => {
+                    const dotRect = dot.getBoundingClientRect();
+                    return `circle(150vw at ${dotRect.left + dotRect.width / 2}px 60vh)`;
+                  },
+                  duration: 1.5,
+                  ease: "power2.inOut",
+                }
+              )
+              .fromTo(
+                scrollyText.children,
+                { opacity: 0, y: 40, filter: "blur(8px)" },
+                { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.2, stagger: 0.2, ease: "power2.out" },
+                "-=0.5"
+              )
+              .to({}, { duration: 3 })
+              .to(scrollyText.children, {
+                opacity: 0,
+                y: -30,
+                filter: "blur(8px)",
+                duration: 1,
+                stagger: 0.1,
+                ease: "power2.in",
+              })
+              .to(scrollyBg, {
+                clipPath: () => {
+                  const dotRect = dot.getBoundingClientRect();
+                  return `circle(0px at ${dotRect.left + dotRect.width / 2}px 60vh)`;
+                },
+                duration: 1.2,
+                ease: "power2.inOut",
+              })
+              .set(detailContent, { display: "none" });
+          }
+        }
+      });
     },
     { scope: container },
   );
@@ -376,6 +428,38 @@ export default function QingJinTianXia() {
       />
 
       <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(ellipse_at_top,transparent_0%,rgba(0,0,0,0.9)_100%)]" />
+
+      {/* Scrollytelling Content layers */}
+      {timelineData.map((event) => {
+        if (!event.detail) return null;
+        return (
+          <div
+            key={`detail-${event.id}`}
+            id={`detail-${event.id}`}
+            className="fixed inset-0 z-50 pointer-events-none flex-col items-center justify-center hidden"
+          >
+            <div
+              className={`scrolly-bg-${event.id} absolute inset-0 bg-zinc-950 bg-[radial-gradient(ellipse_at_center,rgba(40,40,43,0.3)_0%,rgba(9,9,11,1)_100%)] z-0`}
+              style={{ clipPath: "circle(0px at 50vw 60vh)" }}
+            />
+            <div className={`scrolly-text-${event.id} relative z-10 flex flex-col items-center w-full max-w-4xl px-4 md:px-20`}>
+              <h3 className="text-sm md:text-xl text-red-800/80 mb-6 tracking-[0.4em] text-center font-light drop-shadow-[0_0_15px_rgba(185,28,28,0.5)]">{event.detail.eyebrow}</h3>
+              <h2 className="text-3xl md:text-5xl font-serif text-white tracking-[0.4em] mb-10 md:mb-14 text-center drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">{event.detail.title}</h2>
+              {event.detail.lead && (
+                <p className="text-base md:text-xl leading-[2.6em] tracking-[0.3em] font-light text-zinc-200 font-serif mb-8 w-full text-center">{event.detail.lead}</p>
+              )}
+              <div className="flex flex-col items-center gap-6 text-sm md:text-base leading-[2.6em] tracking-[0.2em] font-light text-zinc-400 font-serif w-full text-left md:text-justify">
+                {event.detail.body.map((p, i) => (
+                  <p key={i} className="w-full">{p}</p>
+                ))}
+              </div>
+              {event.detail.closing && (
+                <p className="mt-12 text-sm md:text-base leading-[2em] tracking-[0.4em] text-zinc-500 font-light italic text-center">{event.detail.closing}</p>
+              )}
+            </div>
+          </div>
+        );
+      })}
 
       <section className="relative z-10 flex h-svh flex-col items-center justify-center">
         <div className="mt-[-10vh] flex flex-col items-center gap-12 sm:gap-16">
@@ -434,7 +518,7 @@ export default function QingJinTianXia() {
 
       <main className="timeline-container relative z-10 mx-auto w-full max-w-7xl px-4 py-[15vh]">
         <div className="absolute top-0 bottom-0 left-14 w-px -translate-x-1/2 rounded bg-zinc-800/40 md:left-1/2" />
-        <div className="timeline-progress absolute top-0 bottom-0 left-14 z-10 w-px -translate-x-1/2 origin-top scale-y-0 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2" />
+        <div className="timeline-progress absolute top-0 left-14 z-10 w-px -translate-x-1/2 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2" />
 
         <div className="relative flex w-full flex-col pt-10 pb-40">
           {timelineData.map((event, index) => {
@@ -443,9 +527,11 @@ export default function QingJinTianXia() {
             return (
               <div
                 key={event.id}
+                data-important={event.important ? "true" : "false"}
+                data-id={event.id}
                 className="timeline-event group relative my-10 flex w-full flex-col md:my-20 md:flex-row md:justify-center"
               >
-                <div className="event-dot absolute top-1/2 left-10 z-20 h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 origin-center rounded-full border border-zinc-500 bg-zinc-950 md:left-1/2 md:h-[13px] md:w-[13px]" />
+                <div className="event-dot absolute top-1/2 left-14 z-20 h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 origin-center rounded-full border border-zinc-500 bg-zinc-950 md:left-1/2 md:h-[13px] md:w-[13px]" />
 
                 <div className="flex w-full justify-start pl-18 pr-2 md:hidden">
                   <div className="flex flex-row items-center gap-4 sm:gap-6">
