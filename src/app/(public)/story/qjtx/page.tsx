@@ -272,7 +272,7 @@ export default function QingJinTianXia() {
 
         const rect = containerEl.getBoundingClientRect();
         const triggerY = window.innerHeight * 0.6;
-        
+
         let lineTargetHeight = triggerY - rect.top;
         lineTargetHeight = Math.max(0, Math.min(lineTargetHeight, rect.height));
 
@@ -319,12 +319,13 @@ export default function QingJinTianXia() {
           if (detailContent && scrollyRipple && scrollyBg && scrollyText && dot) {
             const setCirclePos = () => {
               const dotRect = dot.getBoundingClientRect();
-              const centerX = `${dotRect.left + dotRect.width / 2}px`;
-              const centerY = `${dotRect.top + dotRect.height / 2}px`;
-              scrollyRipple.style.setProperty("--x", centerX);
-              scrollyRipple.style.setProperty("--y", centerY);
-              scrollyBg.style.setProperty("--x", centerX);
-              scrollyBg.style.setProperty("--y", centerY);
+              // 核心魔法：获取此时此刻 event 身上因为 scrub 还没走完的 y 轴偏移量
+              const currentYOffset = gsap.getProperty(event, "y") as number;
+              const trueX = dotRect.left + dotRect.width / 2;
+              // 真实的 Y 中心点 = 视觉上的中心点 - 还没归零的 Y 偏移量
+              const trueY = dotRect.top + dotRect.height / 2 - currentYOffset;
+              scrollyBg.style.setProperty("--x", `${trueX}px`);
+              scrollyBg.style.setProperty("--y", `${trueY}px`);
             };
 
             const tl = gsap.timeline({
@@ -609,9 +610,9 @@ export default function QingJinTianXia() {
                 }}
               />
             </div>
-            
+
             <div className={`scrolly-text-${event.id} relative z-10 flex flex-col items-center w-full max-w-2xl px-6 md:px-0 h-full py-[15vh]`}>
-              
+
               {/* Header Title Block */}
               <div className="scrolly-header flex flex-col items-center mb-8 md:mb-12 shrink-0">
                 <div className="w-px h-8 md:h-12 bg-linear-to-b from-transparent to-red-800/80 mb-6" />
@@ -633,13 +634,13 @@ export default function QingJinTianXia() {
                     </p>
                   )}
                   {event.detail.lead && <div className="w-8 h-px bg-zinc-800 my-2" />}
-                  
+
                   <div className="flex flex-col gap-6 text-sm md:text-[15px] leading-loose tracking-[0.1em] font-light text-zinc-400 text-justify w-full">
                     {event.detail.body.map((p, i) => (
                       <p key={i}>{p}</p>
                     ))}
                   </div>
-                  
+
                   {event.detail.closing && (
                     <div className="mt-8 flex flex-col items-center opacity-80">
                       <div className="w-1 h-1 rounded-full bg-zinc-700 mb-6" />
