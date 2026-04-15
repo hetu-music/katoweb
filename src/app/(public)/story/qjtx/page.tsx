@@ -315,7 +315,7 @@ export default function QingJinTianXia() {
               trigger: event,
               start: "top 85%",
               end: "top 50%",
-              scrub: 0.8,
+              scrub: 3,
             },
           },
         );
