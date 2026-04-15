@@ -396,6 +396,68 @@ export default function QingJinTianXia() {
         }
       });
 
+      // --- 终章：泪滴坠落与墨染动画 ---
+      const endTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: ".footer-final",
+          start: "top bottom",
+          end: "bottom bottom",
+          scrub: 1.2,
+          pin: true,
+          pinSpacing: true,
+        }
+      });
+
+      // 初始化状态
+      gsap.set(".falling-tear", { y: -200, opacity: 0, scale: 0.8 });
+      gsap.set(".tear-drop-tip", { opacity: 0, scale: 0 });
+
+      // 1. 红线末端隆起形成泪滴 (当 timeline-container 快结束时)
+      gsap.to(".tear-drop-tip", {
+        opacity: 1,
+        scale: 1,
+        scrollTrigger: {
+          trigger: ".timeline-container",
+          start: "bottom 80%",
+          end: "bottom 60%",
+          scrub: true,
+        }
+      });
+
+      // 2. 坠落与晕染序章
+      endTl
+        .fromTo(".falling-tear", 
+          { y: "-10vh", opacity: 0, scale: 0.6 },
+          { y: "50vh", opacity: 1, scale: 1, duration: 2, ease: "none" }
+        )
+        // 1.5 衔接隐藏红线末端的那个泪滴
+        .to(".tear-drop-tip", { opacity: 0, duration: 0.1 }, 0)
+        // 2. 泪滴消失，晕染散开
+        .to(".falling-tear", {
+          opacity: 0,
+          scale: 3,
+          filter: "blur(12px)",
+          duration: 0.6,
+          ease: "power2.out"
+        })
+        .to(".ink-pool", {
+          scale: 1,
+          opacity: 1,
+          duration: 2,
+          ease: "power2.out"
+        }, "-=0.3")
+        // 文字从模糊中浮现
+        .fromTo(".bloom-content", 
+          { opacity: 0, filter: "blur(20px)", y: 20, scale: 0.95 },
+          { opacity: 1, filter: "blur(0px)", y: 0, scale: 1, duration: 2.5, ease: "power2.out" },
+          "-=1.5"
+        )
+        .to(".bottom-info", {
+          opacity: 1,
+          duration: 1,
+          ease: "power2.inOut"
+        }, "-=0.5");
+
       return () => {
         gsap.ticker.remove(updateLinesAndDots);
       };
@@ -438,6 +500,11 @@ export default function QingJinTianXia() {
 
         html.lenis.lenis-smooth [data-lenis-prevent] {
           overscroll-behavior: contain;
+        }
+
+        /* 晕染文字特有的样式 */
+        .ink-bloom-text {
+          text-shadow: 0 0 20px rgba(185, 28, 28, 0.4);
         }
       `}</style>
 
@@ -512,7 +579,14 @@ export default function QingJinTianXia() {
 
       <main className="timeline-container relative z-10 mx-auto w-full max-w-7xl px-4 py-[15vh]">
         <div className="absolute top-0 bottom-0 left-14 w-px -translate-x-1/2 rounded bg-zinc-800/40 md:left-1/2" />
-        <div className="timeline-progress absolute top-0 left-14 z-10 w-px -translate-x-1/2 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2" />
+        <div className="timeline-progress absolute top-0 left-14 z-10 w-px -translate-x-1/2 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2">
+          {/* 泪滴元素：平时隐藏，只有当进度到底时在 updateLinesAndDots 中逻辑触发 */}
+          <div className="tear-drop-tip absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-0 opacity-0 w-3 h-4">
+            <svg viewBox="0 0 100 120" className="w-full h-full fill-red-700 drop-shadow-[0_0_8px_rgba(185,28,28,0.8)]">
+              <path d="M50 0 C50 0 20 45 20 75 A30 30 0 1 0 80 75 C80 45 50 0 50 0 Z" />
+            </svg>
+          </div>
+        </div>
 
         <div className="relative flex w-full flex-col pt-10 pb-40">
           {timelineData.map((event, index) => {
@@ -681,24 +755,42 @@ export default function QingJinTianXia() {
         );
       })}
 
-      <motion.footer
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.5 }}
-        variants={footerVariants}
-        className="relative z-10 w-full bg-linear-to-t from-black to-transparent pt-10 pb-16 flex flex-col md:items-center"
-      >
-        <div className="absolute top-0 left-14 -translate-x-1/2 w-[2px] h-24 bg-linear-to-b from-zinc-800/40 to-transparent md:left-1/2" />
+      <div className="footer-trigger h-[10vh]">
+        {/* 精简占位，通过更紧凑的间距触发 */}
+      </div>
+
+      <footer className="footer-final relative z-10 w-full min-h-screen bg-black flex flex-col items-center justify-center overflow-hidden">
+        {/* 背景晕染层 */}
+        <div className="ink-pool absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[120vw] bg-[radial-gradient(circle,rgba(127,29,29,0.15)_0%,transparent_70%)] scale-0 opacity-0 pointer-events-none" />
         
-        <div className="pl-24 md:pl-0 mt-16 flex flex-col items-start md:items-center gap-4">
-          <p className="text-xs font-light tracking-[0.4em] text-zinc-500 sm:text-sm">
-            山河万里 · 故人长绝
-          </p>
-          <p className="text-[10px] font-light tracking-widest text-zinc-700 ml-1 md:ml-0 opacity-50">
-            河图作品勘鉴
-          </p>
+        {/* 坠落的泪滴 */}
+        <div className="falling-tear absolute top-0 left-1/2 -translate-x-1/2 w-4 h-5 opacity-0 pointer-events-none">
+          <svg viewBox="0 0 100 120" className="w-full h-full fill-red-700 drop-shadow-[0_0_12px_rgba(185,28,28,0.9)]">
+            <path d="M50 0 C50 0 20 45 20 75 A30 30 0 1 0 80 75 C80 45 50 0 50 0 Z" />
+          </svg>
         </div>
-      </motion.footer>
+
+        <div className="flex flex-col items-center gap-12 text-center px-4 relative z-10">
+          <div className="bloom-content opacity-0 flex flex-col items-center gap-8">
+            <div className="flex flex-col items-center gap-4">
+              <p className="ink-bloom-text text-xl md:text-3xl font-serif font-light tracking-[0.8em] text-zinc-100 pl-[0.8em]">
+                山河万里 · 故人长绝
+              </p>
+              <div className="w-12 h-px bg-red-900/50" />
+            </div>
+            
+            <p className="text-[11px] md:text-xs font-light tracking-[0.5em] text-zinc-500 uppercase opacity-60">
+              河图作品勘鉴 · 终章
+            </p>
+          </div>
+
+          <div className="mt-20 opacity-0 bottom-info">
+             <p className="text-[10px] tracking-widest text-zinc-800 font-serif">
+              Qing Jin Tian Xia · Chronicle Experience
+             </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
