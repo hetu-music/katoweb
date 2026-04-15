@@ -332,27 +332,34 @@ export default function QingJinTianXia() {
       className="relative min-h-screen overflow-x-hidden bg-[#09090b] font-serif text-zinc-300 selection:bg-red-900 selection:text-white"
     >
       <style jsx global>{`
-        html.qjtx-story-page,
-        html.qjtx-story-page body {
-          height: auto;
-          -ms-overflow-style: none;
-          scrollbar-width: none;
+        /* 消除刷新时的滚动条闪烁：不再等待 JS 添加类名，直接针对全局生效 */
+        /* styled-jsx 会在组件销毁时自动移除这些样式，因此是安全的 */
+        html,
+        body {
+          height: auto !important;
+          overflow-x: hidden !important;
+          -ms-overflow-style: none !important;
+          scrollbar-width: none !important;
         }
 
-        html.qjtx-story-page::-webkit-scrollbar,
-        html.qjtx-story-page body::-webkit-scrollbar {
-          display: none;
+        /* 强力隐藏所有 Webkit 滚动条（针对 Chrome, Edge, Safari） */
+        ::-webkit-scrollbar {
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+          background: transparent !important;
         }
 
-        html.qjtx-story-page.lenis.lenis-smooth {
+        /* 兼容 Lenis 的状态类 */
+        html.lenis.lenis-smooth {
           scroll-behavior: auto !important;
         }
 
-        html.qjtx-story-page.lenis.lenis-stopped {
-          overflow: hidden;
+        html.lenis.lenis-stopped {
+          overflow: hidden !important;
         }
 
-        html.qjtx-story-page.lenis.lenis-smooth [data-lenis-prevent] {
+        html.lenis.lenis-smooth [data-lenis-prevent] {
           overscroll-behavior: contain;
         }
       `}</style>
