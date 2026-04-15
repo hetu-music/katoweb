@@ -11,8 +11,7 @@ import { timelineData } from "./data";
 gsap.registerPlugin(ScrollTrigger);
 
 const motionEase = [0.22, 1, 0.36, 1] as const;
-const ghostEase = gsap.parseEase("none");
-const activeEase = gsap.parseEase("none");
+const mainEase = gsap.parseEase("sine.inOut");
 const animationRangeRatio = 0.55;
 const initialYOffset = 90;
 const goldenViewportRatio = 0.45;
@@ -403,7 +402,7 @@ export default function QingJinTianXia() {
         );
         const progressHeight =
           clampedDistance < metrics.introDistance
-            ? metrics.anchorY * ghostEase(introProgress)
+            ? metrics.anchorY * mainEase(introProgress)
             : Math.min(metrics.trackHeight, metrics.anchorY + flowDistance);
 
         gsap.set(timelineTrack, {
@@ -421,7 +420,7 @@ export default function QingJinTianXia() {
             (flowDistance - animationStart) / metrics.animationDistance,
           );
           
-          const easedProgress = progress; // scrub handles smoothing
+          const easedProgress = mainEase(progress);
           
           const opacity = interpolate(0, 1, easedProgress);
           const y = interpolate(initialYOffset, 0, easedProgress);
