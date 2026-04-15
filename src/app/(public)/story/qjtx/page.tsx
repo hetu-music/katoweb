@@ -277,7 +277,7 @@ export default function QingJinTianXia() {
         lineTargetHeight = Math.max(0, Math.min(lineTargetHeight, rect.height));
 
         const scale = rect.height > 0 ? lineTargetHeight / rect.height : 0;
-        gsap.set(progressLine, { scaleY: scale });
+        gsap.set(progressLine, { transformOrigin: "top center", scaleY: scale });
 
         dots.forEach((dot) => {
           const dotRect = dot.getBoundingClientRect();
@@ -286,8 +286,7 @@ export default function QingJinTianXia() {
         });
       };
 
-      ScrollTrigger.addEventListener("scroll", updateLinesAndDots);
-      ScrollTrigger.addEventListener("refresh", updateLinesAndDots);
+      gsap.ticker.add(updateLinesAndDots);
       updateLinesAndDots();
 
       // REFACTOR: scrub 固定为 0.8，不再乘以 animationSlowdown。
@@ -375,6 +374,10 @@ export default function QingJinTianXia() {
           }
         }
       });
+
+      return () => {
+        gsap.ticker.remove(updateLinesAndDots);
+      };
     },
     { scope: container },
   );
