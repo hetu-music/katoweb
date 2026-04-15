@@ -363,34 +363,34 @@ export default function QingJinTianXia() {
               tl.fromTo(
                   scrollyBg,
                   { "--radius": "0px" },
-                  { "--radius": "150vw", duration: 1.8, ease: "sine.inOut" },
+                  { "--radius": "450vw", duration: 1.8, ease: "power2.inOut" },
                   0
                 )
                 .fromTo(
                   textHeader.children,
                   { opacity: 0, y: 30, filter: "blur(12px)" },
-                  { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.2, stagger: 0.3, ease: "power2.out" },
-                  "-=0.6"
+                  { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.0, stagger: 0.2, ease: "power3.out" },
+                  "-=1.4"
                 )
                 .fromTo(
                   textContent,
                   { opacity: 0, y: 60, filter: "blur(8px)" },
-                  { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.4, ease: "power2.out" },
-                  "-=0.8"
+                  { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.2, ease: "power3.out" },
+                  "-=1.0"
                 )
                 .to(textContent, { y: "-40%", duration: 4, ease: "none" })
                 .to([textHeader, textContent], {
                   opacity: 0,
                   y: "-=30",
                   filter: "blur(12px)",
-                  duration: 1.2,
+                  duration: 1.0,
                   ease: "power2.in",
                 })
                 .to(scrollyBg, {
                   "--radius": "0px",
                   duration: 1.5,
-                  ease: "sine.inOut",
-                }, "-=0.2")
+                  ease: "power2.inOut",
+                }, "-=0.6")
                 .set(detailContent, { display: "none" });
             }
           }
@@ -588,14 +588,35 @@ export default function QingJinTianXia() {
             id={`detail-${event.id}`}
             className="fixed inset-0 w-screen h-screen m-0 p-0 z-[100] pointer-events-none flex-col items-center justify-center hidden"
           >
-            {/* Elegant Snow-night Background */}
+            {/* Elegant Snow-night Background (Snowflake Shape Expansion) */}
             <div
               className={`scrolly-bg-${event.id} absolute inset-0 w-full h-full bg-[#030508] z-0 overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,1)]`}
-              style={{ clipPath: "circle(var(--radius, 0px) at var(--x, 50vw) var(--y, 60vh))" } as React.CSSProperties}
+              style={{
+                WebkitMaskImage: `url('data:image/svg+xml,%3Csvg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M50 0 L55 35 L80 20 L65 45 L100 50 L65 55 L80 80 L55 65 L50 100 L45 65 L20 80 L35 55 L0 50 L35 45 L20 20 L45 35 Z" fill="black" /%3E%3C/svg%3E')`,
+                maskImage: `url('data:image/svg+xml,%3Csvg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M50 0 L55 35 L80 20 L65 45 L100 50 L65 55 L80 80 L55 65 L50 100 L45 65 L20 80 L35 55 L0 50 L35 45 L20 20 L45 35 Z" fill="black" /%3E%3C/svg%3E')`,
+                WebkitMaskRepeat: 'no-repeat',
+                maskRepeat: 'no-repeat',
+                WebkitMaskSize: 'var(--radius, 0px)',
+                maskSize: 'var(--radius, 0px)',
+                WebkitMaskPosition: 'calc(var(--x, 50vw) - var(--radius, 0px) / 2) calc(var(--y, 60vh) - var(--radius, 0px) / 2)',
+                maskPosition: 'calc(var(--x, 50vw) - var(--radius, 0px) / 2) calc(var(--y, 60vh) - var(--radius, 0px) / 2)'
+              } as React.CSSProperties}
             >
               {/* Moonlight / Frost Center Glow */}
               <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,rgba(226,232,240,0.06)_0%,transparent_70%)] opacity-100 pointer-events-none" />
               
+              {/* Elegant slow-spinning astrological/lore emblem background */}
+              <div className="absolute inset-0 z-0 flex items-center justify-center opacity-[0.025] pointer-events-none mix-blend-screen">
+                <svg viewBox="0 0 200 200" className="w-[150vw] h-[150vw] md:w-[60vw] md:h-[60vw] animate-[spin_80s_linear_infinite] text-white">
+                  <circle cx="100" cy="100" r="95" fill="none" stroke="currentColor" strokeWidth="0.5"/>
+                  <circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2 6"/>
+                  <circle cx="100" cy="100" r="60" fill="none" stroke="currentColor" strokeWidth="0.5"/>
+                  <path d="M100 5 L100 195 M5 100 L195 100 M33 33 L167 167 M33 167 L167 33" stroke="currentColor" strokeWidth="0.2"/>
+                  <polygon points="100,20 180,100 100,180 20,100" fill="none" stroke="currentColor" strokeWidth="0.3"/>
+                  <polygon points="100,40 160,100 100,160 40,100" fill="none" stroke="currentColor" strokeWidth="0.3"/>
+                </svg>
+              </div>
+
               {/* Subtle Falling Snow SVG pattern overlay - drifts smoothly via GSAP */}
               <div
                 className={`scrolly-snow-${event.id} absolute inset-0 z-0 opacity-40 pointer-events-none`}
