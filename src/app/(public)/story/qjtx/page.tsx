@@ -6,52 +6,19 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import { useEffect, useRef } from "react";
-import { timelineData } from "./data";
+import { timelineData } from "../qjtx/data";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const motionEase = [0.22, 1, 0.36, 1] as const;
-const goldenViewportRatio = 0.45;
-const preheatViewportRatio = 0.42;
-const activeViewportRatio = 0.05;
-const introViewportRatio = 0.14;
-const trackTopPaddingRatio = 0.45;
-const trackBottomPaddingRatio = 0.38;
-const inactiveDotBorder = "#71717a";
-const inactiveDotFill = "#09090b";
-const activeDotBorder = "#dc2626";
-const activeDotFill = "#7f1d1d";
-const inactiveMonthColor = "rgba(153, 27, 27, 0.72)";
-const activeMonthColor = "#ef4444";
-const ghostEase = gsap.parseEase("power2.out");
-const activeEase = gsap.parseEase("power3.out");
-
-interface TimelineSceneMetrics {
-  activeDistance: number;
-  anchorY: number;
-  introDistance: number;
-  preheatDistance: number;
-  trackHeight: number;
-  travelDistance: number;
-}
-
-interface TimelineSceneEvent {
-  content: HTMLElement[];
-  dot: HTMLElement;
-  dotCenter: number;
-  months: HTMLElement[];
-}
-
-const clamp01 = (value: number) => gsap.utils.clamp(0, 1, value);
-const interpolate = (from: number, to: number, progress: number) =>
-  from + (to - from) * progress;
+const animationSlowdown = 3;
 
 const heroTitleVariants = {
   hidden: {},
   visible: {
     transition: {
-      staggerChildren: 0.66,
-      delayChildren: 1.05,
+      staggerChildren: 0.22 * animationSlowdown,
+      delayChildren: 0.35 * animationSlowdown,
     },
   },
 } satisfies Variants;
@@ -67,7 +34,7 @@ const heroCharVariants = {
     scale: 1,
     filter: "blur(0px)",
     transition: {
-      duration: 4.8,
+      duration: 1.6 * animationSlowdown,
       ease: motionEase,
     },
   },
@@ -77,8 +44,8 @@ const heroSubtitleVariants = {
   hidden: {},
   visible: {
     transition: {
-      staggerChildren: 0.54,
-      delayChildren: 3,
+      staggerChildren: 0.18 * animationSlowdown,
+      delayChildren: 1 * animationSlowdown,
     },
   },
 } satisfies Variants;
@@ -94,7 +61,7 @@ const heroSubtitleLineVariants = {
     y: 0,
     filter: "blur(0px)",
     transition: {
-      duration: 3.6,
+      duration: 1.2 * animationSlowdown,
       ease: motionEase,
     },
   },
@@ -109,8 +76,8 @@ const scrollHintVariants = {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 3,
-      delay: 4.35,
+      duration: 1 * animationSlowdown,
+      delay: 1.45 * animationSlowdown,
       ease: motionEase,
     },
   },
@@ -127,7 +94,7 @@ const footerVariants = {
     y: 0,
     filter: "blur(0px)",
     transition: {
-      duration: 3,
+      duration: 1 * animationSlowdown,
       ease: motionEase,
     },
   },
@@ -159,8 +126,8 @@ function EventLines({
         <p
           key={index}
           className={`${mobile
-              ? "text-sm tracking-widest"
-              : "text-[15px] lg:text-base tracking-widest lg:tracking-[0.2em]"
+            ? "text-sm tracking-widest"
+            : "text-[15px] lg:text-base tracking-widest lg:tracking-[0.2em]"
             } font-light leading-loose ${important
               ? "text-zinc-200 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] font-normal"
               : "text-zinc-400"
@@ -174,13 +141,11 @@ function EventLines({
 }
 
 function EventDate({
-  eventId,
   year,
   month,
   monthFirst = false,
   mobile = false,
 }: {
-  eventId: string;
   year: string;
   month?: string;
   monthFirst?: boolean;
@@ -188,7 +153,6 @@ function EventDate({
 }) {
   const monthNode = month ? (
     <div
-      data-event-month={eventId}
       className={`${verticalTextClass} ${mobile ? "text-sm" : "text-lg lg:text-xl"
         } text-red-800/80 font-serif tracking-[0.3em]`}
     >
@@ -266,252 +230,98 @@ export default function QingJinTianXia() {
       gsap.to(".scroll-hint-line", {
         scaleY: 1.5,
         opacity: 0,
-        duration: 4.5,
+        duration: 1.5 * animationSlowdown,
         repeat: -1,
         transformOrigin: "top",
         ease: "power2.out",
       });
 
-      const timelineContainer = container.current?.querySelector<HTMLElement>(
-        ".timeline-container",
+      const events = gsap.utils.toArray<HTMLElement>(
+        ".timeline-event",
+        container.current,
       );
-      const timelineTrack =
-        container.current?.querySelector<HTMLElement>(".timeline-track");
-      const progressLine =
-        container.current?.querySelector<HTMLElement>(".timeline-progress");
-      const flowTarget =
-        container.current?.querySelector<HTMLElement>("[data-flow-target]");
-      const timelineEvents = timelineData
-        .map<TimelineSceneEvent | null>((event) => {
-          const dot = container.current?.querySelector<HTMLElement>(
-            `[data-event-dot="${event.id}"]`,
-          );
-          const content = gsap.utils.toArray<HTMLElement>(
-            `[data-event-content="${event.id}"]`,
-            container.current,
-          );
-          const months = gsap.utils.toArray<HTMLElement>(
-            `[data-event-month="${event.id}"]`,
-            container.current,
-          );
+      const dots = gsap.utils.toArray<HTMLElement>(".event-dot", container.current);
+      const progressLine = container.current?.querySelector<HTMLElement>(
+        ".timeline-progress",
+      );
 
-          if (!dot || content.length === 0) {
-            return null;
-          }
+      const setDotState = (dot: HTMLElement, active: boolean) => {
+        const nextState = active ? "active" : "inactive";
 
-          return {
-            content,
-            dot,
-            dotCenter: 0,
-            months,
-          };
-        })
-        .filter((event): event is TimelineSceneEvent => event !== null);
+        if (dot.dataset.state === nextState) {
+          return;
+        }
 
-      if (
-        !timelineContainer ||
-        !timelineTrack ||
-        !progressLine ||
-        !flowTarget ||
-        timelineEvents.length === 0
-      ) {
-        return;
+        dot.dataset.state = nextState;
+        gsap.to(dot, {
+          duration: 0.35,
+          borderColor: active ? "#b91c1c" : "#71717a",
+          backgroundColor: active ? "#7f1d1d" : "#09090b",
+          boxShadow: active ? "0 0 15px rgba(185,28,28,0.8)" : "0 0 0 rgba(0,0,0,0)",
+          overwrite: true,
+        });
+      };
+
+      dots.forEach((dot) => setDotState(dot, false));
+
+      // REFACTOR: dot 激活改由 ScrollTrigger 的 progress (0-1) 驱动，
+      // 不再读取进度线的 getBoundingClientRect，避免 transform 状态与视觉位置之间的一帧滞后。
+      // progress=0 对应进度线起点，progress=1 对应终点（scaleY=1）。
+      // dot 的触发阈值 = dot 中心在 timeline-container 内的高度占比，与 progress 直接比较。
+      const updateDotsByProgress = (progress: number) => {
+        if (!container.current) return;
+        const containerEl =
+          container.current.querySelector<HTMLElement>(".timeline-container");
+        if (!containerEl) return;
+
+        const containerRect = containerEl.getBoundingClientRect();
+
+        dots.forEach((dot) => {
+          const dotRect = dot.getBoundingClientRect();
+          const dotRelativeY =
+            dotRect.top + dotRect.height / 2 - containerRect.top;
+          const dotFraction = dotRelativeY / containerRect.height;
+          setDotState(dot, progress >= dotFraction);
+        });
+      };
+
+      if (progressLine) {
+        // REFACTOR: scrub 固定为 0.8，不再乘以 animationSlowdown（原值 3 导致停止滚动后拖尾 3 秒）。
+        // onUpdate / onRefresh 均传入 self.progress，与进度线 scaleY 保持同步。
+        gsap.to(progressLine, {
+          scaleY: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: ".timeline-container",
+            start: "top 60%",
+            end: "bottom 80%",
+            scrub: 0.8,
+            onUpdate: (self) => updateDotsByProgress(self.progress),
+            onRefresh: (self) => updateDotsByProgress(self.progress),
+          },
+        });
       }
 
-      const resetScene = () => {
-        gsap.set(timelineTrack, {
-          clearProps: "y",
-        });
-        gsap.set(progressLine, {
-          clearProps: "height",
-          height: 0,
-        });
-
-        timelineEvents.forEach((event) => {
-          gsap.set(event.content, {
-            filter: "blur(10px)",
-            opacity: 0,
-            y: 70,
-          });
-          gsap.set(event.dot, {
-            autoAlpha: 0,
-            backgroundColor: inactiveDotFill,
-            borderColor: inactiveDotBorder,
-            boxShadow: "0 0 0 rgba(0,0,0,0)",
-            scale: 0.5,
-          });
-          gsap.set(event.months, {
-            color: inactiveMonthColor,
-            textShadow: "0 0 0 rgba(239,68,68,0)",
-          });
-        });
-      };
-
-      const measureScene = (): TimelineSceneMetrics => {
-        resetScene();
-
-        const viewportHeight = window.innerHeight;
-        const anchorY = viewportHeight * goldenViewportRatio;
-        const introDistance = Math.max(viewportHeight * introViewportRatio, 72);
-        const topPadding = viewportHeight * trackTopPaddingRatio;
-        const bottomPadding = viewportHeight * trackBottomPaddingRatio;
-
-        gsap.set(timelineTrack, {
-          paddingBottom: bottomPadding,
-          paddingTop: topPadding,
-        });
-
-        const trackRect = timelineTrack.getBoundingClientRect();
-        timelineEvents.forEach((event) => {
-          const dotRect = event.dot.getBoundingClientRect();
-          event.dotCenter = dotRect.top - trackRect.top + dotRect.height / 2;
-        });
-
-        const flowTargetRect = flowTarget.getBoundingClientRect();
-        const flowTargetY = flowTargetRect.top - trackRect.top;
-        const lastDotCenter = timelineEvents.at(-1)?.dotCenter ?? anchorY;
-        const flowDistance = Math.max(
-          1,
-          Math.max(lastDotCenter, flowTargetY) - anchorY,
+      // REFACTOR: scrub 固定为 0.8，不再乘以 animationSlowdown。
+      events.forEach((event) => {
+        gsap.fromTo(
+          event,
+          { opacity: 0, y: 70, filter: "blur(10px)" },
+          {
+            opacity: 1,
+            y: 0,
+            filter: "blur(0px)",
+            scrollTrigger: {
+              trigger: event,
+              start: "top 85%",
+              end: "top 50%",
+              scrub: 0.8,
+            },
+          },
         );
-
-        return {
-          activeDistance: Math.max(viewportHeight * activeViewportRatio, 40),
-          anchorY,
-          introDistance,
-          preheatDistance: Math.max(viewportHeight * preheatViewportRatio, 260),
-          trackHeight: timelineTrack.offsetHeight,
-          travelDistance: introDistance + flowDistance,
-        };
-      };
-
-      const renderScene = (
-        scrollDistance: number,
-        metrics: TimelineSceneMetrics,
-      ) => {
-        const clampedDistance = Math.max(
-          0,
-          Math.min(scrollDistance, metrics.travelDistance),
-        );
-        const introProgress = clamp01(clampedDistance / metrics.introDistance);
-        const flowDistance = Math.max(
-          0,
-          clampedDistance - metrics.introDistance,
-        );
-        const progressHeight =
-          clampedDistance < metrics.introDistance
-            ? metrics.anchorY * ghostEase(introProgress)
-            : Math.min(metrics.trackHeight, metrics.anchorY + flowDistance);
-
-        gsap.set(timelineTrack, {
-          y: -flowDistance,
-        });
-        gsap.set(progressLine, {
-          height: progressHeight,
-        });
-
-        timelineEvents.forEach((event) => {
-          const triggerDistance = Math.max(
-            0,
-            event.dotCenter - metrics.anchorY,
-          );
-          const preheatStart = Math.max(
-            0,
-            triggerDistance - metrics.preheatDistance,
-          );
-          const preheatRange = Math.max(triggerDistance - preheatStart, 1);
-          const preheatMix = clamp01(
-            (flowDistance - preheatStart) / preheatRange,
-          );
-          const activeMix = clamp01(
-            (flowDistance - triggerDistance) / metrics.activeDistance,
-          );
-
-          let opacity = 0;
-          let y = 70;
-          let blur = 10;
-
-          if (flowDistance < triggerDistance) {
-            const easedPreheat = ghostEase(preheatMix);
-
-            opacity = interpolate(0, 0.4, easedPreheat);
-            y = interpolate(70, 0, easedPreheat);
-            blur = interpolate(10, 4, easedPreheat);
-          } else {
-            const easedActive = activeEase(activeMix);
-
-            opacity = interpolate(0.4, 1, easedActive);
-            y = 0;
-            blur = interpolate(4, 0, easedActive);
-          }
-
-          const dotPresence = ghostEase(preheatMix);
-          const activationMix =
-            flowDistance < triggerDistance
-              ? 0
-              : 0.45 + activeEase(activeMix) * 0.55;
-          const redGlow = 16 * activationMix;
-
-          gsap.set(event.content, {
-            filter: `blur(${blur}px)`,
-            opacity,
-            y,
-          });
-          gsap.set(event.dot, {
-            autoAlpha: dotPresence,
-            backgroundColor: gsap.utils.interpolate(
-              inactiveDotFill,
-              activeDotFill,
-              activationMix,
-            ),
-            borderColor: gsap.utils.interpolate(
-              inactiveDotBorder,
-              activeDotBorder,
-              activationMix,
-            ),
-            boxShadow: `0 0 ${redGlow}px rgba(185,28,28,${0.78 * activationMix})`,
-            scale:
-              interpolate(0.5, 1, dotPresence) +
-              interpolate(0, 0.12, activationMix),
-          });
-          gsap.set(event.months, {
-            color: gsap.utils.interpolate(
-              inactiveMonthColor,
-              activeMonthColor,
-              activationMix,
-            ),
-            textShadow: `0 0 ${12 * activationMix}px rgba(239,68,68,${0.45 * activationMix})`,
-          });
-        });
-      };
-
-      let metrics = measureScene();
-
-      const sceneTrigger = ScrollTrigger.create({
-        anticipatePin: 1,
-        end: () => {
-          metrics = measureScene();
-          return `+=${metrics.travelDistance}`;
-        },
-        invalidateOnRefresh: true,
-        onRefresh: (self) => {
-          metrics = measureScene();
-          renderScene(self.progress * metrics.travelDistance, metrics);
-        },
-        onUpdate: (self) => {
-          renderScene(self.progress * metrics.travelDistance, metrics);
-        },
-        pin: true,
-        scrub: 3,
-        start: "top top",
-        trigger: timelineContainer,
       });
 
-      renderScene(0, metrics);
-
-      return () => {
-        sceneTrigger.kill();
-      };
+      updateDotsByProgress(0);
     },
     { scope: container },
   );
@@ -522,35 +332,27 @@ export default function QingJinTianXia() {
       className="relative min-h-screen overflow-x-hidden bg-[#09090b] font-serif text-zinc-300 selection:bg-red-900 selection:text-white"
     >
       <style jsx global>{`
-        /* 消除刷新时的滚动条闪烁：不再等待 JS 添加类名，直接针对全局生效 */
-        /* styled-jsx 会在组件销毁时自动移除这些样式，因此是安全的 */
-        html,
-        body {
-          height: auto !important;
-          overflow: hidden !important; /* 强制锁定，根治闪烁 */
-          overflow-x: hidden !important;
-          -ms-overflow-style: none !important;
-          scrollbar-width: none !important;
+        html.qjtx-story-page,
+        html.qjtx-story-page body {
+          height: auto;
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
 
-        /* 强力隐藏所有 Webkit 滚动条 */
-        ::-webkit-scrollbar {
-          display: none !important;
-          width: 0 !important;
-          height: 0 !important;
-          background: transparent !important;
+        html.qjtx-story-page::-webkit-scrollbar,
+        html.qjtx-story-page body::-webkit-scrollbar {
+          display: none;
         }
 
-        /* 兼容 Lenis 的状态类 */
-        html.lenis.lenis-smooth {
+        html.qjtx-story-page.lenis.lenis-smooth {
           scroll-behavior: auto !important;
         }
 
-        html.lenis.lenis-stopped {
-          overflow: hidden !important;
+        html.qjtx-story-page.lenis.lenis-stopped {
+          overflow: hidden;
         }
 
-        html.lenis.lenis-smooth [data-lenis-prevent] {
+        html.qjtx-story-page.lenis.lenis-smooth [data-lenis-prevent] {
           overscroll-behavior: contain;
         }
       `}</style>
@@ -558,7 +360,7 @@ export default function QingJinTianXia() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.12 }}
-        transition={{ duration: 6, ease: motionEase }}
+        transition={{ duration: 2 * animationSlowdown, ease: motionEase }}
         className="bg-noise pointer-events-none fixed inset-0 z-0 mix-blend-overlay"
         style={{
           backgroundImage:
@@ -623,98 +425,69 @@ export default function QingJinTianXia() {
         </motion.div>
       </section>
 
-      <main className="timeline-container relative z-10 h-svh overflow-hidden">
-        <div className="timeline-viewport mx-auto h-full w-full max-w-7xl px-4">
-          <div className="timeline-track relative flex w-full flex-col will-change-transform">
-            <div className="absolute top-0 bottom-0 left-14 w-px -translate-x-1/2 rounded bg-zinc-800/40 md:left-1/2" />
-            <div className="timeline-progress absolute top-0 left-14 z-10 h-0 w-px -translate-x-1/2 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2" />
+      <main className="timeline-container relative z-10 mx-auto w-full max-w-7xl px-4 py-[15vh]">
+        <div className="absolute top-0 bottom-0 left-14 w-px -translate-x-1/2 rounded bg-zinc-800/40 md:left-1/2" />
+        <div className="timeline-progress absolute top-0 bottom-0 left-14 z-10 w-px -translate-x-1/2 origin-top scale-y-0 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2" />
 
-            <div className="relative flex w-full flex-col pb-10">
-              {timelineData.map((event, index) => {
-                const isLeft = index % 2 === 0;
+        <div className="relative flex w-full flex-col pt-10 pb-40">
+          {timelineData.map((event, index) => {
+            const isLeft = index % 2 === 0;
 
-                return (
-                  <div
-                    key={event.id}
-                    className="timeline-event group relative my-10 flex w-full flex-col md:my-20 md:flex-row md:justify-center"
-                  >
-                    <div
-                      data-event-dot={event.id}
-                      className="event-dot absolute top-1/2 left-10 z-20 h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 origin-center rounded-full border border-zinc-500 bg-zinc-950 md:left-1/2 md:h-[13px] md:w-[13px]"
+            return (
+              <div
+                key={event.id}
+                className="timeline-event group relative my-10 flex w-full flex-col md:my-20 md:flex-row md:justify-center"
+              >
+                <div className="event-dot absolute top-1/2 left-10 z-20 h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 origin-center rounded-full border border-zinc-500 bg-zinc-950 md:left-1/2 md:h-[13px] md:w-[13px]" />
+
+                <div className="flex w-full justify-start pl-18 pr-2 md:hidden">
+                  <div className="flex flex-row items-center gap-4 sm:gap-6">
+                    <EventDate
+                      year={event.year}
+                      month={event.month}
+                      mobile
                     />
-
-                    <div className="flex w-full justify-start pl-18 pr-2 md:hidden">
-                      <div
-                        data-event-content={event.id}
-                        className="flex flex-row items-center gap-4 sm:gap-6 will-change-transform"
-                      >
-                        <EventDate
-                          eventId={event.id}
-                          year={event.year}
-                          month={event.month}
-                          mobile
-                        />
-                        <EventLines
-                          content={event.content}
-                          important={event.important}
-                          mobile
-                        />
-                      </div>
-                    </div>
-
-                    <div
-                      className={`hidden w-1/2 justify-end pr-12 md:flex lg:pr-24 ${!isLeft ? "invisible" : ""
-                        }`}
-                    >
-                      <div
-                        data-event-content={isLeft ? event.id : undefined}
-                        className="flex flex-row items-center gap-8 lg:gap-12 will-change-transform"
-                      >
-                        <EventLines
-                          content={event.content}
-                          important={event.important}
-                          align="right"
-                        />
-                        <EventDate
-                          eventId={event.id}
-                          year={event.year}
-                          month={event.month}
-                          monthFirst
-                        />
-                      </div>
-                    </div>
-
-                    <div
-                      className={`hidden w-1/2 justify-start pl-12 md:flex lg:pl-24 ${isLeft ? "invisible" : ""
-                        }`}
-                    >
-                      <div
-                        data-event-content={isLeft ? undefined : event.id}
-                        className="flex flex-row items-center gap-8 lg:gap-12 will-change-transform"
-                      >
-                        <EventDate
-                          eventId={event.id}
-                          year={event.year}
-                          month={event.month}
-                        />
-                        <EventLines
-                          content={event.content}
-                          important={event.important}
-                        />
-                      </div>
-                    </div>
+                    <EventLines
+                      content={event.content}
+                      important={event.important}
+                      mobile
+                    />
                   </div>
-                );
-              })}
+                </div>
 
-              <div className="timeline-tail relative h-[24vh] md:h-[30vh]">
                 <div
-                  data-flow-target
-                  className="absolute bottom-0 left-14 h-px w-px -translate-x-1/2 md:left-1/2"
-                />
+                  className={`hidden w-1/2 justify-end pr-12 md:flex lg:pr-24 ${!isLeft ? "invisible" : ""
+                    }`}
+                >
+                  <div className="flex flex-row items-center gap-8 lg:gap-12">
+                    <EventLines
+                      content={event.content}
+                      important={event.important}
+                      align="right"
+                    />
+                    <EventDate
+                      year={event.year}
+                      month={event.month}
+                      monthFirst
+                    />
+                  </div>
+                </div>
+
+                <div
+                  className={`hidden w-1/2 justify-start pl-12 md:flex lg:pl-24 ${isLeft ? "invisible" : ""
+                    }`}
+                >
+                  <div className="flex flex-row items-center gap-8 lg:gap-12">
+                    <EventDate year={event.year} month={event.month} />
+                    <EventLines
+                      content={event.content}
+                      important={event.important}
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
       </main>
 
@@ -723,18 +496,15 @@ export default function QingJinTianXia() {
         whileInView="visible"
         viewport={{ once: true, amount: 0.5 }}
         variants={footerVariants}
-        className="relative z-10 bg-linear-to-t from-black to-transparent pt-20 pb-16"
+        className="relative z-10 flex flex-col items-center gap-8 bg-linear-to-t from-black to-transparent pt-20 pb-16 text-center"
       >
-        <div className="relative mx-auto flex w-full max-w-7xl flex-col items-center gap-8 px-4 text-center">
-          <div className="pointer-events-none absolute top-0 left-14 h-16 w-px -translate-x-1/2 bg-linear-to-b from-transparent to-zinc-700/50 md:left-1/2" />
-          <div className="h-16 w-px opacity-0" aria-hidden />
-          <p className="text-xs font-light tracking-[0.5em] text-zinc-500 sm:text-sm">
-            山河万里 · 故人长绝
-          </p>
-          <p className="mt-4 text-[10px] font-light tracking-widest text-zinc-700">
-            河图作品勘鉴
-          </p>
-        </div>
+        <div className="h-16 w-px bg-linear-to-b from-transparent to-zinc-700/50" />
+        <p className="text-xs font-light tracking-[0.5em] text-zinc-500 sm:text-sm">
+          山河万里 · 故人长绝
+        </p>
+        <p className="mt-4 text-[10px] font-light tracking-widest text-zinc-700">
+          河图作品勘鉴
+        </p>
       </motion.footer>
     </div>
   );
