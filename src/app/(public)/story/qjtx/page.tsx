@@ -277,7 +277,6 @@ export default function QingJinTianXia() {
         lineTargetHeight = Math.max(0, Math.min(lineTargetHeight, rect.height));
 
         progressLine.style.height = `${lineTargetHeight}px`;
-        progressLine.style.transform = `translateX(-50%)`;
 
         dots.forEach((dot) => {
           const dotRect = dot.getBoundingClientRect();
@@ -352,7 +351,7 @@ export default function QingJinTianXia() {
               tl.fromTo(
                 scrollyBg,
                 { "--radius": "0px" },
-                { "--radius": "450vw", duration: 1.5, ease: "power2.in" },
+                { "--radius": "800vmax", duration: 1.5, ease: "power2.inOut" },
                 0
               )
                 .fromTo(
@@ -500,13 +499,13 @@ export default function QingJinTianXia() {
           variants={scrollHintVariants}
           initial="hidden"
           animate="visible"
-          className="scroll-hint absolute bottom-12 flex flex-col items-center gap-4 text-zinc-600"
+          className="scroll-hint absolute bottom-12 flex flex-col items-center gap-3 text-zinc-600 left-14 -translate-x-1/2 md:left-1/2"
         >
-          <span className="ml-[0.4em] text-[10px] uppercase tracking-[0.4em]">
+          <span className="text-[10px] uppercase tracking-[0.3em] font-light text-zinc-400 [writing-mode:vertical-rl] md:[writing-mode:horizontal-tb] md:ml-[0.3em]">
             展开编年史
           </span>
-          <div className="relative h-16 w-px overflow-hidden bg-zinc-800">
-            <div className="scroll-hint-line absolute top-0 left-0 h-full w-full bg-zinc-400/50" />
+          <div className="relative h-16 w-[2px] overflow-hidden bg-zinc-800/40 rounded-full">
+            <div className="scroll-hint-line absolute top-0 left-0 h-full w-full bg-linear-to-b from-red-600 to-red-900 rounded-full shadow-[0_0_8px_rgba(220,38,38,0.5)]" />
           </div>
         </motion.div>
       </section>
@@ -526,7 +525,7 @@ export default function QingJinTianXia() {
                 data-id={event.id}
                 className="timeline-event group relative my-10 flex w-full flex-col md:my-20 md:flex-row md:justify-center"
               >
-                <div className="event-dot absolute top-1/2 left-14 z-20 h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 origin-center rounded-full border border-zinc-500 bg-zinc-950 md:left-1/2 md:h-[13px] md:w-[13px]" />
+                <div className="event-dot absolute top-1/2 left-10 z-20 h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 origin-center rounded-full border border-zinc-500 bg-zinc-950 md:left-1/2 md:h-[13px] md:w-[13px]" />
 
                 <div className="flex w-full justify-start pl-18 pr-2 md:hidden">
                   <div className="flex flex-row items-center gap-4 sm:gap-6">
@@ -687,15 +686,18 @@ export default function QingJinTianXia() {
         whileInView="visible"
         viewport={{ once: true, amount: 0.5 }}
         variants={footerVariants}
-        className="relative z-10 flex flex-col items-center gap-8 bg-linear-to-t from-black to-transparent pt-20 pb-16 text-center"
+        className="relative z-10 w-full bg-linear-to-t from-black to-transparent pt-10 pb-16 flex flex-col md:items-center"
       >
-        <div className="h-16 w-px bg-linear-to-b from-transparent to-zinc-700/50" />
-        <p className="text-xs font-light tracking-[0.5em] text-zinc-500 sm:text-sm">
-          山河万里 · 故人长绝
-        </p>
-        <p className="mt-4 text-[10px] font-light tracking-widest text-zinc-700">
-          河图作品勘鉴
-        </p>
+        <div className="absolute top-0 left-14 -translate-x-1/2 w-[2px] h-24 bg-linear-to-b from-zinc-800/40 to-transparent md:left-1/2" />
+        
+        <div className="pl-24 md:pl-0 mt-16 flex flex-col items-start md:items-center gap-4">
+          <p className="text-xs font-light tracking-[0.4em] text-zinc-500 sm:text-sm">
+            山河万里 · 故人长绝
+          </p>
+          <p className="text-[10px] font-light tracking-widest text-zinc-700 ml-1 md:ml-0 opacity-50">
+            河图作品勘鉴
+          </p>
+        </div>
       </motion.footer>
     </div>
   );
