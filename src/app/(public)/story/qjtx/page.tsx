@@ -276,7 +276,8 @@ export default function QingJinTianXia() {
         let lineTargetHeight = triggerY - rect.top;
         lineTargetHeight = Math.max(0, Math.min(lineTargetHeight, rect.height));
 
-        gsap.set(progressLine, { height: lineTargetHeight });
+        const scale = rect.height > 0 ? lineTargetHeight / rect.height : 0;
+        gsap.set(progressLine, { scaleY: scale });
 
         dots.forEach((dot) => {
           const dotRect = dot.getBoundingClientRect();
@@ -335,13 +336,13 @@ export default function QingJinTianXia() {
                 {
                   clipPath: () => {
                     const dotRect = dot.getBoundingClientRect();
-                    return `circle(0px at ${dotRect.left + dotRect.width / 2}px 60vh)`;
+                    return `circle(0px at ${dotRect.left + dotRect.width / 2}px ${dotRect.top + dotRect.height / 2}px)`;
                   },
                 },
                 {
                   clipPath: () => {
                     const dotRect = dot.getBoundingClientRect();
-                    return `circle(150vw at ${dotRect.left + dotRect.width / 2}px 60vh)`;
+                    return `circle(150vw at ${dotRect.left + dotRect.width / 2}px ${dotRect.top + dotRect.height / 2}px)`;
                   },
                   duration: 1.5,
                   ease: "power2.inOut",
@@ -365,7 +366,7 @@ export default function QingJinTianXia() {
               .to(scrollyBg, {
                 clipPath: () => {
                   const dotRect = dot.getBoundingClientRect();
-                  return `circle(0px at ${dotRect.left + dotRect.width / 2}px 60vh)`;
+                  return `circle(0px at ${dotRect.left + dotRect.width / 2}px ${dotRect.top + dotRect.height / 2}px)`;
                 },
                 duration: 1.2,
                 ease: "power2.inOut",
@@ -518,7 +519,7 @@ export default function QingJinTianXia() {
 
       <main className="timeline-container relative z-10 mx-auto w-full max-w-7xl px-4 py-[15vh]">
         <div className="absolute top-0 bottom-0 left-14 w-px -translate-x-1/2 rounded bg-zinc-800/40 md:left-1/2" />
-        <div className="timeline-progress absolute top-0 left-14 z-10 w-px -translate-x-1/2 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2" />
+        <div className="timeline-progress absolute top-0 bottom-0 left-14 z-10 w-px -translate-x-1/2 origin-top scale-y-0 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2" />
 
         <div className="relative flex w-full flex-col pt-10 pb-40">
           {timelineData.map((event, index) => {
