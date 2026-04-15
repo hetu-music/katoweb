@@ -282,7 +282,7 @@ export default function QingJinTianXia() {
         dots.forEach((dot) => {
           const dotRect = dot.getBoundingClientRect();
           const dotCenter = dotRect.top + dotRect.height / 2;
-          setDotState(dot, dotCenter <= triggerY + 10);
+          setDotState(dot, dotCenter <= triggerY + 30);
         });
       };
 
@@ -316,6 +316,12 @@ export default function QingJinTianXia() {
           const dot = event.querySelector(".event-dot");
 
           if (detailContent && scrollyBg && scrollyText && dot) {
+            const setCirclePos = () => {
+              const dotRect = dot.getBoundingClientRect();
+              scrollyBg.style.setProperty("--x", `${dotRect.left + dotRect.width / 2}px`);
+              scrollyBg.style.setProperty("--y", `${dotRect.top + dotRect.height / 2}px`);
+            };
+
             const tl = gsap.timeline({
               scrollTrigger: {
                 trigger: event,
@@ -326,28 +332,16 @@ export default function QingJinTianXia() {
                 pin: ".timeline-container",
                 pinSpacing: true,
                 invalidateOnRefresh: true,
+                onEnter: setCirclePos,
+                onEnterBack: setCirclePos,
               },
             });
 
             tl.set(detailContent, { display: "flex" })
               .fromTo(
                 scrollyBg,
-                {
-                  clipPath: () => {
-                    const triggerY = window.innerHeight * 0.6;
-                    const dotRect = dot.getBoundingClientRect();
-                    return `circle(0px at ${dotRect.left + dotRect.width / 2}px ${triggerY}px)`;
-                  },
-                },
-                {
-                  clipPath: () => {
-                    const triggerY = window.innerHeight * 0.6;
-                    const dotRect = dot.getBoundingClientRect();
-                    return `circle(150vw at ${dotRect.left + dotRect.width / 2}px ${triggerY}px)`;
-                  },
-                  duration: 1.5,
-                  ease: "power2.inOut",
-                }
+                { "--radius": "0px" },
+                { "--radius": "150vw", duration: 1.5, ease: "power2.inOut" }
               )
               .fromTo(
                 scrollyText.children,
@@ -365,11 +359,7 @@ export default function QingJinTianXia() {
                 ease: "power2.in",
               })
               .to(scrollyBg, {
-                clipPath: () => {
-                  const triggerY = window.innerHeight * 0.6;
-                  const dotRect = dot.getBoundingClientRect();
-                  return `circle(0px at ${dotRect.left + dotRect.width / 2}px ${triggerY}px)`;
-                },
+                "--radius": "0px",
                 duration: 1.2,
                 ease: "power2.inOut",
               })
@@ -571,7 +561,7 @@ export default function QingJinTianXia() {
           >
             <div
               className={`scrolly-bg-${event.id} absolute inset-0 w-full h-full bg-[#09090b] z-0 overflow-hidden`}
-              style={{ clipPath: "circle(0px at 50vw 60vh)" }}
+              style={{ clipPath: "circle(var(--radius, 0px) at var(--x, 50vw) var(--y, 60vh))" } as React.CSSProperties}
             >
               {/* Soft radial overlay to replace heavy banding gradient, explicitly nested inside the masked background to avoid screen pollution */}
               <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,rgba(63,63,70,0.18)_0%,transparent_70%)] opacity-80 pointer-events-none" />
