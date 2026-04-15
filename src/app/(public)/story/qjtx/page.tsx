@@ -11,9 +11,11 @@ import { timelineData } from "./data";
 gsap.registerPlugin(ScrollTrigger);
 
 const motionEase = [0.22, 1, 0.36, 1] as const;
+const ghostEase = gsap.parseEase("none");
+const activeEase = gsap.parseEase("none");
+const animationRangeRatio = 0.55;
+const initialYOffset = 90;
 const goldenViewportRatio = 0.45;
-const preheatViewportRatio = 0.42;
-const activeViewportRatio = 0.05;
 const introViewportRatio = 0.14;
 const trackTopPaddingRatio = 0.45;
 const trackBottomPaddingRatio = 0.38;
@@ -23,14 +25,11 @@ const activeDotBorder = "#dc2626";
 const activeDotFill = "#7f1d1d";
 const inactiveMonthColor = "rgba(153, 27, 27, 0.72)";
 const activeMonthColor = "#ef4444";
-const ghostEase = gsap.parseEase("power2.out");
-const activeEase = gsap.parseEase("power3.out");
 
 interface TimelineSceneMetrics {
-  activeDistance: number;
   anchorY: number;
   introDistance: number;
-  preheatDistance: number;
+  animationDistance: number;
   trackHeight: number;
   travelDistance: number;
 }
@@ -381,10 +380,9 @@ export default function QingJinTianXia() {
         );
 
         return {
-          activeDistance: Math.max(viewportHeight * activeViewportRatio, 40),
           anchorY,
           introDistance,
-          preheatDistance: Math.max(viewportHeight * preheatViewportRatio, 260),
+          animationDistance: viewportHeight * animationRangeRatio,
           trackHeight: timelineTrack.offsetHeight,
           travelDistance: introDistance + flowDistance,
         };
@@ -416,45 +414,21 @@ export default function QingJinTianXia() {
         });
 
         timelineEvents.forEach((event) => {
-          const triggerDistance = Math.max(
-            0,
-            event.dotCenter - metrics.anchorY,
+          const triggerDistance = event.dotCenter - metrics.anchorY;
+          const animationStart = triggerDistance - metrics.animationDistance;
+          
+          const progress = clamp01(
+            (flowDistance - animationStart) / metrics.animationDistance,
           );
-          const preheatStart = Math.max(
-            0,
-            triggerDistance - metrics.preheatDistance,
-          );
-          const preheatRange = Math.max(triggerDistance - preheatStart, 1);
-          const preheatMix = clamp01(
-            (flowDistance - preheatStart) / preheatRange,
-          );
-          const activeMix = clamp01(
-            (flowDistance - triggerDistance) / metrics.activeDistance,
-          );
+          
+          const easedProgress = progress; // scrub handles smoothing
+          
+          const opacity = interpolate(0, 1, easedProgress);
+          const y = interpolate(initialYOffset, 0, easedProgress);
+          const blur = interpolate(10, 0, easedProgress);
 
-          let opacity = 0;
-          let y = 70;
-          let blur = 10;
-
-          if (flowDistance < triggerDistance) {
-            const easedPreheat = ghostEase(preheatMix);
-
-            opacity = interpolate(0, 0.4, easedPreheat);
-            y = interpolate(70, 0, easedPreheat);
-            blur = interpolate(10, 4, easedPreheat);
-          } else {
-            const easedActive = activeEase(activeMix);
-
-            opacity = interpolate(0.4, 1, easedActive);
-            y = 0;
-            blur = interpolate(4, 0, easedActive);
-          }
-
-          const dotPresence = ghostEase(preheatMix);
-          const activationMix =
-            flowDistance < triggerDistance
-              ? 0
-              : 0.45 + activeEase(activeMix) * 0.55;
+          const dotPresence = progress;
+          const activationMix = flowDistance < triggerDistance ? 0 : 1;
           const redGlow = 16 * activationMix;
 
           gsap.set(event.content, {
@@ -485,7 +459,7 @@ export default function QingJinTianXia() {
               activeMonthColor,
               activationMix,
             ),
-            textShadow: `0 0 ${12 * activationMix}px rgba(239,68,68,${0.45 * activationMix})`,
+            textShadow: `0 0 ${12 * activationMix}px rgba(239,68,68,${0.5 * activationMix})`,
           });
         });
       };
