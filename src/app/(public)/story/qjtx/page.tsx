@@ -11,10 +11,9 @@ import { timelineData } from "./data";
 gsap.registerPlugin(ScrollTrigger);
 
 const motionEase = [0.22, 1, 0.36, 1] as const;
-const mainEase = gsap.parseEase("sine.inOut");
-const animationRangeRatio = 0.55;
-const initialYOffset = 90;
 const goldenViewportRatio = 0.45;
+const preheatViewportRatio = 0.42;
+const activeViewportRatio = 0.05;
 const introViewportRatio = 0.14;
 const trackTopPaddingRatio = 0.45;
 const trackBottomPaddingRatio = 0.38;
@@ -24,11 +23,14 @@ const activeDotBorder = "#dc2626";
 const activeDotFill = "#7f1d1d";
 const inactiveMonthColor = "rgba(153, 27, 27, 0.72)";
 const activeMonthColor = "#ef4444";
+const ghostEase = gsap.parseEase("power2.out");
+const activeEase = gsap.parseEase("power3.out");
 
 interface TimelineSceneMetrics {
+  activeDistance: number;
   anchorY: number;
   introDistance: number;
-  animationDistance: number;
+  preheatDistance: number;
   trackHeight: number;
   travelDistance: number;
 }
@@ -156,15 +158,13 @@ function EventLines({
       {content.map((line, index) => (
         <p
           key={index}
-          className={`${
-            mobile
+          className={`${mobile
               ? "text-sm tracking-widest"
               : "text-[15px] lg:text-base tracking-widest lg:tracking-[0.2em]"
-          } font-light leading-loose ${
-            important
+            } font-light leading-loose ${important
               ? "text-zinc-200 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] font-normal"
               : "text-zinc-400"
-          }`}
+            }`}
         >
           {line}
         </p>
@@ -189,9 +189,8 @@ function EventDate({
   const monthNode = month ? (
     <div
       data-event-month={eventId}
-      className={`${verticalTextClass} ${
-        mobile ? "text-sm" : "text-lg lg:text-xl"
-      } text-red-800/80 font-serif tracking-[0.3em]`}
+      className={`${verticalTextClass} ${mobile ? "text-sm" : "text-lg lg:text-xl"
+        } text-red-800/80 font-serif tracking-[0.3em]`}
     >
       {month}
     </div>
@@ -199,9 +198,8 @@ function EventDate({
 
   const yearNode = (
     <div
-      className={`${verticalTextClass} ${
-        mobile ? "text-xl" : "text-2xl lg:text-3xl"
-      } font-serif tracking-[0.3em] font-light text-zinc-300`}
+      className={`${verticalTextClass} ${mobile ? "text-xl" : "text-2xl lg:text-3xl"
+        } font-serif tracking-[0.3em] font-light text-zinc-300`}
     >
       {year}
     </div>
@@ -209,9 +207,8 @@ function EventDate({
 
   return (
     <div
-      className={`flex flex-row items-end ${
-        mobile ? "gap-2" : "gap-3 lg:gap-4"
-      } transition-colors`}
+      className={`flex flex-row items-end ${mobile ? "gap-2" : "gap-3 lg:gap-4"
+        } transition-colors`}
     >
       {monthFirst ? (
         <>
@@ -379,9 +376,10 @@ export default function QingJinTianXia() {
         );
 
         return {
+          activeDistance: Math.max(viewportHeight * activeViewportRatio, 40),
           anchorY,
           introDistance,
-          animationDistance: viewportHeight * animationRangeRatio,
+          preheatDistance: Math.max(viewportHeight * preheatViewportRatio, 260),
           trackHeight: timelineTrack.offsetHeight,
           travelDistance: introDistance + flowDistance,
         };
@@ -402,7 +400,7 @@ export default function QingJinTianXia() {
         );
         const progressHeight =
           clampedDistance < metrics.introDistance
-            ? metrics.anchorY * mainEase(introProgress)
+            ? metrics.anchorY * ghostEase(introProgress)
             : Math.min(metrics.trackHeight, metrics.anchorY + flowDistance);
 
         gsap.set(timelineTrack, {
@@ -413,21 +411,45 @@ export default function QingJinTianXia() {
         });
 
         timelineEvents.forEach((event) => {
-          const triggerDistance = event.dotCenter - metrics.anchorY;
-          const animationStart = triggerDistance - metrics.animationDistance;
-          
-          const progress = clamp01(
-            (flowDistance - animationStart) / metrics.animationDistance,
+          const triggerDistance = Math.max(
+            0,
+            event.dotCenter - metrics.anchorY,
           );
-          
-          const easedProgress = mainEase(progress);
-          
-          const opacity = interpolate(0, 1, easedProgress);
-          const y = interpolate(initialYOffset, 0, easedProgress);
-          const blur = interpolate(10, 0, easedProgress);
+          const preheatStart = Math.max(
+            0,
+            triggerDistance - metrics.preheatDistance,
+          );
+          const preheatRange = Math.max(triggerDistance - preheatStart, 1);
+          const preheatMix = clamp01(
+            (flowDistance - preheatStart) / preheatRange,
+          );
+          const activeMix = clamp01(
+            (flowDistance - triggerDistance) / metrics.activeDistance,
+          );
 
-          const dotPresence = progress;
-          const activationMix = flowDistance < triggerDistance ? 0 : 1;
+          let opacity = 0;
+          let y = 70;
+          let blur = 10;
+
+          if (flowDistance < triggerDistance) {
+            const easedPreheat = ghostEase(preheatMix);
+
+            opacity = interpolate(0, 0.4, easedPreheat);
+            y = interpolate(70, 0, easedPreheat);
+            blur = interpolate(10, 4, easedPreheat);
+          } else {
+            const easedActive = activeEase(activeMix);
+
+            opacity = interpolate(0.4, 1, easedActive);
+            y = 0;
+            blur = interpolate(4, 0, easedActive);
+          }
+
+          const dotPresence = ghostEase(preheatMix);
+          const activationMix =
+            flowDistance < triggerDistance
+              ? 0
+              : 0.45 + activeEase(activeMix) * 0.55;
           const redGlow = 16 * activationMix;
 
           gsap.set(event.content, {
@@ -458,7 +480,7 @@ export default function QingJinTianXia() {
               activeMonthColor,
               activationMix,
             ),
-            textShadow: `0 0 ${12 * activationMix}px rgba(239,68,68,${0.5 * activationMix})`,
+            textShadow: `0 0 ${12 * activationMix}px rgba(239,68,68,${0.45 * activationMix})`,
           });
         });
       };
@@ -641,9 +663,8 @@ export default function QingJinTianXia() {
                     </div>
 
                     <div
-                      className={`hidden w-1/2 justify-end pr-12 md:flex lg:pr-24 ${
-                        !isLeft ? "invisible" : ""
-                      }`}
+                      className={`hidden w-1/2 justify-end pr-12 md:flex lg:pr-24 ${!isLeft ? "invisible" : ""
+                        }`}
                     >
                       <div
                         data-event-content={isLeft ? event.id : undefined}
@@ -664,9 +685,8 @@ export default function QingJinTianXia() {
                     </div>
 
                     <div
-                      className={`hidden w-1/2 justify-start pl-12 md:flex lg:pl-24 ${
-                        isLeft ? "invisible" : ""
-                      }`}
+                      className={`hidden w-1/2 justify-start pl-12 md:flex lg:pl-24 ${isLeft ? "invisible" : ""
+                        }`}
                     >
                       <div
                         data-event-content={isLeft ? undefined : event.id}
