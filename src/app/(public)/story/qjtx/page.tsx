@@ -311,15 +311,20 @@ export default function QingJinTianXia() {
         const isImportant = event.dataset.important === "true";
         if (isImportant) {
           const detailContent = container.current?.querySelector<HTMLElement>(`#detail-${event.dataset.id}`);
+          const scrollyRipple = detailContent?.querySelector<HTMLElement>(`.scrolly-ripple-${event.dataset.id}`);
           const scrollyBg = detailContent?.querySelector<HTMLElement>(`.scrolly-bg-${event.dataset.id}`);
           const scrollyText = detailContent?.querySelector<HTMLElement>(`.scrolly-text-${event.dataset.id}`);
           const dot = event.querySelector<HTMLElement>(".event-dot");
 
-          if (detailContent && scrollyBg && scrollyText && dot) {
+          if (detailContent && scrollyRipple && scrollyBg && scrollyText && dot) {
             const setCirclePos = () => {
               const dotRect = dot.getBoundingClientRect();
-              scrollyBg.style.setProperty("--x", `${dotRect.left + dotRect.width / 2}px`);
-              scrollyBg.style.setProperty("--y", `${dotRect.top + dotRect.height / 2}px`);
+              const centerX = `${dotRect.left + dotRect.width / 2}px`;
+              const centerY = `${dotRect.top + dotRect.height / 2}px`;
+              scrollyRipple.style.setProperty("--x", centerX);
+              scrollyRipple.style.setProperty("--y", centerY);
+              scrollyBg.style.setProperty("--x", centerX);
+              scrollyBg.style.setProperty("--y", centerY);
             };
 
             const tl = gsap.timeline({
@@ -343,35 +348,46 @@ export default function QingJinTianXia() {
             if (textHeader && textContent) {
               tl.set(detailContent, { display: "flex" })
                 .fromTo(
+                  scrollyRipple,
+                  { "--radius": "0px" },
+                  { "--radius": "150vw", duration: 1.6, ease: "power3.inOut" }
+                )
+                .fromTo(
                   scrollyBg,
                   { "--radius": "0px" },
-                  { "--radius": "150vw", duration: 1.5, ease: "power2.inOut" }
+                  { "--radius": "150vw", duration: 1.4, ease: "power2.inOut" },
+                  "-=1.35"
                 )
                 .fromTo(
                   textHeader.children,
-                  { opacity: 0, y: 30, filter: "blur(10px)" },
-                  { opacity: 1, y: 0, filter: "blur(0px)", duration: 1, stagger: 0.2, ease: "power2.out" },
-                  "-=0.5"
+                  { opacity: 0, y: 30, filter: "blur(12px)" },
+                  { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.2, stagger: 0.3, ease: "power2.out" },
+                  "-=0.6"
                 )
                 .fromTo(
                   textContent,
-                  { opacity: 0, y: 60 },
-                  { opacity: 1, y: 0, duration: 1.2, ease: "power2.out" },
-                  "-=0.5"
+                  { opacity: 0, y: 60, filter: "blur(8px)" },
+                  { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.4, ease: "power2.out" },
+                  "-=0.8"
                 )
                 .to(textContent, { y: "-40%", duration: 4, ease: "none" })
                 .to([textHeader, textContent], {
                   opacity: 0,
                   y: "-=30",
-                  filter: "blur(8px)",
-                  duration: 1,
+                  filter: "blur(12px)",
+                  duration: 1.2,
                   ease: "power2.in",
                 })
                 .to(scrollyBg, {
                   "--radius": "0px",
-                  duration: 1.2,
+                  duration: 1.3,
                   ease: "power2.inOut",
-                }, "-=0.5")
+                }, "-=0.4")
+                .to(scrollyRipple, {
+                  "--radius": "0px",
+                  duration: 1.5,
+                  ease: "power3.inOut",
+                }, "-=1.15")
                 .set(detailContent, { display: "none" });
             }
           }
@@ -569,12 +585,21 @@ export default function QingJinTianXia() {
             id={`detail-${event.id}`}
             className="fixed inset-0 w-screen h-screen m-0 p-0 z-[100] pointer-events-none flex-col items-center justify-center hidden"
           >
+            {/* Layer 1: Blood Ripple tracking the expansion */}
             <div
-              className={`scrolly-bg-${event.id} absolute inset-0 w-full h-full bg-[#09090b] z-0 overflow-hidden`}
+              className={`scrolly-ripple-${event.id} absolute inset-0 w-full h-full bg-red-950 z-0 overflow-hidden`}
               style={{ clipPath: "circle(var(--radius, 0px) at var(--x, 50vw) var(--y, 60vh))" } as React.CSSProperties}
             >
-              {/* Soft radial overlay to replace heavy banding gradient, explicitly nested inside the masked background to avoid screen pollution */}
-              <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,rgba(63,63,70,0.18)_0%,transparent_70%)] opacity-80 pointer-events-none" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(220,38,38,0.4)_0%,transparent_60%)]" />
+            </div>
+
+            {/* Layer 2: Core dark scrolly background */}
+            <div
+              className={`scrolly-bg-${event.id} absolute inset-0 w-full h-full bg-[#09090b] z-0 overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,1)]`}
+              style={{ clipPath: "circle(var(--radius, 0px) at var(--x, 50vw) var(--y, 60vh))" } as React.CSSProperties}
+            >
+              {/* Refined Crimson Center Glow (Replaces the boring gray) */}
+              <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,rgba(153,27,27,0.08)_0%,transparent_70%)] opacity-90 pointer-events-none" />
               {/* Cinematic noise specifically for immersive view */}
               <div
                 className="absolute inset-0 z-0 mix-blend-overlay opacity-30 pointer-events-none"
