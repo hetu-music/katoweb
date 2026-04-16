@@ -211,6 +211,8 @@ function ImmersiveReadingPanel({
     maskPath,
     layout = "horizontal",
     specialEffect = "none",
+    durationMultiplier = 1,
+    scrollDistance = 4000,
   }: ImmersiveTheme = event.detail.theme ?? {};
 
   const maskUrl = maskPath ? buildMaskUrl(maskPath) : SNOWFLAKE_MASK_URL;
@@ -220,6 +222,8 @@ function ImmersiveReadingPanel({
       id={`detail-${event.id}`}
       data-layout={layout}
       data-effect={specialEffect}
+      data-duration-multiplier={durationMultiplier}
+      data-scroll-distance={scrollDistance}
       className="fixed inset-0 w-screen h-screen m-0 p-0 z-100 pointer-events-none flex-col items-center justify-center hidden"
     >
       {/* 展开背景（雪花/自定义形状 mask 扩展） */}
@@ -494,6 +498,14 @@ export default function QingJinTianXia() {
             if (textHeader && textContent) {
               const isRipple = detailContent.dataset.effect === "ripple";
               const isVertical = detailContent.dataset.layout === "vertical";
+              const dMult = parseFloat(detailContent.dataset.durationMultiplier || "1");
+              const sDist = parseInt(detailContent.dataset.scrollDistance || "4000");
+
+              const st = tl.scrollTrigger;
+              if (st) {
+                 st.vars.end = `+=${sDist}`;
+                 st.refresh();
+              }
 
               tl.set(detailContent, { display: "flex" });
 
@@ -502,7 +514,7 @@ export default function QingJinTianXia() {
                 { "--radius": "0px" },
                 { 
                   "--radius": isRipple ? "220vmax" : "800vmax", 
-                  duration: isRipple ? 6 : 4.5, 
+                  duration: (isRipple ? 2 : 1.5) * dMult, 
                   ease: isRipple ? "elastic.out(1.2, 0.8)" : "power2.inOut" 
                 },
                 0
@@ -514,11 +526,11 @@ export default function QingJinTianXia() {
                     opacity: 1,
                     y: 0,
                     filter: "blur(0px)",
-                    duration: 2.0,
-                    stagger: 0.4,
+                    duration: 1.0 * dMult,
+                    stagger: 0.2 * dMult,
                     ease: "power2.out",
                   },
-                  "-=2.0"
+                  "-=1.0"
                 );
 
               const quote = textContent.querySelector(".scrolly-quote");
@@ -528,51 +540,48 @@ export default function QingJinTianXia() {
               if (quote) {
                 tl.fromTo(
                   quote,
-                  { opacity: 0, y: isVertical ? 0 : 30, filter: "blur(12px)" },
-                  { opacity: 1, y: 0, filter: "blur(0px)", duration: 2.0, ease: "power2.out" },
-                  "-=1.0"
+                  { opacity: 0, scale: 0.95, filter: "blur(12px)" },
+                  { opacity: 1, scale: 1, filter: "blur(0px)", duration: 1.5 * dMult, ease: "power2.out" }
                 );
               }
 
               tl.fromTo(
                 bodyParagraphs,
-                { opacity: 0, [isVertical ? "x" : "y"]: 30, filter: "blur(12px)" },
+                { opacity: 0, [isVertical ? "x" : "y"]: 20, filter: "blur(10px)" },
                 { 
                   opacity: 1, 
                   [isVertical ? "x" : "y"]: 0, 
                   filter: "blur(0px)", 
-                  duration: 2.5, 
-                  stagger: 0.8, 
+                  duration: 1.2 * dMult, 
+                  stagger: 0.4 * dMult, 
                   ease: "power2.out" 
-                },
-                "-=1.5"
+                }
               );
 
               if (closing) {
                 tl.fromTo(
                   closing,
                   { opacity: 0, y: 20, filter: "blur(10px)" },
-                  { opacity: 1, y: 0, filter: "blur(0px)", duration: 2.0, ease: "power2.out" },
-                  "-=1.0"
+                  { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.5 * dMult, ease: "power2.out" }
                 );
               }
 
               tl.to(textContent, { 
                   y: isVertical ? "-15%" : "-30%", 
-                  duration: 10, 
+                  duration: 5, // 这里的5是权重，ScrollTrigger 会按比例缩放
                   ease: "none" 
                 })
                 .to([textHeader, textContent], {
                   opacity: 0,
                   y: "-=30",
                   filter: "blur(12px)",
-                  duration: 3.0,
+                  duration: 1.0 * dMult,
                   ease: "power2.in",
                 })
                 .to(
                   scrollyBg,
-                  { "--radius": "0px", duration: 4.5, ease: isRipple ? "power3.in" : "power2.inOut" },
-                  "-=1.5"
+                  { "--radius": "0px", duration: 1.5 * dMult, ease: isRipple ? "power3.in" : "power2.inOut" },
+                  "-=0.5"
                 );
 
               if (snowLayer) {
