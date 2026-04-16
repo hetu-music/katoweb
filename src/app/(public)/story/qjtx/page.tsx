@@ -532,7 +532,7 @@ export default function QingJinTianXia() {
                   "-=1.5"
                 )
                 .to(textContent, {
-                  y: isVertical ? "-20%" : "-40%",
+                  y: isVertical ? "-35%" : "-40%",
                   duration: 10.0,
                   ease: "none"
                 })
