@@ -124,7 +124,6 @@ export const timelineData: TimelineEvent[] = [
     year: "崇宁二年",
     month: "十二月",
     content: ["小产。敬帝以谋害皇裔之罪废后。", "是夜，后自缢于冷宫。"],
-    important: true,
   },
   {
     id: "17",
