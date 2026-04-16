@@ -6,7 +6,8 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import { useEffect, useRef } from "react";
-import { timelineData, type ImmersiveTheme } from "../qjtx/data";
+import { timelineData } from "../qjtx/data";
+import { type ImmersiveTheme } from "./types";
 
 gsap.registerPlugin(ScrollTrigger);
 
