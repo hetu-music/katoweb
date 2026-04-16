@@ -4,6 +4,7 @@ export interface TimelineEvent {
   month?: string;
   content: string[];
   important?: boolean;
+  finale?: boolean;
   detail?: TimelineDetail;
 }
 
@@ -352,6 +353,29 @@ export const timelineData: TimelineEvent[] = [
     year: "永初十年",
     month: "十一月",
     content: ["墨离入宫献上前朝贵妃画像一幅后离去。"],
+    important: true,
+    detail: {
+      title: "倾尽天下",
+      quote: "岁月无声也让人害怕",
+      body: [
+        "周帝白炎死在称帝十载后的一个雪夜。",
+        "这个草莽出身的皇帝不喜奢华，",
+        "逼宫夺位后便废弃了前朝敬帝所建的华美宫室，",
+        "而每夜宿在帝宫内的九龙塔，",
+        "死时亦盘膝在塔顶石室几案前的蒲团上，",
+        "正对着壁上一幅画像。",
+        "倘有历过前朝的宫女在，定会认出，",
+        "那画上颜色无双的女子，",
+        "正是前朝敬帝所封的最后一位贵妃。",
+        "原来在倾国的十年之后，",
+        "白炎终究追随那人而去。",
+        "他身后并未留下只言片语。",
+        "于是所有关于周朝开国皇帝的谜团，",
+        "都与那悬于九重宝塔之上、",
+        "隐在七重纱幕背后的画像，",
+        "一并被掩埋进厚重的史书里。",
+      ],
+    },
   },
   {
     id: "32",
@@ -472,6 +496,25 @@ export const timelineData: TimelineEvent[] = [
         "太业四年四月初五，造物终成，是为烟华海八百衣冠冢。",
       ],
       closing: "《烟华县志·衣冠冢志》",
+    },
+  },
+  {
+    id: "40",
+    year: "太业四年",
+    month: "四月",
+    content: ["烟华海八百衣冠冢成",
+    ],
+    finale: true,
+    important: true,
+    detail: {
+      title: "天岁天岁",
+      quote: "莫忘了谢幕",
+      body: [
+        "天岁者，等天之岁也。",
+        "永安长宁，不见七苦，",
+        "少年白发，如是帝都。",
+      ],
+      closing: "《天岁城志》",
     },
   },
 ];
