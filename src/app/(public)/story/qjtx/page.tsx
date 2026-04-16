@@ -8,6 +8,12 @@ import Lenis from "lenis";
 import { useEffect, useRef } from "react";
 import { timelineData } from "../qjtx/data";
 import { type ImmersiveTheme } from "./types";
+import {
+  CUSTOM_NODE_REGISTRY,
+  defaultTheme,
+  DefaultNodeLayout,
+  animateDefault,
+} from "./custom-nodes";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -192,8 +198,9 @@ function EventDate({
 /**
  * 沉浸式阅读覆盖层（固定全屏）。
  *
- * GSAP 动画仍然通过 .scrolly-bg-{id} / .scrolly-text-{id} 等类名驱动，
- * 与动画逻辑完全解耦，主题样式通过 event.detail.theme 注入。
+ * 根据 CUSTOM_NODE_REGISTRY 分发：
+ * - 注册表中存在该 ID → 使用自定义 Theme + Layout
+ * - 注册表中不存在 → 使用 DefaultNode 的 Theme + Layout
  */
 function ImmersiveReadingPanel({
   event,
@@ -202,103 +209,22 @@ function ImmersiveReadingPanel({
 }) {
   if (!event.detail) return null;
 
-  // 解构主题，全部带默认值，保证无 theme 时行为与重构前完全一致
-  const {
-    bg = "#030508",
-    titleColor = "white",
-    bodyColor = "rgb(212 212 216)", // zinc-300
-    accentColor = "rgb(161 161 170)", // zinc-400
-    maskPath,
-    layout = "horizontal",
-    specialEffect = "none",
-  }: ImmersiveTheme = event.detail.theme ?? {};
+  // 查找自定义节点
+  const custom = CUSTOM_NODE_REGISTRY[event.id];
+
+  // 合并主题：自定义 > data.ts > 系统默认
+  const resolvedTheme: Required<ImmersiveTheme> = {
+    ...defaultTheme,
+    ...(event.detail.theme ?? {}),
+    ...(custom?.theme ?? {}),
+  };
+
+  const { bg, maskPath, layout, specialEffect } = resolvedTheme;
 
   const maskUrl = maskPath ? buildMaskUrl(maskPath) : SNOWFLAKE_MASK_URL;
 
-  if (event.id === "39") {
-    return (
-      <div
-        id={`detail-${event.id}`}
-        data-layout={layout}
-        data-effect={specialEffect}
-        className="fixed inset-0 w-screen h-screen m-0 p-0 z-100 pointer-events-none flex-col items-center justify-center hidden"
-      >
-        {/* 展开背景（雪花/自定义形状 mask 扩展） */}
-        <div
-          className={`scrolly-bg-${event.id} absolute inset-0 w-full h-full z-0 overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,1)]`}
-          style={
-            {
-              background: bg,
-              WebkitMaskImage: maskUrl,
-              maskImage: maskUrl,
-              WebkitMaskRepeat: "no-repeat",
-              maskRepeat: "no-repeat",
-              WebkitMaskSize: "var(--radius, 0px)",
-              maskSize: "var(--radius, 0px)",
-              WebkitMaskPosition:
-                "calc(var(--x, 50vw) - var(--radius, 0px) / 2) calc(var(--y, 60vh) - var(--radius, 0px) / 2)",
-              maskPosition:
-                "calc(var(--x, 50vw) - var(--radius, 0px) / 2) calc(var(--y, 60vh) - var(--radius, 0px) / 2)",
-            } as React.CSSProperties
-          }
-        />
-
-        <div
-          className={`scrolly-text-${event.id} relative z-10 w-full h-full`}
-        >
-          {/* Title & Quote */}
-          <div className={`scrolly-intro-${event.id} absolute inset-0 flex flex-col items-center justify-center`}>
-            <h2
-              className={`scrolly-title-${event.id} text-4xl md:text-6xl lg:text-8xl font-serif tracking-[0.6em] md:tracking-[0.8em] pl-[0.6em] md:pl-[0.8em] font-light`}
-              style={{ color: titleColor, textShadow: `0 0 40px ${accentColor}` }}
-            >
-              {event.detail.title}
-            </h2>
-            {event.detail.quote && (
-              <div
-                className={`scrolly-quote-${event.id} mt-8 md:mt-16 text-sm md:text-xl font-serif tracking-[0.4em] md:tracking-[0.6em] pl-[0.4em] md:pl-[0.6em]`}
-                style={{ color: bodyColor }}
-              >
-                「{event.detail.quote}」
-              </div>
-            )}
-          </div>
-
-          {/* Body */}
-          <div className={`scrolly-body-container-${event.id} absolute inset-0 flex items-center justify-center`}>
-            <div
-              className={`scrolly-body-${event.id} flex flex-row-reverse flex-wrap justify-center items-center h-[70vh] [writing-mode:vertical-rl] gap-x-10 md:gap-x-20 w-full max-w-5xl mx-auto px-8 md:px-16 text-sm md:text-xl leading-loose tracking-[0.4em] md:tracking-[0.6em] font-light`}
-              style={{ color: bodyColor }}
-            >
-              {event.detail.body.map((p, i) => (
-                <p key={i} className="scrolly-body-line my-4">{p}</p>
-              ))}
-            </div>
-          </div>
-
-          {/* Closing */}
-          <div className={`scrolly-closing-container-${event.id} absolute inset-0 flex items-center justify-center`}>
-            <div className={`scrolly-closing-${event.id} relative flex flex-col items-center`}>
-              {/* 碑体容器 */}
-              <div className="relative pt-24 pb-32 px-12 md:px-20 border-t border-x border-white/10 rounded-t-[160px] bg-linear-to-b from-white/3 to-transparent backdrop-blur-xs">
-
-                <p className="text-xl md:text-3xl [writing-mode:vertical-rl] tracking-[0.6em] md:tracking-[0.8em] font-serif leading-none opacity-90 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
-                  style={{ color: '#f8f1e7' }}>
-                  {event.detail.closing}
-                </p>
-
-                {/* 底部渐变遮罩，模拟碑体地基消失感 */}
-                <div className="absolute bottom-0 left-0 right-0 h-40 bg-linear-to-t from-[#050204] to-transparent" />
-              </div>
-
-              {/* 装饰性暗影 */}
-              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-64 h-32 bg-white/5 blur-3xl rounded-full -z-10" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // 选择布局组件
+  const ContentComponent = custom?.Component ?? DefaultNodeLayout;
 
   return (
     <div
@@ -327,74 +253,8 @@ function ImmersiveReadingPanel({
         }
       />
 
-      <div
-        className={`scrolly-text-${event.id} relative z-10 flex flex-col items-center w-full max-w-2xl px-6 md:px-0 h-full py-[15vh]`}
-      >
-        {/* 标题区 */}
-        <div className="scrolly-header flex flex-col items-center mb-8 md:mb-12 shrink-0">
-          <div className="w-px h-8 md:h-12 bg-linear-to-b from-transparent to-zinc-400/50 mb-6" />
-          <h2
-            className="text-2xl md:text-4xl font-serif tracking-[0.3em] pl-[0.3em] text-center drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]"
-            style={{ color: titleColor }}
-          >
-            {event.detail.title}
-          </h2>
-        </div>
-
-        {/* 滚动正文区 */}
-        <div className="relative w-full flex-1 overflow-hidden mask-[linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)]">
-          <div
-            className={`scrolly-text-content-${event.id} flex flex-col items-center w-full pb-[30vh] pt-[5vh]`}
-          >
-            {event.detail.quote && (
-              <div
-                className={`scrolly-quote-${event.id} text-lg md:text-2xl leading-loose tracking-[0.3em] pl-[0.3em] font-serif text-center px-4 md:px-8 py-6 mb-8 w-full bg-linear-to-b from-transparent via-zinc-900/30 to-transparent border-t border-b`}
-                style={{
-                  color: titleColor,
-                  borderColor: `color-mix(in srgb, ${accentColor} 30%, transparent)`,
-                }}
-              >
-                <p>「{event.detail.quote}」</p>
-              </div>
-            )}
-
-            <div
-              className={`scrolly-body-${event.id} flex gap-4 text-sm md:text-base leading-[2.5] tracking-widest font-light text-justify px-8 md:px-16 ${layout === "vertical"
-                ? "flex-row-reverse flex-wrap justify-center items-center h-[55vh] [writing-mode:vertical-rl] gap-x-12 w-full max-w-full mx-auto"
-                : "flex-col w-full"
-                }`}
-              style={{ color: bodyColor }}
-            >
-              {event.detail.body.map((p, i) => (
-                <p
-                  key={i}
-                  className={
-                    p === "……"
-                      ? "text-center my-4 font-serif text-lg opacity-40 tracking-[0.5em]"
-                      : layout === "vertical"
-                        ? "indent-[2em]"
-                        : ""
-                  }
-                >
-                  {p}
-                </p>
-              ))}
-            </div>
-
-            {event.detail.closing && (
-              <div className={`scrolly-closing-${event.id} mt-16 flex w-full flex-col items-end opacity-80 pr-8 md:pr-16`}>
-                <div className="w-24 h-px bg-linear-to-r from-transparent to-zinc-600 mb-6" />
-                <p
-                  className="text-xs md:text-sm tracking-[0.3em] font-light"
-                  style={{ color: accentColor }}
-                >
-                  {event.detail.closing}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      {/* 内容层：自定义节点或默认布局 */}
+      <ContentComponent event={event} resolvedTheme={resolvedTheme} />
     </div>
   );
 }
@@ -565,151 +425,15 @@ export default function QingJinTianXia() {
               },
             });
 
-            const textHeader =
-              scrollyText.querySelector<HTMLElement>(".scrolly-header");
-            const textContent =
-              scrollyText.querySelector<HTMLElement>(
-                `.scrolly-text-content-${event.dataset.id}`
-              );
-            const snowLayer = scrollyBg.querySelector<HTMLElement>(
-              `.scrolly-snow-${event.dataset.id}`
-            );
+            const eventId = event.dataset.id!;
+            const customNode = CUSTOM_NODE_REGISTRY[eventId];
 
-            const isRipple = detailContent.dataset.effect === "ripple";
-            const isVertical = detailContent.dataset.layout === "vertical";
-            const eventId = event.dataset.id;
-
-            if (eventId === "39") {
-              tl.set(detailContent, { display: "flex" });
-              
-              const intro = scrollyText.querySelector(`.scrolly-intro-${eventId}`);
-              const title = scrollyText.querySelector(`.scrolly-title-${eventId}`);
-              const quote = scrollyText.querySelector(`.scrolly-quote-${eventId}`);
-              const bodyContainer = scrollyText.querySelector(`.scrolly-body-container-${eventId}`);
-              const bodyLines = scrollyText.querySelectorAll(`.scrolly-body-line`);
-              const closingContainer = scrollyText.querySelector(`.scrolly-closing-container-${eventId}`);
-              const closing = scrollyText.querySelector(`.scrolly-closing-${eventId}`);
-
-              // 明确初始状态
-              tl.set([title, quote, bodyLines, closing], { opacity: 0 });
-
-              tl.fromTo(
-                scrollyBg,
-                { "--radius": "0px" },
-                { "--radius": "150vmax", duration: 6.0, ease: "power2.inOut" },
-                0
-              )
-                // Title - 在背景圆张开至适中大小时入场 (2.2s)
-                .fromTo(
-                  title,
-                  { opacity: 0, scale: 0.8, filter: "blur(20px)", y: 30 },
-                  { opacity: 1, scale: 1, filter: "blur(0px)", y: 0, duration: 3.0, ease: "power3.out" },
-                  2.2
-                )
-                // Quote
-                .fromTo(
-                  quote,
-                  { opacity: 0, y: 20, filter: "blur(10px)" },
-                  { opacity: 1, y: 0, filter: "blur(0px)", duration: 2.5, ease: "power2.out" },
-                  "-=1.0"
-                )
-                // Hold & fade intro
-                .to([title, quote], { opacity: 0, filter: "blur(15px)", scale: 1.05, duration: 2.5, ease: "power2.inOut" }, "+=2.5")
-                .set(intro, { display: "none" })
-
-                // Body lines
-                .fromTo(
-                  bodyLines,
-                  { opacity: 0, filter: "blur(10px)", x: 30 },
-                  { opacity: 1, filter: "blur(0px)", x: 0, duration: 2.0, stagger: 0.6, ease: "power2.out" },
-                  "-=0.5"
-                )
-                // Slow drift deleted to keep centered
-                // .to(bodyContainer, { x: -50, duration: bodyLines.length * 0.6 + 5.0, ease: "none" }, "<")
-                // Fade body
-                .to(bodyLines, { opacity: 0, filter: "blur(15px)", duration: 2.5, ease: "power2.inOut" })
-                .set(bodyContainer, { display: "none" })
-
-                // Closing
-                .fromTo(
-                  closing,
-                  { opacity: 0, y: 100, filter: "blur(20px)", scale: 0.98 },
-                  { opacity: 1, y: 0, filter: "blur(0px)", scale: 1, duration: 4.0, ease: "power2.out" },
-                  "+=1.0"
-                )
-                .to(closing, { opacity: 0, y: -20, filter: "blur(30px)", duration: 4.0, ease: "power2.in" }, "+=6.0")
-
-                // Background
-                .to(scrollyBg, { "--radius": "0px", duration: 4.0, ease: "power2.inOut" }, "-=1.5");
-
-              tl.set(detailContent, { display: "none" });
-
-            } else if (textHeader && textContent) {
-              tl.set(detailContent, { display: "flex" });
-
-              tl.fromTo(
-                scrollyBg,
-                { "--radius": "0px" },
-                {
-                  "--radius": "150vmax",
-                  duration: isRipple ? 6.0 : 5.0,
-                  ease: isRipple ? "elastic.out(0.8, 1.2)" : "power2.out"
-                },
-                0
-              )
-                .fromTo(
-                  textHeader.children,
-                  { opacity: 0, y: isVertical ? 0 : 30, filter: "blur(12px)" },
-                  {
-                    opacity: 1,
-                    y: 0,
-                    filter: "blur(0px)",
-                    duration: 1.5,
-                    stagger: 0.3,
-                    ease: "power2.out",
-                  },
-                  "-=4.5"
-                )
-                .fromTo(
-                  textContent,
-                  { opacity: 0, y: isVertical ? 100 : 60, filter: "blur(8px)" },
-                  {
-                    opacity: 1,
-                    y: 0,
-                    filter: "blur(0px)",
-                    duration: 2.0,
-                    ease: "power2.out",
-                  },
-                  "-=1.5"
-                )
-                .to(textContent, {
-                  y: isVertical ? "-35%" : "-40%",
-                  duration: 10.0,
-                  ease: "none"
-                })
-                .to([textHeader, textContent], {
-                  opacity: 0,
-                  y: "-=30",
-                  filter: "blur(12px)",
-                  duration: 2.0,
-                  ease: "power2.in",
-                })
-                .to(
-                  scrollyBg,
-                  { "--radius": "0px", duration: 4.0, ease: isRipple ? "power3.in" : "power2.inOut" },
-                  "-=0.5"
-                );
-
-              if (snowLayer) {
-                tl.fromTo(
-                  snowLayer,
-                  { y: "-10%" },
-                  { y: "10%", duration: tl.duration(), ease: "none" },
-                  0
-                );
-              }
-
-              tl.set(detailContent, { display: "none" });
+            if (customNode) {
+              // ── 自定义节点：委托给注册表中的 animate 函数 ──
+              customNode.animate(tl, detailContent, scrollyBg, scrollyText, eventId);
+            } else {
+              // ── 默认节点：使用通用动效 ──
+              animateDefault(tl, detailContent, scrollyBg, scrollyText, eventId);
             }
           }
         }

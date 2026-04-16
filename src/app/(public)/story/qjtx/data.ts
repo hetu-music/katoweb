@@ -479,15 +479,7 @@ export const timelineData: TimelineEvent[] = [
         "太业四年四月初五，造物终成，是为烟华海八百衣冠冢。",
       ],
       closing: "《烟华县志・衣冠冢志》",
-      theme: {
-        bg: "radial-gradient(circle at 50% 50%, rgba(20, 10, 15, 0.5) 0%, rgba(5, 2, 4, 0.95) 100%), url(/story/qjtx/39.avif) center/cover no-repeat",
-        titleColor: "#e4b5b2",
-        bodyColor: "#d4a3a3",
-        accentColor: "#995355",
-        layout: "vertical",
-        specialEffect: "ripple",
-        maskPath: "M50,0 A50,50 0 1,1 49.9,0 Z",
-      },
+      // theme 已移至 custom-nodes/Node39.tsx
     },
   },
 ];
