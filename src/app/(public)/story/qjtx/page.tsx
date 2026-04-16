@@ -581,7 +581,7 @@ export default function QingJinTianXia() {
 
             if (eventId === "39") {
               tl.set(detailContent, { display: "flex" });
-
+              
               const intro = scrollyText.querySelector(`.scrolly-intro-${eventId}`);
               const title = scrollyText.querySelector(`.scrolly-title-${eventId}`);
               const quote = scrollyText.querySelector(`.scrolly-quote-${eventId}`);
@@ -590,25 +590,28 @@ export default function QingJinTianXia() {
               const closingContainer = scrollyText.querySelector(`.scrolly-closing-container-${eventId}`);
               const closing = scrollyText.querySelector(`.scrolly-closing-${eventId}`);
 
+              // 明确初始状态
+              tl.set([title, quote, bodyLines, closing], { opacity: 0 });
+
               tl.fromTo(
                 scrollyBg,
                 { "--radius": "0px" },
-                { "--radius": "150vmax", duration: 5.0, ease: "power2.inOut" },
+                { "--radius": "150vmax", duration: 6.0, ease: "power2.inOut" },
                 0
               )
-                // Title
+                // Title - 在背景圆张开至适中大小时入场 (2.2s)
                 .fromTo(
                   title,
                   { opacity: 0, scale: 0.8, filter: "blur(20px)", y: 30 },
                   { opacity: 1, scale: 1, filter: "blur(0px)", y: 0, duration: 3.0, ease: "power3.out" },
-                  "-=3.5"
+                  2.2
                 )
                 // Quote
                 .fromTo(
                   quote,
                   { opacity: 0, y: 20, filter: "blur(10px)" },
                   { opacity: 1, y: 0, filter: "blur(0px)", duration: 2.5, ease: "power2.out" },
-                  "-=1.5"
+                  "-=1.0"
                 )
                 // Hold & fade intro
                 .to([title, quote], { opacity: 0, filter: "blur(15px)", scale: 1.05, duration: 2.5, ease: "power2.inOut" }, "+=2.5")
@@ -619,9 +622,10 @@ export default function QingJinTianXia() {
                   bodyLines,
                   { opacity: 0, filter: "blur(10px)", x: 30 },
                   { opacity: 1, filter: "blur(0px)", x: 0, duration: 2.0, stagger: 0.6, ease: "power2.out" },
-                  "-=1.0"
+                  "-=0.5"
                 )
                 // Slow drift deleted to keep centered
+                // .to(bodyContainer, { x: -50, duration: bodyLines.length * 0.6 + 5.0, ease: "none" }, "<")
                 // Fade body
                 .to(bodyLines, { opacity: 0, filter: "blur(15px)", duration: 2.5, ease: "power2.inOut" })
                 .set(bodyContainer, { display: "none" })
