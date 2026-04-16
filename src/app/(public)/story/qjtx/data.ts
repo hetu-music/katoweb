@@ -4,7 +4,6 @@ export interface TimelineEvent {
   month?: string;
   content: string[];
   important?: boolean;
-  finale?: boolean;
   detail?: TimelineDetail;
 }
 
