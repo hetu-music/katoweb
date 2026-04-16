@@ -281,10 +281,8 @@ function ImmersiveReadingPanel({
              <div className={`scrolly-closing-${event.id} relative flex flex-col items-center`}>
                 {/* 碑体容器 */}
                 <div className="relative pt-24 pb-32 px-12 md:px-20 border-t border-x border-white/10 rounded-t-[160px] bg-linear-to-b from-white/[0.03] to-transparent backdrop-blur-xs">
-                   {/* 顶部装饰线 */}
-                   <div className="absolute top-12 left-1/2 -translate-x-1/2 w-12 h-px bg-white/20" />
                    
-                   <p className="text-xl md:text-3xl [writing-mode:vertical-rl] tracking-[0.6em] md:tracking-[0.8em] font-serif leading-none italic opacity-90 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" 
+                   <p className="text-xl md:text-3xl [writing-mode:vertical-rl] tracking-[0.6em] md:tracking-[0.8em] font-serif leading-none opacity-90 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" 
                       style={{ color: '#f8f1e7' }}>
                       {event.detail.closing}
                    </p>
