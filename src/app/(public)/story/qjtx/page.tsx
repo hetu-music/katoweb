@@ -470,7 +470,7 @@ export default function QingJinTianXia() {
                 trigger: event,
                 pinnedContainer: ".timeline-container",
                 start: "center 60%",
-                end: "+=8000",
+                end: "+=6000",
                 scrub: true,
                 pin: ".timeline-container",
                 pinSpacing: true,
@@ -501,8 +501,8 @@ export default function QingJinTianXia() {
                 { "--radius": "0px" },
                 {
                   "--radius": "150vmax",
-                  duration: isRipple ? 12.0 : 8.0,
-                  ease: isRipple ? "elastic.out(0.6, 1.2)" : "power2.out"
+                  duration: isRipple ? 6.0 : 5.0,
+                  ease: isRipple ? "elastic.out(0.8, 1.2)" : "power2.out"
                 },
                 0
               )
@@ -513,11 +513,11 @@ export default function QingJinTianXia() {
                     opacity: 1,
                     y: 0,
                     filter: "blur(0px)",
-                    duration: 3.0,
-                    stagger: 0.5,
+                    duration: 1.5,
+                    stagger: 0.3,
                     ease: "power2.out",
                   },
-                  "-=4.0"
+                  "-=2.0"
                 )
                 .fromTo(
                   textContent,
@@ -526,26 +526,26 @@ export default function QingJinTianXia() {
                     opacity: 1,
                     y: 0,
                     filter: "blur(0px)",
-                    duration: 4.0,
+                    duration: 2.0,
                     ease: "power2.out",
                   },
-                  "-=2.0"
+                  "-=1.0"
                 )
                 .to(textContent, {
                   y: isVertical ? "-20%" : "-40%",
-                  duration: 20.0,
+                  duration: 10.0,
                   ease: "none"
                 })
                 .to([textHeader, textContent], {
                   opacity: 0,
                   y: "-=30",
                   filter: "blur(12px)",
-                  duration: 3.0,
+                  duration: 2.0,
                   ease: "power2.in",
                 })
                 .to(
                   scrollyBg,
-                  { "--radius": "0px", duration: 8.0, ease: isRipple ? "power3.in" : "power2.inOut" },
+                  { "--radius": "0px", duration: 4.0, ease: isRipple ? "power3.in" : "power2.inOut" },
                   "-=0.5"
                 );
 
