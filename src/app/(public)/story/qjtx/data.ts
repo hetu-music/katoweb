@@ -488,7 +488,7 @@ export const timelineData: TimelineEvent[] = [
         layout: "vertical",
         specialEffect: "ripple",
         maskPath: "M50,0 A50,50 0 1,1 49.9,0 Z",
-        durationMultiplier: 3,
+        durationMultiplier: 2,
         scrollDistance: 6000,
       },
     },
