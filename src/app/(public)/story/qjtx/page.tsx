@@ -257,13 +257,7 @@ function ImmersiveReadingPanel({
         </div>
 
         {/* 滚动正文区 */}
-        <div 
-          className={`relative w-full flex-1 overflow-hidden ${
-            layout === "vertical" 
-              ? "[-webkit-mask-image:linear-gradient(to_right,transparent_0%,black_10%,black_90%,transparent_100%)] mask-[linear-gradient(to_right,transparent_0%,black_10%,black_90%,transparent_100%)]" 
-              : "[-webkit-mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)] mask-[linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)]"
-          }`}
-        >
+        <div className="relative w-full flex-1 overflow-hidden mask-[linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)]">
           <div
             className={`scrolly-text-content-${event.id} flex flex-col items-center w-full pb-[30vh] pt-[5vh]`}
           >
@@ -280,11 +274,10 @@ function ImmersiveReadingPanel({
             )}
 
             <div
-              className={`scrolly-body-${event.id} flex gap-4 text-sm md:text-base leading-[2.5] tracking-widest font-light text-justify px-8 md:px-16 ${
-                layout === "vertical"
-                  ? "flex-row-reverse flex-wrap justify-center items-center min-h-[70vh] [writing-mode:vertical-rl] gap-x-12 w-full max-w-4xl mx-auto"
-                  : "flex-col w-full"
-              }`}
+              className={`flex gap-4 text-sm md:text-base leading-[2.5] tracking-widest font-light text-justify px-8 md:px-16 ${layout === "vertical"
+                ? "flex-row-reverse flex-wrap justify-center items-center h-[55vh] [writing-mode:vertical-rl] gap-x-8 w-full max-w-full mx-auto"
+                : "flex-col w-full"
+                }`}
               style={{ color: bodyColor }}
             >
               {event.detail.body.map((p, i) => (
@@ -294,31 +287,29 @@ function ImmersiveReadingPanel({
                     p === "……"
                       ? "text-center my-4 font-serif text-lg opacity-40 tracking-[0.5em]"
                       : layout === "vertical"
-                      ? "indent-[2em] mb-0"
-                      : ""
+                        ? "indent-[2em]"
+                        : ""
                   }
                 >
                   {p}
                 </p>
               ))}
             </div>
- 
-             {event.detail.closing && (
-               <div className={`scrolly-closing-${event.id} mt-16 flex w-full flex-col items-end opacity-0 pr-8 md:pr-16 ${
-                 layout === "vertical" ? "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center pr-0" : ""
-               }`}>
-                 <div className="w-24 h-px bg-linear-to-r from-transparent to-zinc-600 mb-6" />
-                 <p
-                   className="text-xs md:text-sm tracking-[0.3em] font-light"
-                   style={{ color: accentColor }}
-                 >
-                   {event.detail.closing}
-                 </p>
-               </div>
-             )}
-           </div>
-         </div>
-       </div>
+
+            {event.detail.closing && (
+              <div className="mt-16 flex w-full flex-col items-end opacity-80 pr-8 md:pr-16">
+                <div className="w-24 h-px bg-linear-to-r from-transparent to-zinc-600 mb-6" />
+                <p
+                  className="text-xs md:text-sm tracking-[0.3em] font-light"
+                  style={{ color: accentColor }}
+                >
+                  {event.detail.closing}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -541,42 +532,22 @@ export default function QingJinTianXia() {
                   "-=1.5"
                 )
                 .to(textContent, {
-                  y: isVertical ? "-15%" : "-40%",
+                  y: isVertical ? "-20%" : "-40%",
                   duration: 10.0,
                   ease: "none"
-                });
-
-              if (isVertical) {
-                const body = scrollyText.querySelector(`.scrolly-body-${event.dataset.id}`);
-                const closing = scrollyText.querySelector(`.scrolly-closing-${event.dataset.id}`);
-                
-                tl.to(body, { 
-                  opacity: 0, 
-                  filter: "blur(20px)", 
-                  duration: 3.0, 
-                  ease: "power2.inOut" 
                 })
-                .to(closing, { 
-                  opacity: 1, 
-                  y: "-=20", 
-                  filter: "blur(0px)", 
-                  duration: 4.0, 
-                  ease: "power2.out" 
-                }, "-=1.0");
-              }
-
-              tl.to([textHeader, isVertical ? null : textContent].filter(Boolean), {
-                opacity: 0,
-                y: "-=30",
-                filter: "blur(12px)",
-                duration: 2.0,
-                ease: "power2.in",
-              })
-              .to(
-                scrollyBg,
-                { "--radius": "0px", duration: 4.0, ease: isRipple ? "power3.in" : "power2.inOut" },
-                "-=0.5"
-              );
+                .to([textHeader, textContent], {
+                  opacity: 0,
+                  y: "-=30",
+                  filter: "blur(12px)",
+                  duration: 2.0,
+                  ease: "power2.in",
+                })
+                .to(
+                  scrollyBg,
+                  { "--radius": "0px", duration: 4.0, ease: isRipple ? "power3.in" : "power2.inOut" },
+                  "-=0.5"
+                );
 
               if (snowLayer) {
                 tl.fromTo(
