@@ -124,8 +124,8 @@ function EventLines({
         <p
           key={index}
           className={`${mobile
-              ? "text-sm tracking-widest"
-              : "text-[15px] lg:text-base tracking-widest lg:tracking-[0.2em]"
+            ? "text-sm tracking-widest"
+            : "text-[15px] lg:text-base tracking-widest lg:tracking-[0.2em]"
             } font-light leading-loose ${important
               ? "text-zinc-200 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] font-normal"
               : "text-zinc-400"
@@ -211,8 +211,6 @@ function ImmersiveReadingPanel({
     maskPath,
     layout = "horizontal",
     specialEffect = "none",
-    durationMultiplier = 1,
-    scrollDistance = 4000,
   }: ImmersiveTheme = event.detail.theme ?? {};
 
   const maskUrl = maskPath ? buildMaskUrl(maskPath) : SNOWFLAKE_MASK_URL;
@@ -222,8 +220,6 @@ function ImmersiveReadingPanel({
       id={`detail-${event.id}`}
       data-layout={layout}
       data-effect={specialEffect}
-      data-duration-multiplier={durationMultiplier}
-      data-scroll-distance={scrollDistance}
       className="fixed inset-0 w-screen h-screen m-0 p-0 z-100 pointer-events-none flex-col items-center justify-center hidden"
     >
       {/* 展开背景（雪花/自定义形状 mask 扩展） */}
@@ -267,7 +263,7 @@ function ImmersiveReadingPanel({
           >
             {event.detail.quote && (
               <div
-                className="scrolly-quote text-lg md:text-2xl leading-loose tracking-[0.3em] font-serif text-center px-4 md:px-8 py-6 mb-8 w-full bg-linear-to-b from-transparent via-zinc-900/30 to-transparent border-t border-b"
+                className="text-lg md:text-2xl leading-loose tracking-[0.3em] font-serif text-center px-4 md:px-8 py-6 mb-8 w-full bg-linear-to-b from-transparent via-zinc-900/30 to-transparent border-t border-b"
                 style={{
                   color: titleColor,
                   borderColor: `color-mix(in srgb, ${accentColor} 30%, transparent)`,
@@ -278,11 +274,10 @@ function ImmersiveReadingPanel({
             )}
 
             <div
-              className={`scrolly-body flex gap-4 text-sm md:text-base leading-[2.5] tracking-widest font-light text-justify px-8 md:px-16 ${
-                layout === "vertical"
-                  ? "flex-row-reverse flex-wrap justify-center items-start h-[55vh] [writing-mode:vertical-rl] gap-x-8 w-full max-w-full mx-auto"
+              className={`flex gap-4 text-sm md:text-base leading-[2.5] tracking-widest font-light text-justify px-8 md:px-16 ${layout === "vertical"
+                  ? "flex-row-reverse flex-wrap justify-center items-center h-[55vh] [writing-mode:vertical-rl] gap-x-8 w-full max-w-full mx-auto"
                   : "flex-col w-full"
-              }`}
+                }`}
               style={{ color: bodyColor }}
             >
               {event.detail.body.map((p, i) => (
@@ -292,8 +287,8 @@ function ImmersiveReadingPanel({
                     p === "……"
                       ? "text-center my-4 font-serif text-lg opacity-40 tracking-[0.5em]"
                       : layout === "vertical"
-                      ? "indent-[2em]"
-                      : ""
+                        ? "indent-[2em]"
+                        : ""
                   }
                 >
                   {p}
@@ -302,7 +297,7 @@ function ImmersiveReadingPanel({
             </div>
 
             {event.detail.closing && (
-              <div className="scrolly-closing mt-16 flex w-full flex-col items-end opacity-80 pr-8 md:pr-16">
+              <div className="mt-16 flex w-full flex-col items-end opacity-80 pr-8 md:pr-16">
                 <div className="w-24 h-px bg-linear-to-r from-transparent to-zinc-600 mb-6" />
                 <p
                   className="text-xs md:text-sm tracking-[0.3em] font-light"
@@ -475,7 +470,7 @@ export default function QingJinTianXia() {
                 trigger: event,
                 pinnedContainer: ".timeline-container",
                 start: "center 60%",
-                end: "+=12000",
+                end: "+=4000",
                 scrub: true,
                 pin: ".timeline-container",
                 pinSpacing: true,
@@ -498,24 +493,16 @@ export default function QingJinTianXia() {
             if (textHeader && textContent) {
               const isRipple = detailContent.dataset.effect === "ripple";
               const isVertical = detailContent.dataset.layout === "vertical";
-              const dMult = parseFloat(detailContent.dataset.durationMultiplier || "1");
-              const sDist = parseInt(detailContent.dataset.scrollDistance || "4000");
-
-              const st = tl.scrollTrigger;
-              if (st) {
-                 st.vars.end = `+=${sDist}`;
-                 st.refresh();
-              }
 
               tl.set(detailContent, { display: "flex" });
 
               tl.fromTo(
                 scrollyBg,
                 { "--radius": "0px" },
-                { 
-                  "--radius": isRipple ? "220vmax" : "800vmax", 
-                  duration: (isRipple ? 2 : 1.5) * dMult, 
-                  ease: isRipple ? "elastic.out(1.2, 0.8)" : "power2.inOut" 
+                {
+                  "--radius": isRipple ? "200vmax" : "800vmax",
+                  duration: isRipple ? 2 : 1.5,
+                  ease: isRipple ? "elastic.out(1.2, 0.8)" : "power2.inOut"
                 },
                 0
               )
@@ -526,62 +513,40 @@ export default function QingJinTianXia() {
                     opacity: 1,
                     y: 0,
                     filter: "blur(0px)",
-                    duration: 1.0 * dMult,
-                    stagger: 0.2 * dMult,
+                    duration: 1.0,
+                    stagger: 0.2,
                     ease: "power2.out",
                   },
-                  "-=1.0"
-                );
-
-              const quote = textContent.querySelector(".scrolly-quote");
-              const bodyParagraphs = textContent.querySelectorAll(".scrolly-body p");
-              const closing = textContent.querySelector(".scrolly-closing");
-
-              if (quote) {
-                tl.fromTo(
-                  quote,
-                  { opacity: 0, scale: 0.95, filter: "blur(12px)" },
-                  { opacity: 1, scale: 1, filter: "blur(0px)", duration: 1.5 * dMult, ease: "power2.out" }
-                );
-              }
-
-              tl.fromTo(
-                bodyParagraphs,
-                { opacity: 0, [isVertical ? "x" : "y"]: 20, filter: "blur(10px)" },
-                { 
-                  opacity: 1, 
-                  [isVertical ? "x" : "y"]: 0, 
-                  filter: "blur(0px)", 
-                  duration: 1.2 * dMult, 
-                  stagger: 0.4 * dMult, 
-                  ease: "power2.out" 
-                }
-              );
-
-              if (closing) {
-                tl.fromTo(
-                  closing,
-                  { opacity: 0, y: 20, filter: "blur(10px)" },
-                  { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.5 * dMult, ease: "power2.out" }
-                );
-              }
-
-              tl.to(textContent, { 
-                  y: isVertical ? "-15%" : "-30%", 
-                  duration: 5, // 这里的5是权重，ScrollTrigger 会按比例缩放
-                  ease: "none" 
+                  "-=0.7"
+                )
+                .fromTo(
+                  textContent,
+                  { opacity: 0, y: isVertical ? 100 : 60, filter: "blur(8px)" },
+                  {
+                    opacity: 1,
+                    y: 0,
+                    filter: "blur(0px)",
+                    duration: 1.2,
+                    ease: "power2.out",
+                  },
+                  "-=0.7"
+                )
+                .to(textContent, {
+                  y: isVertical ? "-20%" : "-40%",
+                  duration: 4.5,
+                  ease: "none"
                 })
                 .to([textHeader, textContent], {
                   opacity: 0,
                   y: "-=30",
                   filter: "blur(12px)",
-                  duration: 1.0 * dMult,
+                  duration: 1.0,
                   ease: "power2.in",
                 })
                 .to(
                   scrollyBg,
-                  { "--radius": "0px", duration: 1.5 * dMult, ease: isRipple ? "power3.in" : "power2.inOut" },
-                  "-=0.5"
+                  { "--radius": "0px", duration: 1.5, ease: isRipple ? "power3.in" : "power2.inOut" },
+                  "-=0.6"
                 );
 
               if (snowLayer) {
