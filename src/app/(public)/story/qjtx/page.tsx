@@ -611,8 +611,7 @@ export default function QingJinTianXia() {
                   { opacity: 1, filter: "blur(0px)", x: 0, duration: 2.0, stagger: 0.6, ease: "power2.out" },
                   "-=1.0"
                 )
-                // Slow drift
-                .to(bodyContainer, { x: -50, duration: bodyLines.length * 0.6 + 5.0, ease: "none" }, "<")
+                // Slow drift deleted to keep centered
                 // Fade body
                 .to(bodyLines, { opacity: 0, filter: "blur(15px)", duration: 2.5, ease: "power2.inOut" })
                 .set(bodyContainer, { display: "none" })

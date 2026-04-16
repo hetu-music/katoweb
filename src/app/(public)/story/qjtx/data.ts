@@ -468,7 +468,7 @@ export const timelineData: TimelineEvent[] = [
     important: true,
     detail: {
       title: "海棠酒满",
-      quote: "一生太短 每一次日落都远望",
+      quote: "别梳妆 乘青鸟 来入梦 我的姑娘",
       body: [
         "崇宁七年六月廿九，北岭民变，白炎军夺城。",
         "守将燕子名战死，城主解钰领残兵降。",
