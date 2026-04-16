@@ -504,8 +504,9 @@ export const timelineData: TimelineEvent[] = [
     month: "四月",
     content: ["烟华海八百衣冠冢成",
     ],
-    finale: true,
+
     important: true,
+    finale: true,
     detail: {
       title: "天岁天岁",
       quote: "莫忘了谢幕",
