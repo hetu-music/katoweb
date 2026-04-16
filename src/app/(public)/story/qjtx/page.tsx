@@ -599,7 +599,7 @@ export default function QingJinTianXia() {
                 data-id={event.id}
                 className="timeline-event group relative my-10 flex w-full flex-col md:my-20 md:flex-row md:justify-center"
               >
-                <div className={`event-dot absolute top-1/2 left-10 z-20 h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 origin-center rounded-full border border-zinc-500 bg-zinc-950 md:left-1/2 md:h-[13px] md:w-[13px] ${event.finale ? "shadow-[0_0_15px_rgba(185,28,28,0.4)]" : ""}`} />
+                <div className="event-dot absolute top-1/2 left-10 z-20 h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 origin-center rounded-full border border-zinc-500 bg-zinc-950 md:left-1/2 md:h-[13px] md:w-[13px]" />
 
                 <div className="flex w-full justify-start pl-18 pr-2 md:hidden">
                   <div className="flex flex-row items-center gap-4 sm:gap-6">
@@ -716,14 +716,15 @@ export default function QingJinTianXia() {
               {/* Header Title Block */}
               <div className="scrolly-header flex flex-col items-center mb-8 md:mb-12 shrink-0">
                 <div className="w-px h-8 md:h-12 bg-linear-to-b from-transparent to-zinc-400/50 mb-6" />
-                <h2 className="text-2xl md:text-5xl font-serif text-white tracking-[0.4em] text-center drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">{event.detail.title}</h2>
+                <h3 className="text-xs md:text-sm text-zinc-300 mb-6 tracking-[0.5em] text-center font-light uppercase drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">{event.detail.eyebrow}</h3>
+                <h2 className="text-2xl md:text-4xl font-serif text-white tracking-[0.3em] text-center drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">{event.detail.title}</h2>
               </div>
 
               {/* Scrolling Content Block */}
               <div className="relative w-full flex-1 overflow-hidden mask-[linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)]">
                 <div className={`scrolly-text-content-${event.id} flex flex-col items-center w-full gap-8 pb-[30vh] pt-[5vh]`}>
                   {event.detail.quote && (
-                    <div className="max-w-md text-base md:text-xl leading-relaxed tracking-widest font-serif text-zinc-200 italic text-center px-6 md:px-12 border-l border-r border-zinc-600/30 py-4 my-4">
+                    <div className="text-base md:text-xl leading-relaxed tracking-widest font-serif text-zinc-200 italic text-center px-4 md:px-8 border-l border-r border-zinc-600/40 py-4 my-2">
                       <p>"{event.detail.quote}"</p>
                     </div>
                   )}
@@ -734,9 +735,9 @@ export default function QingJinTianXia() {
                   )}
                   {event.detail.lead && <div className="w-8 h-px bg-zinc-800 my-2" />}
 
-                  <div className="flex flex-col gap-4 text-sm md:text-base leading-loose tracking-[0.3em] font-light text-zinc-400 text-center w-full">
+                  <div className="flex flex-col gap-6 text-sm md:text-[15px] leading-loose tracking-widest font-light text-zinc-400 text-justify w-full">
                     {event.detail.body.map((p, i) => (
-                      <p key={i} className={p === "……" ? "opacity-30 py-4" : ""}>{p}</p>
+                      <p key={i}>{p}</p>
                     ))}
                   </div>
 
@@ -772,10 +773,10 @@ export default function QingJinTianXia() {
         <div className="flex flex-col items-center gap-12 text-center px-4 relative z-10">
           <div className="bloom-content opacity-0 flex flex-col items-center gap-8">
             <div className="flex flex-col items-center gap-4">
-              <p className="ink-bloom-text text-xl md:text-4xl font-serif font-light tracking-[1em] text-zinc-100 pl-[1em]">
-                倾尽天下 · 终焉
+              <p className="ink-bloom-text text-xl md:text-3xl font-serif font-light tracking-[0.8em] text-zinc-100 pl-[0.8em]">
+                山河万里 · 故人长绝
               </p>
-              <div className="w-16 h-px bg-red-900/40" />
+              <div className="w-12 h-px bg-red-900/50" />
             </div>
             
             <p className="text-[11px] md:text-xs font-light tracking-[0.5em] text-zinc-500 uppercase opacity-60">
