@@ -344,7 +344,7 @@ export const timelineData: TimelineEvent[] = [
     year: "太业三年",
     month: "无考",
     content: ["城东设谢婉衣冠祠。",
-      "赵钦归乡。会乡人立贤女碑于县南，以志徐蕙",
+      "赵钦归乡。会乡人立贤女碑于县南，以志徐蕙。",
     ],
   },
   {
