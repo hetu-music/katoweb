@@ -185,7 +185,7 @@ export const timelineData: TimelineEvent[] = [
       "为炎军副将褚七礼枭首三日。",
       "天阑谢氏一门十三口殉城。",
     ],
-    important: false,
+    important: true,
     detail: {
       title: "风起天阑",
       quote: "身后花开成雪 月光里不凋谢",
