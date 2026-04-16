@@ -350,8 +350,8 @@ export default function QingJinTianXia() {
 
               tl.fromTo(
                 scrollyBg,
-                { opacity: 0 },
-                { opacity: 1, duration: 1.2, ease: "power2.inOut" },
+                { "--radius": "0px" },
+                { "--radius": "800vmax", duration: 1.5, ease: "power2.inOut" },
                 0
               )
                 .fromTo(
@@ -663,7 +663,17 @@ export default function QingJinTianXia() {
           >
             {/* Elegant Snow-night Background (Snowflake Shape Expansion) */}
             <div
-              className={`scrolly-bg-${event.id} absolute inset-0 w-full h-full bg-[#030508] z-0 overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,1)] opacity-0`}
+              className={`scrolly-bg-${event.id} absolute inset-0 w-full h-full bg-[#030508] z-0 overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,1)]`}
+              style={{
+                WebkitMaskImage: `url('data:image/svg+xml,%3Csvg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M50 0 L55 35 L80 20 L65 45 L100 50 L65 55 L80 80 L55 65 L50 100 L45 65 L20 80 L35 55 L0 50 L35 45 L20 20 L45 35 Z" fill="black" /%3E%3C/svg%3E')`,
+                maskImage: `url('data:image/svg+xml,%3Csvg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M50 0 L55 35 L80 20 L65 45 L100 50 L65 55 L80 80 L55 65 L50 100 L45 65 L20 80 L35 55 L0 50 L35 45 L20 20 L45 35 Z" fill="black" /%3E%3C/svg%3E')`,
+                WebkitMaskRepeat: 'no-repeat',
+                maskRepeat: 'no-repeat',
+                WebkitMaskSize: 'var(--radius, 0px)',
+                maskSize: 'var(--radius, 0px)',
+                WebkitMaskPosition: 'calc(var(--x, 50vw) - var(--radius, 0px) / 2) calc(var(--y, 60vh) - var(--radius, 0px) / 2)',
+                maskPosition: 'calc(var(--x, 50vw) - var(--radius, 0px) / 2) calc(var(--y, 60vh) - var(--radius, 0px) / 2)'
+              } as React.CSSProperties}
             >
               {/* Moonlight / Frost Center Glow */}
               <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,rgba(226,232,240,0.06)_0%,transparent_70%)] opacity-100 pointer-events-none" />
@@ -700,7 +710,7 @@ export default function QingJinTianXia() {
               </div>
 
               {/* Scrolling Content Block */}
-              <div className="relative w-full flex-1 overflow-hidden">
+              <div className="relative w-full flex-1 overflow-hidden mask-[linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)]">
                 <div className={`scrolly-text-content-${event.id} flex flex-col items-center w-full pb-[30vh] pt-[5vh]`}>
                   {event.detail.quote && (
                     <div className="text-lg md:text-2xl leading-loose tracking-[0.3em] font-serif text-zinc-100 text-center px-4 md:px-8 py-6 mb-8 w-full bg-linear-to-b from-transparent via-zinc-900/30 to-transparent border-t border-b border-zinc-800/30">
