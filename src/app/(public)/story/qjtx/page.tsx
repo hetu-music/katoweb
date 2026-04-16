@@ -308,8 +308,8 @@ export default function QingJinTianXia() {
         ease: "power2.out",
       });
 
-      const events = gsap.utils.toArray<HTMLElement>(
-        ".timeline-event",
+      const wrappers = gsap.utils.toArray<HTMLElement>(
+        ".timeline-event-wrapper",
         container.current
       );
       const dots = gsap.utils.toArray<HTMLElement>(
@@ -367,16 +367,20 @@ export default function QingJinTianXia() {
       window.addEventListener("scroll", updateLinesAndDots, { passive: true });
       updateLinesAndDots(); // 初始同步一次
 
-      events.forEach((event) => {
+      wrappers.forEach((wrapper) => {
+        const content = wrapper.querySelector<HTMLElement>(".timeline-event-content");
+        if (!content) return;
+
+        // ── B. 节点入场位移动画：target = content, trigger = wrapper ──
         gsap.fromTo(
-          event,
+          content,
           { opacity: 0, y: 70, filter: "blur(10px)" },
           {
             opacity: 1,
             y: 0,
             filter: "blur(0px)",
             scrollTrigger: {
-              trigger: event,
+              trigger: wrapper,
               pinnedContainer: ".timeline-container",
               start: "top 90%",
               end: "center 55%",
@@ -385,34 +389,34 @@ export default function QingJinTianXia() {
           }
         );
 
-        const isImportant = event.dataset.important === "true";
+        const isImportant = wrapper.dataset.important === "true";
         if (isImportant) {
           const detailContent =
             container.current?.querySelector<HTMLElement>(
-              `#detail-${event.dataset.id}`
+              `#detail-${wrapper.dataset.id}`
             );
           const scrollyBg = detailContent?.querySelector<HTMLElement>(
-            `.scrolly-bg-${event.dataset.id}`
+            `.scrolly-bg-${wrapper.dataset.id}`
           );
           const scrollyText = detailContent?.querySelector<HTMLElement>(
-            `.scrolly-text-${event.dataset.id}`
+            `.scrolly-text-${wrapper.dataset.id}`
           );
-          const dot = event.querySelector<HTMLElement>(".event-dot");
+          const dot = content.querySelector<HTMLElement>(".event-dot");
 
           if (detailContent && scrollyBg && scrollyText && dot) {
+            // 外壳绝对静止，无需 currentYOffset 补偿
             const setCirclePos = () => {
               const dotRect = dot.getBoundingClientRect();
-              const currentYOffset = gsap.getProperty(event, "y") as number;
               const trueX = dotRect.left + dotRect.width / 2;
-              const trueY =
-                dotRect.top + dotRect.height / 2 - currentYOffset;
+              const trueY = dotRect.top + dotRect.height / 2;
               scrollyBg.style.setProperty("--x", `${trueX}px`);
               scrollyBg.style.setProperty("--y", `${trueY}px`);
             };
 
+            // ── A. 沉浸式阅读 Pin 动画：trigger = wrapper ──
             const tl = gsap.timeline({
               scrollTrigger: {
-                trigger: event,
+                trigger: wrapper,
                 pinnedContainer: ".timeline-container",
                 start: "center 55%",
                 end: "+=6000",
@@ -425,7 +429,7 @@ export default function QingJinTianXia() {
               },
             });
 
-            const eventId = event.dataset.id!;
+            const eventId = wrapper.dataset.id!;
             const customNode = CUSTOM_NODE_REGISTRY[eventId];
 
             if (customNode) {
@@ -638,49 +642,51 @@ export default function QingJinTianXia() {
                 key={event.id}
                 data-important={event.important ? "true" : "false"}
                 data-id={event.id}
-                className="timeline-event group relative my-10 flex w-full flex-col md:my-20 md:flex-row md:justify-center"
+                className="timeline-event-wrapper w-full"
               >
-                <div className="event-dot absolute top-1/2 left-10 z-20 h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 origin-center rounded-full border border-zinc-500 bg-zinc-950 md:left-1/2 md:h-[13px] md:w-[13px]" />
+                <div className="timeline-event-content group relative my-10 flex w-full flex-col md:my-20 md:flex-row md:justify-center">
+                  <div className="event-dot absolute top-1/2 left-10 z-20 h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 origin-center rounded-full border border-zinc-500 bg-zinc-950 md:left-1/2 md:h-[13px] md:w-[13px]" />
 
-                <div className="flex w-full justify-start pl-18 pr-2 md:hidden">
-                  <div className="flex flex-row items-center gap-4 sm:gap-6">
-                    <EventDate year={event.year} month={event.month} mobile />
-                    <EventLines
-                      content={event.content}
-                      important={event.important}
-                      mobile
-                    />
+                  <div className="flex w-full justify-start pl-18 pr-2 md:hidden">
+                    <div className="flex flex-row items-center gap-4 sm:gap-6">
+                      <EventDate year={event.year} month={event.month} mobile />
+                      <EventLines
+                        content={event.content}
+                        important={event.important}
+                        mobile
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div
-                  className={`hidden w-1/2 justify-end pr-12 md:flex lg:pr-24 ${!isLeft ? "invisible" : ""
-                    }`}
-                >
-                  <div className="flex flex-row items-center gap-8 lg:gap-12">
-                    <EventLines
-                      content={event.content}
-                      important={event.important}
-                      align="right"
-                    />
-                    <EventDate
-                      year={event.year}
-                      month={event.month}
-                      monthFirst
-                    />
+                  <div
+                    className={`hidden w-1/2 justify-end pr-12 md:flex lg:pr-24 ${!isLeft ? "invisible" : ""
+                      }`}
+                  >
+                    <div className="flex flex-row items-center gap-8 lg:gap-12">
+                      <EventLines
+                        content={event.content}
+                        important={event.important}
+                        align="right"
+                      />
+                      <EventDate
+                        year={event.year}
+                        month={event.month}
+                        monthFirst
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div
-                  className={`hidden w-1/2 justify-start pl-12 md:flex lg:pl-24 ${isLeft ? "invisible" : ""
-                    }`}
-                >
-                  <div className="flex flex-row items-center gap-8 lg:gap-12">
-                    <EventDate year={event.year} month={event.month} />
-                    <EventLines
-                      content={event.content}
-                      important={event.important}
-                    />
+                  <div
+                    className={`hidden w-1/2 justify-start pl-12 md:flex lg:pl-24 ${isLeft ? "invisible" : ""
+                      }`}
+                  >
+                    <div className="flex flex-row items-center gap-8 lg:gap-12">
+                      <EventDate year={event.year} month={event.month} />
+                      <EventLines
+                        content={event.content}
+                        important={event.important}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
