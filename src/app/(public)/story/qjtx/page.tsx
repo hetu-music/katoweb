@@ -644,9 +644,9 @@ export default function QingJinTianXia() {
                 key={event.id}
                 data-important={event.important ? "true" : "false"}
                 data-id={event.id}
-                className="timeline-event-wrapper w-full"
+                className="timeline-event-wrapper my-10 w-full md:my-20"
               >
-                <div className="timeline-event-content group relative my-10 flex w-full flex-col md:my-20 md:flex-row md:justify-center">
+                <div className="timeline-event-content group relative flex w-full flex-col md:flex-row md:justify-center">
                   <div className="event-dot absolute top-1/2 left-10 z-20 h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 origin-center rounded-full border border-zinc-500 bg-zinc-950 md:left-1/2 md:h-[13px] md:w-[13px]" />
 
                   <div className="flex w-full justify-start pl-18 pr-2 md:hidden">
