@@ -6,12 +6,31 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import { useEffect, useRef } from "react";
-import { timelineData } from "../qjtx/data";
+import { timelineData, type ImmersiveTheme } from "../qjtx/data";
 
 gsap.registerPlugin(ScrollTrigger);
 
+// ─── Constants ────────────────────────────────────────────────────────────────
+
 const motionEase = [0.22, 1, 0.36, 1] as const;
 const animationSlowdown = 3;
+
+/** 雪花 SVG mask path，提取为常量，避免在每个 event 的 JSX 中重复序列化 */
+const SNOWFLAKE_MASK_PATH =
+  "M50 0 L55 35 L80 20 L65 45 L100 50 L65 55 L80 80 L55 65 L50 100 L45 65 L20 80 L35 55 L0 50 L35 45 L20 20 L45 35 Z";
+
+/** 根据 SVG path 字符串构建 CSS mask-image 值 */
+function buildMaskUrl(path: string): string {
+  const encoded = encodeURIComponent(
+    `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="${path}" fill="black"/></svg>`
+  );
+  return `url('data:image/svg+xml,${encoded}')`;
+}
+
+const SNOWFLAKE_MASK_URL = buildMaskUrl(SNOWFLAKE_MASK_PATH);
+
+
+// ─── Framer Motion Variants ───────────────────────────────────────────────────
 
 const heroTitleVariants = {
   hidden: {},
@@ -24,19 +43,12 @@ const heroTitleVariants = {
 } satisfies Variants;
 
 const heroCharVariants = {
-  hidden: {
-    opacity: 0,
-    scale: 0.85,
-    filter: "blur(16px)",
-  },
+  hidden: { opacity: 0, scale: 0.85, filter: "blur(16px)" },
   visible: {
     opacity: 1,
     scale: 1,
     filter: "blur(0px)",
-    transition: {
-      duration: 1.6 * animationSlowdown,
-      ease: motionEase,
-    },
+    transition: { duration: 1.6 * animationSlowdown, ease: motionEase },
   },
 } satisfies Variants;
 
@@ -51,27 +63,17 @@ const heroSubtitleVariants = {
 } satisfies Variants;
 
 const heroSubtitleLineVariants = {
-  hidden: {
-    opacity: 0,
-    y: 30,
-    filter: "blur(5px)",
-  },
+  hidden: { opacity: 0, y: 30, filter: "blur(5px)" },
   visible: {
     opacity: 1,
     y: 0,
     filter: "blur(0px)",
-    transition: {
-      duration: 1.2 * animationSlowdown,
-      ease: motionEase,
-    },
+    transition: { duration: 1.2 * animationSlowdown, ease: motionEase },
   },
 } satisfies Variants;
 
 const scrollHintVariants = {
-  hidden: {
-    opacity: 0,
-    y: -20,
-  },
+  hidden: { opacity: 0, y: -20 },
   visible: {
     opacity: 1,
     y: 0,
@@ -84,21 +86,16 @@ const scrollHintVariants = {
 } satisfies Variants;
 
 const footerVariants = {
-  hidden: {
-    opacity: 0,
-    y: 40,
-    filter: "blur(8px)",
-  },
+  hidden: { opacity: 0, y: 40, filter: "blur(8px)" },
   visible: {
     opacity: 1,
     y: 0,
     filter: "blur(0px)",
-    transition: {
-      duration: 1 * animationSlowdown,
-      ease: motionEase,
-    },
+    transition: { duration: 1 * animationSlowdown, ease: motionEase },
   },
 } satisfies Variants;
+
+// ─── Small Components ─────────────────────────────────────────────────────────
 
 const verticalTextClass =
   "[writing-mode:vertical-rl] [text-orientation:mixed] shrink-0 leading-none";
@@ -126,8 +123,8 @@ function EventLines({
         <p
           key={index}
           className={`${mobile
-            ? "text-sm tracking-widest"
-            : "text-[15px] lg:text-base tracking-widest lg:tracking-[0.2em]"
+              ? "text-sm tracking-widest"
+              : "text-[15px] lg:text-base tracking-widest lg:tracking-[0.2em]"
             } font-light leading-loose ${important
               ? "text-zinc-200 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] font-normal"
               : "text-zinc-400"
@@ -189,6 +186,126 @@ function EventDate({
   );
 }
 
+// ─── Immersive Reading Panel ──────────────────────────────────────────────────
+
+/**
+ * 沉浸式阅读覆盖层（固定全屏）。
+ *
+ * GSAP 动画仍然通过 .scrolly-bg-{id} / .scrolly-text-{id} 等类名驱动，
+ * 与动画逻辑完全解耦，主题样式通过 event.detail.theme 注入。
+ */
+function ImmersiveReadingPanel({
+  event,
+}: {
+  event: (typeof timelineData)[number];
+}) {
+  if (!event.detail) return null;
+
+  // 解构主题，全部带默认值，保证无 theme 时行为与重构前完全一致
+  const {
+    bg = "#030508",
+    titleColor = "white",
+    bodyColor = "rgb(212 212 216)", // zinc-300
+    accentColor = "rgb(161 161 170)", // zinc-400
+    maskPath,
+  }: ImmersiveTheme = event.detail.theme ?? {};
+
+  const maskUrl = maskPath ? buildMaskUrl(maskPath) : SNOWFLAKE_MASK_URL;
+
+  return (
+    <div
+      id={`detail-${event.id}`}
+      className="fixed inset-0 w-screen h-screen m-0 p-0 z-100 pointer-events-none flex-col items-center justify-center hidden"
+    >
+      {/* 展开背景（雪花/自定义形状 mask 扩展） */}
+      <div
+        className={`scrolly-bg-${event.id} absolute inset-0 w-full h-full z-0 overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,1)]`}
+        style={
+          {
+            background: bg,
+            WebkitMaskImage: maskUrl,
+            maskImage: maskUrl,
+            WebkitMaskRepeat: "no-repeat",
+            maskRepeat: "no-repeat",
+            WebkitMaskSize: "var(--radius, 0px)",
+            maskSize: "var(--radius, 0px)",
+            WebkitMaskPosition:
+              "calc(var(--x, 50vw) - var(--radius, 0px) / 2) calc(var(--y, 60vh) - var(--radius, 0px) / 2)",
+            maskPosition:
+              "calc(var(--x, 50vw) - var(--radius, 0px) / 2) calc(var(--y, 60vh) - var(--radius, 0px) / 2)",
+          } as React.CSSProperties
+        }
+      />
+
+      <div
+        className={`scrolly-text-${event.id} relative z-10 flex flex-col items-center w-full max-w-2xl px-6 md:px-0 h-full py-[15vh]`}
+      >
+        {/* 标题区 */}
+        <div className="scrolly-header flex flex-col items-center mb-8 md:mb-12 shrink-0">
+          <div className="w-px h-8 md:h-12 bg-linear-to-b from-transparent to-zinc-400/50 mb-6" />
+          <h2
+            className="text-2xl md:text-4xl font-serif tracking-[0.3em] text-center drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+            style={{ color: titleColor }}
+          >
+            {event.detail.title}
+          </h2>
+        </div>
+
+        {/* 滚动正文区 */}
+        <div className="relative w-full flex-1 overflow-hidden mask-[linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)]">
+          <div
+            className={`scrolly-text-content-${event.id} flex flex-col items-center w-full pb-[30vh] pt-[5vh]`}
+          >
+            {event.detail.quote && (
+              <div
+                className="text-lg md:text-2xl leading-loose tracking-[0.3em] font-serif text-center px-4 md:px-8 py-6 mb-8 w-full bg-linear-to-b from-transparent via-zinc-900/30 to-transparent border-t border-b"
+                style={{
+                  color: titleColor,
+                  borderColor: `color-mix(in srgb, ${accentColor} 30%, transparent)`,
+                }}
+              >
+                <p>「 {event.detail.quote} 」</p>
+              </div>
+            )}
+
+            <div
+              className="flex flex-col gap-4 text-sm md:text-base leading-[2.5] tracking-widest font-light text-justify w-full px-8 md:px-16"
+              style={{ color: bodyColor }}
+            >
+              {event.detail.body.map((p, i) => (
+                <p
+                  key={i}
+                  className={
+                    p === "……"
+                      ? "text-center my-4 font-serif text-lg opacity-40 tracking-[0.5em]"
+                      : ""
+                  }
+                >
+                  {p}
+                </p>
+              ))}
+            </div>
+
+            {event.detail.closing && (
+              <div className="mt-16 flex w-full flex-col items-end opacity-80 pr-8 md:pr-16">
+                <div className="w-24 h-px bg-linear-to-r from-transparent to-zinc-600 mb-6" />
+                <p
+                  className="text-xs md:text-sm tracking-[0.3em] font-light"
+                  style={{ color: accentColor }}
+                >
+                  {event.detail.closing}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function QingJinTianXia() {
   const container = useRef<HTMLDivElement>(null);
 
@@ -238,26 +355,32 @@ export default function QingJinTianXia() {
 
       const events = gsap.utils.toArray<HTMLElement>(
         ".timeline-event",
-        container.current,
+        container.current
       );
-      const dots = gsap.utils.toArray<HTMLElement>(".event-dot", container.current);
-      const progressLine = container.current?.querySelector<HTMLElement>(
-        ".timeline-progress",
+      const dots = gsap.utils.toArray<HTMLElement>(
+        ".event-dot",
+        container.current
       );
+
+      // ─ 在 tick 外缓存 DOM 引用 ──────────────────────────────────────────────
+      // 原来的写法在 updateLinesAndDots 内部用同名变量重复查询，导致每帧
+      // 都有 2 次额外 querySelector。现在查询一次，ticker 里只做计算和写值。
+      const containerEl =
+        container.current?.querySelector<HTMLElement>(".timeline-container");
+      const progressLine =
+        container.current?.querySelector<HTMLElement>(".timeline-progress");
 
       const setDotState = (dot: HTMLElement, active: boolean) => {
         const nextState = active ? "active" : "inactive";
-
-        if (dot.dataset.state === nextState) {
-          return;
-        }
-
+        if (dot.dataset.state === nextState) return;
         dot.dataset.state = nextState;
         gsap.to(dot, {
           duration: 0.35,
           borderColor: active ? "#b91c1c" : "#71717a",
           backgroundColor: active ? "#7f1d1d" : "#09090b",
-          boxShadow: active ? "0 0 15px rgba(185,28,28,0.8)" : "0 0 0 rgba(0,0,0,0)",
+          boxShadow: active
+            ? "0 0 15px rgba(185,28,28,0.8)"
+            : "0 0 0 rgba(0,0,0,0)",
           overwrite: true,
         });
       };
@@ -265,9 +388,7 @@ export default function QingJinTianXia() {
       dots.forEach((dot) => setDotState(dot, false));
 
       const updateLinesAndDots = () => {
-        if (!container.current) return;
-        const containerEl = container.current.querySelector<HTMLElement>(".timeline-container");
-        const progressLine = container.current.querySelector<HTMLElement>(".timeline-progress");
+        // 直接使用上方缓存的引用，无任何 DOM 查询
         if (!containerEl || !progressLine) return;
 
         const rect = containerEl.getBoundingClientRect();
@@ -275,7 +396,6 @@ export default function QingJinTianXia() {
 
         let lineTargetHeight = triggerY - rect.top;
         lineTargetHeight = Math.max(0, Math.min(lineTargetHeight, rect.height));
-
         progressLine.style.height = `${lineTargetHeight}px`;
 
         dots.forEach((dot) => {
@@ -285,10 +405,13 @@ export default function QingJinTianXia() {
         });
       };
 
-      gsap.ticker.add(updateLinesAndDots);
-      updateLinesAndDots();
+      // ─ 改用 scroll 事件驱动，而非 gsap.ticker ────────────────────────────
+      // gsap.ticker 每帧都触发（包括静止时），scroll 事件仅在实际滚动时触发。
+      // Lenis 在每个动画帧调用 ScrollTrigger.update()，ScrollTrigger.update()
+      // 会分发 scroll 事件，因此精度与之前完全一致，但空闲时 CPU 占用降为零。
+      window.addEventListener("scroll", updateLinesAndDots, { passive: true });
+      updateLinesAndDots(); // 初始同步一次
 
-      // REFACTOR: scrub 固定为 0.8，不再乘以 animationSlowdown。
       events.forEach((event) => {
         gsap.fromTo(
           event,
@@ -304,24 +427,30 @@ export default function QingJinTianXia() {
               end: "center 60%",
               scrub: 1.5,
             },
-          },
+          }
         );
 
         const isImportant = event.dataset.important === "true";
         if (isImportant) {
-          const detailContent = container.current?.querySelector<HTMLElement>(`#detail-${event.dataset.id}`);
-          const scrollyBg = detailContent?.querySelector<HTMLElement>(`.scrolly-bg-${event.dataset.id}`);
-          const scrollyText = detailContent?.querySelector<HTMLElement>(`.scrolly-text-${event.dataset.id}`);
+          const detailContent =
+            container.current?.querySelector<HTMLElement>(
+              `#detail-${event.dataset.id}`
+            );
+          const scrollyBg = detailContent?.querySelector<HTMLElement>(
+            `.scrolly-bg-${event.dataset.id}`
+          );
+          const scrollyText = detailContent?.querySelector<HTMLElement>(
+            `.scrolly-text-${event.dataset.id}`
+          );
           const dot = event.querySelector<HTMLElement>(".event-dot");
 
           if (detailContent && scrollyBg && scrollyText && dot) {
             const setCirclePos = () => {
               const dotRect = dot.getBoundingClientRect();
-              // 核心魔法：获取此时此刻 event 身上因为 scrub 还没走完的 y 轴偏移量
               const currentYOffset = gsap.getProperty(event, "y") as number;
               const trueX = dotRect.left + dotRect.width / 2;
-              // 真实的 Y 中心点 = 视觉上的中心点 - 还没归零的 Y 偏移量
-              const trueY = dotRect.top + dotRect.height / 2 - currentYOffset;
+              const trueY =
+                dotRect.top + dotRect.height / 2 - currentYOffset;
               scrollyBg.style.setProperty("--x", `${trueX}px`);
               scrollyBg.style.setProperty("--y", `${trueY}px`);
             };
@@ -330,7 +459,7 @@ export default function QingJinTianXia() {
               scrollTrigger: {
                 trigger: event,
                 pinnedContainer: ".timeline-container",
-                start: "center 60%", // exactly on the line
+                start: "center 60%",
                 end: "+=4000",
                 scrub: true,
                 pin: ".timeline-container",
@@ -341,9 +470,15 @@ export default function QingJinTianXia() {
               },
             });
 
-            const textHeader = scrollyText.querySelector<HTMLElement>(".scrolly-header");
-            const textContent = scrollyText.querySelector<HTMLElement>(`.scrolly-text-content-${event.dataset.id}`);
-            const snowLayer = scrollyBg.querySelector<HTMLElement>(`.scrolly-snow-${event.dataset.id}`);
+            const textHeader =
+              scrollyText.querySelector<HTMLElement>(".scrolly-header");
+            const textContent =
+              scrollyText.querySelector<HTMLElement>(
+                `.scrolly-text-content-${event.dataset.id}`
+              );
+            const snowLayer = scrollyBg.querySelector<HTMLElement>(
+              `.scrolly-snow-${event.dataset.id}`
+            );
 
             if (textHeader && textContent) {
               tl.set(detailContent, { display: "flex" });
@@ -357,13 +492,26 @@ export default function QingJinTianXia() {
                 .fromTo(
                   textHeader.children,
                   { opacity: 0, y: 30, filter: "blur(12px)" },
-                  { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.0, stagger: 0.2, ease: "power2.out" },
+                  {
+                    opacity: 1,
+                    y: 0,
+                    filter: "blur(0px)",
+                    duration: 1.0,
+                    stagger: 0.2,
+                    ease: "power2.out",
+                  },
                   "-=0.7"
                 )
                 .fromTo(
                   textContent,
                   { opacity: 0, y: 60, filter: "blur(8px)" },
-                  { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.2, ease: "power2.out" },
+                  {
+                    opacity: 1,
+                    y: 0,
+                    filter: "blur(0px)",
+                    duration: 1.2,
+                    ease: "power2.out",
+                  },
                   "-=0.7"
                 )
                 .to(textContent, { y: "-40%", duration: 4.5, ease: "none" })
@@ -374,14 +522,13 @@ export default function QingJinTianXia() {
                   duration: 1.0,
                   ease: "power2.in",
                 })
-                .to(scrollyBg, {
-                  "--radius": "0px",
-                  duration: 1.5,
-                  ease: "power2.inOut",
-                }, "-=0.6");
+                .to(
+                  scrollyBg,
+                  { "--radius": "0px", duration: 1.5, ease: "power2.inOut" },
+                  "-=0.6"
+                );
 
               if (snowLayer) {
-                // Insert the full-duration snow drift securely at the background layer's start without hijacking GSAP's offset cursor
                 tl.fromTo(
                   snowLayer,
                   { y: "-10%" },
@@ -405,14 +552,12 @@ export default function QingJinTianXia() {
           scrub: 1.2,
           pin: true,
           pinSpacing: true,
-        }
+        },
       });
 
-      // 初始化状态
       gsap.set(".falling-tear", { y: -200, opacity: 0, scale: 0.8 });
       gsap.set(".tear-drop-tip", { opacity: 0, scale: 0 });
 
-      // 1. 红线末端隆起形成泪滴 (当 timeline-container 快结束时)
       gsap.to(".tear-drop-tip", {
         opacity: 1,
         scale: 1,
@@ -421,48 +566,52 @@ export default function QingJinTianXia() {
           start: "bottom 80%",
           end: "bottom 60%",
           scrub: true,
-        }
+        },
       });
 
-      // 2. 坠落与晕染序章
       endTl
-        .fromTo(".falling-tear",
+        .fromTo(
+          ".falling-tear",
           { y: "-10vh", opacity: 0, scale: 0.6 },
           { y: "50vh", opacity: 1, scale: 1, duration: 2, ease: "none" }
         )
-        // 1.5 衔接隐藏红线末端的那个泪滴
         .to(".tear-drop-tip", { opacity: 0, duration: 0.1 }, 0)
-        // 2. 泪滴消失，晕染散开
         .to(".falling-tear", {
           opacity: 0,
           scale: 3,
           filter: "blur(12px)",
           duration: 0.6,
-          ease: "power2.out"
+          ease: "power2.out",
         })
-        .to(".ink-pool", {
-          scale: 1,
-          opacity: 1,
-          duration: 2,
-          ease: "power2.out"
-        }, "-=0.3")
-        // 文字从模糊中浮现
-        .fromTo(".bloom-content",
+        .to(
+          ".ink-pool",
+          { scale: 1, opacity: 1, duration: 2, ease: "power2.out" },
+          "-=0.3"
+        )
+        .fromTo(
+          ".bloom-content",
           { opacity: 0, filter: "blur(20px)", y: 20, scale: 0.95 },
-          { opacity: 1, filter: "blur(0px)", y: 0, scale: 1, duration: 2.5, ease: "power2.out" },
+          {
+            opacity: 1,
+            filter: "blur(0px)",
+            y: 0,
+            scale: 1,
+            duration: 2.5,
+            ease: "power2.out",
+          },
           "-=1.5"
         )
-        .to(".bottom-info", {
-          opacity: 1,
-          duration: 1,
-          ease: "power2.inOut"
-        }, "-=0.5");
+        .to(
+          ".bottom-info",
+          { opacity: 1, duration: 1, ease: "power2.inOut" },
+          "-=0.5"
+        );
 
       return () => {
-        gsap.ticker.remove(updateLinesAndDots);
+        window.removeEventListener("scroll", updateLinesAndDots);
       };
     },
-    { scope: container },
+    { scope: container }
   );
 
   return (
@@ -471,8 +620,6 @@ export default function QingJinTianXia() {
       className="relative min-h-screen overflow-x-hidden bg-[#09090b] font-serif text-zinc-300 selection:bg-red-900 selection:text-white"
     >
       <style jsx global>{`
-        /* 消除刷新时的滚动条闪烁：不再等待 JS 添加类名，直接针对全局生效 */
-        /* styled-jsx 会在组件销毁时自动移除这些样式，因此是安全的 */
         html,
         body {
           height: auto !important;
@@ -481,7 +628,6 @@ export default function QingJinTianXia() {
           scrollbar-width: none !important;
         }
 
-        /* 强力隐藏所有 Webkit 滚动条（针对 Chrome, Edge, Safari） */
         ::-webkit-scrollbar {
           display: none !important;
           width: 0 !important;
@@ -489,7 +635,6 @@ export default function QingJinTianXia() {
           background: transparent !important;
         }
 
-        /* 兼容 Lenis 的状态类 */
         html.lenis.lenis-smooth {
           scroll-behavior: auto !important;
         }
@@ -502,7 +647,6 @@ export default function QingJinTianXia() {
           overscroll-behavior: contain;
         }
 
-        /* 晕染文字特有的样式 */
         .ink-bloom-text {
           text-shadow: 0 0 20px rgba(185, 28, 28, 0.4);
         }
@@ -520,7 +664,6 @@ export default function QingJinTianXia() {
       />
 
       <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(ellipse_at_top,transparent_0%,rgba(0,0,0,0.9)_100%)]" />
-
 
       <section className="relative z-10 flex h-svh flex-col items-center justify-center">
         <div className="mt-[-10vh] flex flex-col items-center gap-12 sm:gap-16">
@@ -580,9 +723,11 @@ export default function QingJinTianXia() {
       <main className="timeline-container relative z-10 mx-auto w-full max-w-7xl px-4 py-[15vh]">
         <div className="absolute top-0 bottom-0 left-14 w-px -translate-x-1/2 rounded bg-zinc-800/40 md:left-1/2" />
         <div className="timeline-progress absolute top-0 left-14 z-10 w-px -translate-x-1/2 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2">
-          {/* 泪滴元素：平时隐藏，只有当进度到底时在 updateLinesAndDots 中逻辑触发 */}
           <div className="tear-drop-tip absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-0 opacity-0 w-3 h-4">
-            <svg viewBox="0 0 100 120" className="w-full h-full fill-red-700 drop-shadow-[0_0_8px_rgba(185,28,28,0.8)]">
+            <svg
+              viewBox="0 0 100 120"
+              className="w-full h-full fill-red-700 drop-shadow-[0_0_8px_rgba(185,28,28,0.8)]"
+            >
               <path d="M50 0 C50 0 20 45 20 75 A30 30 0 1 0 80 75 C80 45 50 0 50 0 Z" />
             </svg>
           </div>
@@ -603,11 +748,7 @@ export default function QingJinTianXia() {
 
                 <div className="flex w-full justify-start pl-18 pr-2 md:hidden">
                   <div className="flex flex-row items-center gap-4 sm:gap-6">
-                    <EventDate
-                      year={event.year}
-                      month={event.month}
-                      mobile
-                    />
+                    <EventDate year={event.year} month={event.month} mobile />
                     <EventLines
                       content={event.content}
                       important={event.important}
@@ -652,81 +793,21 @@ export default function QingJinTianXia() {
         </div>
       </main>
 
-      {/* Scrollytelling Content layers (Rendered strictly after main container to guarantee z-100 overlay during GSAP pins) */}
-      {timelineData.map((event) => {
-        if (!event.detail) return null;
-        return (
-          <div
-            key={`detail-${event.id}`}
-            id={`detail-${event.id}`}
-            className="fixed inset-0 w-screen h-screen m-0 p-0 z-100 pointer-events-none flex-col items-center justify-center hidden"
-          >
-            {/* Elegant Snow-night Background (Snowflake Shape Expansion) */}
-            <div
-              className={`scrolly-bg-${event.id} absolute inset-0 w-full h-full bg-[#030508] z-0 overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,1)]`}
-              style={{
-                WebkitMaskImage: `url('data:image/svg+xml,%3Csvg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M50 0 L55 35 L80 20 L65 45 L100 50 L65 55 L80 80 L55 65 L50 100 L45 65 L20 80 L35 55 L0 50 L35 45 L20 20 L45 35 Z" fill="black" /%3E%3C/svg%3E')`,
-                maskImage: `url('data:image/svg+xml,%3Csvg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M50 0 L55 35 L80 20 L65 45 L100 50 L65 55 L80 80 L55 65 L50 100 L45 65 L20 80 L35 55 L0 50 L35 45 L20 20 L45 35 Z" fill="black" /%3E%3C/svg%3E')`,
-                WebkitMaskRepeat: 'no-repeat',
-                maskRepeat: 'no-repeat',
-                WebkitMaskSize: 'var(--radius, 0px)',
-                maskSize: 'var(--radius, 0px)',
-                WebkitMaskPosition: 'calc(var(--x, 50vw) - var(--radius, 0px) / 2) calc(var(--y, 60vh) - var(--radius, 0px) / 2)',
-                maskPosition: 'calc(var(--x, 50vw) - var(--radius, 0px) / 2) calc(var(--y, 60vh) - var(--radius, 0px) / 2)'
-              } as React.CSSProperties}
-            >
-            </div>
+      {/* 沉浸式阅读覆盖层，渲染顺序在 main 之后以保证 z-index 覆盖 */}
+      {timelineData.map((event) => (
+        <ImmersiveReadingPanel key={`detail-${event.id}`} event={event} />
+      ))}
 
-            <div className={`scrolly-text-${event.id} relative z-10 flex flex-col items-center w-full max-w-2xl px-6 md:px-0 h-full py-[15vh]`}>
-
-              {/* Header Title Block */}
-              <div className="scrolly-header flex flex-col items-center mb-8 md:mb-12 shrink-0">
-                <div className="w-px h-8 md:h-12 bg-linear-to-b from-transparent to-zinc-400/50 mb-6" />
-                <h2 className="text-2xl md:text-4xl font-serif text-white tracking-[0.3em] text-center drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">{event.detail.title}</h2>
-              </div>
-
-              {/* Scrolling Content Block */}
-              <div className="relative w-full flex-1 overflow-hidden mask-[linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)]">
-                <div className={`scrolly-text-content-${event.id} flex flex-col items-center w-full pb-[30vh] pt-[5vh]`}>
-                  {event.detail.quote && (
-                    <div className="text-lg md:text-2xl leading-loose tracking-[0.3em] font-serif text-zinc-100 text-center px-4 md:px-8 py-6 mb-8 w-full bg-linear-to-b from-transparent via-zinc-900/30 to-transparent border-t border-b border-zinc-800/30">
-                      <p>「 {event.detail.quote} 」</p>
-                    </div>
-                  )}
-
-                  <div className="flex flex-col gap-4 text-sm md:text-base leading-[2.5] tracking-widest font-light text-zinc-300 text-justify w-full px-8 md:px-16">
-                    {event.detail.body.map((p, i) => (
-                      <p key={i} className={p === "……" ? "text-center my-4 font-serif text-lg opacity-40 tracking-[0.5em]" : ""}>
-                        {p}
-                      </p>
-                    ))}
-                  </div>
-
-                  {event.detail.closing && (
-                    <div className="mt-16 flex w-full flex-col items-end opacity-80 pr-8 md:pr-16">
-                      <div className="w-24 h-px bg-linear-to-r from-transparent to-zinc-600 mb-6" />
-                      <p className="text-xs md:text-sm tracking-[0.3em] text-zinc-400 font-light">{event.detail.closing}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-            </div>
-          </div>
-        );
-      })}
-
-      <div className="footer-trigger h-[10vh]">
-        {/* 精简占位，通过更紧凑的间距触发 */}
-      </div>
+      <div className="footer-trigger h-[10vh]" />
 
       <footer className="footer-final relative z-10 w-full min-h-screen bg-black flex flex-col items-center justify-center overflow-hidden">
-        {/* 背景晕染层 */}
         <div className="ink-pool absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[120vw] bg-[radial-gradient(circle,rgba(127,29,29,0.15)_0%,transparent_70%)] scale-0 opacity-0 pointer-events-none" />
 
-        {/* 坠落的泪滴 */}
         <div className="falling-tear absolute top-0 left-1/2 -translate-x-1/2 w-4 h-5 opacity-0 pointer-events-none">
-          <svg viewBox="0 0 100 120" className="w-full h-full fill-red-700 drop-shadow-[0_0_12px_rgba(185,28,28,0.9)]">
+          <svg
+            viewBox="0 0 100 120"
+            className="w-full h-full fill-red-700 drop-shadow-[0_0_12px_rgba(185,28,28,0.9)]"
+          >
             <path d="M50 0 C50 0 20 45 20 75 A30 30 0 1 0 80 75 C80 45 50 0 50 0 Z" />
           </svg>
         </div>
@@ -739,7 +820,6 @@ export default function QingJinTianXia() {
               </p>
               <div className="w-12 h-px bg-red-900/50" />
             </div>
-
             <p className="text-[11px] md:text-xs font-light tracking-[0.5em] text-zinc-500 uppercase opacity-60">
               河图作品勘鉴 · 终章
             </p>
