@@ -404,11 +404,13 @@ export default function QingJinTianXia() {
           const dot = content.querySelector<HTMLElement>(".event-dot");
 
           if (detailContent && scrollyBg && scrollyText && dot) {
-            // 外壳绝对静止，无需 currentYOffset 补偿
+            // 外壳静止，但 dot 在 content 内部，content 有 scrub 入场动画，
+            // getBoundingClientRect() 会包含 content 的残余 y 偏移，需补偿。
             const setCirclePos = () => {
               const dotRect = dot.getBoundingClientRect();
+              const contentY = gsap.getProperty(content, "y") as number;
               const trueX = dotRect.left + dotRect.width / 2;
-              const trueY = dotRect.top + dotRect.height / 2;
+              const trueY = dotRect.top + dotRect.height / 2 - contentY;
               scrollyBg.style.setProperty("--x", `${trueX}px`);
               scrollyBg.style.setProperty("--y", `${trueY}px`);
             };
