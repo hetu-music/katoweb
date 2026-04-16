@@ -278,11 +278,23 @@ function ImmersiveReadingPanel({
 
           {/* Closing */}
           <div className={`scrolly-closing-container-${event.id} absolute inset-0 flex items-center justify-center`}>
-             <div className={`scrolly-closing-${event.id} flex flex-col items-center opacity-80`}>
-                <div className="w-px h-24 bg-linear-to-b from-transparent to-current mb-8" style={{ color: accentColor }} />
-                <p className="text-sm md:text-xl tracking-[0.4em] md:tracking-[0.6em] pl-[0.4em] md:pl-[0.6em] font-serif" style={{ color: accentColor }}>
-                  {event.detail.closing}
-                </p>
+             <div className={`scrolly-closing-${event.id} relative flex flex-col items-center`}>
+                {/* 碑体容器 */}
+                <div className="relative pt-24 pb-32 px-12 md:px-20 border-t border-x border-white/10 rounded-t-[160px] bg-linear-to-b from-white/[0.03] to-transparent backdrop-blur-xs">
+                   {/* 顶部装饰线 */}
+                   <div className="absolute top-12 left-1/2 -translate-x-1/2 w-12 h-px bg-white/20" />
+                   
+                   <p className="text-xl md:text-3xl [writing-mode:vertical-rl] tracking-[0.6em] md:tracking-[0.8em] font-serif leading-none italic opacity-90 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" 
+                      style={{ color: '#f8f1e7' }}>
+                      {event.detail.closing}
+                   </p>
+                   
+                   {/* 底部渐变遮罩，模拟碑体地基消失感 */}
+                   <div className="absolute bottom-0 left-0 right-0 h-40 bg-linear-to-t from-[#050204] to-transparent" />
+                </div>
+                
+                {/* 装饰性暗影 */}
+                <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-64 h-32 bg-white/5 blur-3xl rounded-full -z-10" />
              </div>
           </div>
         </div>
@@ -619,11 +631,11 @@ export default function QingJinTianXia() {
                 // Closing
                 .fromTo(
                   closing,
-                  { opacity: 0, y: 40, filter: "blur(15px)", scale: 0.95 },
-                  { opacity: 1, y: 0, filter: "blur(0px)", scale: 1, duration: 3.0, ease: "power3.out" },
-                  "+=0.5"
+                  { opacity: 0, y: 100, filter: "blur(20px)", scale: 0.98 },
+                  { opacity: 1, y: 0, filter: "blur(0px)", scale: 1, duration: 4.0, ease: "power2.out" },
+                  "+=1.0"
                 )
-                .to(closing, { opacity: 0, filter: "blur(20px)", duration: 2.5, ease: "power2.in" }, "+=3.5")
+                .to(closing, { opacity: 0, y: -20, filter: "blur(30px)", duration: 4.0, ease: "power2.in" }, "+=6.0")
                 
                 // Background
                 .to(scrollyBg, { "--radius": "0px", duration: 4.0, ease: "power2.inOut" }, "-=1.5");
