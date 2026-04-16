@@ -8,7 +8,6 @@ export interface TimelineEvent {
 }
 
 export interface TimelineDetail {
-  eyebrow: string;
   title: string;
   quote?: string;
   lead?: string;
@@ -186,7 +185,7 @@ export const timelineData: TimelineEvent[] = [
     content: [
       "廿九，北岭以重赋民变，白炎借势起兵。",
       "慕清和留书离家，投白炎麾下。父兄与之绝。",
-      "守将燕子名战死，城主解钰领残兵降。"
+      "守将燕子名死，城主解钰降。"
     ],
   },
   {
@@ -401,7 +400,7 @@ export const timelineData: TimelineEvent[] = [
     month: "二月",
     content: ["武帝与摇光皇后楚落大婚，赦天下。",
       "遂祭宗庙，尊白炎为元皇帝。",
-      "青川瘟疫过境，时有人亡。蕙力护二老不失，终尽瘁而死。",
+      "青川大疫，时有人亡。",
     ],
   },
   {
@@ -434,8 +433,24 @@ export const timelineData: TimelineEvent[] = [
     year: "太业三年",
     month: "无考",
     content: ["城东设谢婉衣冠祠。",
-      "赵钦归乡。会乡人立贤女碑于县南，以志徐蕙。",
+      "青川乡人立贤女碑于县南。",
     ],
+    important: true,
+    detail: {
+      title: "陌上花早",
+      quote: "庭树尚青青 故人今安好？",
+      body: [
+        "……",
+        "赵钦去四年，无音讯，偶有同行人归，皆言其殁。",
+        "徐蕙见赵氏二老无依，以与钦幼有婚约故，不肯他嫁，",
+        "遂自拒官媒，手持灵位，嫁入赵家，以新妇礼侍二老。",
+        "县人皆称其贤。又十四年，瘟疫过境，县中时有人亡。",
+        "蕙力护二老不失，终尽瘁而死。",
+        "又二年，钦归乡，见父母尚在，而贤妻已没，唯抚灵恸哭。",
+        "时维太业三年，乡亲助钦立贤女碑于县南，以志蕙。",
+      ],
+      closing: "《青川县志·贤女传》",
+    },
   },
   {
     id: "39",
@@ -443,5 +458,20 @@ export const timelineData: TimelineEvent[] = [
     month: "四月",
     content: ["烟华海八百衣冠冢成",
     ],
+    important: true,
+    detail: {
+      title: "海棠酒满",
+      quote: "一生太短 每一次日落都远望",
+      body: [
+        "崇宁七年六月廿九，北岭民变，白炎军夺城。",
+        "守将燕子名战死，城主解钰领残兵降。",
+        "北岭守军多征自本县。",
+        "七月，解钰使人带死城者衣冠归，与县主陈青。",
+        "七月十四，青始集百姓之力，造陵于烟华海畔。",
+        "县中青壮皆战死北岭，余民多孤儿寡母，而劳作不息。",
+        "太业四年四月初五，造物终成，是为烟华海八百衣冠冢。",
+      ],
+      closing: "《烟华县志·衣冠冢志》",
+    },
   },
 ];
