@@ -500,9 +500,9 @@ export default function QingJinTianXia() {
                 scrollyBg,
                 { "--radius": "0px" },
                 {
-                  "--radius": isRipple ? "200vmax" : "800vmax",
-                  duration: isRipple ? 2 : 1.5,
-                  ease: isRipple ? "elastic.out(1.2, 0.8)" : "power2.inOut"
+                  "--radius": isRipple ? "150vmax" : "150vmax",
+                  duration: isRipple ? 3.0 : 2.5,
+                  ease: isRipple ? "elastic.out(1.0, 1.0)" : "power2.out"
                 },
                 0
               )

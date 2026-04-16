@@ -13,10 +13,6 @@ export type ImmersiveTheme = {
   layout?: "horizontal" | "vertical";
   /** 是否启用特殊的背景视差/水纹动效 */
   specialEffect?: "ripple" | "none";
-  /** 展开动画的基础持续时间（倍数），默认 1 */
-  durationMultiplier?: number;
-  /** 驻留滚动的总长度，默认 4000 */
-  scrollDistance?: number;
 };
 
 export interface TimelineDetail {
