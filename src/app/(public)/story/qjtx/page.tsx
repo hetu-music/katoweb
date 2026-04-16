@@ -275,8 +275,8 @@ function ImmersiveReadingPanel({
 
             <div
               className={`flex gap-4 text-sm md:text-base leading-[2.5] tracking-widest font-light text-justify px-8 md:px-16 ${layout === "vertical"
-                  ? "flex-row-reverse flex-wrap justify-center items-center h-[55vh] [writing-mode:vertical-rl] gap-x-8 w-full max-w-full mx-auto"
-                  : "flex-col w-full"
+                ? "flex-row-reverse flex-wrap justify-center items-center h-[55vh] [writing-mode:vertical-rl] gap-x-8 w-full max-w-full mx-auto"
+                : "flex-col w-full"
                 }`}
               style={{ color: bodyColor }}
             >
@@ -470,7 +470,7 @@ export default function QingJinTianXia() {
                 trigger: event,
                 pinnedContainer: ".timeline-container",
                 start: "center 60%",
-                end: "+=4000",
+                end: "+=8000",
                 scrub: true,
                 pin: ".timeline-container",
                 pinSpacing: true,
@@ -500,9 +500,9 @@ export default function QingJinTianXia() {
                 scrollyBg,
                 { "--radius": "0px" },
                 {
-                  "--radius": isRipple ? "150vmax" : "150vmax",
-                  duration: isRipple ? 3.0 : 2.5,
-                  ease: isRipple ? "elastic.out(1.0, 1.0)" : "power2.out"
+                  "--radius": "150vmax",
+                  duration: isRipple ? 12.0 : 8.0,
+                  ease: isRipple ? "elastic.out(0.6, 1.2)" : "power2.out"
                 },
                 0
               )
@@ -513,11 +513,11 @@ export default function QingJinTianXia() {
                     opacity: 1,
                     y: 0,
                     filter: "blur(0px)",
-                    duration: 1.0,
-                    stagger: 0.2,
+                    duration: 3.0,
+                    stagger: 0.5,
                     ease: "power2.out",
                   },
-                  "-=0.7"
+                  "-=4.0"
                 )
                 .fromTo(
                   textContent,
@@ -526,27 +526,27 @@ export default function QingJinTianXia() {
                     opacity: 1,
                     y: 0,
                     filter: "blur(0px)",
-                    duration: 1.2,
+                    duration: 4.0,
                     ease: "power2.out",
                   },
-                  "-=0.7"
+                  "-=2.0"
                 )
                 .to(textContent, {
                   y: isVertical ? "-20%" : "-40%",
-                  duration: 4.5,
+                  duration: 20.0,
                   ease: "none"
                 })
                 .to([textHeader, textContent], {
                   opacity: 0,
                   y: "-=30",
                   filter: "blur(12px)",
-                  duration: 1.0,
+                  duration: 3.0,
                   ease: "power2.in",
                 })
                 .to(
                   scrollyBg,
-                  { "--radius": "0px", duration: 1.5, ease: isRipple ? "power3.in" : "power2.inOut" },
-                  "-=0.6"
+                  { "--radius": "0px", duration: 8.0, ease: isRipple ? "power3.in" : "power2.inOut" },
+                  "-=0.5"
                 );
 
               if (snowLayer) {
