@@ -263,7 +263,7 @@ function ImmersiveReadingPanel({
           >
             {event.detail.quote && (
               <div
-                className="text-lg md:text-2xl leading-loose tracking-[0.3em] font-serif text-center px-4 md:px-8 py-6 mb-8 w-full bg-linear-to-b from-transparent via-zinc-900/30 to-transparent border-t border-b"
+                className="scrolly-quote text-lg md:text-2xl leading-loose tracking-[0.3em] font-serif text-center px-4 md:px-8 py-6 mb-8 w-full bg-linear-to-b from-transparent via-zinc-900/30 to-transparent border-t border-b"
                 style={{
                   color: titleColor,
                   borderColor: `color-mix(in srgb, ${accentColor} 30%, transparent)`,
@@ -274,9 +274,9 @@ function ImmersiveReadingPanel({
             )}
 
             <div
-              className={`flex gap-4 text-sm md:text-base leading-[2.5] tracking-widest font-light text-justify px-8 md:px-16 ${
+              className={`scrolly-body flex gap-4 text-sm md:text-base leading-[2.5] tracking-widest font-light text-justify px-8 md:px-16 ${
                 layout === "vertical"
-                  ? "flex-row-reverse flex-wrap justify-center items-center h-[55vh] [writing-mode:vertical-rl] gap-x-8 w-full max-w-full mx-auto"
+                  ? "flex-row-reverse flex-wrap justify-center items-start h-[55vh] [writing-mode:vertical-rl] gap-x-8 w-full max-w-full mx-auto"
                   : "flex-col w-full"
               }`}
               style={{ color: bodyColor }}
@@ -298,7 +298,7 @@ function ImmersiveReadingPanel({
             </div>
 
             {event.detail.closing && (
-              <div className="mt-16 flex w-full flex-col items-end opacity-80 pr-8 md:pr-16">
+              <div className="scrolly-closing mt-16 flex w-full flex-col items-end opacity-80 pr-8 md:pr-16">
                 <div className="w-24 h-px bg-linear-to-r from-transparent to-zinc-600 mb-6" />
                 <p
                   className="text-xs md:text-sm tracking-[0.3em] font-light"
@@ -471,7 +471,7 @@ export default function QingJinTianXia() {
                 trigger: event,
                 pinnedContainer: ".timeline-container",
                 start: "center 60%",
-                end: "+=4000",
+                end: "+=12000",
                 scrub: true,
                 pin: ".timeline-container",
                 pinSpacing: true,
@@ -501,8 +501,8 @@ export default function QingJinTianXia() {
                 scrollyBg,
                 { "--radius": "0px" },
                 { 
-                  "--radius": isRipple ? "200vmax" : "800vmax", 
-                  duration: isRipple ? 2 : 1.5, 
+                  "--radius": isRipple ? "220vmax" : "800vmax", 
+                  duration: isRipple ? 6 : 4.5, 
                   ease: isRipple ? "elastic.out(1.2, 0.8)" : "power2.inOut" 
                 },
                 0
@@ -514,40 +514,65 @@ export default function QingJinTianXia() {
                     opacity: 1,
                     y: 0,
                     filter: "blur(0px)",
-                    duration: 1.0,
-                    stagger: 0.2,
+                    duration: 2.0,
+                    stagger: 0.4,
                     ease: "power2.out",
                   },
-                  "-=0.7"
-                )
-                .fromTo(
-                  textContent,
-                  { opacity: 0, y: isVertical ? 100 : 60, filter: "blur(8px)" },
-                  {
-                    opacity: 1,
-                    y: 0,
-                    filter: "blur(0px)",
-                    duration: 1.2,
-                    ease: "power2.out",
-                  },
-                  "-=0.7"
-                )
-                .to(textContent, { 
-                  y: isVertical ? "-20%" : "-40%", 
-                  duration: 4.5, 
+                  "-=2.0"
+                );
+
+              const quote = textContent.querySelector(".scrolly-quote");
+              const bodyParagraphs = textContent.querySelectorAll(".scrolly-body p");
+              const closing = textContent.querySelector(".scrolly-closing");
+
+              if (quote) {
+                tl.fromTo(
+                  quote,
+                  { opacity: 0, y: isVertical ? 0 : 30, filter: "blur(12px)" },
+                  { opacity: 1, y: 0, filter: "blur(0px)", duration: 2.0, ease: "power2.out" },
+                  "-=1.0"
+                );
+              }
+
+              tl.fromTo(
+                bodyParagraphs,
+                { opacity: 0, [isVertical ? "x" : "y"]: 30, filter: "blur(12px)" },
+                { 
+                  opacity: 1, 
+                  [isVertical ? "x" : "y"]: 0, 
+                  filter: "blur(0px)", 
+                  duration: 2.5, 
+                  stagger: 0.8, 
+                  ease: "power2.out" 
+                },
+                "-=1.5"
+              );
+
+              if (closing) {
+                tl.fromTo(
+                  closing,
+                  { opacity: 0, y: 20, filter: "blur(10px)" },
+                  { opacity: 1, y: 0, filter: "blur(0px)", duration: 2.0, ease: "power2.out" },
+                  "-=1.0"
+                );
+              }
+
+              tl.to(textContent, { 
+                  y: isVertical ? "-15%" : "-30%", 
+                  duration: 10, 
                   ease: "none" 
                 })
                 .to([textHeader, textContent], {
                   opacity: 0,
                   y: "-=30",
                   filter: "blur(12px)",
-                  duration: 1.0,
+                  duration: 3.0,
                   ease: "power2.in",
                 })
                 .to(
                   scrollyBg,
-                  { "--radius": "0px", duration: 1.5, ease: isRipple ? "power3.in" : "power2.inOut" },
-                  "-=0.6"
+                  { "--radius": "0px", duration: 4.5, ease: isRipple ? "power3.in" : "power2.inOut" },
+                  "-=1.5"
                 );
 
               if (snowLayer) {
