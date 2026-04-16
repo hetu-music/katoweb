@@ -354,9 +354,12 @@ export default function QingJinTianXia() {
         progressLine.style.height = `${lineTargetHeight}px`;
 
         dots.forEach((dot) => {
-          const dotRect = dot.getBoundingClientRect();
-          const dotCenter = dotRect.top + dotRect.height / 2;
-          setDotState(dot, dotCenter <= triggerY + 30);
+          const wrapper = dot.closest<HTMLElement>(".timeline-event-wrapper");
+          if (!wrapper) return;
+          const wrapperRect = wrapper.getBoundingClientRect();
+          const wrapperCenter = wrapperRect.top + wrapperRect.height / 2;
+          // 现在可以直接使用 triggerY 进行精准匹配，不再需要 +30 补偿
+          setDotState(dot, wrapperCenter <= triggerY);
         });
       };
 
