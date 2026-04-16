@@ -498,23 +498,4 @@ export const timelineData: TimelineEvent[] = [
       closing: "《烟华县志·衣冠冢志》",
     },
   },
-  {
-    id: "40",
-    year: "太业四年",
-    month: "四月",
-    content: ["烟华海八百衣冠冢成",
-    ],
-    finale: true,
-    important: true,
-    detail: {
-      title: "天岁天岁",
-      quote: "莫忘了谢幕",
-      body: [
-        "天岁者，等天之岁也。",
-        "永安长宁，不见七苦，",
-        "少年白发，如是帝都。",
-      ],
-      closing: "《天岁城志》",
-    },
-  },
 ];
