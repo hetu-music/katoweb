@@ -249,17 +249,17 @@ function ImmersiveReadingPanel({
           {/* Title & Quote */}
           <div className={`scrolly-intro-${event.id} absolute inset-0 flex flex-col items-center justify-center`}>
             <h2
-              className={`scrolly-title-${event.id} text-4xl md:text-6xl lg:text-8xl font-serif tracking-[0.6em] md:tracking-[0.8em] font-light`}
+              className={`scrolly-title-${event.id} text-4xl md:text-6xl lg:text-8xl font-serif tracking-[0.6em] md:tracking-[0.8em] pl-[0.6em] md:pl-[0.8em] font-light`}
               style={{ color: titleColor, textShadow: `0 0 40px ${accentColor}` }}
             >
               {event.detail.title}
             </h2>
             {event.detail.quote && (
               <div
-                className={`scrolly-quote-${event.id} mt-8 md:mt-16 text-sm md:text-xl font-serif tracking-[0.4em] md:tracking-[0.6em]`}
+                className={`scrolly-quote-${event.id} mt-8 md:mt-16 text-sm md:text-xl font-serif tracking-[0.4em] md:tracking-[0.6em] pl-[0.4em] md:pl-[0.6em]`}
                 style={{ color: bodyColor }}
               >
-                「 {event.detail.quote} 」
+                「{event.detail.quote}」
               </div>
             )}
           </div>
@@ -280,7 +280,7 @@ function ImmersiveReadingPanel({
           <div className={`scrolly-closing-container-${event.id} absolute inset-0 flex items-center justify-center`}>
              <div className={`scrolly-closing-${event.id} flex flex-col items-center opacity-80`}>
                 <div className="w-px h-24 bg-linear-to-b from-transparent to-current mb-8" style={{ color: accentColor }} />
-                <p className="text-sm md:text-xl tracking-[0.4em] font-serif" style={{ color: accentColor }}>
+                <p className="text-sm md:text-xl tracking-[0.4em] md:tracking-[0.6em] pl-[0.4em] md:pl-[0.6em] font-serif" style={{ color: accentColor }}>
                   {event.detail.closing}
                 </p>
              </div>
@@ -324,7 +324,7 @@ function ImmersiveReadingPanel({
         <div className="scrolly-header flex flex-col items-center mb-8 md:mb-12 shrink-0">
           <div className="w-px h-8 md:h-12 bg-linear-to-b from-transparent to-zinc-400/50 mb-6" />
           <h2
-            className="text-2xl md:text-4xl font-serif tracking-[0.3em] text-center drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+            className="text-2xl md:text-4xl font-serif tracking-[0.3em] pl-[0.3em] text-center drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]"
             style={{ color: titleColor }}
           >
             {event.detail.title}
@@ -338,13 +338,13 @@ function ImmersiveReadingPanel({
           >
             {event.detail.quote && (
               <div
-                className={`scrolly-quote-${event.id} text-lg md:text-2xl leading-loose tracking-[0.3em] font-serif text-center px-4 md:px-8 py-6 mb-8 w-full bg-linear-to-b from-transparent via-zinc-900/30 to-transparent border-t border-b`}
+                className={`scrolly-quote-${event.id} text-lg md:text-2xl leading-loose tracking-[0.3em] pl-[0.3em] font-serif text-center px-4 md:px-8 py-6 mb-8 w-full bg-linear-to-b from-transparent via-zinc-900/30 to-transparent border-t border-b`}
                 style={{
                   color: titleColor,
                   borderColor: `color-mix(in srgb, ${accentColor} 30%, transparent)`,
                 }}
               >
-                <p>「 {event.detail.quote} 」</p>
+                <p>「{event.detail.quote}」</p>
               </div>
             )}
 
