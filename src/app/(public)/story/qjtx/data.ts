@@ -75,6 +75,33 @@ export const timelineData: TimelineEvent[] = [
   },
   {
     id: "7",
+    year: "长平二十七年",
+    month: "无考",
+    content: ["墨离以天岁春日行游图闻于帝都，年十二。"],
+  },
+
+  {
+    id: "7",
+    year: "长平三十二年",
+    month: "无考",
+    content: ["离笔力日盛而画作日稀，偶有作，皆藏王公显贵，人称春风画卷。"],
+  },
+
+  {
+    id: "7",
+    year: "长平三十四年",
+    month: "无考",
+    content: ["墨离为朱砂作画。"],
+  },
+
+  {
+    id: "7",
+    year: "长平三十六年",
+    month: "无考",
+    content: ["明帝崩。"],
+  },
+  {
+    id: "7",
     year: "长平三十六年",
     month: "六月",
     content: [
@@ -88,6 +115,12 @@ export const timelineData: TimelineEvent[] = [
     year: "崇宁元年",
     month: "十月",
     content: ["朱砂入宫，封美人。"],
+  },
+  {
+    id: "8",
+    year: "崇宁元年",
+    month: "无考",
+    content: ["赵钦离乡。"],
   },
   {
     id: "9",
@@ -118,7 +151,7 @@ export const timelineData: TimelineEvent[] = [
     id: "13",
     year: "崇宁四年",
     month: "五月",
-    content: ["天阑太守谢怀瑾长女婉以殿前武试第一请任天阑守将。"],
+    content: ["天阑太守谢怀瑾长女婉以殿前武试第一请任天阑守将。", "慕清和见之，心有所悟。"],
   },
   {
     id: "14",
@@ -132,6 +165,13 @@ export const timelineData: TimelineEvent[] = [
       "民间多称奸妃。",
     ],
   },
+
+  {
+    id: "15",
+    year: "崇宁五年",
+    month: "无考",
+    content: ["徐蕙适赵氏。"],
+  },
   {
     id: "15",
     year: "崇宁七年",
@@ -143,8 +183,9 @@ export const timelineData: TimelineEvent[] = [
     year: "崇宁七年",
     month: "六月",
     content: [
-      "北岭以重赋民变，白炎借势起兵。",
+      "廿九，北岭以重赋民变，白炎借势起兵。",
       "慕清和留书离家，投白炎麾下。父兄与之绝。",
+      "守将燕子名战死，城主解钰领残兵降。"
     ],
   },
   {
@@ -152,6 +193,8 @@ export const timelineData: TimelineEvent[] = [
     year: "崇宁七年",
     month: "七月",
     content: [
+      "解钰使人带死城者衣冠归，与县主陈青。",
+      "十四日，青始集百姓之力，造陵于烟华海畔。",
       "白炎以慕清和为将，兵发北岭，",
       "攻北方第一城天阑，是为崇宁之乱。",
       "天阑守将谢婉苦战无援，不降而死，",
@@ -199,6 +242,8 @@ export const timelineData: TimelineEvent[] = [
       "国师巫晟以一人之力阻其于帝都外三日，其后不知所踪。",
       "天岁城陷。贵妃朱砂堕城殉国。",
       "白炎鸩敬帝容熙。",
+      "苏静不知所踪，谢卿自焚于室，顾长宁降。",
+      "墨离隐，人以为殁。",
     ],
     important: true,
     detail: {
@@ -222,9 +267,15 @@ export const timelineData: TimelineEvent[] = [
     year: "崇宁八年",
     month: "二月",
     content: [
-      "白炎即位，定国号周，改元永初。即周元帝。",
-      "城陷之日，苏静不知所踪，谢卿自焚于室，顾长宁降。",
-      "墨离隐，人以为殁。",
+      "白炎即位，定国号周，改元永初。即周元帝。"
+    ],
+  },
+  {
+    id: "21",
+    year: "永初元年",
+    month: "三月",
+    content: [
+      "顾氏返京。顾长宁复任修史，多秉笔直书，屡犯上忌。"
     ],
   },
   {
@@ -233,7 +284,6 @@ export const timelineData: TimelineEvent[] = [
     month: "四月",
     content: [
       "慕清和以将印换取慕氏平安百年之帝王承诺，远走海外。",
-      "顾氏一门返京，顾长宁复职修史。",
     ],
   },
   {
@@ -252,7 +302,7 @@ export const timelineData: TimelineEvent[] = [
     id: "25",
     year: "永初十年",
     month: "十二月",
-    content: ["元帝崩。诸王作乱。史称永初之乱。"],
+    content: ["元帝崩。诸王作乱。史称永初之乱。", "时有乱军夜袭，见谢婉披发执枪于城上，肝胆俱裂，乃退。",],
   },
   {
     id: "26",
@@ -268,14 +318,40 @@ export const timelineData: TimelineEvent[] = [
   },
   {
     id: "28",
-    year: "永初十二年",
+    year: "太业元年",
     month: "元月",
-    content: ["秦王白彻登基，改元太业。即周武帝。"],
+    content: ["白彻登基，改元太业。即周武帝。"],
   },
   {
     id: "29",
-    year: "永初十二年",
+    year: "太业元年",
     month: "二月",
-    content: ["武帝与摇光皇后楚落大婚，赦天下。", "遂祭宗庙，尊白炎为元皇帝。"],
+    content: ["武帝与摇光皇后楚落大婚，赦天下。",
+      "遂祭宗庙，尊白炎为元皇帝。",
+      "青川瘟疫过境，时有人亡。蕙力护二老不失，终尽瘁而死。",
+    ],
+  },
+  {
+    id: "29",
+    year: "太业二年",
+    month: "无考",
+    content: ["武帝与摇光皇后楚落大婚，赦天下。",
+      "天岁琳琅轩于遣出宫人处收画卷一幅，鉴为公子真迹，遂说城守献之于武帝。",
+    ],
+  },
+  {
+    id: "29",
+    year: "太业三年",
+    month: "无考",
+    content: ["城东设谢婉衣冠祠。",
+      "赵钦归乡。会乡人立贤女碑于县南，以志徐蕙",
+    ],
+  },
+  {
+    id: "29",
+    year: "太业四年",
+    month: "四月",
+    content: ["烟华海八百衣冠冢成",
+    ],
   },
 ];
