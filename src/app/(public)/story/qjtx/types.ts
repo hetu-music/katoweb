@@ -9,6 +9,10 @@ export type ImmersiveTheme = {
   accentColor?: string;
   /** 展开遮罩形状 SVG path（替换默认雪花形状）*/
   maskPath?: string;
+  /** 阅读排版方向，默认 horizontal */
+  layout?: "horizontal" | "vertical";
+  /** 是否启用特殊的背景视差/水纹动效 */
+  specialEffect?: "ripple" | "none";
 };
 
 export interface TimelineDetail {

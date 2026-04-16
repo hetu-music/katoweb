@@ -209,6 +209,8 @@ function ImmersiveReadingPanel({
     bodyColor = "rgb(212 212 216)", // zinc-300
     accentColor = "rgb(161 161 170)", // zinc-400
     maskPath,
+    layout = "horizontal",
+    specialEffect = "none",
   }: ImmersiveTheme = event.detail.theme ?? {};
 
   const maskUrl = maskPath ? buildMaskUrl(maskPath) : SNOWFLAKE_MASK_URL;
@@ -216,6 +218,8 @@ function ImmersiveReadingPanel({
   return (
     <div
       id={`detail-${event.id}`}
+      data-layout={layout}
+      data-effect={specialEffect}
       className="fixed inset-0 w-screen h-screen m-0 p-0 z-100 pointer-events-none flex-col items-center justify-center hidden"
     >
       {/* 展开背景（雪花/自定义形状 mask 扩展） */}
@@ -270,7 +274,11 @@ function ImmersiveReadingPanel({
             )}
 
             <div
-              className="flex flex-col gap-4 text-sm md:text-base leading-[2.5] tracking-widest font-light text-justify w-full px-8 md:px-16"
+              className={`flex gap-4 text-sm md:text-base leading-[2.5] tracking-widest font-light text-justify px-8 md:px-16 ${
+                layout === "vertical"
+                  ? "flex-row-reverse flex-wrap justify-center items-center h-[55vh] [writing-mode:vertical-rl] gap-x-8 w-full max-w-full mx-auto"
+                  : "flex-col w-full"
+              }`}
               style={{ color: bodyColor }}
             >
               {event.detail.body.map((p, i) => (
@@ -279,6 +287,8 @@ function ImmersiveReadingPanel({
                   className={
                     p === "……"
                       ? "text-center my-4 font-serif text-lg opacity-40 tracking-[0.5em]"
+                      : layout === "vertical"
+                      ? "indent-[2em]"
                       : ""
                   }
                 >
@@ -482,17 +492,24 @@ export default function QingJinTianXia() {
             );
 
             if (textHeader && textContent) {
+              const isRipple = detailContent.dataset.effect === "ripple";
+              const isVertical = detailContent.dataset.layout === "vertical";
+
               tl.set(detailContent, { display: "flex" });
 
               tl.fromTo(
                 scrollyBg,
                 { "--radius": "0px" },
-                { "--radius": "800vmax", duration: 1.5, ease: "power2.inOut" },
+                { 
+                  "--radius": isRipple ? "200vmax" : "800vmax", 
+                  duration: isRipple ? 2 : 1.5, 
+                  ease: isRipple ? "elastic.out(1.2, 0.8)" : "power2.inOut" 
+                },
                 0
               )
                 .fromTo(
                   textHeader.children,
-                  { opacity: 0, y: 30, filter: "blur(12px)" },
+                  { opacity: 0, y: isVertical ? 0 : 30, filter: "blur(12px)" },
                   {
                     opacity: 1,
                     y: 0,
@@ -505,7 +522,7 @@ export default function QingJinTianXia() {
                 )
                 .fromTo(
                   textContent,
-                  { opacity: 0, y: 60, filter: "blur(8px)" },
+                  { opacity: 0, y: isVertical ? 100 : 60, filter: "blur(8px)" },
                   {
                     opacity: 1,
                     y: 0,
@@ -515,7 +532,11 @@ export default function QingJinTianXia() {
                   },
                   "-=0.7"
                 )
-                .to(textContent, { y: "-40%", duration: 4.5, ease: "none" })
+                .to(textContent, { 
+                  y: isVertical ? "-20%" : "-40%", 
+                  duration: 4.5, 
+                  ease: "none" 
+                })
                 .to([textHeader, textContent], {
                   opacity: 0,
                   y: "-=30",
@@ -525,7 +546,7 @@ export default function QingJinTianXia() {
                 })
                 .to(
                   scrollyBg,
-                  { "--radius": "0px", duration: 1.5, ease: "power2.inOut" },
+                  { "--radius": "0px", duration: 1.5, ease: isRipple ? "power3.in" : "power2.inOut" },
                   "-=0.6"
                 );
 
