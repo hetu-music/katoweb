@@ -215,6 +215,81 @@ function ImmersiveReadingPanel({
 
   const maskUrl = maskPath ? buildMaskUrl(maskPath) : SNOWFLAKE_MASK_URL;
 
+  if (event.id === "39") {
+    return (
+      <div
+        id={`detail-${event.id}`}
+        data-layout={layout}
+        data-effect={specialEffect}
+        className="fixed inset-0 w-screen h-screen m-0 p-0 z-100 pointer-events-none flex-col items-center justify-center hidden"
+      >
+        {/* 展开背景（雪花/自定义形状 mask 扩展） */}
+        <div
+          className={`scrolly-bg-${event.id} absolute inset-0 w-full h-full z-0 overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,1)]`}
+          style={
+            {
+              background: bg,
+              WebkitMaskImage: maskUrl,
+              maskImage: maskUrl,
+              WebkitMaskRepeat: "no-repeat",
+              maskRepeat: "no-repeat",
+              WebkitMaskSize: "var(--radius, 0px)",
+              maskSize: "var(--radius, 0px)",
+              WebkitMaskPosition:
+                "calc(var(--x, 50vw) - var(--radius, 0px) / 2) calc(var(--y, 60vh) - var(--radius, 0px) / 2)",
+              maskPosition:
+                "calc(var(--x, 50vw) - var(--radius, 0px) / 2) calc(var(--y, 60vh) - var(--radius, 0px) / 2)",
+            } as React.CSSProperties
+          }
+        />
+
+        <div
+          className={`scrolly-text-${event.id} relative z-10 w-full h-full`}
+        >
+          {/* Title & Quote */}
+          <div className={`scrolly-intro-${event.id} absolute inset-0 flex flex-col items-center justify-center`}>
+            <h2
+              className={`scrolly-title-${event.id} text-4xl md:text-6xl lg:text-8xl font-serif tracking-[0.6em] md:tracking-[0.8em] font-light`}
+              style={{ color: titleColor, textShadow: `0 0 40px ${accentColor}` }}
+            >
+              {event.detail.title}
+            </h2>
+            {event.detail.quote && (
+              <div
+                className={`scrolly-quote-${event.id} mt-8 md:mt-16 text-sm md:text-xl font-serif tracking-[0.4em] md:tracking-[0.6em]`}
+                style={{ color: bodyColor }}
+              >
+                「 {event.detail.quote} 」
+              </div>
+            )}
+          </div>
+
+          {/* Body */}
+          <div className={`scrolly-body-container-${event.id} absolute inset-0 flex items-center justify-center`}>
+            <div
+              className={`scrolly-body-${event.id} flex flex-row-reverse flex-wrap justify-center items-center h-[70vh] [writing-mode:vertical-rl] gap-x-10 md:gap-x-20 w-full max-w-5xl mx-auto px-8 md:px-16 text-sm md:text-xl leading-loose tracking-[0.4em] md:tracking-[0.6em] font-light`}
+              style={{ color: bodyColor }}
+            >
+              {event.detail.body.map((p, i) => (
+                <p key={i} className="scrolly-body-line my-4">{p}</p>
+              ))}
+            </div>
+          </div>
+
+          {/* Closing */}
+          <div className={`scrolly-closing-container-${event.id} absolute inset-0 flex items-center justify-center`}>
+             <div className={`scrolly-closing-${event.id} flex flex-col items-center opacity-80`}>
+                <div className="w-px h-24 bg-linear-to-b from-transparent to-current mb-8" style={{ color: accentColor }} />
+                <p className="text-sm md:text-xl tracking-[0.4em] font-serif" style={{ color: accentColor }}>
+                  {event.detail.closing}
+                </p>
+             </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       id={`detail-${event.id}`}
@@ -263,7 +338,7 @@ function ImmersiveReadingPanel({
           >
             {event.detail.quote && (
               <div
-                className="text-lg md:text-2xl leading-loose tracking-[0.3em] font-serif text-center px-4 md:px-8 py-6 mb-8 w-full bg-linear-to-b from-transparent via-zinc-900/30 to-transparent border-t border-b"
+                className={`scrolly-quote-${event.id} text-lg md:text-2xl leading-loose tracking-[0.3em] font-serif text-center px-4 md:px-8 py-6 mb-8 w-full bg-linear-to-b from-transparent via-zinc-900/30 to-transparent border-t border-b`}
                 style={{
                   color: titleColor,
                   borderColor: `color-mix(in srgb, ${accentColor} 30%, transparent)`,
@@ -274,8 +349,8 @@ function ImmersiveReadingPanel({
             )}
 
             <div
-              className={`flex gap-4 text-sm md:text-base leading-[2.5] tracking-widest font-light text-justify px-8 md:px-16 ${layout === "vertical"
-                ? "flex-row-reverse flex-wrap justify-center items-center h-[55vh] [writing-mode:vertical-rl] gap-x-8 w-full max-w-full mx-auto"
+              className={`scrolly-body-${event.id} flex gap-4 text-sm md:text-base leading-[2.5] tracking-widest font-light text-justify px-8 md:px-16 ${layout === "vertical"
+                ? "flex-row-reverse flex-wrap justify-center items-center h-[55vh] [writing-mode:vertical-rl] gap-x-12 w-full max-w-full mx-auto"
                 : "flex-col w-full"
                 }`}
               style={{ color: bodyColor }}
@@ -297,7 +372,7 @@ function ImmersiveReadingPanel({
             </div>
 
             {event.detail.closing && (
-              <div className="mt-16 flex w-full flex-col items-end opacity-80 pr-8 md:pr-16">
+              <div className={`scrolly-closing-${event.id} mt-16 flex w-full flex-col items-end opacity-80 pr-8 md:pr-16`}>
                 <div className="w-24 h-px bg-linear-to-r from-transparent to-zinc-600 mb-6" />
                 <p
                   className="text-xs md:text-sm tracking-[0.3em] font-light"
@@ -490,10 +565,73 @@ export default function QingJinTianXia() {
               `.scrolly-snow-${event.dataset.id}`
             );
 
-            if (textHeader && textContent) {
-              const isRipple = detailContent.dataset.effect === "ripple";
-              const isVertical = detailContent.dataset.layout === "vertical";
+            const isRipple = detailContent.dataset.effect === "ripple";
+            const isVertical = detailContent.dataset.layout === "vertical";
+            const eventId = event.dataset.id;
 
+            if (eventId === "39") {
+              tl.set(detailContent, { display: "flex" });
+
+              const intro = scrollyText.querySelector(`.scrolly-intro-${eventId}`);
+              const title = scrollyText.querySelector(`.scrolly-title-${eventId}`);
+              const quote = scrollyText.querySelector(`.scrolly-quote-${eventId}`);
+              const bodyContainer = scrollyText.querySelector(`.scrolly-body-container-${eventId}`);
+              const bodyLines = scrollyText.querySelectorAll(`.scrolly-body-line`);
+              const closingContainer = scrollyText.querySelector(`.scrolly-closing-container-${eventId}`);
+              const closing = scrollyText.querySelector(`.scrolly-closing-${eventId}`);
+
+              tl.fromTo(
+                scrollyBg,
+                { "--radius": "0px" },
+                { "--radius": "150vmax", duration: 5.0, ease: "power2.inOut" },
+                0
+              )
+                // Title
+                .fromTo(
+                  title,
+                  { opacity: 0, scale: 0.8, filter: "blur(20px)", y: 30 },
+                  { opacity: 1, scale: 1, filter: "blur(0px)", y: 0, duration: 3.0, ease: "power3.out" },
+                  "-=3.5"
+                )
+                // Quote
+                .fromTo(
+                  quote,
+                  { opacity: 0, y: 20, filter: "blur(10px)" },
+                  { opacity: 1, y: 0, filter: "blur(0px)", duration: 2.5, ease: "power2.out" },
+                  "-=1.5"
+                )
+                // Hold & fade intro
+                .to([title, quote], { opacity: 0, filter: "blur(15px)", scale: 1.05, duration: 2.5, ease: "power2.inOut" }, "+=2.5")
+                .set(intro, { display: "none" })
+                
+                // Body lines
+                .fromTo(
+                  bodyLines,
+                  { opacity: 0, filter: "blur(10px)", x: 30 },
+                  { opacity: 1, filter: "blur(0px)", x: 0, duration: 2.0, stagger: 0.6, ease: "power2.out" },
+                  "-=1.0"
+                )
+                // Slow drift
+                .to(bodyContainer, { x: -50, duration: bodyLines.length * 0.6 + 5.0, ease: "none" }, "<")
+                // Fade body
+                .to(bodyLines, { opacity: 0, filter: "blur(15px)", duration: 2.5, ease: "power2.inOut" })
+                .set(bodyContainer, { display: "none" })
+                
+                // Closing
+                .fromTo(
+                  closing,
+                  { opacity: 0, y: 40, filter: "blur(15px)", scale: 0.95 },
+                  { opacity: 1, y: 0, filter: "blur(0px)", scale: 1, duration: 3.0, ease: "power3.out" },
+                  "+=0.5"
+                )
+                .to(closing, { opacity: 0, filter: "blur(20px)", duration: 2.5, ease: "power2.in" }, "+=3.5")
+                
+                // Background
+                .to(scrollyBg, { "--radius": "0px", duration: 4.0, ease: "power2.inOut" }, "-=1.5");
+
+              tl.set(detailContent, { display: "none" });
+
+            } else if (textHeader && textContent) {
               tl.set(detailContent, { display: "flex" });
 
               tl.fromTo(
