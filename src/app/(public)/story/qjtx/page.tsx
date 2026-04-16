@@ -517,7 +517,7 @@ export default function QingJinTianXia() {
                     stagger: 0.3,
                     ease: "power2.out",
                   },
-                  "-=2.0"
+                  "-=4.5"
                 )
                 .fromTo(
                   textContent,
@@ -529,7 +529,7 @@ export default function QingJinTianXia() {
                     duration: 2.0,
                     ease: "power2.out",
                   },
-                  "-=1.0"
+                  "-=1.5"
                 )
                 .to(textContent, {
                   y: isVertical ? "-20%" : "-40%",
