@@ -478,7 +478,7 @@ export const timelineData: TimelineEvent[] = [
         "县中青壮皆战死北岭，余民多孤儿寡母，而劳作不息。",
         "太业四年四月初五，造物终成，是为烟华海八百衣冠冢。",
       ],
-      closing: "《烟华县志·衣冠冢志》",
+      closing: "《烟华县志・衣冠冢志》",
       theme: {
         bg: "radial-gradient(circle at 50% 50%, rgba(20, 10, 15, 0.5) 0%, rgba(5, 2, 4, 0.95) 100%), url(/story/qjtx/39.avif) center/cover no-repeat",
         titleColor: "#e4b5b2",

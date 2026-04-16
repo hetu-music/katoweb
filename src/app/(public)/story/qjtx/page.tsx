@@ -278,22 +278,22 @@ function ImmersiveReadingPanel({
 
           {/* Closing */}
           <div className={`scrolly-closing-container-${event.id} absolute inset-0 flex items-center justify-center`}>
-             <div className={`scrolly-closing-${event.id} relative flex flex-col items-center`}>
-                {/* 碑体容器 */}
-                <div className="relative pt-24 pb-32 px-12 md:px-20 border-t border-x border-white/10 rounded-t-[160px] bg-linear-to-b from-white/[0.03] to-transparent backdrop-blur-xs">
-                   
-                   <p className="text-xl md:text-3xl [writing-mode:vertical-rl] tracking-[0.6em] md:tracking-[0.8em] font-serif leading-none opacity-90 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" 
-                      style={{ color: '#f8f1e7' }}>
-                      {event.detail.closing}
-                   </p>
-                   
-                   {/* 底部渐变遮罩，模拟碑体地基消失感 */}
-                   <div className="absolute bottom-0 left-0 right-0 h-40 bg-linear-to-t from-[#050204] to-transparent" />
-                </div>
-                
-                {/* 装饰性暗影 */}
-                <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-64 h-32 bg-white/5 blur-3xl rounded-full -z-10" />
-             </div>
+            <div className={`scrolly-closing-${event.id} relative flex flex-col items-center`}>
+              {/* 碑体容器 */}
+              <div className="relative pt-24 pb-32 px-12 md:px-20 border-t border-x border-white/10 rounded-t-[160px] bg-linear-to-b from-white/3 to-transparent backdrop-blur-xs">
+
+                <p className="text-xl md:text-3xl [writing-mode:vertical-rl] tracking-[0.6em] md:tracking-[0.8em] font-serif leading-none opacity-90 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
+                  style={{ color: '#f8f1e7' }}>
+                  {event.detail.closing}
+                </p>
+
+                {/* 底部渐变遮罩，模拟碑体地基消失感 */}
+                <div className="absolute bottom-0 left-0 right-0 h-40 bg-linear-to-t from-[#050204] to-transparent" />
+              </div>
+
+              {/* 装饰性暗影 */}
+              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-64 h-32 bg-white/5 blur-3xl rounded-full -z-10" />
+            </div>
           </div>
         </div>
       </div>
@@ -613,7 +613,7 @@ export default function QingJinTianXia() {
                 // Hold & fade intro
                 .to([title, quote], { opacity: 0, filter: "blur(15px)", scale: 1.05, duration: 2.5, ease: "power2.inOut" }, "+=2.5")
                 .set(intro, { display: "none" })
-                
+
                 // Body lines
                 .fromTo(
                   bodyLines,
@@ -625,7 +625,7 @@ export default function QingJinTianXia() {
                 // Fade body
                 .to(bodyLines, { opacity: 0, filter: "blur(15px)", duration: 2.5, ease: "power2.inOut" })
                 .set(bodyContainer, { display: "none" })
-                
+
                 // Closing
                 .fromTo(
                   closing,
@@ -634,7 +634,7 @@ export default function QingJinTianXia() {
                   "+=1.0"
                 )
                 .to(closing, { opacity: 0, y: -20, filter: "blur(30px)", duration: 4.0, ease: "power2.in" }, "+=6.0")
-                
+
                 // Background
                 .to(scrollyBg, { "--radius": "0px", duration: 4.0, ease: "power2.inOut" }, "-=1.5");
 
