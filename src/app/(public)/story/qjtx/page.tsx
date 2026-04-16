@@ -350,8 +350,8 @@ export default function QingJinTianXia() {
 
               tl.fromTo(
                 scrollyBg,
-                { opacity: 0 },
-                { opacity: 1, duration: 1.2, ease: "power2.inOut" },
+                { "--radius": "0px" },
+                { "--radius": "800vmax", duration: 1.5, ease: "power2.inOut" },
                 0
               )
                 .fromTo(
@@ -663,32 +663,18 @@ export default function QingJinTianXia() {
           >
             {/* Elegant Snow-night Background (Snowflake Shape Expansion) */}
             <div
-              className={`scrolly-bg-${event.id} absolute inset-0 w-full h-full bg-[#030508] z-0 overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,1)] opacity-0`}
+              className={`scrolly-bg-${event.id} absolute inset-0 w-full h-full bg-[#030508] z-0 overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,1)]`}
+              style={{
+                WebkitMaskImage: `url('data:image/svg+xml,%3Csvg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M50 0 L55 35 L80 20 L65 45 L100 50 L65 55 L80 80 L55 65 L50 100 L45 65 L20 80 L35 55 L0 50 L35 45 L20 20 L45 35 Z" fill="black" /%3E%3C/svg%3E')`,
+                maskImage: `url('data:image/svg+xml,%3Csvg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M50 0 L55 35 L80 20 L65 45 L100 50 L65 55 L80 80 L55 65 L50 100 L45 65 L20 80 L35 55 L0 50 L35 45 L20 20 L45 35 Z" fill="black" /%3E%3C/svg%3E')`,
+                WebkitMaskRepeat: 'no-repeat',
+                maskRepeat: 'no-repeat',
+                WebkitMaskSize: 'var(--radius, 0px)',
+                maskSize: 'var(--radius, 0px)',
+                WebkitMaskPosition: 'calc(var(--x, 50vw) - var(--radius, 0px) / 2) calc(var(--y, 60vh) - var(--radius, 0px) / 2)',
+                maskPosition: 'calc(var(--x, 50vw) - var(--radius, 0px) / 2) calc(var(--y, 60vh) - var(--radius, 0px) / 2)'
+              } as React.CSSProperties}
             >
-              {/* Moonlight / Frost Center Glow */}
-              <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,rgba(226,232,240,0.06)_0%,transparent_70%)] opacity-100 pointer-events-none" />
-
-              {/* Elegant slow-spinning astrological/lore emblem background */}
-              <div className="absolute inset-0 z-0 flex items-center justify-center opacity-[0.015] pointer-events-none">
-                <svg viewBox="0 0 200 200" className="w-[150vw] h-[150vw] md:w-[60vw] md:h-[60vw] animate-[spin_120s_linear_infinite] text-white will-change-transform">
-                  <circle cx="100" cy="100" r="95" fill="none" stroke="currentColor" strokeWidth="0.5" />
-                  <circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2 6" />
-                  <circle cx="100" cy="100" r="60" fill="none" stroke="currentColor" strokeWidth="0.5" />
-                  <path d="M100 5 L100 195 M5 100 L195 100 M33 33 L167 167 M33 167 L167 33" stroke="currentColor" strokeWidth="0.2" />
-                  <polygon points="100,20 180,100 100,180 20,100" fill="none" stroke="currentColor" strokeWidth="0.3" />
-                  <polygon points="100,40 160,100 100,160 40,100" fill="none" stroke="currentColor" strokeWidth="0.3" />
-                </svg>
-              </div>
-
-              {/* GPU-Optimized Falling Snow overlay - translates via GSAP instead of repainting background-position */}
-              <div
-                className={`scrolly-snow-${event.id} absolute -inset-[20%] z-0 opacity-40 pointer-events-none will-change-transform`}
-                style={{
-                  backgroundImage:
-                    'url("data:image/svg+xml,%3Csvg viewBox=%220 0 400 400%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cpath d=%22M50 50h1v1h-1zM150 120h1.5v1.5h-1.5zM250 80h1v1h-1zM350 180h2v2h-2zM80 250h1.5v1.5h-1.5zM180 320h1v1h-1zM280 220h1.5v1.5h-1.5zM320 350h1v1h-1zM20 180h1.5v1.5h-1.5zM120 280h1v1h-1zM220 150h2v2h-2zM380 50h1v1h-1zM90 380h1.5v1.5h-1.5z%22 fill=%22rgba(255,255,255,0.8)%22/%3E%3C/svg%3E")',
-                  backgroundSize: '150px 150px',
-                }}
-              />
             </div>
 
             <div className={`scrolly-text-${event.id} relative z-10 flex flex-col items-center w-full max-w-2xl px-6 md:px-0 h-full py-[15vh]`}>
@@ -700,7 +686,7 @@ export default function QingJinTianXia() {
               </div>
 
               {/* Scrolling Content Block */}
-              <div className="relative w-full flex-1 overflow-hidden">
+              <div className="relative w-full flex-1 overflow-hidden mask-[linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)]">
                 <div className={`scrolly-text-content-${event.id} flex flex-col items-center w-full pb-[30vh] pt-[5vh]`}>
                   {event.detail.quote && (
                     <div className="text-lg md:text-2xl leading-loose tracking-[0.3em] font-serif text-zinc-100 text-center px-4 md:px-8 py-6 mb-8 w-full bg-linear-to-b from-transparent via-zinc-900/30 to-transparent border-t border-b border-zinc-800/30">
