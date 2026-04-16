@@ -246,9 +246,9 @@ function ImmersiveReadingPanel({
             WebkitMaskSize: "var(--radius, 0px)",
             maskSize: "var(--radius, 0px)",
             WebkitMaskPosition:
-              "calc(var(--x, 50vw) - var(--radius, 0px) / 2) calc(var(--y, 60vh) - var(--radius, 0px) / 2)",
+              "calc(var(--x, 50vw) - var(--radius, 0px) / 2) calc(var(--y, 55vh) - var(--radius, 0px) / 2)",
             maskPosition:
-              "calc(var(--x, 50vw) - var(--radius, 0px) / 2) calc(var(--y, 60vh) - var(--radius, 0px) / 2)",
+              "calc(var(--x, 50vw) - var(--radius, 0px) / 2) calc(var(--y, 55vh) - var(--radius, 0px) / 2)",
           } as React.CSSProperties
         }
       />
@@ -347,7 +347,7 @@ export default function QingJinTianXia() {
         if (!containerEl || !progressLine) return;
 
         const rect = containerEl.getBoundingClientRect();
-        const triggerY = window.innerHeight * 0.6;
+        const triggerY = window.innerHeight * 0.55;
 
         let lineTargetHeight = triggerY - rect.top;
         lineTargetHeight = Math.max(0, Math.min(lineTargetHeight, rect.height));
@@ -379,7 +379,7 @@ export default function QingJinTianXia() {
               trigger: event,
               pinnedContainer: ".timeline-container",
               start: "top 90%",
-              end: "center 60%",
+              end: "center 55%",
               scrub: 1.5,
             },
           }
@@ -414,7 +414,7 @@ export default function QingJinTianXia() {
               scrollTrigger: {
                 trigger: event,
                 pinnedContainer: ".timeline-container",
-                start: "center 60%",
+                start: "center 55%",
                 end: "+=6000",
                 scrub: true,
                 pin: ".timeline-container",
@@ -460,7 +460,7 @@ export default function QingJinTianXia() {
         scrollTrigger: {
           trigger: ".timeline-container",
           start: "bottom 80%",
-          end: "bottom 60%",
+          end: "bottom 55%",
           scrub: true,
         },
       });
