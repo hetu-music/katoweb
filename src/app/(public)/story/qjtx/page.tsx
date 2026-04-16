@@ -565,7 +565,7 @@ export default function QingJinTianXia() {
         }}
       />
 
-      <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(ellipse_at_top,transparent_0%,rgba(0,0,0,0.9)_100%)]" />
+
 
       <section className="relative z-10 flex h-svh flex-col items-center justify-center">
         <div className="mt-[-10vh] flex flex-col items-center gap-12 sm:gap-16">
