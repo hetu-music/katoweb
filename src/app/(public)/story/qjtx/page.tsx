@@ -374,7 +374,7 @@ export default function QingJinTianXia() {
         // ── B. 节点入场位移动画：target = content, trigger = wrapper ──
         gsap.fromTo(
           content,
-          { opacity: 0, y: 80, filter: "blur(10px)" },
+          { opacity: 0, y: 70, filter: "blur(10px)" },
           {
             opacity: 1,
             y: 0,
@@ -382,7 +382,7 @@ export default function QingJinTianXia() {
             scrollTrigger: {
               trigger: wrapper,
               pinnedContainer: ".timeline-container",
-              start: "top+=80 90%",
+              start: "top 90%",
               end: "center 55%",
               scrub: 1.5,
             },
