@@ -7,13 +7,13 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import { useEffect, useRef } from "react";
 import { timelineData } from "../qjtx/data";
-import { type ImmersiveTheme } from "./types";
 import {
   CUSTOM_NODE_REGISTRY,
-  defaultTheme,
   DefaultNodeLayout,
   animateDefault,
+  defaultTheme,
 } from "./custom-nodes";
+import { type ImmersiveTheme } from "./types";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -374,7 +374,7 @@ export default function QingJinTianXia() {
         // ── B. 节点入场位移动画：target = content, trigger = wrapper ──
         gsap.fromTo(
           content,
-          { opacity: 0, y: 70, filter: "blur(10px)" },
+          { opacity: 0, y: 80, filter: "blur(10px)" },
           {
             opacity: 1,
             y: 0,
@@ -382,7 +382,7 @@ export default function QingJinTianXia() {
             scrollTrigger: {
               trigger: wrapper,
               pinnedContainer: ".timeline-container",
-              start: "top 90%",
+              start: "top+=80 90%",
               end: "center 55%",
               scrub: 1.5,
             },
