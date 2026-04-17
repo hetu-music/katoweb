@@ -1,6 +1,11 @@
 import type { ImmersiveTheme, TimelineEvent } from "../types";
 import { defaultTheme, DefaultNodeLayout, animateDefault } from "./DefaultNode";
 import {
+  theme as theme23,
+  NodeLayout as NodeLayout23,
+  animate as animate23,
+} from "./Node23";
+import {
   theme as theme39,
   NodeLayout as NodeLayout39,
   animate as animate39,
@@ -34,9 +39,9 @@ export interface CustomNodeDef {
 // 3. 在下方注册表中添加一行
 
 export const CUSTOM_NODE_REGISTRY: Record<string, CustomNodeDef> = {
+  "23": { theme: theme23, Component: NodeLayout23, animate: animate23 },
   "39": { theme: theme39, Component: NodeLayout39, animate: animate39 },
   // "4":  { theme: theme4,  Component: NodeLayout4,  animate: animate4  },
-  // "23": { theme: theme23, Component: NodeLayout23, animate: animate23 },
   // ...更多自定义节点在此注册
 };
 
