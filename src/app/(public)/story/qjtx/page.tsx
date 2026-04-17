@@ -484,50 +484,47 @@ export default function QingJinTianXia() {
         scrollTrigger: {
           trigger: ".footer-final",
           start: "top top", // 当 footer 到达视口顶部时固定
-          end: "+=250%", // 增加滚动距离，让动画更缓慢细腻
+          end: "+=300%", // 增加滚动距离，让动画更缓慢细腻
           scrub: 1.5, // 增加 scrub 延迟，让过渡更顺滑
           pin: true,
           pinSpacing: true,
         },
       });
 
-      gsap.set(".falling-tear", { opacity: 0, y: 0, scale: 1 });
+      // 初始大小设为 1.2 以完美衔接红线末端的 tear-drop-tip
+      gsap.set(".falling-tear", { opacity: 0, y: 0, scale: 1.2 });
       
       endTl
-        // 泪滴从视野顶部（原本红线结束的位置）缓缓坠落
-        .fromTo(
-          ".falling-tear",
-          { opacity: 1, y: "0vh", scale: 1 },
-          { y: "45vh", duration: 3, ease: "power1.in" }
-        )
+        // 确保在滚动到此之前泪滴不可见，防止和红线尾端同时出现
+        .set(".falling-tear", { opacity: 1 })
+        // 泪滴缓缓坠落到正中
+        .to(".falling-tear", { y: "50vh", scale: 1, duration: 3, ease: "power1.in" })
+        .add("hit")
         // 泪滴触底，如墨滴入水般极致晕开
         .to(".falling-tear", {
-          opacity: 0,
-          scale: 15, // 放大倍数增加，模拟墨迹散开
-          filter: "blur(30px)",
-          duration: 1.5,
+          scale: 45, // 巨大的放大倍数，模拟墨迹散开
+          filter: "blur(25px)",
+          duration: 4,
           ease: "power2.out",
-        })
+        }, "hit")
+        // 墨迹缓慢消散
+        .to(".falling-tear", {
+          opacity: 0,
+          duration: 3,
+          ease: "power2.inOut",
+        }, "hit+=1")
         // 文本从浓墨中缓缓浮现
         .fromTo(
           ".bloom-content",
-          { opacity: 0, filter: "blur(40px)", y: 10, scale: 0.95 },
+          { opacity: 0, filter: "blur(30px)", scale: 0.95 },
           {
             opacity: 1,
             filter: "blur(0px)",
-            y: 0,
             scale: 1,
-            duration: 3,
+            duration: 4,
             ease: "power2.inOut",
           },
-          "-=1" // 在泪滴散开的过程中，文字就开始显现
-        )
-        // 底部信息缓缓浮现
-        .fromTo(
-          ".bottom-info",
-          { opacity: 0, y: 10, filter: "blur(10px)" },
-          { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.5, ease: "power1.out" },
-          "-=1"
+          "hit+=0.5" // 在泪滴散开的过程中，文字就开始被"洗"出来
         );
 
       return () => {
@@ -715,12 +712,9 @@ export default function QingJinTianXia() {
         <ImmersiveReadingPanel key={`detail-${event.id}`} event={event} />
       ))}
 
-      <div className="footer-trigger h-[10vh]" />
-
       <footer className="footer-final relative z-10 w-full min-h-screen bg-black flex flex-col items-center justify-center overflow-hidden">
 
-
-        <div className="falling-tear absolute top-0 left-14 md:left-1/2 -translate-x-1/2 w-4 h-5 opacity-0 pointer-events-none">
+        <div className="falling-tear absolute top-0 left-14 md:left-1/2 -translate-x-1/2 w-3 h-4 opacity-0 pointer-events-none">
           <svg
             viewBox="0 0 100 120"
             className="w-full h-full fill-red-700 drop-shadow-[0_0_12px_rgba(185,28,28,0.9)]"
@@ -739,12 +733,6 @@ export default function QingJinTianXia() {
             </div>
             <p className="text-[11px] md:text-xs font-light tracking-[0.5em] text-zinc-500 uppercase opacity-60">
               河图作品勘鉴 · 终章
-            </p>
-          </div>
-
-          <div className="mt-20 opacity-0 bottom-info">
-            <p className="text-[10px] tracking-widest text-zinc-800 font-serif">
-              Qing Jin Tian Xia · Chronicle Experience
             </p>
           </div>
         </div>
