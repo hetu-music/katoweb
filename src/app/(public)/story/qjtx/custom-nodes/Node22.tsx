@@ -2,7 +2,7 @@ import gsap from "gsap";
 import type { ImmersiveTheme, TimelineEvent } from "../types";
 
 export const theme: ImmersiveTheme = {
-  bg: "radial-gradient(circle at bottom, rgba(8, 47, 73, 0.8) 0%, rgba(2, 6, 23, 0.95) 100%), url(/story/qjtx/29.avif) center/cover no-repeat fixed",
+  bg: "radial-gradient(circle at bottom, rgba(8, 47, 73, 0.8) 0%, rgba(2, 6, 23, 0.95) 100%), url(/story/qjtx/22.avif) center/cover no-repeat fixed",
   titleColor: "#bae6fd",
   bodyColor: "#e0f2fe",
   accentColor: "#0ea5e9",

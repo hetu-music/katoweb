@@ -14,10 +14,10 @@ import {
 import { theme as theme4, NodeLayout as NodeLayout4, animate as animate4 } from "./Node4";
 import { theme as theme26, NodeLayout as NodeLayout26, animate as animate26 } from "./Node26";
 import { theme as theme28, NodeLayout as NodeLayout28, animate as animate28 } from "./Node28";
-import { theme as theme29, NodeLayout as NodeLayout29, animate as animate29 } from "./Node29";
+import { theme as theme22, NodeLayout as NodeLayout22, animate as animate22 } from "./Node22";
 import { theme as theme31, NodeLayout as NodeLayout31, animate as animate31 } from "./Node31";
 import { theme as theme32, NodeLayout as NodeLayout32, animate as animate32 } from "./Node32";
-import { theme as theme37, NodeLayout as NodeLayout37, animate as animate37 } from "./Node37";
+import { theme as theme9, NodeLayout as NodeLayout9, animate as animate9 } from "./Node9";
 import { theme as theme38, NodeLayout as NodeLayout38, animate as animate38 } from "./Node38";
 
 // ─── Custom Node Definition ───────────────────────────────────────────────────
@@ -47,10 +47,10 @@ export const CUSTOM_NODE_REGISTRY: Record<string, CustomNodeDef> = {
   "23": { theme: theme23, Component: NodeLayout23, animate: animate23 },
   "26": { theme: theme26, Component: NodeLayout26, animate: animate26 },
   "28": { theme: theme28, Component: NodeLayout28, animate: animate28 },
-  "29": { theme: theme29, Component: NodeLayout29, animate: animate29 },
+  "22": { theme: theme22, Component: NodeLayout22, animate: animate22 },
   "31": { theme: theme31, Component: NodeLayout31, animate: animate31 },
   "32": { theme: theme32, Component: NodeLayout32, animate: animate32 },
-  "37": { theme: theme37, Component: NodeLayout37, animate: animate37 },
+  "9":  { theme: theme9,  Component: NodeLayout9,  animate: animate9  },
   "38": { theme: theme38, Component: NodeLayout38, animate: animate38 },
   "39": { theme: theme39, Component: NodeLayout39, animate: animate39 },
 };
