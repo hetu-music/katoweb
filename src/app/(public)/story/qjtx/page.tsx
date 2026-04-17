@@ -484,50 +484,50 @@ export default function QingJinTianXia() {
         scrollTrigger: {
           trigger: ".footer-final",
           start: "top top", // 当 footer 到达视口顶部时固定
-          end: "+=150%", // 滚动 1.5 倍视口高度来播放动画
-          scrub: 1,
+          end: "+=250%", // 增加滚动距离，让动画更缓慢细腻
+          scrub: 1.5, // 增加 scrub 延迟，让过渡更顺滑
           pin: true,
           pinSpacing: true,
         },
       });
 
-      gsap.set(".falling-tear", { opacity: 0, y: -50, scale: 0.8 });
+      gsap.set(".falling-tear", { opacity: 0, y: 0, scale: 1 });
       
       endTl
-        // 泪滴从上方坠落
+        // 泪滴从视野顶部（原本红线结束的位置）缓缓坠落
         .fromTo(
           ".falling-tear",
-          { opacity: 1, y: "-10vh", scale: 1 },
-          { y: "45vh", duration: 1.5, ease: "power2.in" }
+          { opacity: 1, y: "0vh", scale: 1 },
+          { y: "45vh", duration: 3, ease: "power1.in" }
         )
-        // 泪滴砸地碎裂晕染
+        // 泪滴触底，如墨滴入水般极致晕开
         .to(".falling-tear", {
           opacity: 0,
-          scale: 6,
-          filter: "blur(20px)",
-          duration: 0.6,
+          scale: 15, // 放大倍数增加，模拟墨迹散开
+          filter: "blur(30px)",
+          duration: 1.5,
           ease: "power2.out",
         })
-        // 文本晕染出现
+        // 文本从浓墨中缓缓浮现
         .fromTo(
           ".bloom-content",
-          { opacity: 0, filter: "blur(25px)", y: 30, scale: 0.9 },
+          { opacity: 0, filter: "blur(40px)", y: 10, scale: 0.95 },
           {
             opacity: 1,
             filter: "blur(0px)",
             y: 0,
             scale: 1,
-            duration: 2,
-            ease: "power2.out",
+            duration: 3,
+            ease: "power2.inOut",
           },
-          "-=0.4"
+          "-=1" // 在泪滴散开的过程中，文字就开始显现
         )
-        // 底部信息浮现
+        // 底部信息缓缓浮现
         .fromTo(
           ".bottom-info",
-          { opacity: 0, y: 15 },
-          { opacity: 1, y: 0, duration: 0.8, ease: "power1.out" },
-          "-=0.5"
+          { opacity: 0, y: 10, filter: "blur(10px)" },
+          { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.5, ease: "power1.out" },
+          "-=1"
         );
 
       return () => {
