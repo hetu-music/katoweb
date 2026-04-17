@@ -34,6 +34,18 @@ const ACTION_COLORS: Record<string, string> = {
   DELETE: "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10",
 };
 
+/** Returns only keys that differ between old and new (UPDATE diffs). */
+function getDiffKeys(
+  oldData: Record<string, unknown> | null,
+  newData: Record<string, unknown> | null,
+): string[] {
+  if (!oldData || !newData) return [];
+  const keys = new Set([...Object.keys(oldData), ...Object.keys(newData)]);
+  return [...keys].filter(
+    (k) => JSON.stringify(oldData[k]) !== JSON.stringify(newData[k]),
+  );
+}
+
 function shortId(id: string | null): string {
   if (!id) return "—";
   return id.slice(0, 8) + "…";
@@ -194,31 +206,92 @@ export default function AuditLogsPanel() {
                   )}
                 </div>
 
-                {/* Expanded JSON diff */}
-                {isExpanded && hasData && (
-                  <div className="border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-px bg-slate-100 dark:bg-slate-800 animate-in fade-in slide-in-from-top-1 duration-150">
-                    {log.old_data !== null && (
-                      <div className="bg-white dark:bg-slate-900 p-3 space-y-1">
-                        <p className="text-[10px] font-bold uppercase tracking-wide text-rose-500">
-                          旧数据
-                        </p>
-                        <pre className="text-[11px] text-slate-600 dark:text-slate-400 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed">
-                          {JSON.stringify(log.old_data, null, 2)}
-                        </pre>
+                {/* Expanded diff */}
+                {isExpanded && hasData && (() => {
+                  const isUpdate =
+                    log.action_type.toUpperCase() === "UPDATE" &&
+                    log.old_data !== null &&
+                    log.new_data !== null;
+                  const diffKeys = isUpdate
+                    ? getDiffKeys(log.old_data, log.new_data)
+                    : [];
+
+                  if (isUpdate) {
+                    return (
+                      <div className="border-t border-slate-100 dark:border-slate-800 animate-in fade-in slide-in-from-top-1 duration-150">
+                        {diffKeys.length === 0 ? (
+                          <p className="px-4 py-3 text-xs text-slate-400">
+                            无字段变更
+                          </p>
+                        ) : (
+                          <table className="w-full text-[11px]">
+                            <thead>
+                              <tr className="border-b border-slate-100 dark:border-slate-800">
+                                <th className="px-4 py-1.5 text-left font-bold text-slate-400 uppercase tracking-wide text-[10px] w-1/4">
+                                  字段
+                                </th>
+                                <th className="px-4 py-1.5 text-left font-bold text-rose-400 uppercase tracking-wide text-[10px] w-[37.5%]">
+                                  旧值
+                                </th>
+                                <th className="px-4 py-1.5 text-left font-bold text-emerald-500 uppercase tracking-wide text-[10px] w-[37.5%]">
+                                  新值
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {diffKeys.map((k) => (
+                                <tr
+                                  key={k}
+                                  className="border-b border-slate-50 dark:border-slate-800/60 last:border-0"
+                                >
+                                  <td className="px-4 py-1.5 font-mono text-slate-500 dark:text-slate-400 align-top">
+                                    {k}
+                                  </td>
+                                  <td className="px-4 py-1.5 font-mono text-rose-500 dark:text-rose-400 align-top break-all">
+                                    {log.old_data![k] === null
+                                      ? <span className="italic text-slate-400">null</span>
+                                      : String(log.old_data![k])}
+                                  </td>
+                                  <td className="px-4 py-1.5 font-mono text-emerald-600 dark:text-emerald-400 align-top break-all">
+                                    {log.new_data![k] === null
+                                      ? <span className="italic text-slate-400">null</span>
+                                      : String(log.new_data![k])}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        )}
                       </div>
-                    )}
-                    {log.new_data !== null && (
-                      <div className="bg-white dark:bg-slate-900 p-3 space-y-1">
-                        <p className="text-[10px] font-bold uppercase tracking-wide text-emerald-500">
-                          新数据
-                        </p>
-                        <pre className="text-[11px] text-slate-600 dark:text-slate-400 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed">
-                          {JSON.stringify(log.new_data, null, 2)}
-                        </pre>
-                      </div>
-                    )}
-                  </div>
-                )}
+                    );
+                  }
+
+                  // INSERT or DELETE — show the full data block
+                  return (
+                    <div className="border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-px bg-slate-100 dark:bg-slate-800 animate-in fade-in slide-in-from-top-1 duration-150">
+                      {log.old_data !== null && (
+                        <div className="bg-white dark:bg-slate-900 p-3 space-y-1">
+                          <p className="text-[10px] font-bold uppercase tracking-wide text-rose-500">
+                            旧数据
+                          </p>
+                          <pre className="text-[11px] text-slate-600 dark:text-slate-400 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed">
+                            {JSON.stringify(log.old_data, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+                      {log.new_data !== null && (
+                        <div className="bg-white dark:bg-slate-900 p-3 space-y-1">
+                          <p className="text-[10px] font-bold uppercase tracking-wide text-emerald-500">
+                            新数据
+                          </p>
+                          <pre className="text-[11px] text-slate-600 dark:text-slate-400 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed">
+                            {JSON.stringify(log.new_data, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             );
           })}
