@@ -332,7 +332,7 @@ export default function QingJinTianXia() {
         gsap.to(dot, {
           duration: 0.35,
           borderColor: active ? "#b91c1c" : "#71717a",
-          backgroundColor: active ? "#7f1d1d" : "#09090b",
+          backgroundColor: active ? "#7f1d1d" : "#000000",
           boxShadow: active
             ? "0 0 15px rgba(185,28,28,0.8)"
             : "0 0 0 rgba(0,0,0,0)",
@@ -504,11 +504,7 @@ export default function QingJinTianXia() {
           duration: 0.6,
           ease: "power2.out",
         })
-        .to(
-          ".ink-pool",
-          { scale: 1, opacity: 1, duration: 2, ease: "power2.out" },
-          "-=0.3"
-        )
+
         .fromTo(
           ".bloom-content",
           { opacity: 0, filter: "blur(20px)", y: 20, scale: 0.95 },
@@ -538,12 +534,13 @@ export default function QingJinTianXia() {
   return (
     <div
       ref={container}
-      className="relative min-h-screen overflow-x-hidden bg-[#09090b] font-serif text-zinc-300 selection:bg-red-900 selection:text-white"
+      className="relative min-h-screen overflow-x-hidden bg-black font-serif text-zinc-300 selection:bg-red-900 selection:text-white"
     >
       <style jsx global>{`
         html,
         body {
           height: auto !important;
+          background: black !important;
           overflow-x: hidden !important;
           -ms-overflow-style: none !important;
           scrollbar-width: none !important;
@@ -573,16 +570,7 @@ export default function QingJinTianXia() {
         }
       `}</style>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.12 }}
-        transition={{ duration: 2 * animationSlowdown, ease: motionEase }}
-        className="bg-noise pointer-events-none fixed inset-0 z-0 mix-blend-overlay"
-        style={{
-          backgroundImage:
-            'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")',
-        }}
-      />
+
 
 
 
@@ -666,7 +654,7 @@ export default function QingJinTianXia() {
                 className="timeline-event-wrapper my-10 w-full md:my-20"
               >
                 <div className="timeline-event-content group relative flex w-full flex-col md:flex-row md:justify-center">
-                  <div className="event-dot absolute top-1/2 left-10 z-20 h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 origin-center rounded-full border border-zinc-500 bg-zinc-950 md:left-1/2 md:h-[13px] md:w-[13px]" />
+                  <div className="event-dot absolute top-1/2 left-10 z-20 h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 origin-center rounded-full border border-zinc-500 bg-black md:left-1/2 md:h-[13px] md:w-[13px]" />
 
                   <div className="flex w-full justify-start pl-18 pr-2 md:hidden">
                     <div className="flex flex-row items-center gap-4 sm:gap-6">
@@ -724,7 +712,7 @@ export default function QingJinTianXia() {
       <div className="footer-trigger h-[10vh]" />
 
       <footer className="footer-final relative z-10 w-full min-h-screen bg-black flex flex-col items-center justify-center overflow-hidden">
-        <div className="ink-pool absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[120vw] bg-[radial-gradient(circle,rgba(127,29,29,0.15)_0%,transparent_70%)] scale-0 opacity-0 pointer-events-none" />
+
 
         <div className="falling-tear absolute top-0 left-1/2 -translate-x-1/2 w-4 h-5 opacity-0 pointer-events-none">
           <svg

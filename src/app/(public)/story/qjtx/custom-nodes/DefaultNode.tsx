@@ -4,7 +4,7 @@ import type { ImmersiveTheme, TimelineEvent } from "../types";
 // ─── Default Theme ─────────────────────────────────────────────────────────────
 
 export const defaultTheme: Required<ImmersiveTheme> = {
-  bg: "#030508",
+  bg: "#000000",
   titleColor: "white",
   bodyColor: "rgb(212 212 216)", // zinc-300
   accentColor: "rgb(161 161 170)", // zinc-400
