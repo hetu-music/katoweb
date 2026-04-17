@@ -465,23 +465,12 @@ export default function QingJinTianXia() {
       });
 
       // --- 终章：泪滴坠落与墨染动画 ---
-      const endTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: ".footer-final",
-          start: "top bottom",
-          end: "bottom bottom",
-          scrub: 1.2,
-          pin: true,
-          pinSpacing: true,
-        },
-      });
-
-      gsap.set(".falling-tear", { y: -200, opacity: 0, scale: 0.8 });
+      
+      // 1. 红线底部生成泪滴
       gsap.set(".tear-drop-tip", { opacity: 0, scale: 0 });
-
       gsap.to(".tear-drop-tip", {
         opacity: 1,
-        scale: 1,
+        scale: 1.2,
         scrollTrigger: {
           trigger: ".timeline-container",
           start: "bottom 80%",
@@ -490,37 +479,54 @@ export default function QingJinTianXia() {
         },
       });
 
+      // 2. Footer 固定并播放滴落和晕染动画
+      const endTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: ".footer-final",
+          start: "top top", // 当 footer 到达视口顶部时固定
+          end: "+=150%", // 滚动 1.5 倍视口高度来播放动画
+          scrub: 1,
+          pin: true,
+          pinSpacing: true,
+        },
+      });
+
+      gsap.set(".falling-tear", { opacity: 0, y: -50, scale: 0.8 });
+      
       endTl
+        // 泪滴从上方坠落
         .fromTo(
           ".falling-tear",
-          { y: "-10vh", opacity: 0, scale: 0.6 },
-          { y: "50vh", opacity: 1, scale: 1, duration: 2, ease: "none" }
+          { opacity: 1, y: "-10vh", scale: 1 },
+          { y: "45vh", duration: 1.5, ease: "power2.in" }
         )
-        .to(".tear-drop-tip", { opacity: 0, duration: 0.1 }, 0)
+        // 泪滴砸地碎裂晕染
         .to(".falling-tear", {
           opacity: 0,
-          scale: 3,
-          filter: "blur(12px)",
+          scale: 6,
+          filter: "blur(20px)",
           duration: 0.6,
           ease: "power2.out",
         })
-
+        // 文本晕染出现
         .fromTo(
           ".bloom-content",
-          { opacity: 0, filter: "blur(20px)", y: 20, scale: 0.95 },
+          { opacity: 0, filter: "blur(25px)", y: 30, scale: 0.9 },
           {
             opacity: 1,
             filter: "blur(0px)",
             y: 0,
             scale: 1,
-            duration: 2.5,
+            duration: 2,
             ease: "power2.out",
           },
-          "-=1.5"
+          "-=0.4"
         )
-        .to(
+        // 底部信息浮现
+        .fromTo(
           ".bottom-info",
-          { opacity: 1, duration: 1, ease: "power2.inOut" },
+          { opacity: 0, y: 15 },
+          { opacity: 1, y: 0, duration: 0.8, ease: "power1.out" },
           "-=0.5"
         );
 
@@ -714,7 +720,7 @@ export default function QingJinTianXia() {
       <footer className="footer-final relative z-10 w-full min-h-screen bg-black flex flex-col items-center justify-center overflow-hidden">
 
 
-        <div className="falling-tear absolute top-0 left-1/2 -translate-x-1/2 w-4 h-5 opacity-0 pointer-events-none">
+        <div className="falling-tear absolute top-0 left-14 md:left-1/2 -translate-x-1/2 w-4 h-5 opacity-0 pointer-events-none">
           <svg
             viewBox="0 0 100 120"
             className="w-full h-full fill-red-700 drop-shadow-[0_0_12px_rgba(185,28,28,0.9)]"
