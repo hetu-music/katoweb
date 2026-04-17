@@ -11,6 +11,8 @@ export interface UserInfo {
   intro: string | null;
   isAdmin: boolean;
   sortOrder: number | null;
+  navidId: string | null;
+  navidPw: string | null;
 }
 
 interface UserContextValue {

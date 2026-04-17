@@ -8,7 +8,7 @@ export const GET = withAuth(
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
       .from(TABLES.USERS)
-      .select("name, display, intro, is_admin, sort_order")
+      .select("name, display, intro, is_admin, sort_order, navid_id, navid_pw")
       .eq("id", user.id)
       .maybeSingle();
 
@@ -24,6 +24,8 @@ export const GET = withAuth(
       intro: data?.intro ?? null,
       isAdmin: data?.is_admin ?? false,
       sortOrder: data?.sort_order ?? null,
+      navidId: data?.navid_id ?? null,
+      navidPw: data?.navid_pw ?? null,
     });
   },
 );

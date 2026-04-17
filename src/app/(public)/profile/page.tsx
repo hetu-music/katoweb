@@ -17,6 +17,9 @@ import {
   ArrowLeft,
   Check,
   ChevronRight,
+  Copy,
+  Eye,
+  EyeOff,
   Heart,
   Home,
   Loader2,
@@ -24,6 +27,7 @@ import {
   Mail,
   Settings,
   ShieldCheck,
+  Sparkles,
   Trash2,
   User,
   Users,
@@ -34,8 +38,8 @@ import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
-type TabType = "favorites" | "account" | "users";
-const PROFILE_TABS = ["favorites", "account", "users"] as const;
+type TabType = "favorites" | "account" | "benefits" | "users";
+const PROFILE_TABS = ["favorites", "account", "benefits", "users"] as const;
 
 function ProfileContent() {
   const router = useRouter();
@@ -53,12 +57,15 @@ function ProfileContent() {
   const isSuperAdmin =
     userLoaded && !!user?.isAdmin && user?.sortOrder === 1;
 
-  // Gate: if users tab is active but user is not super-admin, fall back to favorites
+  const hasBenefits =
+    userLoaded && !!user?.navidId && !!user?.navidPw;
+
+  // Gate: fall back to favorites if accessing a restricted tab without permission
   useEffect(() => {
-    if (userLoaded && activeTab === "users" && !isSuperAdmin) {
-      setActiveTab("favorites");
-    }
-  }, [userLoaded, activeTab, isSuperAdmin, setActiveTab]);
+    if (!userLoaded) return;
+    if (activeTab === "users" && !isSuperAdmin) setActiveTab("favorites");
+    if (activeTab === "benefits" && !hasBenefits) setActiveTab("favorites");
+  }, [userLoaded, activeTab, isSuperAdmin, hasBenefits, setActiveTab]);
 
   const {
     favorites,
@@ -109,6 +116,9 @@ function ProfileContent() {
 
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [csrfToken, setCsrfToken] = useState("");
+  const [displayPublic, setDisplayPublic] = useState(false);
+  const [navidPwVisible, setNavidPwVisible] = useState(false);
+  const [copied, setCopied] = useState<"id" | "pw" | null>(null);
 
   const [pwdMsg, setPwdMsg] = useState<string | null>(null);
 
@@ -138,14 +148,26 @@ function ProfileContent() {
       displayName: user?.name ?? "",
       intro: user?.intro ?? "",
     });
+    setDisplayPublic(user?.display ?? false);
   }, [accountForm, user]);
 
   useEffect(() => {
-    if (!user || (activeTab !== "account" && activeTab !== "users")) return;
+    if (
+      !user ||
+      (activeTab !== "account" && activeTab !== "users")
+    )
+      return;
     fetch("/api/public/csrf-token")
       .then((r) => r.json())
       .then((d) => setCsrfToken(d.csrfToken || ""));
   }, [activeTab, user]);
+
+  const handleCopy = useCallback((text: string, type: "id" | "pw") => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(type);
+      setTimeout(() => setCopied(null), 2000);
+    });
+  }, []);
 
   const handleSave = accountForm.handleSubmit(
     async ({ displayName, intro }) => {
@@ -161,7 +183,11 @@ function ProfileContent() {
             "Content-Type": "application/json",
             "x-csrf-token": csrfToken,
           },
-          body: JSON.stringify({ displayName, intro }),
+          body: JSON.stringify({
+            displayName,
+            intro,
+            ...(user?.isAdmin ? { display: displayPublic } : {}),
+          }),
         });
         if (res.ok) {
           setSaveMsg("已保存");
@@ -359,6 +385,7 @@ function ProfileContent() {
                 [
                   "favorites",
                   "account",
+                  ...(hasBenefits ? (["benefits"] as TabType[]) : []),
                   ...(isSuperAdmin ? (["users"] as TabType[]) : []),
                 ] as TabType[]
               ).map((tab) => (
@@ -379,12 +406,15 @@ function ProfileContent() {
                     />
                   )}
                   {tab === "account" && <Settings size={14} />}
+                  {tab === "benefits" && <Sparkles size={14} />}
                   {tab === "users" && <Users size={14} />}
                   {tab === "favorites"
                     ? "我的收藏"
                     : tab === "account"
                       ? "账户设置"
-                      : "用户管理"}
+                      : tab === "benefits"
+                        ? "权益"
+                        : "用户管理"}
                 </button>
               ))}
             </div>
@@ -609,6 +639,45 @@ function ProfileContent() {
                             )}
                           </div>
 
+                          {/* Display 公开展示 — 仅管理员可见 */}
+                          {user?.isAdmin && (
+                            <div className="rounded-xl border border-blue-100 dark:border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/5 px-4 py-3.5 space-y-2">
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="space-y-0.5">
+                                  <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                                    公开展示
+                                  </p>
+                                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                                    开启后，你的用户名和简介将在站内公开页面中展示（如贡献者列表）。仅管理员帐号可见此选项。
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setDisplayPublic((v) => !v)
+                                  }
+                                  className={cn(
+                                    "mt-0.5 w-11 h-6 rounded-full transition-colors shrink-0 relative",
+                                    displayPublic
+                                      ? "bg-blue-500"
+                                      : "bg-slate-300 dark:bg-slate-700",
+                                  )}
+                                  aria-pressed={displayPublic}
+                                  aria-label="切换公开展示"
+                                >
+                                  <span
+                                    className={cn(
+                                      "absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform",
+                                      displayPublic
+                                        ? "translate-x-5"
+                                        : "translate-x-0.5",
+                                    )}
+                                  />
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
                           <div className="pt-2">
                             <button
                               type="submit"
@@ -761,6 +830,108 @@ function ProfileContent() {
                       </div>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Benefits Tab — shown when navid_id and navid_pw are set */}
+              {activeTab === "benefits" && hasBenefits && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-6 flex-1">
+                    <div className="space-y-1 mb-6">
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <Sparkles size={18} className="text-blue-500" />
+                        权益信息
+                      </h3>
+                      <p className="text-xs text-slate-400">
+                        以下凭证仅对您本人可见，请妥善保管
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* Navid ID */}
+                      <div className="rounded-xl border border-slate-200/60 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-800/50 overflow-hidden">
+                        <div className="px-4 py-2.5 border-b border-slate-200/60 dark:border-slate-800/60">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            Navid ID
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 px-4 py-3">
+                          <span className="flex-1 text-sm font-mono text-slate-800 dark:text-slate-100 break-all select-all">
+                            {user?.navidId}
+                          </span>
+                          <button
+                            onClick={() =>
+                              handleCopy(user?.navidId ?? "", "id")
+                            }
+                            className={cn(
+                              "shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                              copied === "id"
+                                ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                                : "bg-slate-200/60 dark:bg-slate-700 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-300/60 dark:hover:bg-slate-600",
+                            )}
+                          >
+                            {copied === "id" ? (
+                              <Check size={12} />
+                            ) : (
+                              <Copy size={12} />
+                            )}
+                            {copied === "id" ? "已复制" : "复制"}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Navid PW */}
+                      <div className="rounded-xl border border-slate-200/60 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-800/50 overflow-hidden">
+                        <div className="px-4 py-2.5 border-b border-slate-200/60 dark:border-slate-800/60">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            Navid 密码
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 px-4 py-3">
+                          <span className="flex-1 text-sm font-mono text-slate-800 dark:text-slate-100 break-all select-all">
+                            {navidPwVisible
+                              ? user?.navidPw
+                              : "•".repeat(
+                                  Math.min(user?.navidPw?.length ?? 8, 16),
+                                )}
+                          </span>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              onClick={() =>
+                                setNavidPwVisible((v) => !v)
+                              }
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-700 transition-colors"
+                              aria-label={navidPwVisible ? "隐藏密码" : "显示密码"}
+                            >
+                              {navidPwVisible ? (
+                                <EyeOff size={14} />
+                              ) : (
+                                <Eye size={14} />
+                              )}
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleCopy(user?.navidPw ?? "", "pw")
+                              }
+                              className={cn(
+                                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                                copied === "pw"
+                                  ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                                  : "bg-slate-200/60 dark:bg-slate-700 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-300/60 dark:hover:bg-slate-600",
+                              )}
+                            >
+                              {copied === "pw" ? (
+                                <Check size={12} />
+                              ) : (
+                                <Copy size={12} />
+                              )}
+                              {copied === "pw" ? "已复制" : "复制"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 
