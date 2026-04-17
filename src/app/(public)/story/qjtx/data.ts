@@ -29,7 +29,7 @@ export const timelineData: TimelineEvent[] = [
       "明帝以其有大神通，封国师。",
       "是夜，明帝容穆第四子熙降生。",
     ],
-    important: false,
+    important: true,
     detail: {
       title: "九龙永镇",
       quote: "九龙塔起 天命初照",
@@ -233,7 +233,7 @@ export const timelineData: TimelineEvent[] = [
       "苏静不知所踪，谢卿自焚于室，顾长宁降。",
       "墨离隐，人以为殁。",
     ],
-    important: false,
+    important: true,
     detail: {
       title: "长歌送魂",
       quote: "九重宫阙倾颓 星坠那一刹",
@@ -268,7 +268,7 @@ export const timelineData: TimelineEvent[] = [
     content: [
       "顾长宁复任修史。"
     ],
-    important: false,
+    important: true,
     detail: {
       title: "千秋莫负",
       quote: "遗忘前 写下最终与最初",
@@ -296,7 +296,7 @@ export const timelineData: TimelineEvent[] = [
     content: [
       "慕清和赴海外。",
     ],
-    important: false,
+    important: true,
     detail: {
       title: "山河永慕",
       quote: "一片柳叶吹成雪",
@@ -336,7 +336,7 @@ export const timelineData: TimelineEvent[] = [
     year: "永初十年",
     month: "十一月",
     content: ["墨离入宫献上前朝贵妃画像一幅后离去。"],
-    important: false,
+    important: true,
     detail: {
       title: "倾尽天下",
       quote: "岁月无声也让人害怕",
@@ -366,7 +366,7 @@ export const timelineData: TimelineEvent[] = [
     month: "十二月",
     content: ["元帝崩。诸王作乱。史称永初之乱。",
       "时有乱军夜袭，见谢婉披发执枪于城上，肝胆俱裂，乃退。",],
-    important: false,
+    important: true,
     detail: {
       title: "江山此夜",
       quote: "雪落塔顶 画卷泛黄",
@@ -416,7 +416,7 @@ export const timelineData: TimelineEvent[] = [
     month: "无考",
     content: ["武帝与摇光皇后楚落大婚，赦天下。",
     ],
-    important: false,
+    important: true,
     detail: {
       title: "春风一顾",
       quote: "前尘里旧事早淹没 风在青苹末",
@@ -442,7 +442,7 @@ export const timelineData: TimelineEvent[] = [
     content: ["城东设谢婉衣冠祠。",
       "青川乡人立贤女碑于县南。",
     ],
-    important: false,
+    important: true,
     detail: {
       title: "陌上花早",
       quote: "庭树尚青青 故人今安好？",
