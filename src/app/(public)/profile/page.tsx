@@ -1,6 +1,7 @@
 "use client";
 
 import ThemeToggle from "@/components/shared/ThemeToggle";
+import UserManagePanel from "@/components/admin/UserManagePanel";
 import { useFavorites } from "@/context/FavoritesContext";
 import { useUserContext } from "@/context/UserContext";
 import {
@@ -25,6 +26,7 @@ import {
   ShieldCheck,
   Trash2,
   User,
+  Users,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -32,8 +34,8 @@ import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
-type TabType = "favorites" | "account";
-const PROFILE_TABS = ["favorites", "account"] as const;
+type TabType = "favorites" | "account" | "users";
+const PROFILE_TABS = ["favorites", "account", "users"] as const;
 
 function ProfileContent() {
   const router = useRouter();
@@ -47,6 +49,17 @@ function ProfileContent() {
   );
 
   const { user, loaded: userLoaded, logout, loggingOut } = useUserContext();
+
+  const isSuperAdmin =
+    userLoaded && !!user?.isAdmin && user?.sortOrder === 1;
+
+  // Gate: if users tab is active but user is not super-admin, fall back to favorites
+  useEffect(() => {
+    if (userLoaded && activeTab === "users" && !isSuperAdmin) {
+      setActiveTab("favorites");
+    }
+  }, [userLoaded, activeTab, isSuperAdmin, setActiveTab]);
+
   const {
     favorites,
     favoriteSongs,
@@ -128,7 +141,7 @@ function ProfileContent() {
   }, [accountForm, user]);
 
   useEffect(() => {
-    if (!user || activeTab !== "account") return;
+    if (!user || (activeTab !== "account" && activeTab !== "users")) return;
     fetch("/api/public/csrf-token")
       .then((r) => r.json())
       .then((d) => setCsrfToken(d.csrfToken || ""));
@@ -342,7 +355,13 @@ function ProfileContent() {
           <div className="lg:col-span-9 space-y-6 min-h-[calc(100vh-240px)] flex flex-col">
             {/* Tabs Controller - Styled like site filters */}
             <div className="flex p-1 bg-slate-100 dark:bg-slate-900/50 rounded-xl border border-slate-200/50 dark:border-slate-800/50 w-fit shrink-0">
-              {(["favorites", "account"] as TabType[]).map((tab) => (
+              {(
+                [
+                  "favorites",
+                  "account",
+                  ...(isSuperAdmin ? (["users"] as TabType[]) : []),
+                ] as TabType[]
+              ).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -360,7 +379,12 @@ function ProfileContent() {
                     />
                   )}
                   {tab === "account" && <Settings size={14} />}
-                  {tab === "favorites" ? "我的收藏" : "账户设置"}
+                  {tab === "users" && <Users size={14} />}
+                  {tab === "favorites"
+                    ? "我的收藏"
+                    : tab === "account"
+                      ? "账户设置"
+                      : "用户管理"}
                 </button>
               ))}
             </div>
@@ -737,6 +761,23 @@ function ProfileContent() {
                       </div>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Users Management Tab — super admin only */}
+              {activeTab === "users" && isSuperAdmin && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-6 flex-1">
+                    <div className="space-y-1 mb-6">
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                        用户管理
+                      </h3>
+                      <p className="text-xs text-slate-400">
+                        管理所有注册用户的资料与权限
+                      </p>
+                    </div>
+                    <UserManagePanel csrfToken={csrfToken} />
+                  </div>
                 </div>
               )}
             </div>

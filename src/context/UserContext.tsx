@@ -10,6 +10,7 @@ export interface UserInfo {
   display: boolean;
   intro: string | null;
   isAdmin: boolean;
+  sortOrder: number | null;
 }
 
 interface UserContextValue {

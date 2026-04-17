@@ -1,5 +1,5 @@
 // Admin 管理页面 API 封装
-import type { Song } from "./types";
+import type { Song, UserRecord, UserUpdatePayload } from "./types";
 
 // 新增歌曲
 export async function apiCreateSong(song: Partial<Song>, csrfToken: string) {
@@ -402,5 +402,34 @@ export async function apiDeleteOccurrence(id: number, csrfToken: string) {
     headers: { "x-csrf-token": csrfToken },
   });
   if (!res.ok) throw new Error("删除关系失败");
+  return res.json();
+}
+
+// ─── Super Admin Users API ─────────────────────────────────────────────────────
+
+export async function apiGetUsers(): Promise<{ users: UserRecord[] }> {
+  const res = await fetch("/api/admin/users");
+  if (!res.ok) throw new Error("获取用户列表失败");
+  return res.json();
+}
+
+export async function apiUpdateUser(
+  payload: UserUpdatePayload,
+  csrfToken: string,
+) {
+  const res = await fetch("/api/admin/users", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "x-csrf-token": csrfToken,
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const d = await res.json().catch(() => ({}));
+    throw new Error(
+      (d as { error?: string }).error || "更新用户失败",
+    );
+  }
   return res.json();
 }

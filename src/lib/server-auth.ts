@@ -124,15 +124,20 @@ export async function authenticateUserWithCSRF(
 /**
  * 高阶函数：为 API 路由添加身份验证
  *
- * options.requireCSRF  — 同时验证 CSRF token（写操作必须开启）
- * options.requireAdmin — 额外校验 users 表中的 is_admin=true（管理后台操作必须开启）
+ * options.requireCSRF       — 同时验证 CSRF token（写操作必须开启）
+ * options.requireAdmin      — 额外校验 users 表中的 is_admin=true（管理后台操作必须开启）
+ * options.requireSuperAdmin — 额外校验 is_admin=true AND sort_order=1（超级管理员操作）
  */
 export function withAuth(
   handler: (
     request: NextRequest,
     user: AuthenticatedUser,
   ) => Promise<NextResponse>,
-  options: { requireCSRF?: boolean; requireAdmin?: boolean } = {},
+  options: {
+    requireCSRF?: boolean;
+    requireAdmin?: boolean;
+    requireSuperAdmin?: boolean;
+  } = {},
 ) {
   return async (request: NextRequest): Promise<NextResponse> => {
     const authResult = options.requireCSRF
@@ -151,7 +156,7 @@ export function withAuth(
     }
 
     // Admin check: verify is_admin flag in the users table
-    if (options.requireAdmin) {
+    if (options.requireAdmin || options.requireSuperAdmin) {
       try {
         const supabase = await createSupabaseServerClient();
         const {
@@ -163,10 +168,13 @@ export function withAuth(
         }
         const { data: userData } = await userClient
           .from(TABLES.USERS)
-          .select("is_admin")
+          .select("is_admin, sort_order")
           .eq("id", authResult.user.id)
           .maybeSingle();
         if (!userData?.is_admin) {
+          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        }
+        if (options.requireSuperAdmin && userData.sort_order !== 1) {
           return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
       } catch (error) {
