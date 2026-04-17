@@ -1,5 +1,6 @@
 "use client";
 
+import AuditLogsPanel from "@/components/admin/AuditLogsPanel";
 import UserManagePanel from "@/components/admin/UserManagePanel";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import { useFavorites } from "@/context/FavoritesContext";
@@ -17,6 +18,7 @@ import {
   ArrowLeft,
   Check,
   ChevronRight,
+  ClipboardList,
   Copy,
   Eye,
   EyeOff,
@@ -38,8 +40,8 @@ import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
-type TabType = "favorites" | "account" | "benefits" | "users";
-const PROFILE_TABS = ["favorites", "account", "benefits", "users"] as const;
+type TabType = "favorites" | "account" | "benefits" | "users" | "logs";
+const PROFILE_TABS = ["favorites", "account", "benefits", "users", "logs"] as const;
 
 function ProfileContent() {
   const router = useRouter();
@@ -64,6 +66,7 @@ function ProfileContent() {
   useEffect(() => {
     if (!userLoaded) return;
     if (activeTab === "users" && !isSuperAdmin) setActiveTab("favorites");
+    if (activeTab === "logs" && !isSuperAdmin) setActiveTab("favorites");
     if (activeTab === "benefits" && !hasBenefits) setActiveTab("favorites");
   }, [userLoaded, activeTab, isSuperAdmin, hasBenefits, setActiveTab]);
 
@@ -386,7 +389,7 @@ function ProfileContent() {
                   "favorites",
                   "account",
                   ...(hasBenefits ? (["benefits"] as TabType[]) : []),
-                  ...(isSuperAdmin ? (["users"] as TabType[]) : []),
+                  ...(isSuperAdmin ? (["users", "logs"] as TabType[]) : []),
                 ] as TabType[]
               ).map((tab) => (
                 <button
@@ -408,13 +411,16 @@ function ProfileContent() {
                   {tab === "account" && <Settings size={14} />}
                   {tab === "benefits" && <Sparkles size={14} />}
                   {tab === "users" && <Users size={14} />}
+                  {tab === "logs" && <ClipboardList size={14} />}
                   {tab === "favorites"
                     ? "我的收藏"
                     : tab === "account"
                       ? "账户设置"
                       : tab === "benefits"
                         ? "权益"
-                        : "用户管理"}
+                        : tab === "users"
+                          ? "用户管理"
+                          : "操作日志"}
                 </button>
               ))}
             </div>
@@ -944,6 +950,24 @@ function ProfileContent() {
                       </p>
                     </div>
                     <UserManagePanel csrfToken={csrfToken} />
+                  </div>
+                </div>
+              )}
+
+              {/* Audit Logs Tab — super admin only */}
+              {activeTab === "logs" && isSuperAdmin && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-6 flex-1">
+                    <div className="space-y-1 mb-6">
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <ClipboardList size={18} className="text-blue-500" />
+                        操作日志
+                      </h3>
+                      <p className="text-xs text-slate-400">
+                        数据库审计记录，仅供查阅
+                      </p>
+                    </div>
+                    <AuditLogsPanel />
                   </div>
                 </div>
               )}

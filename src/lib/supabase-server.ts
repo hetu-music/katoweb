@@ -49,6 +49,9 @@ export const TABLES = {
   // 用户与互动表
   USERS: "users",
   COLLECTIONS: "collections",
+
+  // 审计日志
+  AUDIT_LOGS: "audit_logs",
 } as const;
 
 // ─── 服务端运行时检查 ──────────────────────────────────────────────────────
