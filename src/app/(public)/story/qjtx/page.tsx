@@ -417,6 +417,16 @@ export default function QingJinTianXia() {
               scrollyBg.style.setProperty("--y", `${trueY}px`);
             };
 
+            const setDetailVisibility = (visible: boolean) => {
+              gsap.set(detailContent, { display: visible ? "flex" : "none" });
+            };
+
+            const syncDetailVisibility = (trigger: ScrollTrigger) => {
+              setDetailVisibility(trigger.isActive);
+            };
+
+            setDetailVisibility(false);
+
             // ── A. 沉浸式阅读 Pin 动画：trigger = wrapper ──
             const tl = gsap.timeline({
               scrollTrigger: {
@@ -428,12 +438,26 @@ export default function QingJinTianXia() {
                 pin: ".timeline-container",
                 pinSpacing: true,
                 invalidateOnRefresh: true,
-                onEnter: setCirclePos,
-                onEnterBack: setCirclePos,
+                onEnter: (trigger) => {
+                  setCirclePos();
+                  syncDetailVisibility(trigger);
+                },
+                onEnterBack: (trigger) => {
+                  setCirclePos();
+                  syncDetailVisibility(trigger);
+                },
+                onLeave: () => {
+                  setDetailVisibility(false);
+                },
+                onLeaveBack: () => {
+                  setDetailVisibility(false);
+                },
+                onRefresh: syncDetailVisibility,
               },
             });
 
-            const eventId = wrapper.dataset.id!;
+            const eventId = wrapper.dataset.id;
+            if (!eventId) return;
             const customNode = CUSTOM_NODE_REGISTRY[eventId];
 
             if (customNode) {

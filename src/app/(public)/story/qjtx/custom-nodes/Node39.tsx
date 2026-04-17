@@ -117,7 +117,6 @@ export function animate(
   const closing = scrollyText.querySelector(`.scrolly-closing-${eventId}`);
   const petals = scrollyText.querySelector(`.scrolly-petals-${eventId}`);
 
-  tl.set(detailContent, { display: "flex" });
   tl.set([title, quote, bodyLines, closing, petals], { opacity: 0 });
 
   tl.fromTo(
@@ -182,6 +181,4 @@ export function animate(
       ease: "none"
     });
   }
-
-  tl.set(detailContent, { display: "none" });
 }

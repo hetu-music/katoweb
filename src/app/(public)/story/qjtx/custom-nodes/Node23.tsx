@@ -110,7 +110,6 @@ export function animate(
   const closing = scrollyText.querySelector(`.scrolly-closing-${eventId}`);
   const snow = scrollyText.querySelector(`.scrolly-snow-${eventId}`);
 
-  tl.set(detailContent, { display: "flex" });
   tl.set([title, quote, bodyLines, closing, snow], { opacity: 0 });
 
   // 背景扩散
@@ -175,6 +174,4 @@ export function animate(
       ease: "none"
     });
   }
-
-  tl.set(detailContent, { display: "none" });
 }

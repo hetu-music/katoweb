@@ -122,8 +122,6 @@ export function animateDefault(
 
   if (!textHeader || !textContent) return;
 
-  tl.set(detailContent, { display: "flex" });
-
   tl.fromTo(
     scrollyBg,
     { "--radius": "0px" },
@@ -185,6 +183,4 @@ export function animateDefault(
       0
     );
   }
-
-  tl.set(detailContent, { display: "none" });
 }
