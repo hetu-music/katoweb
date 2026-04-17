@@ -479,7 +479,6 @@ export const timelineData: TimelineEvent[] = [
         "太业四年四月初五，造物终成，是为烟华海八百衣冠冢。",
       ],
       closing: "《烟华县志・衣冠冢志》",
-      // theme 已移至 custom-nodes/Node39.tsx
     },
   },
 ];
