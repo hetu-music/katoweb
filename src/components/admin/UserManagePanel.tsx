@@ -12,6 +12,7 @@ import {
   RefreshCw,
   Shield,
   ShieldOff,
+  Trash2,
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -49,6 +50,7 @@ export default function UserManagePanel({ csrfToken }: UserManagePanelProps) {
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [clearingId, setClearingId] = useState<string | null>(null);
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
@@ -77,6 +79,31 @@ export default function UserManagePanel({ csrfToken }: UserManagePanelProps) {
     setEditingId(null);
     setEditState(null);
   }, []);
+
+  const handleClearBenefits = useCallback(
+    async (userId: string) => {
+      setClearingId(userId);
+      setSaveMsg(null);
+      try {
+        await apiUpdateUser(
+          { id: userId, navid_id: null, navid_pw: null },
+          csrfToken,
+        );
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === userId ? { ...u, navid_id: null } : u,
+          ),
+        );
+        setSaveMsg("已清空");
+      } catch (e) {
+        setSaveMsg(e instanceof Error ? e.message : "操作失败");
+      } finally {
+        setClearingId(null);
+        setTimeout(() => setSaveMsg(null), 3000);
+      }
+    },
+    [csrfToken],
+  );
 
   const handleSave = useCallback(
     async (userId: string) => {
@@ -467,6 +494,24 @@ export default function UserManagePanel({ csrfToken }: UserManagePanelProps) {
                           <p className="text-slate-700 dark:text-slate-300 mt-0.5 leading-relaxed">
                             {user.intro}
                           </p>
+                        </div>
+                      )}
+
+                      {/* Clear benefits button — only shown when navid_id has a value */}
+                      {user.navid_id && (
+                        <div className="col-span-2 sm:col-span-3 pt-1">
+                          <button
+                            onClick={() => handleClearBenefits(user.id)}
+                            disabled={clearingId === user.id}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-500/30 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 text-xs font-bold transition-colors disabled:opacity-60"
+                          >
+                            {clearingId === user.id ? (
+                              <Loader2 size={12} className="animate-spin" />
+                            ) : (
+                              <Trash2 size={12} />
+                            )}
+                            清空权益
+                          </button>
                         </div>
                       )}
                     </div>
