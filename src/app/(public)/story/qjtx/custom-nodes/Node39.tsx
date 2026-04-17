@@ -47,7 +47,7 @@ export function NodeLayout({
           >
             {event.detail.title}
           </h2>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-[#995355]/10 blur-3xl rounded-full -z-10" />
+          <div className={`scrolly-glow-${event.id} absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-[#995355]/10 blur-3xl rounded-full -z-10`} />
         </div>
         
         {event.detail.quote && (
@@ -93,7 +93,7 @@ export function NodeLayout({
             </p>
           </div>
           {/* 背景幽光 */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-32 bg-[#e4b5b2]/10 blur-3xl rounded-full -z-10" />
+          <div className={`scrolly-glow-closing-${event.id} absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-32 bg-[#e4b5b2]/10 blur-3xl rounded-full -z-10`} />
         </div>
       </div>
     </div>
@@ -116,8 +116,10 @@ export function animate(
   const bodyLines = scrollyText.querySelectorAll(`.scrolly-body-line`);
   const closing = scrollyText.querySelector(`.scrolly-closing-${eventId}`);
   const petals = scrollyText.querySelector(`.scrolly-petals-${eventId}`);
+  const glow = scrollyText.querySelector(`.scrolly-glow-${eventId}`);
+  const glowClosing = scrollyText.querySelector(`.scrolly-glow-closing-${eventId}`);
 
-  tl.set([title, quote, bodyLines, closing, petals], { opacity: 0 });
+  tl.set([title, quote, bodyLines, closing, petals, glow, glowClosing], { opacity: 0 });
 
   tl.fromTo(
     scrollyBg,

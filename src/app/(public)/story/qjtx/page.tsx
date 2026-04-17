@@ -438,21 +438,14 @@ export default function QingJinTianXia() {
                 pin: ".timeline-container",
                 pinSpacing: true,
                 invalidateOnRefresh: true,
-                onEnter: (trigger) => {
-                  setCirclePos();
-                  syncDetailVisibility(trigger);
+                onToggle: (self) => {
+                  if (self.isActive) setCirclePos();
+                  syncDetailVisibility(self);
                 },
-                onEnterBack: (trigger) => {
-                  setCirclePos();
-                  syncDetailVisibility(trigger);
+                onRefresh: (self) => {
+                  if (self.isActive) setCirclePos();
+                  syncDetailVisibility(self);
                 },
-                onLeave: () => {
-                  setDetailVisibility(false);
-                },
-                onLeaveBack: () => {
-                  setDetailVisibility(false);
-                },
-                onRefresh: syncDetailVisibility,
               },
             });
 

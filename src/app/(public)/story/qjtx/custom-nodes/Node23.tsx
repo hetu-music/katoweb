@@ -48,7 +48,7 @@ export function NodeLayout({
             {event.detail.title}
           </h2>
           {/* 刀剑划痕/战火背景光晕 */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-1/2 bg-red-900/20 blur-3xl -z-10" />
+          <div className={`scrolly-glow-${event.id} absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-1/2 bg-red-900/20 blur-3xl -z-10`} />
         </div>
         
         {event.detail.quote && (
@@ -109,8 +109,9 @@ export function animate(
   const bodyLines = scrollyText.querySelectorAll(`.scrolly-body-line`);
   const closing = scrollyText.querySelector(`.scrolly-closing-${eventId}`);
   const snow = scrollyText.querySelector(`.scrolly-snow-${eventId}`);
+  const glow = scrollyText.querySelector(`.scrolly-glow-${eventId}`);
 
-  tl.set([title, quote, bodyLines, closing, snow], { opacity: 0 });
+  tl.set([title, quote, bodyLines, closing, snow, glow], { opacity: 0 });
 
   // 背景扩散
   tl.fromTo(

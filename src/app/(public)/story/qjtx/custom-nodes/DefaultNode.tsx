@@ -122,6 +122,8 @@ export function animateDefault(
 
   if (!textHeader || !textContent) return;
 
+  tl.set([textHeader.children, textContent], { opacity: 0 });
+
   tl.fromTo(
     scrollyBg,
     { "--radius": "0px" },
