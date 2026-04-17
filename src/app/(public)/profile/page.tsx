@@ -1,7 +1,7 @@
 "use client";
 
-import ThemeToggle from "@/components/shared/ThemeToggle";
 import UserManagePanel from "@/components/admin/UserManagePanel";
+import ThemeToggle from "@/components/shared/ThemeToggle";
 import { useFavorites } from "@/context/FavoritesContext";
 import { useUserContext } from "@/context/UserContext";
 import {
@@ -641,23 +641,16 @@ function ProfileContent() {
 
                           {/* Display 公开展示 — 仅管理员可见 */}
                           {user?.isAdmin && (
-                            <div className="rounded-xl border border-blue-100 dark:border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/5 px-4 py-3.5 space-y-2">
-                              <div className="flex items-start justify-between gap-4">
-                                <div className="space-y-0.5">
-                                  <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
-                                    公开展示
-                                  </p>
-                                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                                    开启后，你的用户名和简介将在站内公开页面中展示（如贡献者列表）。仅管理员帐号可见此选项。
-                                  </p>
-                                </div>
+                            <div className="rounded-xl border border-blue-100 dark:border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/5 px-4 py-3.5 space-y-1.5">
+                              <div className="flex items-center justify-between">
+                                <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                                  公开展示
+                                </p>
                                 <button
                                   type="button"
-                                  onClick={() =>
-                                    setDisplayPublic((v) => !v)
-                                  }
+                                  onClick={() => setDisplayPublic((v) => !v)}
                                   className={cn(
-                                    "mt-0.5 w-11 h-6 rounded-full transition-colors shrink-0 relative",
+                                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500/50",
                                     displayPublic
                                       ? "bg-blue-500"
                                       : "bg-slate-300 dark:bg-slate-700",
@@ -667,14 +660,17 @@ function ProfileContent() {
                                 >
                                   <span
                                     className={cn(
-                                      "absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform",
+                                      "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
                                       displayPublic
                                         ? "translate-x-5"
-                                        : "translate-x-0.5",
+                                        : "translate-x-0",
                                     )}
                                   />
                                 </button>
                               </div>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed pr-10">
+                                开启后，你的用户名和个人简介将在站内 关于-维护团队 页面中展示。
+                              </p>
                             </div>
                           )}
 
@@ -735,13 +731,13 @@ function ProfileContent() {
                               />
                               {passwordForm.formState.errors
                                 .currentPassword && (
-                                <p className="text-xs text-rose-500 ml-1">
-                                  {
-                                    passwordForm.formState.errors
-                                      .currentPassword.message
-                                  }
-                                </p>
-                              )}
+                                  <p className="text-xs text-rose-500 ml-1">
+                                    {
+                                      passwordForm.formState.errors
+                                        .currentPassword.message
+                                    }
+                                  </p>
+                                )}
                             </div>
                             <div className="space-y-1.5">
                               <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
@@ -784,13 +780,13 @@ function ProfileContent() {
                               />
                               {passwordForm.formState.errors
                                 .confirmPassword && (
-                                <p className="text-xs text-rose-500 ml-1">
-                                  {
-                                    passwordForm.formState.errors
-                                      .confirmPassword.message
-                                  }
-                                </p>
-                              )}
+                                  <p className="text-xs text-rose-500 ml-1">
+                                    {
+                                      passwordForm.formState.errors
+                                        .confirmPassword.message
+                                    }
+                                  </p>
+                                )}
                             </div>
                           </div>
                           <div className="pt-2 flex items-center gap-3">
@@ -892,8 +888,8 @@ function ProfileContent() {
                             {navidPwVisible
                               ? user?.navidPw
                               : "•".repeat(
-                                  Math.min(user?.navidPw?.length ?? 8, 16),
-                                )}
+                                Math.min(user?.navidPw?.length ?? 8, 16),
+                              )}
                           </span>
                           <div className="flex items-center gap-1.5 shrink-0">
                             <button
