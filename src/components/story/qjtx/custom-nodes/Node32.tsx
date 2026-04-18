@@ -18,7 +18,8 @@ export function NodeLayout({
   event: TimelineEvent;
   resolvedTheme: Required<ImmersiveTheme>;
 }) {
-  if (!event.detail) return null;
+  const detail = event.detail;
+  if (!detail) return null;
 
   const { titleColor, bodyColor, accentColor } = resolvedTheme;
 
@@ -39,17 +40,17 @@ export function NodeLayout({
             className={`scrolly-title-${event.id} text-5xl md:text-8xl font-serif tracking-[0.6em] md:tracking-[0.8em] pl-[0.6em] md:pl-[0.8em] font-light relative z-10 text-center`}
             style={{ color: titleColor, textShadow: `0 0 40px ${accentColor}, 0 2px 10px rgba(0,0,0,0.8)` }}
           >
-            {event.detail.title}
+            {detail.title}
           </h2>
           <div className={`scrolly-glow-${event.id} absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-[#f472b6]/10 blur-[60px] rounded-full -z-10`} />
         </div>
         
-        {event.detail.quote && (
+        {detail.quote && (
           <div
             className={`scrolly-quote-${event.id} mt-12 md:mt-24 text-lg md:text-2xl font-serif tracking-[0.5em] md:tracking-[0.7em] pl-[0.5em] md:pl-[0.7em] text-center max-w-3xl leading-relaxed px-4`}
             style={{ color: bodyColor, textShadow: '0 2px 10px rgba(0,0,0,0.9)' }}
           >
-            「{event.detail.quote}」
+            「{detail.quote}」
           </div>
         )}
       </div>
@@ -59,8 +60,8 @@ export function NodeLayout({
           className={`scrolly-body-${event.id} flex flex-col justify-center h-[85vh] w-full max-w-4xl mx-auto px-6 md:px-16 text-base md:text-xl leading-[3] tracking-[0.3em] md:tracking-[0.4em] font-light`}
           style={{ color: bodyColor, textShadow: '0 2px 6px rgba(0,0,0,0.8)' }}
         >
-          {event.detail.body.map((p, i) => {
-            const isLast = i === event.detail.body.length - 1;
+          {detail.body.map((p, i) => {
+            const isLast = i === detail.body.length - 1;
             const alignClass = isLast ? "text-center mt-12 text-2xl md:text-4xl text-[#fce7f3] drop-shadow-[0_0_15px_rgba(244,114,182,0.5)]" : "text-center";
             return (
               <p key={i} className={`scrolly-body-line my-4 md:my-6 w-full ${alignClass}`}>
