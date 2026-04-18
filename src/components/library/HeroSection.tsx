@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { Scroll, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 interface HeroSectionProps {
   songCount: number;
@@ -51,6 +51,8 @@ const FEATURE_ENTRANCES = [
 ];
 
 export default function HeroSection({ songCount }: HeroSectionProps) {
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+
   const isHoverDevice = useSyncExternalStore(
     (onStoreChange) => {
       const mediaQuery = window.matchMedia(
@@ -107,13 +109,15 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
       {/* 右侧：功能入口区 (Feature Entrances) */}
       <div className="flex w-full md:w-auto h-full justify-start md:justify-end items-end md:items-start pt-1 md:pt-0">
         {/* -- 桌面端入口 (Desktop) - 极简竖排发光点 -- */}
-        <div className="hidden md:flex flex-row gap-3 lg:gap-3 justify-end mt-4 md:mt-0">
+        <div className="hidden md:flex flex-row gap-3 justify-end mt-4 md:mt-0">
           {FEATURE_ENTRANCES.map((feature, index) => {
             const Icon = feature.icon;
             return (
               <Link
                 key={feature.id}
                 href={feature.href}
+                onMouseEnter={() => setHoveredId(feature.id)}
+                onMouseLeave={() => setHoveredId(null)}
                 className="group relative flex flex-col items-center outline-none text-[16px]"
                 style={{ gap: "0.8em" }}
               >
@@ -130,27 +134,32 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
 
                 {/* 竖排标题 - 移除 pr-1 防止不对称 padding 导致的盒子偏移，确保文字和光点绝对中心对齐 */}
                 <div className={`[writing-mode:vertical-rl] font-mono font-medium tracking-[0.85em] -mb-[0.85em] ${feature.textBase} ${feature.textHover} transition-[color,filter,text-shadow] duration-1000 group-hover:drop-shadow-[0_0_12px_${feature.glow}] select-none`}>
-                  {feature.label.split("").map((char, i) => (
-                    <motion.span
-                      key={i}
-                      initial={{ opacity: 0, scale: 0.8, filter: "blur(8px)" }}
-                      animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                      style={{
-                        backfaceVisibility: "hidden",
-                        WebkitFontSmoothing: "antialiased",
-                        transform: "translateZ(0)",
-                        willChange: "transform, opacity",
-                      }}
-                      transition={{
-                        delay: 0.45 + index * 0.15 + i * 0.15,
-                        duration: 2.0,
-                        ease: [0.215, 0.61, 0.355, 1],
-                      }}
-                      className="inline-block"
-                    >
-                      {char}
-                    </motion.span>
-                  ))}
+                      {feature.label.split("").map((char, i) => (
+                        <motion.span
+                          key={i}
+                          initial={{ opacity: 0, scale: 0.8, filter: "blur(8px)" }}
+                          animate={(!hoveredId || hoveredId === feature.id) 
+                            ? { opacity: 1, scale: 1, filter: "blur(0px)" } 
+                            : { opacity: 0, scale: 0.6, filter: "blur(12px)" }
+                          }
+                          style={{
+                            backfaceVisibility: "hidden",
+                            WebkitFontSmoothing: "antialiased",
+                            transform: "translateZ(0)",
+                            willChange: "transform, opacity",
+                          }}
+                          transition={{
+                            delay: (!hoveredId || hoveredId === feature.id) 
+                              ? (0.45 + index * 0.15 + i * 0.15) 
+                              : (i * 0.05),
+                            duration: (!hoveredId || hoveredId === feature.id) ? 2.0 : 0.8,
+                            ease: [0.215, 0.61, 0.355, 1],
+                          }}
+                          className="inline-block"
+                        >
+                          {char}
+                        </motion.span>
+                      ))}
                 </div>
 
                 {/* Hover 展开的说明面板 (画卷式向左侧缓慢延展展出) */}
