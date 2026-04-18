@@ -120,26 +120,23 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 </motion.div>
 
                 {/* 竖排标题 - 移除 pr-1 防止不对称 padding 导致的盒子偏移，确保文字和光点绝对中心对齐 */}
-                <motion.span
-                  initial={{
-                    opacity: 0,
-                    scale: 0.96,
-                    clipPath: "circle(0% at 50% 0%)",
-                  }}
-                  animate={{
-                    opacity: 1,
-                    scale: 1,
-                    clipPath: "circle(160% at 50% 20%)",
-                  }}
-                  transition={{
-                    delay: 0.45 + index * 0.15,
-                    duration: 3.5,
-                    ease: [0.215, 0.61, 0.355, 1], // Smooth 'fluid' easing (standard easeOutCubic/Quart mix)
-                  }}
-                  className="[writing-mode:vertical-rl] font-mono font-medium tracking-[1em] -mb-[1em] text-teal-600 dark:text-teal-300 transition-[color,filter,text-shadow] duration-1000 group-hover:text-teal-800 dark:group-hover:text-teal-100 group-hover:drop-shadow-[0_0_12px_rgba(20,184,166,0.3)] select-none"
-                >
-                  {feature.label}
-                </motion.span>
+                <div className="[writing-mode:vertical-rl] font-mono font-medium tracking-[1em] -mb-[1em] text-teal-600 dark:text-teal-300 transition-[color,filter,text-shadow] duration-1000 group-hover:text-teal-800 dark:group-hover:text-teal-100 group-hover:drop-shadow-[0_0_12px_rgba(20,184,166,0.3)] select-none">
+                  {feature.label.split("").map((char, i) => (
+                    <motion.span
+                      key={i}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{
+                        delay: 0.4 + index * 0.15 + i * 0.1,
+                        duration: 1.2,
+                        ease: [0.215, 0.61, 0.355, 1],
+                      }}
+                      className="inline-block"
+                    >
+                      {char}
+                    </motion.span>
+                  ))}
+                </div>
 
                 {/* Hover 展开的说明面板 (画卷式向左侧缓慢延展展出) */}
                 <div className="absolute top-12 right-full mr-3 lg:mr-5 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-[width,opacity] duration-[2400ms] ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:w-[210px] lg:group-hover:w-[240px] group-hover:opacity-100 z-10 will-change-[width,opacity]">
@@ -200,26 +197,23 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                     <div className="absolute h-1.5 w-1.5 rounded-full bg-teal-500/30 animate-pulse shadow-[0_0_6px_rgba(20,184,166,0.4)]" />
                   </motion.div>
                   {/* 标题 */}
-                  <motion.span
-                    initial={{
-                      opacity: 0,
-                      scale: 0.96,
-                      clipPath: "circle(0% at 0% 50%)",
-                    }}
-                    animate={{
-                      opacity: 1,
-                      scale: 1,
-                      clipPath: "circle(160% at 20% 50%)",
-                    }}
-                    transition={{
-                      delay: 0.35 + index * 0.12,
-                      duration: 3.0,
-                      ease: [0.215, 0.61, 0.355, 1],
-                    }}
-                    className="text-[15px] font-mono font-medium tracking-[0.15em] text-teal-600 dark:text-teal-300 leading-none"
-                  >
-                    {feature.label}
-                  </motion.span>
+                  <div className="flex items-center text-[15px] font-mono font-medium tracking-[0.15em] text-teal-600 dark:text-teal-300 leading-none">
+                    {feature.label.split("").map((char, i) => (
+                      <motion.span
+                        key={i}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{
+                          delay: 0.35 + index * 0.12 + i * 0.1,
+                          duration: 0.8,
+                          ease: [0.215, 0.61, 0.355, 1],
+                        }}
+                        className="inline-block"
+                      >
+                        {char}
+                      </motion.span>
+                    ))}
+                  </div>
                 </div>
                 {/* 描述说明 */}
                 <span className="text-[12px] font-light text-slate-400 dark:text-slate-400/80 flex items-center gap-1.5">
