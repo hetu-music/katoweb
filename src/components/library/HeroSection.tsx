@@ -203,6 +203,9 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
               <Link
                 key={feature.id}
                 href={feature.href}
+                onMouseEnter={() => setHoveredId(feature.id)}
+                onMouseLeave={() => setHoveredId(null)}
+                onTouchStart={() => setHoveredId(feature.id)}
                 className="group flex items-center justify-between outline-none py-2"
               >
                 <div className="flex items-center gap-4">
@@ -214,12 +217,15 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                     <div className={`absolute h-1.5 w-1.5 rounded-full ${feature.dotCore} animate-pulse shadow-[0_0_6px_${feature.glow}]`} />
                   </div>
                   {/* 标题 */}
-                  <div className={`flex items-center text-[16px] font-mono font-medium tracking-[0.5em] ${feature.textBase} ${feature.textHover} leading-none`}>
+                  <div className={`flex items-center text-[16px] font-mono font-medium tracking-[0.5em] ${feature.textBase} ${feature.textHover} leading-none transition-opacity duration-500`}>
                     {feature.label.split("").map((char, i) => (
                       <motion.span
                         key={i}
                         initial={{ opacity: 0, scale: 0.8, filter: "blur(8px)" }}
-                        animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                        animate={(!hoveredId || hoveredId === feature.id) 
+                          ? { opacity: 1, scale: 1, filter: "blur(0px)" } 
+                          : { opacity: 0, scale: 0.6, filter: "blur(12px)" }
+                        }
                         style={{
                           backfaceVisibility: "hidden",
                           WebkitFontSmoothing: "antialiased",
@@ -227,8 +233,10 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                           willChange: "transform, opacity",
                         }}
                         transition={{
-                          delay: 0.35 + index * 0.15 + i * 0.15,
-                          duration: 2.0,
+                          delay: (!hoveredId || hoveredId === feature.id) 
+                            ? (0.35 + index * 0.15 + i * 0.15) 
+                            : (i * 0.05),
+                          duration: (!hoveredId || hoveredId === feature.id) ? 2.0 : 0.8,
                           ease: [0.215, 0.61, 0.355, 1],
                         }}
                         className="inline-block"
