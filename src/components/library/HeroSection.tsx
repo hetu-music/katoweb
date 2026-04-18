@@ -174,7 +174,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 href={feature.href}
                 className="group flex items-center justify-between outline-none py-2"
               >
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4">
                   {/* 发光晕影 (无实心中心，弱化呼吸) */}
                   <div
                     className="relative flex items-center justify-center h-3 w-3"
@@ -183,15 +183,15 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                     <div className="absolute h-1.5 w-1.5 rounded-full bg-teal-500/30 animate-pulse shadow-[0_0_6px_rgba(20,184,166,0.4)]" />
                   </div>
                   {/* 标题 */}
-                  <div className="flex items-center text-[16px] font-mono font-medium tracking-[0.1em] text-teal-600 dark:text-teal-300 leading-none">
+                  <div className="flex items-center text-[16px] font-mono font-medium tracking-[0.5em] text-teal-600 dark:text-teal-300 leading-none">
                     {feature.label.split("").map((char, i) => (
                       <motion.span
                         key={i}
-                        initial={{ opacity: 0, scale: 0.8, filter: "blur(6px)" }}
+                        initial={{ opacity: 0, scale: 0.8, filter: "blur(8px)" }}
                         animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
                         transition={{
-                          delay: 0.35 + index * 0.12 + i * 0.12,
-                          duration: 1.8,
+                          delay: 0.35 + index * 0.15 + i * 0.15,
+                          duration: 2.0,
                           ease: [0.215, 0.61, 0.355, 1],
                         }}
                         className="inline-block"
