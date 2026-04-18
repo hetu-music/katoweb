@@ -119,6 +119,12 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                       key={i}
                       initial={{ opacity: 0, scale: 0.8, filter: "blur(8px)" }}
                       animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                      style={{
+                        backfaceVisibility: "hidden",
+                        WebkitFontSmoothing: "antialiased",
+                        transform: "translateZ(0)",
+                        willChange: "transform, opacity",
+                      }}
                       transition={{
                         delay: 0.45 + index * 0.15 + i * 0.15,
                         duration: 2.0,
@@ -189,6 +195,12 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                         key={i}
                         initial={{ opacity: 0, scale: 0.8, filter: "blur(8px)" }}
                         animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                        style={{
+                          backfaceVisibility: "hidden",
+                          WebkitFontSmoothing: "antialiased",
+                          transform: "translateZ(0)",
+                          willChange: "transform, opacity",
+                        }}
                         transition={{
                           delay: 0.35 + index * 0.15 + i * 0.15,
                           duration: 2.0,
