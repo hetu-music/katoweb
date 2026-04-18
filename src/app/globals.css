@@ -206,7 +206,8 @@ button {
 }
 
 .hero-title-char {
-  animation: hero-title-reveal 2.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: hero-title-reveal 3.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity, filter;
 }
 
 /* 描述文字淡入 */
@@ -224,7 +225,8 @@ button {
 }
 
 .hero-unroll {
-  animation: hero-unroll 2s cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: hero-unroll 2.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity, filter;
 }
 
 /* 词云柔和淡入动画 - 移除蓝光滤镜以优化滚动性能 */

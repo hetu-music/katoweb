@@ -123,7 +123,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 <motion.span
                   initial={{
                     opacity: 0,
-                    y: 14,
+                    y: 10,
                     clipPath: "inset(0 0 100% 0)",
                     filter: "blur(8px)",
                   }}
@@ -135,29 +135,29 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                   }}
                   transition={{
                     delay: 0.35 + index * 0.12,
-                    duration: 1.4,
-                    ease: [0.19, 1, 0.22, 1],
+                    duration: 1.8,
+                    ease: [0.16, 1, 0.3, 1],
                   }}
-                  className="[writing-mode:vertical-rl] font-serif font-medium tracking-[1em] -mb-[1em] text-teal-600 dark:text-teal-300 transition-all duration-1000 group-hover:text-teal-800 dark:group-hover:text-teal-100 group-hover:drop-shadow-[0_0_12px_rgba(20,184,166,0.3)]"
+                  className="[writing-mode:vertical-rl] font-mono font-medium tracking-[1em] -mb-[1em] text-teal-600 dark:text-teal-300 transition-[color,filter,text-shadow] duration-1000 group-hover:text-teal-800 dark:group-hover:text-teal-100 group-hover:drop-shadow-[0_0_12px_rgba(20,184,166,0.3)]"
                 >
                   {feature.label}
                 </motion.span>
 
                 {/* Hover 展开的说明面板 (画卷式向左侧缓慢延展展出) */}
-                <div className="absolute top-12 right-full mr-3 lg:mr-5 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-all duration-1600 ease-out group-hover:w-[210px] lg:group-hover:w-[240px] group-hover:opacity-100 z-10">
-                  <div className="flex w-max shrink-0 items-center gap-4 lg:gap-5 border-r border-slate-300/60 dark:border-slate-600/60 pr-4 lg:pr-5 py-1">
+                <div className="absolute top-12 right-full mr-3 lg:mr-5 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-[width,opacity] duration-[2400ms] ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:w-[210px] lg:group-hover:w-[240px] group-hover:opacity-100 z-10 will-change-[width,opacity]">
+                  <div className="flex w-max shrink-0 items-center gap-4 lg:gap-5 border-r border-slate-300/60 dark:border-slate-600/60 pr-4 lg:pr-5 py-1.5 h-full">
                     <div className="flex flex-col items-end">
-                      <span className="text-[15px] font-medium tracking-[0.25em] text-slate-900 dark:text-slate-100 mb-1 whitespace-nowrap transition-colors duration-1600 ease-out drop-shadow-sm">
+                      <span className="text-[15px] font-medium tracking-[0.25em] text-slate-900 dark:text-slate-100 mb-1 whitespace-nowrap transition-colors duration-2000 ease-out drop-shadow-sm">
                         {feature.label}
                       </span>
-                      <span className="text-[12px] font-light tracking-[0.15em] text-slate-500 dark:text-slate-400 whitespace-nowrap transition-colors duration-1600 ease-out">
+                      <span className="text-[12px] font-light tracking-[0.15em] text-slate-500 dark:text-slate-400 whitespace-nowrap transition-colors duration-2000 ease-out">
                         {feature.desc}
                       </span>
                     </div>
                     <Icon
                       size={18}
                       strokeWidth={1.5}
-                      className="text-teal-600/80 dark:text-teal-400/80 shrink-0 transition-colors duration-1600 ease-out"
+                      className="text-teal-600/80 dark:text-teal-400/80 shrink-0 transition-colors duration-2000 ease-out"
                     />
                   </div>
                 </div>
@@ -217,10 +217,10 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                     }}
                     transition={{
                       delay: 0.35 + index * 0.12,
-                      duration: 1.2,
-                      ease: [0.19, 1, 0.22, 1],
+                      duration: 2.2,
+                      ease: [0.16, 1, 0.3, 1],
                     }}
-                    className="text-[15px] font-serif font-medium tracking-[0.15em] text-teal-600 dark:text-teal-300 leading-none"
+                    className="text-[15px] font-mono font-medium tracking-[0.15em] text-teal-600 dark:text-teal-300 leading-none"
                   >
                     {feature.label}
                   </motion.span>

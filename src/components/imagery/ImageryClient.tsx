@@ -749,7 +749,7 @@ export default function ImageryClient({ items, categories }: Props) {
               <span
                 key={i}
                 className={`hero-title-char inline-block ${mounted ? "" : "opacity-0"}`}
-                style={{ animationDelay: `${i * 300}ms` }}
+                style={{ animationDelay: `${i * 1000}ms` }}
               >
                 {char}
               </span>
