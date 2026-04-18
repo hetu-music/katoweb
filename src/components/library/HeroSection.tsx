@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { Scroll, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
 
@@ -11,6 +11,19 @@ interface HeroSectionProps {
 
 // 模板化入口配置区：未来添加新功能入口只需在此处添加配置即可
 const FEATURE_ENTRANCES = [
+  {
+    id: "qjtx",
+    label: "倾尽天下",
+    desc: "一纸长歌，倾尽天下",
+    href: "/story/qjtx",
+    icon: Scroll,
+    textBase: "text-red-600 dark:text-red-400",
+    textHover: "group-hover:text-red-800 dark:group-hover:text-red-200",
+    dotHaloBase: "bg-red-500/10",
+    dotHaloHover: "group-hover:bg-red-500/30",
+    dotCore: "bg-red-500/30",
+    glow: "rgba(220,38,38,0.3)",
+  },
   {
     id: "imagery",
     label: "意象词云",
@@ -23,19 +36,6 @@ const FEATURE_ENTRANCES = [
     dotHaloHover: "group-hover:bg-teal-500/30",
     dotCore: "bg-teal-500/30",
     glow: "rgba(20,184,166,0.3)",
-  },
-  {
-    id: "qjtx",
-    label: "倾尽天下",
-    desc: "一纸长歌，倾尽天下",
-    href: "/story/qjtx",
-    icon: Sparkles,
-    textBase: "text-red-600 dark:text-red-400",
-    textHover: "group-hover:text-red-800 dark:group-hover:text-red-200",
-    dotHaloBase: "bg-red-500/10",
-    dotHaloHover: "group-hover:bg-red-500/30",
-    dotCore: "bg-red-500/30",
-    glow: "rgba(220,38,38,0.3)",
   },
   // 可以继续添加其他重大功能入口，例如：
   // {
@@ -107,7 +107,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
       {/* 右侧：功能入口区 (Feature Entrances) */}
       <div className="flex w-full md:w-auto h-full justify-start md:justify-end items-end md:items-start pt-1 md:pt-0">
         {/* -- 桌面端入口 (Desktop) - 极简竖排发光点 -- */}
-        <div className="hidden md:flex flex-row gap-10 lg:gap-14 justify-end mt-4 md:mt-0">
+        <div className="hidden md:flex flex-row gap-3 lg:gap-3 justify-end mt-4 md:mt-0">
           {FEATURE_ENTRANCES.map((feature, index) => {
             const Icon = feature.icon;
             return (
