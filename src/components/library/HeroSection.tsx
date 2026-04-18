@@ -123,8 +123,8 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 <motion.span
                   initial={{
                     opacity: 0,
-                    y: 10,
-                    clipPath: "inset(0 0 100% 0)",
+                    y: -10,
+                    clipPath: "inset(100% 0 0 0)",
                     filter: "blur(8px)",
                   }}
                   animate={{
@@ -135,7 +135,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                   }}
                   transition={{
                     delay: 0.35 + index * 0.12,
-                    duration: 1.8,
+                    duration: 2.2,
                     ease: [0.16, 1, 0.3, 1],
                   }}
                   className="[writing-mode:vertical-rl] font-mono font-medium tracking-[1em] -mb-[1em] text-teal-600 dark:text-teal-300 transition-[color,filter,text-shadow] duration-1000 group-hover:text-teal-800 dark:group-hover:text-teal-100 group-hover:drop-shadow-[0_0_12px_rgba(20,184,166,0.3)]"
