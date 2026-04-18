@@ -21,6 +21,16 @@ const FEATURE_ENTRANCES = [
     border: "group-hover:border-blue-500/30",
     textGlow: "group-hover:text-blue-600 dark:group-hover:text-blue-400",
   },
+  {
+    id: "qjtx",
+    label: "倾尽天下",
+    desc: "一纸长歌，倾尽天下",
+    href: "/story/qjtx",
+    icon: Sparkles,
+    gradient: "from-red-500/10 to-rose-500/10",
+    border: "group-hover:border-red-500/30",
+    textGlow: "group-hover:text-red-600 dark:group-hover:text-red-400",
+  },
   // 可以继续添加其他重大功能入口，例如：
   // {
   //   id: "timeline",
