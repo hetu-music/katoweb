@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
 
@@ -138,7 +138,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 </div>
 
                 {/* Hover 展开的说明面板 (画卷式向左侧缓慢延展展出) */}
-                <div className="absolute top-12 right-full mr-3 lg:mr-5 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-[width,opacity] duration-[2400ms] ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:w-[210px] lg:group-hover:w-[240px] group-hover:opacity-100 z-10 will-change-[width,opacity]">
+                <div className="absolute top-12 right-full mr-3 lg:mr-5 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-[width,opacity] duration-2400 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:w-[210px] lg:group-hover:w-[240px] group-hover:opacity-100 z-10 will-change-[width,opacity]">
                   <div className="flex w-max shrink-0 items-center gap-4 lg:gap-5 border-r border-slate-300/60 dark:border-slate-600/60 pr-4 lg:pr-5 py-1.5 h-full">
                     <div className="flex flex-col items-end">
                       <span className="text-[15px] font-serif font-medium tracking-[0.25em] text-slate-900 dark:text-slate-100 mb-1 whitespace-nowrap transition-colors duration-2000 ease-out drop-shadow-sm">
