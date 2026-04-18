@@ -65,7 +65,7 @@ export function NodeLayout({
               {detail.title}
             </h2>
 
-            <div className={`scrolly-tower-${event.id} relative flex h-[17rem] w-28 flex-col items-center md:h-[22rem] md:w-36`}>
+            <div className={`scrolly-tower-${event.id} relative flex h-68 w-28 flex-col items-center md:h-88 md:w-36`}>
               <div
                 className="absolute inset-x-0 top-0 h-10 rounded-full blur-2xl"
                 style={{ background: `radial-gradient(circle, ${accentColor}55 0%, transparent 72%)` }}
@@ -115,8 +115,8 @@ export function NodeLayout({
                   <p
                     key={`${columnIndex}-${paragraphIndex}`}
                     className={`scrolly-body-line text-sm leading-[2.15] tracking-[0.18em] md:text-[15px] ${paragraph.includes("九龙塔") || paragraph.includes("布雨") || paragraph.includes("国师")
-                        ? "text-sky-50"
-                        : "text-slate-200/88"
+                      ? "text-sky-50"
+                      : "text-slate-200/88"
                       }`}
                     style={{ color: paragraph.includes("国师") ? titleColor : bodyColor }}
                   >
