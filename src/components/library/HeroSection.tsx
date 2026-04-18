@@ -123,22 +123,18 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 <motion.span
                   initial={{
                     opacity: 0,
-                    scaleY: 0,
-                    originY: 0,
-                    y: -20,
-                    filter: "blur(12px)",
+                    scale: 0.96,
+                    clipPath: "circle(0% at 50% 0%)",
                   }}
                   animate={{
                     opacity: 1,
-                    scaleY: 1,
-                    originY: 0,
-                    y: 0,
-                    filter: "blur(0px)",
+                    scale: 1,
+                    clipPath: "circle(160% at 50% 20%)",
                   }}
                   transition={{
                     delay: 0.45 + index * 0.15,
-                    duration: 2.8,
-                    ease: [0.16, 1, 0.3, 1], // Quint easing for professional unrolling
+                    duration: 3.5,
+                    ease: [0.215, 0.61, 0.355, 1], // Smooth 'fluid' easing (standard easeOutCubic/Quart mix)
                   }}
                   className="[writing-mode:vertical-rl] font-mono font-medium tracking-[1em] -mb-[1em] text-teal-600 dark:text-teal-300 transition-[color,filter,text-shadow] duration-1000 group-hover:text-teal-800 dark:group-hover:text-teal-100 group-hover:drop-shadow-[0_0_12px_rgba(20,184,166,0.3)] select-none"
                 >
@@ -207,22 +203,18 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                   <motion.span
                     initial={{
                       opacity: 0,
-                      scaleX: 0,
-                      originX: 0,
-                      x: -10,
-                      filter: "blur(8px)",
+                      scale: 0.96,
+                      clipPath: "circle(0% at 0% 50%)",
                     }}
                     animate={{
                       opacity: 1,
-                      scaleX: 1,
-                      originX: 0,
-                      x: 0,
-                      filter: "blur(0px)",
+                      scale: 1,
+                      clipPath: "circle(160% at 20% 50%)",
                     }}
                     transition={{
                       delay: 0.35 + index * 0.12,
-                      duration: 2.2,
-                      ease: [0.16, 1, 0.3, 1],
+                      duration: 3.0,
+                      ease: [0.215, 0.61, 0.355, 1],
                     }}
                     className="text-[15px] font-mono font-medium tracking-[0.15em] text-teal-600 dark:text-teal-300 leading-none"
                   >
