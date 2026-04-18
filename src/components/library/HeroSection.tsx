@@ -105,7 +105,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 <div
                   className="relative flex items-center justify-center h-3 w-3"
                 >
-                  <div className="absolute h-5 w-5 rounded-full bg-teal-500/10 blur-[2px] transition-all duration-800 ease-out group-hover:bg-teal-500/30 group-hover:blur-md group-hover:scale-150" />
+                  <div className="absolute h-4 w-4 rounded-full bg-teal-500/10 blur-[1.5px] transition-all duration-800 ease-out group-hover:bg-teal-500/30 group-hover:blur-sm group-hover:scale-125" />
                   <div
                     className="absolute h-1.5 w-1.5 rounded-full bg-teal-500/30 animate-pulse shadow-[0_0_8px_rgba(20,184,166,0.4)]"
                     style={{ animationDuration: "2s" }}
@@ -179,7 +179,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                   <div
                     className="relative flex items-center justify-center h-3 w-3"
                   >
-                    <div className="absolute h-5 w-5 rounded-full bg-teal-500/10 blur-[1px] transition-all group-active:scale-110" />
+                    <div className="absolute h-4 w-4 rounded-full bg-teal-500/10 blur-[1px] transition-all group-active:scale-110" />
                     <div className="absolute h-1.5 w-1.5 rounded-full bg-teal-500/30 animate-pulse shadow-[0_0_6px_rgba(20,184,166,0.4)]" />
                   </div>
                   {/* 标题 */}
