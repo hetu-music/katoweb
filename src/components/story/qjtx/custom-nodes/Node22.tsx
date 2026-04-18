@@ -2,13 +2,14 @@ import gsap from "gsap";
 import type { ImmersiveTheme, TimelineEvent } from "../types";
 
 export const theme: ImmersiveTheme = {
-  bg: "radial-gradient(circle at bottom, rgba(8, 47, 73, 0.8) 0%, rgba(2, 6, 23, 0.95) 100%), url(/story/qjtx/22.avif) center/cover no-repeat fixed",
-  titleColor: "#bae6fd",
-  bodyColor: "#e0f2fe",
-  accentColor: "#0ea5e9",
+  bg: "radial-gradient(circle at 50% 22%, rgba(134, 239, 172, 0.08) 0%, rgba(17, 24, 39, 0.55) 24%, rgba(2, 6, 23, 0.97) 100%), url(/story/qjtx/22.avif) center/cover no-repeat fixed",
+  titleColor: "#f8fafc",
+  bodyColor: "#d1d5db",
+  accentColor: "#86efac",
   layout: "horizontal",
-  specialEffect: "ripple",
-  maskPath: "M0,50 Q25,25 50,50 T100,50 T150,50 L150,150 L0,150 Z", // 波浪状
+  specialEffect: "none",
+  maskPath:
+    "M50 0 C62 16 79 24 100 50 C79 76 62 84 50 100 C38 84 21 76 0 50 C21 24 38 16 50 0 Z",
 };
 
 export function NodeLayout({
@@ -18,71 +19,121 @@ export function NodeLayout({
   event: TimelineEvent;
   resolvedTheme: Required<ImmersiveTheme>;
 }) {
-  if (!event.detail) return null;
+  const detail = event.detail;
+  if (!detail) return null;
 
   const { titleColor, bodyColor, accentColor } = resolvedTheme;
 
   return (
-    <div className={`scrolly-text-${event.id} relative z-10 w-full h-full overflow-hidden`}>
-      {/* 飘雪/飘柳絮特效 */}
-      <div 
-        className={`scrolly-snow-${event.id} absolute inset-0 pointer-events-none opacity-60 mix-blend-screen`} 
-        style={{
-          backgroundImage: 'radial-gradient(3px 3px at 50px 50px, #ffffff, transparent), radial-gradient(4px 4px at 150px 150px, #bae6fd, transparent), radial-gradient(2px 2px at 250px 250px, #ffffff, transparent), radial-gradient(3px 3px at 350px 350px, #e0f2fe, transparent)',
-          backgroundSize: '400px 400px',
-        }}
-      />
+    <div className={`scrolly-text-${event.id} relative z-10 h-full w-full overflow-hidden`}>
+      <div className={`scrolly-wind-${event.id} absolute inset-0 pointer-events-none opacity-0`}>
+        {Array.from({ length: 7 }, (_, index) => (
+          <span
+            key={index}
+            className={`scrolly-leaf-${event.id} absolute rounded-full blur-[1px]`}
+            style={{
+              left: `${10 + index * 12}%`,
+              top: `${18 + (index % 4) * 15}%`,
+              width: `${16 + (index % 3) * 8}px`,
+              height: `${6 + (index % 2) * 2}px`,
+              background:
+                index % 2 === 0
+                  ? "linear-gradient(90deg, rgba(187,247,208,0.85), rgba(226,232,240,0.12))"
+                  : "linear-gradient(90deg, rgba(248,250,252,0.8), rgba(134,239,172,0.12))",
+              transform: `rotate(${index % 2 === 0 ? -24 : 20}deg)`,
+              opacity: 0.65,
+            }}
+          />
+        ))}
+      </div>
 
-      <div className={`scrolly-intro-${event.id} absolute inset-0 flex flex-col items-center justify-center`}>
-        <div className="relative">
-          <h2
-            className={`scrolly-title-${event.id} text-5xl md:text-7xl font-serif tracking-[0.5em] md:tracking-[0.8em] pl-[0.5em] md:pl-[0.8em] font-light relative z-10 text-center`}
-            style={{ color: titleColor, textShadow: `0 0 30px ${accentColor}, 0 2px 10px rgba(0,0,0,0.8)` }}
-          >
-            {event.detail.title}
-          </h2>
-          <div className={`scrolly-glow-${event.id} absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[150%] bg-[#0ea5e9]/10 blur-3xl rounded-full -z-10`} />
-        </div>
-        
-        {event.detail.quote && (
+      <div className={`scrolly-intro-${event.id} absolute inset-0 flex flex-col items-center justify-center px-6`}>
+        <div className="relative flex max-w-4xl flex-col items-center text-center">
           <div
-            className={`scrolly-quote-${event.id} mt-12 md:mt-20 text-lg md:text-2xl font-serif tracking-[0.4em] md:tracking-[0.6em] pl-[0.4em] md:pl-[0.6em] text-center max-w-2xl leading-relaxed px-4`}
-            style={{ color: bodyColor, textShadow: '0 2px 10px rgba(0,0,0,0.9)' }}
+            className="mb-6 h-px w-28 bg-linear-to-r from-transparent via-emerald-200/40 to-transparent md:mb-8 md:w-44"
+            style={{ boxShadow: `0 0 18px ${accentColor}33` }}
+          />
+          <h2
+            className={`scrolly-title-${event.id} text-4xl font-serif font-light tracking-[0.42em] md:text-6xl md:tracking-[0.56em] lg:text-7xl`}
+            style={{ color: titleColor, paddingLeft: "0.42em" }}
           >
-            「{event.detail.quote}」
-          </div>
-        )}
-      </div>
-
-      <div className={`scrolly-body-container-${event.id} absolute inset-0 flex items-center justify-center`}>
-        <div
-          className={`scrolly-body-${event.id} flex flex-col justify-center h-[85vh] w-full max-w-4xl mx-auto px-6 md:px-12 text-sm md:text-lg leading-[2.6] tracking-[0.2em] md:tracking-[0.3em] font-light`}
-          style={{ color: bodyColor, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}
-        >
-          {event.detail.body.map((p, i) => {
-            const isCenter = p === "……";
-            const alignClass = isCenter ? "text-center opacity-30 my-8" : "text-left pl-4 md:pl-16 pr-4";
-            return (
-              <p key={i} className={`scrolly-body-line my-3 md:my-5 w-full ${alignClass}`}>
-                {p}
-              </p>
-            );
-          })}
+            {detail.title}
+          </h2>
+          <p
+            className={`scrolly-quote-${event.id} mt-7 text-sm font-light tracking-[0.45em] text-slate-100/75 md:mt-10 md:text-lg md:tracking-[0.65em]`}
+            style={{ color: bodyColor, paddingLeft: "0.45em" }}
+          >
+            {detail.quote}
+          </p>
         </div>
       </div>
 
-      <div className={`scrolly-closing-container-${event.id} absolute inset-0 flex flex-col items-center justify-end pb-16 md:pb-24 pointer-events-none`}>
-        <div className={`scrolly-closing-${event.id} relative flex flex-col items-center w-full max-w-3xl`}>
-          <div className="relative py-6 px-12 md:px-24 w-full flex justify-center border-t border-[#bae6fd]/20 bg-linear-to-b from-[#0ea5e9]/10 to-transparent backdrop-blur-xs">
-            <p
-              className="text-lg md:text-2xl tracking-[0.6em] md:tracking-[0.8em] pl-[0.6em] md:pl-[0.8em] font-serif text-center opacity-90 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
-              style={{ color: "#bae6fd" }}
-            >
-              {event.detail.closing}
-            </p>
+      <div className={`scrolly-body-container-${event.id} absolute inset-0 flex items-center justify-center px-5 md:px-10`}>
+        <div className={`scrolly-body-${event.id} relative w-full max-w-6xl`}>
+          <div className={`scrolly-route-line-${event.id} absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-linear-to-b from-transparent via-emerald-200/30 to-transparent`} />
+          <div className="flex flex-col gap-3 md:gap-4">
+            {detail.body.map((paragraph, index) => {
+              const isSeparator = paragraph === "……";
+              const isKeyLine =
+                paragraph.includes("起兵") ||
+                paragraph.includes("即位") ||
+                paragraph.includes("远走海外");
+              const alignLeft = index % 2 === 0;
+
+              if (isSeparator) {
+                return (
+                  <div
+                    key={`${event.id}-${index}`}
+                    className="scrolly-route-item flex items-center justify-center py-2 md:py-3"
+                  >
+                    <span className="text-sm tracking-[0.8em] text-slate-300/35 md:text-base">
+                      ……
+                    </span>
+                  </div>
+                );
+              }
+
+              return (
+                <div
+                  key={`${event.id}-${index}`}
+                  className="scrolly-route-item grid grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-6"
+                >
+                  <div
+                    className={`${alignLeft ? "justify-self-end text-right" : "invisible"} max-w-[18rem] rounded-[1.4rem] border border-white/8 bg-black/20 px-4 py-3 text-sm leading-[1.95] tracking-[0.14em] backdrop-blur-sm md:max-w-[24rem] md:px-5 md:py-4 md:text-[15px] ${isKeyLine ? "text-slate-50 shadow-[0_0_24px_rgba(134,239,172,0.08)]" : ""
+                      }`}
+                    style={{ color: bodyColor }}
+                  >
+                    {alignLeft ? paragraph : "."}
+                  </div>
+
+                  <div className="relative flex h-8 w-8 items-center justify-center md:h-10 md:w-10">
+                    <span
+                      className={`scrolly-route-dot-${event.id} block h-2.5 w-2.5 rounded-full border border-emerald-100/50 bg-slate-950 md:h-3 md:w-3`}
+                      style={{ boxShadow: `0 0 0 0 ${accentColor}` }}
+                    />
+                  </div>
+
+                  <div
+                    className={`${!alignLeft ? "justify-self-start text-left" : "invisible"} max-w-[18rem] rounded-[1.4rem] border border-white/8 bg-black/20 px-4 py-3 text-sm leading-[1.95] tracking-[0.14em] backdrop-blur-sm md:max-w-[24rem] md:px-5 md:py-4 md:text-[15px] ${isKeyLine ? "text-slate-50 shadow-[0_0_24px_rgba(134,239,172,0.08)]" : ""
+                      }`}
+                    style={{ color: bodyColor }}
+                  >
+                    {!alignLeft ? paragraph : "."}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
+
+      {detail.closing && (
+        <div className={`scrolly-closing-container-${event.id} pointer-events-none absolute inset-x-0 bottom-0 flex justify-center px-6 pb-10 md:pb-14`}>
+          <div className={`scrolly-closing-${event.id} rounded-full border border-emerald-100/15 bg-black/35 px-6 py-3 text-[11px] tracking-[0.36em] text-slate-100/85 backdrop-blur-md md:text-xs`}>
+            {detail.closing}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -98,57 +149,86 @@ export function animate(
   const title = scrollyText.querySelector(`.scrolly-title-${eventId}`);
   const quote = scrollyText.querySelector(`.scrolly-quote-${eventId}`);
   const bodyContainer = scrollyText.querySelector(`.scrolly-body-container-${eventId}`);
-  const bodyLines = scrollyText.querySelectorAll(`.scrolly-body-line`);
+  const routeItems = scrollyText.querySelectorAll(`.scrolly-route-item`);
+  const routeDots = scrollyText.querySelectorAll(`.scrolly-route-dot-${eventId}`);
+  const routeLine = scrollyText.querySelector(`.scrolly-route-line-${eventId}`);
+  const leaves = scrollyText.querySelectorAll(`.scrolly-leaf-${eventId}`);
+  const wind = scrollyText.querySelector(`.scrolly-wind-${eventId}`);
   const closing = scrollyText.querySelector(`.scrolly-closing-${eventId}`);
-  const snow = scrollyText.querySelector(`.scrolly-snow-${eventId}`);
 
-  tl.set([title, quote, bodyLines, closing, snow], { opacity: 0 });
+  tl.set([title, quote, routeItems, routeDots, routeLine, leaves, closing, wind], {
+    opacity: 0,
+  });
+  tl.set(routeLine, { scaleY: 0, transformOrigin: "50% 0%" });
 
   tl.fromTo(
     scrollyBg,
     { "--radius": "0px" },
-    { "--radius": "150vmax", duration: 5.5, ease: "power2.inOut" },
-    0
+    { "--radius": "150vmax", duration: 6, ease: "power2.inOut" },
+    0,
   )
-    .to(snow, { opacity: 0.8, duration: 2.0 }, 1.0)
+    .to([wind, leaves], { opacity: 1, duration: 2.2 }, 0.5)
     .fromTo(
       title,
-      { opacity: 0, filter: "blur(15px)", y: 30 },
-      { opacity: 1, filter: "blur(0px)", y: 0, duration: 4.0, ease: "power2.out" },
-      2.0
+      { opacity: 0, y: 26, filter: "blur(16px)" },
+      { opacity: 1, y: 0, filter: "blur(0px)", duration: 3.6, ease: "power3.out" },
+      1.2,
     )
     .fromTo(
       quote,
-      { opacity: 0, filter: "blur(10px)" },
-      { opacity: 1, filter: "blur(0px)", duration: 3.5, ease: "power2.out" },
-      "-=2.0"
+      { opacity: 0, y: 12, letterSpacing: "0.7em", filter: "blur(8px)" },
+      { opacity: 1, y: 0, letterSpacing: "0.45em", filter: "blur(0px)", duration: 3, ease: "power2.out" },
+      1.8,
     )
-    .to([title, quote], { opacity: 0, filter: "blur(20px)", y: -30, duration: 3.5, ease: "power2.inOut" }, "+=3.0")
+    .to([title, quote], { opacity: 0, y: -12, filter: "blur(14px)", duration: 3, ease: "power2.inOut" }, "+=2")
     .set(intro, { display: "none" })
     .fromTo(
-      bodyLines,
-      { opacity: 0, filter: "blur(8px)", x: -20 },
-      { opacity: 1, filter: "blur(0px)", x: 0, duration: 2.5, stagger: 0.3, ease: "power2.out" },
-      "-=0.5"
+      routeLine,
+      { opacity: 0, scaleY: 0 },
+      { opacity: 1, scaleY: 1, duration: 1.8, ease: "power2.out" },
+      "-=0.2",
     )
-    .to(bodyLines, { opacity: 0, filter: "blur(12px)", x: 20, duration: 3.0, ease: "power2.inOut" }, "+=2.5")
+    .fromTo(
+      routeDots,
+      { opacity: 0, scale: 0.2 },
+      { opacity: 1, scale: 1, duration: 0.8, stagger: 0.08, ease: "back.out(2.4)" },
+      "-=1.2",
+    )
+    .fromTo(
+      routeItems,
+      { opacity: 0, x: (index) => (index % 2 === 0 ? -34 : 34), filter: "blur(10px)" },
+      {
+        opacity: 1,
+        x: 0,
+        filter: "blur(0px)",
+        duration: 1.9,
+        stagger: 0.11,
+        ease: "power2.out",
+      },
+      "-=1.1",
+    )
+    .to(routeItems, { opacity: 0, y: -8, filter: "blur(10px)", duration: 3, stagger: 0.04, ease: "power2.inOut" }, "+=3.6")
+    .to(routeLine, { opacity: 0.25, duration: 1.4 }, "<")
     .set(bodyContainer, { display: "none" })
     .fromTo(
       closing,
-      { opacity: 0, y: 50, filter: "blur(15px)" },
-      { opacity: 1, y: 0, filter: "blur(0px)", duration: 4.0, ease: "power2.out" },
-      "-=0.5"
+      { opacity: 0, y: 20, filter: "blur(10px)" },
+      { opacity: 1, y: 0, filter: "blur(0px)", duration: 2.6, ease: "power2.out" },
+      "-=0.4",
     )
-    .to(closing, { opacity: 0, y: 30, filter: "blur(20px)", duration: 4.5, ease: "power2.in" }, "+=3.5")
-    .to(snow, { opacity: 0, duration: 3.0 }, "-=3.0")
-    .to(scrollyBg, { "--radius": "0px", duration: 5.5, ease: "power2.inOut" }, "-=2.0");
+    .to(closing, { opacity: 0, y: 16, filter: "blur(12px)", duration: 3.6, ease: "power2.inOut" }, "+=2.8")
+    .to([wind, leaves], { opacity: 0, duration: 2.2 }, "-=2.6")
+    .to(scrollyBg, { "--radius": "0px", duration: 5.2, ease: "power2.inOut" }, "-=1.8");
 
-  if (snow) {
-    gsap.to(snow, {
-      backgroundPosition: "200px 400px",
-      duration: 15,
+  leaves.forEach((leaf, index) => {
+    gsap.to(leaf, {
+      x: `${40 + index * 8}px`,
+      y: `${120 + (index % 3) * 35}px`,
+      rotation: index % 2 === 0 ? 18 : -22,
+      duration: 6 + index * 0.6,
       repeat: -1,
-      ease: "none"
+      yoyo: true,
+      ease: "sine.inOut",
     });
-  }
+  });
 }

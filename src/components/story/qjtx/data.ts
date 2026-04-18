@@ -29,7 +29,7 @@ export const timelineData: TimelineEvent[] = [
       "明帝以其有大神通，封国师。",
       "是夜，明帝容穆第四子熙降生。",
     ],
-    important: false,
+    important: true,
     detail: {
       title: "九龙永镇",
       quote: "九龙塔起 天命初照",
@@ -189,7 +189,7 @@ export const timelineData: TimelineEvent[] = [
       "慕清和留书离家，投白炎麾下。父兄与之绝。",
       "守将燕子名死，城主解钰降。"
     ],
-    important: false,
+    important: true,
     detail: {
       title: "山河永慕",
       quote: "一片柳叶吹成雪",
@@ -314,7 +314,7 @@ export const timelineData: TimelineEvent[] = [
     content: [
       "顾长宁复任修史。"
     ],
-    important: false,
+    important: true,
     detail: {
       title: "千秋莫负",
       quote: "遗忘前 写下最终与最初",

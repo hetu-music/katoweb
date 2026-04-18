@@ -2,13 +2,13 @@ import gsap from "gsap";
 import type { ImmersiveTheme, TimelineEvent } from "../types";
 
 export const theme: ImmersiveTheme = {
-  bg: "radial-gradient(circle at 50% 100%, rgba(63, 39, 0, 0.7) 0%, rgba(12, 10, 9, 0.95) 100%), url(/story/qjtx/38.avif) center/cover no-repeat fixed",
-  titleColor: "#fef08a",
-  bodyColor: "#d6d3d1",
-  accentColor: "#d97706",
+  bg: "radial-gradient(circle at 50% 18%, rgba(253, 224, 71, 0.12) 0%, rgba(68, 64, 60, 0.42) 26%, rgba(12, 10, 9, 0.96) 100%), url(/story/qjtx/38.avif) center/cover no-repeat fixed",
+  titleColor: "#fef3c7",
+  bodyColor: "#f5f5f4",
+  accentColor: "#f59e0b",
   layout: "horizontal",
-  specialEffect: "ripple",
-  maskPath: "M50,0 A50,50 0 1,1 49.9,0 Z", // 圆形
+  specialEffect: "none",
+  maskPath: "M50 0 A50 50 0 1 1 49.9 0 Z",
 };
 
 export function NodeLayout({
@@ -18,67 +18,82 @@ export function NodeLayout({
   event: TimelineEvent;
   resolvedTheme: Required<ImmersiveTheme>;
 }) {
-  if (!event.detail) return null;
+  const detail = event.detail;
+  if (!detail) return null;
 
   const { titleColor, bodyColor, accentColor } = resolvedTheme;
+  const lines = detail.body.filter((line) => line !== "……");
 
   return (
-    <div className={`scrolly-text-${event.id} relative z-10 w-full h-full overflow-hidden`}>
-      {/* 暖阳光斑特效 */}
-      <div 
-        className={`scrolly-sunlight-${event.id} absolute inset-0 pointer-events-none opacity-30 mix-blend-screen`} 
+    <div className={`scrolly-text-${event.id} relative z-10 h-full w-full overflow-hidden`}>
+      <div
+        className={`scrolly-sunlight-${event.id} absolute inset-0 pointer-events-none opacity-0`}
         style={{
-          backgroundImage: 'radial-gradient(circle at 20% 30%, #fef08a 0%, transparent 20%), radial-gradient(circle at 80% 60%, #d97706 0%, transparent 30%)',
+          background:
+            "radial-gradient(circle at 18% 22%, rgba(254,240,138,0.22), transparent 24%), radial-gradient(circle at 82% 18%, rgba(245,158,11,0.16), transparent 26%), radial-gradient(circle at 50% 82%, rgba(255,255,255,0.06), transparent 30%)",
         }}
       />
 
-      <div className={`scrolly-intro-${event.id} absolute inset-0 flex flex-col items-center justify-center`}>
-        <div className="relative">
+      <div className={`scrolly-intro-${event.id} absolute inset-0 flex flex-col items-center justify-center px-6`}>
+        <div className="flex max-w-4xl flex-col items-center text-center">
+          <div className="mb-6 h-px w-28 bg-linear-to-r from-transparent via-amber-100/40 to-transparent md:w-40" />
           <h2
-            className={`scrolly-title-${event.id} text-5xl md:text-7xl font-serif tracking-[0.5em] md:tracking-[0.8em] pl-[0.5em] md:pl-[0.8em] font-light relative z-10 text-center`}
-            style={{ color: titleColor, textShadow: `0 0 35px ${accentColor}, 0 2px 10px rgba(0,0,0,0.8)` }}
+            className={`scrolly-title-${event.id} text-5xl font-serif font-light tracking-[0.4em] md:text-7xl md:tracking-[0.54em]`}
+            style={{ color: titleColor, paddingLeft: "0.4em" }}
           >
-            {event.detail.title}
+            {detail.title}
           </h2>
-          <div className={`scrolly-glow-${event.id} absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] bg-[#d97706]/15 blur-[50px] rounded-full -z-10`} />
-        </div>
-        
-        {event.detail.quote && (
-          <div
-            className={`scrolly-quote-${event.id} mt-12 md:mt-24 text-lg md:text-2xl font-serif tracking-[0.4em] md:tracking-[0.6em] pl-[0.4em] md:pl-[0.6em] text-center max-w-2xl leading-relaxed px-4`}
-            style={{ color: bodyColor, textShadow: '0 2px 10px rgba(0,0,0,1)' }}
+          <p
+            className={`scrolly-quote-${event.id} mt-7 text-sm font-light tracking-[0.4em] text-amber-50/75 md:text-lg md:tracking-[0.56em]`}
+            style={{ color: bodyColor, paddingLeft: "0.4em" }}
           >
-            「{event.detail.quote}」
-          </div>
-        )}
-      </div>
-
-      <div className={`scrolly-body-container-${event.id} absolute inset-0 flex items-center justify-center`}>
-        <div
-          className={`scrolly-body-${event.id} flex flex-col justify-center h-[85vh] w-full max-w-4xl mx-auto px-6 md:px-12 text-sm md:text-lg leading-[2.6] tracking-[0.2em] md:tracking-[0.3em] font-light`}
-          style={{ color: bodyColor, textShadow: '0 2px 6px rgba(0,0,0,0.9)' }}
-        >
-          {event.detail.body.map((p, i) => {
-            const isCenter = p === "……";
-            const alignClass = isCenter ? "text-center opacity-30 my-6" : "text-left pl-6 md:pl-16 pr-6 border-l-2 border-[#d97706]/30";
-            return (
-              <p key={i} className={`scrolly-body-line my-4 md:my-6 w-full ${alignClass}`}>
-                {p}
-              </p>
-            );
-          })}
+            {detail.quote}
+          </p>
         </div>
       </div>
 
-      <div className={`scrolly-closing-container-${event.id} absolute inset-0 flex flex-col items-center justify-end pb-20 md:pb-32 pointer-events-none`}>
-        <div className={`scrolly-closing-${event.id} relative flex flex-col items-center w-full max-w-3xl`}>
-          <div className="relative py-6 px-10 md:px-20 w-full flex justify-center bg-linear-to-r from-transparent via-[#d97706]/20 to-transparent border-t border-b border-[#fef08a]/20 backdrop-blur-xs">
-            <p
-              className="text-lg md:text-2xl tracking-[0.6em] md:tracking-[0.8em] pl-[0.6em] md:pl-[0.8em] font-serif text-center opacity-90 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]"
-              style={{ color: "#fef08a" }}
+      <div className={`scrolly-body-container-${event.id} absolute inset-0 flex items-center justify-center px-5 py-10 md:px-10`}>
+        <div className={`scrolly-memorial-${event.id} relative flex w-full max-w-5xl flex-col items-center`}>
+          <div
+            className={`scrolly-stele-${event.id} relative w-full max-w-3xl rounded-[2.6rem_2.6rem_1.8rem_1.8rem] border border-amber-100/12 bg-stone-900/36 px-7 py-10 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-md md:px-10 md:py-12`}
+          >
+            <div className="absolute inset-x-8 top-4 h-px bg-linear-to-r from-transparent via-amber-100/28 to-transparent" />
+            <div className="absolute inset-x-8 bottom-4 h-px bg-linear-to-r from-transparent via-amber-100/18 to-transparent" />
+
+            <div className="mb-8 flex items-center justify-center gap-4">
+              <div className="h-px w-12 bg-amber-100/20" />
+              <span className="text-[10px] tracking-[0.4em] text-amber-50/45 md:text-[11px]">
+                乡里为记
+              </span>
+              <div className="h-px w-12 bg-amber-100/20" />
+            </div>
+
+            <div className="flex flex-col gap-4 md:gap-5">
+              {lines.map((line, index) => {
+                const emphasis =
+                  line.includes("不肯他嫁") ||
+                  line.includes("终尽瘁而死") ||
+                  line.includes("立贤女碑");
+
+                return (
+                  <p
+                    key={index}
+                    className={`scrolly-body-line text-sm leading-[2.05] tracking-[0.14em] md:text-[15px] ${emphasis ? "text-amber-50" : "text-stone-100/88"
+                      }`}
+                    style={{ color: emphasis ? titleColor : bodyColor }}
+                  >
+                    {line}
+                  </p>
+                );
+              })}
+            </div>
+
+            <div
+              className={`scrolly-closing-${event.id} mt-9 inline-flex rounded-full border border-amber-100/14 bg-amber-50/6 px-5 py-2 text-[10px] tracking-[0.34em] text-amber-50/70 md:text-[11px]`}
+              style={{ boxShadow: `0 0 24px ${accentColor}18` }}
             >
-              {event.detail.closing}
-            </p>
+              {detail.closing}
+            </div>
           </div>
         </div>
       </div>
@@ -97,58 +112,80 @@ export function animate(
   const title = scrollyText.querySelector(`.scrolly-title-${eventId}`);
   const quote = scrollyText.querySelector(`.scrolly-quote-${eventId}`);
   const bodyContainer = scrollyText.querySelector(`.scrolly-body-container-${eventId}`);
+  const memorial = scrollyText.querySelector(`.scrolly-memorial-${eventId}`);
+  const stele = scrollyText.querySelector(`.scrolly-stele-${eventId}`);
   const bodyLines = scrollyText.querySelectorAll(`.scrolly-body-line`);
   const closing = scrollyText.querySelector(`.scrolly-closing-${eventId}`);
   const sunlight = scrollyText.querySelector(`.scrolly-sunlight-${eventId}`);
 
-  tl.set([title, quote, bodyLines, closing, sunlight], { opacity: 0 });
+  tl.set([title, quote, memorial, stele, bodyLines, closing, sunlight], {
+    opacity: 0,
+  });
 
   tl.fromTo(
     scrollyBg,
     { "--radius": "0px" },
-    { "--radius": "150vmax", duration: 5.5, ease: "power2.inOut" },
-    0
+    { "--radius": "150vmax", duration: 5.8, ease: "power2.inOut" },
+    0,
   )
-    .to(sunlight, { opacity: 0.6, duration: 3.0 }, 1.0)
+    .to(sunlight, { opacity: 1, duration: 2.8 }, 0.6)
     .fromTo(
       title,
-      { opacity: 0, filter: "blur(20px)", scale: 0.9 },
-      { opacity: 1, filter: "blur(0px)", scale: 1, duration: 4.5, ease: "power2.out" },
-      1.5
+      { opacity: 0, y: 24, filter: "blur(16px)" },
+      { opacity: 1, y: 0, filter: "blur(0px)", duration: 3.4, ease: "power3.out" },
+      1.3,
     )
     .fromTo(
       quote,
-      { opacity: 0, y: 30, filter: "blur(10px)" },
-      { opacity: 1, y: 0, filter: "blur(0px)", duration: 4.0, ease: "power2.out" },
-      "-=2.5"
+      { opacity: 0, y: 10, filter: "blur(8px)" },
+      { opacity: 1, y: 0, filter: "blur(0px)", duration: 3, ease: "power2.out" },
+      1.8,
     )
-    .to([title, quote], { opacity: 0, filter: "blur(20px)", scale: 1.05, duration: 4.0, ease: "power2.inOut" }, "+=4.0")
+    .to([title, quote], { opacity: 0, y: -14, filter: "blur(12px)", duration: 3, ease: "power2.inOut" }, "+=2.4")
     .set(intro, { display: "none" })
     .fromTo(
-      bodyLines,
-      { opacity: 0, filter: "blur(10px)", x: -20 },
-      { opacity: 1, filter: "blur(0px)", x: 0, duration: 2.5, stagger: 0.3, ease: "power2.out" },
-      "-=0.5"
+      memorial,
+      { opacity: 0, y: 22, scale: 0.98, filter: "blur(10px)" },
+      { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 2.6, ease: "power2.out" },
+      "-=0.1",
     )
-    .to(bodyLines, { opacity: 0, filter: "blur(15px)", x: 20, duration: 3.5, ease: "power2.inOut" }, "+=3.5")
-    .set(bodyContainer, { display: "none" })
+    .fromTo(
+      stele,
+      { opacity: 0, y: 16 },
+      { opacity: 1, y: 0, duration: 2.2, ease: "power2.out" },
+      "-=1.8",
+    )
+    .fromTo(
+      bodyLines,
+      { opacity: 0, y: 10, filter: "blur(6px)" },
+      {
+        opacity: 1,
+        y: 0,
+        filter: "blur(0px)",
+        duration: 1.7,
+        stagger: 0.09,
+        ease: "power2.out",
+      },
+      "-=1.4",
+    )
     .fromTo(
       closing,
-      { opacity: 0, filter: "blur(15px)", y: 40 },
-      { opacity: 1, filter: "blur(0px)", y: 0, duration: 4.0, ease: "power2.out" },
-      "-=0.5"
+      { opacity: 0, scale: 0.82, filter: "blur(6px)" },
+      { opacity: 1, scale: 1, filter: "blur(0px)", duration: 1.8, ease: "back.out(1.7)" },
+      "-=0.4",
     )
-    .to(closing, { opacity: 0, filter: "blur(20px)", y: 20, duration: 4.5, ease: "power2.in" }, "+=4.0")
-    .to(sunlight, { opacity: 0, duration: 4.0 }, "-=3.0")
-    .to(scrollyBg, { "--radius": "0px", duration: 5.5, ease: "power2.inOut" }, "-=2.0");
+    .to([bodyLines, closing, memorial], { opacity: 0, y: -8, filter: "blur(8px)", duration: 3.6, ease: "power2.inOut" }, "+=4")
+    .set(bodyContainer, { display: "none" })
+    .to(sunlight, { opacity: 0, duration: 2.6 }, "-=2.2")
+    .to(scrollyBg, { "--radius": "0px", duration: 5, ease: "power2.inOut" }, "-=1.6");
 
   if (sunlight) {
     gsap.to(sunlight, {
-      opacity: 0.8,
-      duration: 4,
-      yoyo: true,
+      opacity: 0.9,
+      duration: 4.2,
       repeat: -1,
-      ease: "sine.inOut"
+      yoyo: true,
+      ease: "sine.inOut",
     });
   }
 }
