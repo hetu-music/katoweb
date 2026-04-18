@@ -98,8 +98,8 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
               <Link
                 key={feature.id}
                 href={feature.href}
-                className="group relative flex flex-col items-center outline-none text-sm"
-                style={{ gap: "1em" }}
+                className="group relative flex flex-col items-center outline-none text-[16px]"
+                style={{ gap: "0.8em" }}
               >
                 {/* 顶部发光点 - 移除中心点，仅保留呼吸晕影 */}
                 <motion.div
@@ -110,25 +110,25 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                     duration: 0.9,
                     ease: [0.23, 1, 0.32, 1],
                   }}
-                  className="relative flex items-center justify-center h-4 w-4"
+                  className="relative flex items-center justify-center h-3 w-3"
                 >
-                  <div className="absolute h-6 w-6 rounded-full bg-teal-500/10 blur-[2px] transition-all duration-800 ease-out group-hover:bg-teal-500/30 group-hover:blur-md group-hover:scale-150" />
+                  <div className="absolute h-5 w-5 rounded-full bg-teal-500/10 blur-[2px] transition-all duration-800 ease-out group-hover:bg-teal-500/30 group-hover:blur-md group-hover:scale-150" />
                   <div
-                    className="absolute h-2.5 w-2.5 rounded-full bg-teal-500/30 animate-pulse shadow-[0_0_8px_rgba(20,184,166,0.4)]"
+                    className="absolute h-1.5 w-1.5 rounded-full bg-teal-500/30 animate-pulse shadow-[0_0_8px_rgba(20,184,166,0.4)]"
                     style={{ animationDuration: "2s" }}
                   />
                 </motion.div>
 
                 {/* 竖排标题 - 移除 pr-1 防止不对称 padding 导致的盒子偏移，确保文字和光点绝对中心对齐 */}
-                <div className="[writing-mode:vertical-rl] font-mono font-medium tracking-[1em] -mb-[1em] text-teal-600 dark:text-teal-300 transition-[color,filter,text-shadow] duration-1000 group-hover:text-teal-800 dark:group-hover:text-teal-100 group-hover:drop-shadow-[0_0_12px_rgba(20,184,166,0.3)] select-none">
+                <div className="[writing-mode:vertical-rl] font-mono font-medium tracking-[0.85em] -mb-[0.85em] text-teal-600 dark:text-teal-300 transition-[color,filter,text-shadow] duration-1000 group-hover:text-teal-800 dark:group-hover:text-teal-100 group-hover:drop-shadow-[0_0_12px_rgba(20,184,166,0.3)] select-none">
                   {feature.label.split("").map((char, i) => (
                     <motion.span
                       key={i}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
+                      initial={{ opacity: 0, scale: 0.8, filter: "blur(8px)" }}
+                      animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
                       transition={{
-                        delay: 0.4 + index * 0.15 + i * 0.1,
-                        duration: 1.2,
+                        delay: 0.45 + index * 0.15 + i * 0.15,
+                        duration: 2.0,
                         ease: [0.215, 0.61, 0.355, 1],
                       }}
                       className="inline-block"
@@ -181,7 +181,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 href={feature.href}
                 className="group flex items-center justify-between outline-none py-2"
               >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-6">
                   {/* 发光晕影 (无实心中心，弱化呼吸) */}
                   <motion.div
                     initial={{ opacity: 0, scale: 0.35, filter: "blur(8px)" }}
@@ -191,21 +191,21 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                       duration: 0.8,
                       ease: [0.23, 1, 0.32, 1],
                     }}
-                    className="relative flex items-center justify-center h-4 w-4"
+                    className="relative flex items-center justify-center h-3 w-3"
                   >
                     <div className="absolute h-5 w-5 rounded-full bg-teal-500/10 blur-[1px] transition-all group-active:scale-110" />
                     <div className="absolute h-1.5 w-1.5 rounded-full bg-teal-500/30 animate-pulse shadow-[0_0_6px_rgba(20,184,166,0.4)]" />
                   </motion.div>
                   {/* 标题 */}
-                  <div className="flex items-center text-[15px] font-mono font-medium tracking-[0.15em] text-teal-600 dark:text-teal-300 leading-none">
+                  <div className="flex items-center text-[16px] font-mono font-medium tracking-[0.1em] text-teal-600 dark:text-teal-300 leading-none">
                     {feature.label.split("").map((char, i) => (
                       <motion.span
                         key={i}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
+                        initial={{ opacity: 0, scale: 0.8, filter: "blur(6px)" }}
+                        animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
                         transition={{
-                          delay: 0.35 + index * 0.12 + i * 0.1,
-                          duration: 0.8,
+                          delay: 0.35 + index * 0.12 + i * 0.12,
+                          duration: 1.8,
                           ease: [0.215, 0.61, 0.355, 1],
                         }}
                         className="inline-block"
