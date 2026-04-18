@@ -201,14 +201,6 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                     ))}
                   </div>
                 </div>
-                {/* 描述说明 */}
-                <span className="text-[12px] font-light text-slate-400 dark:text-slate-400/80 flex items-center gap-1.5">
-                  {feature.desc}
-                  <ArrowRight
-                    size={10}
-                    className="text-teal-600/60 dark:text-teal-400/60"
-                  />
-                </span>
               </Link>
             );
           })}
