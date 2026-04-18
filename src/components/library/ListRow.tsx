@@ -71,6 +71,26 @@ export default function ListRow({
       </div>
 
       <div className="hidden shrink-0 items-center gap-8 text-sm text-slate-500 dark:text-slate-400 md:flex">
+        {isLoggedIn && (
+          <div className="flex w-8 items-center justify-center">
+            <button
+              onClick={(event) => {
+                event.stopPropagation();
+                toggleFavorite(song.id);
+              }}
+              aria-label={active ? "取消收藏" : "收藏"}
+              title={active ? "取消收藏" : "收藏"}
+              className={cn(
+                "rounded-lg p-2 transition-all duration-200",
+                active
+                  ? "text-rose-500"
+                  : "text-slate-400 opacity-100 hover:text-rose-400 dark:text-slate-500 lg:opacity-0 lg:group-hover:opacity-100",
+              )}
+            >
+              <Heart size={16} className={active ? "fill-current" : ""} />
+            </button>
+          </div>
+        )}
         <MultiTagDisplay tags={song.type} type="type" />
         <MultiTagDisplay tags={song.genre} type="genre" />
         <div className="flex w-16 items-center gap-2 font-mono text-xs opacity-70">
@@ -84,7 +104,7 @@ export default function ListRow({
       </div>
 
       {isLoggedIn && (
-        <div className="ml-2 flex shrink-0 items-center">
+        <div className="ml-2 flex shrink-0 items-center md:hidden">
           <button
             onClick={(event) => {
               event.stopPropagation();

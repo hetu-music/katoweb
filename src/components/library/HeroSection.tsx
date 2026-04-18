@@ -92,7 +92,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
       <div className="flex w-full md:w-auto h-full justify-start md:justify-end items-end md:items-start pt-1 md:pt-0">
         {/* -- 桌面端入口 (Desktop) - 极简竖排发光点 -- */}
         <div className="hidden md:flex flex-row gap-10 lg:gap-14 justify-end mt-4 md:mt-0">
-          {FEATURE_ENTRANCES.map((feature) => {
+          {FEATURE_ENTRANCES.map((feature, index) => {
             const Icon = feature.icon;
             return (
               <Link
@@ -102,18 +102,46 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 style={{ gap: "1em" }}
               >
                 {/* 顶部发光点 - 移除中心点，仅保留呼吸晕影 */}
-                <div className="relative flex items-center justify-center h-4 w-4">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.35, filter: "blur(10px)" }}
+                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                  transition={{
+                    delay: 0.15 + index * 0.12,
+                    duration: 0.9,
+                    ease: [0.23, 1, 0.32, 1],
+                  }}
+                  className="relative flex items-center justify-center h-4 w-4"
+                >
                   <div className="absolute h-6 w-6 rounded-full bg-teal-500/10 blur-[2px] transition-all duration-800 ease-out group-hover:bg-teal-500/30 group-hover:blur-md group-hover:scale-150" />
                   <div
                     className="absolute h-2.5 w-2.5 rounded-full bg-teal-500/30 animate-pulse shadow-[0_0_8px_rgba(20,184,166,0.4)]"
                     style={{ animationDuration: "2s" }}
                   />
-                </div>
+                </motion.div>
 
                 {/* 竖排标题 - 移除 pr-1 防止不对称 padding 导致的盒子偏移，确保文字和光点绝对中心对齐 */}
-                <span className="[writing-mode:vertical-rl] font-serif font-medium tracking-[1em] -mb-[1em] text-teal-600 dark:text-teal-300 transition-all duration-1000 group-hover:text-teal-800 dark:group-hover:text-teal-100 group-hover:drop-shadow-[0_0_12px_rgba(20,184,166,0.3)]">
+                <motion.span
+                  initial={{
+                    opacity: 0,
+                    y: 14,
+                    clipPath: "inset(0 0 100% 0)",
+                    filter: "blur(8px)",
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                    clipPath: "inset(0 0 0 0)",
+                    filter: "blur(0px)",
+                  }}
+                  transition={{
+                    delay: 0.35 + index * 0.12,
+                    duration: 1.4,
+                    ease: [0.19, 1, 0.22, 1],
+                  }}
+                  className="[writing-mode:vertical-rl] font-serif font-medium tracking-[1em] -mb-[1em] text-teal-600 dark:text-teal-300 transition-all duration-1000 group-hover:text-teal-800 dark:group-hover:text-teal-100 group-hover:drop-shadow-[0_0_12px_rgba(20,184,166,0.3)]"
+                >
                   {feature.label}
-                </span>
+                </motion.span>
 
                 {/* Hover 展开的说明面板 (画卷式向左侧缓慢延展展出) */}
                 <div className="absolute top-12 right-full mr-3 lg:mr-5 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-all duration-1600 ease-out group-hover:w-[210px] lg:group-hover:w-[240px] group-hover:opacity-100 z-10">
@@ -151,7 +179,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
             <div className="flex-1 h-px bg-linear-to-l from-transparent to-blue-600/30 dark:to-blue-400/20" />
           </div>
 
-          {FEATURE_ENTRANCES.map((feature) => {
+          {FEATURE_ENTRANCES.map((feature, index) => {
             return (
               <Link
                 key={feature.id}
@@ -160,14 +188,42 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
               >
                 <div className="flex items-center gap-4">
                   {/* 发光晕影 (无实心中心，弱化呼吸) */}
-                  <div className="relative flex items-center justify-center h-4 w-4">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.35, filter: "blur(8px)" }}
+                    animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                    transition={{
+                      delay: 0.15 + index * 0.12,
+                      duration: 0.8,
+                      ease: [0.23, 1, 0.32, 1],
+                    }}
+                    className="relative flex items-center justify-center h-4 w-4"
+                  >
                     <div className="absolute h-5 w-5 rounded-full bg-teal-500/10 blur-[1px] transition-all group-active:scale-110" />
                     <div className="absolute h-1.5 w-1.5 rounded-full bg-teal-500/30 animate-pulse shadow-[0_0_6px_rgba(20,184,166,0.4)]" />
-                  </div>
+                  </motion.div>
                   {/* 标题 */}
-                  <span className="text-[15px] font-serif font-medium tracking-[0.15em] text-teal-600 dark:text-teal-300 leading-none">
+                  <motion.span
+                    initial={{
+                      opacity: 0,
+                      x: -12,
+                      clipPath: "inset(0 100% 0 0)",
+                      filter: "blur(8px)",
+                    }}
+                    animate={{
+                      opacity: 1,
+                      x: 0,
+                      clipPath: "inset(0 0 0 0)",
+                      filter: "blur(0px)",
+                    }}
+                    transition={{
+                      delay: 0.35 + index * 0.12,
+                      duration: 1.2,
+                      ease: [0.19, 1, 0.22, 1],
+                    }}
+                    className="text-[15px] font-serif font-medium tracking-[0.15em] text-teal-600 dark:text-teal-300 leading-none"
+                  >
                     {feature.label}
-                  </span>
+                  </motion.span>
                 </div>
                 {/* 描述说明 */}
                 <span className="text-[12px] font-light text-slate-400 dark:text-slate-400/80 flex items-center gap-1.5">

@@ -111,6 +111,10 @@ const CREATOR_FIELD_KEYS = [
 
 type CreatorFieldKey = (typeof CREATOR_FIELD_KEYS)[number];
 
+const MISSING_FIELD_LABEL_OVERRIDES: Partial<Record<SongFormFieldKey, string>> = {
+  lyrics: "歌词",
+};
+
 function isCreatorFieldKey(value: SongFormFieldKey): value is CreatorFieldKey {
   return CREATOR_FIELD_KEYS.includes(value as CreatorFieldKey);
 }
@@ -157,7 +161,9 @@ function getMissingFields(song: SongDetail): string[] {
     } else if (typeof value === "string" && value.trim() === "") {
       isEmpty = true;
     }
-    if (isEmpty) missing.push(field.label);
+    if (isEmpty) {
+      missing.push(MISSING_FIELD_LABEL_OVERRIDES[field.key] ?? field.label);
+    }
   }
   return missing;
 }
@@ -178,6 +184,10 @@ const AdminListRow = React.memo(
     toggleRowExpansion: (id: number) => void;
     handleEdit: (song: SongDetail) => void;
   }) => {
+    const missingFields = getMissingFields(song);
+    const visibleMissingFields = missingFields.slice(0, 4);
+    const hiddenMissingCount = missingFields.length - visibleMissingFields.length;
+
     return (
       <div className="flex flex-col bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden transition-all hover:shadow-md hover:border-blue-200 dark:hover:border-blue-900/30">
         {/* Main Row Content */}
@@ -200,13 +210,21 @@ const AdminListRow = React.memo(
 
           {/* Title & Status */}
           <div className="flex-1 min-w-0 flex flex-col justify-center">
-            <div className="flex items-center gap-2">
-              <h3 className="font-medium text-slate-900 dark:text-slate-100 truncate">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="max-w-full font-medium text-slate-900 dark:text-slate-100 truncate">
                 {song.title}
               </h3>
-              {isSongIncomplete(song) && (
-                <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-200 dark:border-amber-700/50">
-                  待完善
+              {visibleMissingFields.map((field) => (
+                <span
+                  key={field}
+                  className="shrink-0 inline-flex items-center rounded-full border border-amber-200 bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:border-amber-700/50 dark:bg-amber-900/40 dark:text-amber-300"
+                >
+                  {field}
+                </span>
+              ))}
+              {hiddenMissingCount > 0 && (
+                <span className="shrink-0 inline-flex items-center rounded-full border border-amber-200/80 bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-600 dark:border-amber-700/40 dark:bg-amber-900/20 dark:text-amber-300">
+                  +{hiddenMissingCount}项
                 </span>
               )}
             </div>

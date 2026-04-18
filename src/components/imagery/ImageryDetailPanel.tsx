@@ -385,15 +385,53 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
     });
   }, [selectedItem]);
 
-  // Simple scroll lock (no jump since scrollbar is globally hidden)
   useEffect(() => {
-    if (open && isDesktop) {
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = "";
-      };
-    }
-  }, [open, isDesktop]);
+    if (!open) return;
+
+    const html = document.documentElement;
+    const body = document.body;
+    const scrollY = window.scrollY;
+    const previousStyles = {
+      htmlOverflow: html.style.overflow,
+      htmlTouchAction: html.style.touchAction,
+      htmlOverscrollBehavior: html.style.overscrollBehavior,
+      bodyOverflow: body.style.overflow,
+      bodyTouchAction: body.style.touchAction,
+      bodyOverscrollBehavior: body.style.overscrollBehavior,
+      bodyPosition: body.style.position,
+      bodyTop: body.style.top,
+      bodyLeft: body.style.left,
+      bodyRight: body.style.right,
+      bodyWidth: body.style.width,
+    };
+
+    html.style.overflow = "hidden";
+    html.style.touchAction = "none";
+    html.style.overscrollBehavior = "none";
+    body.style.overflow = "hidden";
+    body.style.touchAction = "none";
+    body.style.overscrollBehavior = "none";
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.left = "0";
+    body.style.right = "0";
+    body.style.width = "100%";
+
+    return () => {
+      html.style.overflow = previousStyles.htmlOverflow;
+      html.style.touchAction = previousStyles.htmlTouchAction;
+      html.style.overscrollBehavior = previousStyles.htmlOverscrollBehavior;
+      body.style.overflow = previousStyles.bodyOverflow;
+      body.style.touchAction = previousStyles.bodyTouchAction;
+      body.style.overscrollBehavior = previousStyles.bodyOverscrollBehavior;
+      body.style.position = previousStyles.bodyPosition;
+      body.style.top = previousStyles.bodyTop;
+      body.style.left = previousStyles.bodyLeft;
+      body.style.right = previousStyles.bodyRight;
+      body.style.width = previousStyles.bodyWidth;
+      window.scrollTo({ top: scrollY, left: 0 });
+    };
+  }, [open]);
 
   const handleLyricistClick = useCallback((name: string) => {
     setActiveLyricist((prev) => (name === "" || prev === name ? null : name));
