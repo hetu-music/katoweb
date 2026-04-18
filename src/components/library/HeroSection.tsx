@@ -123,22 +123,24 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 <motion.span
                   initial={{
                     opacity: 0,
-                    y: -10,
-                    clipPath: "inset(100% 0 0 0)",
-                    filter: "blur(8px)",
+                    scaleY: 0,
+                    originY: 0,
+                    y: -20,
+                    filter: "blur(12px)",
                   }}
                   animate={{
                     opacity: 1,
+                    scaleY: 1,
+                    originY: 0,
                     y: 0,
-                    clipPath: "inset(0 0 0 0)",
                     filter: "blur(0px)",
                   }}
                   transition={{
-                    delay: 0.35 + index * 0.12,
-                    duration: 2.2,
-                    ease: [0.16, 1, 0.3, 1],
+                    delay: 0.45 + index * 0.15,
+                    duration: 2.8,
+                    ease: [0.16, 1, 0.3, 1], // Quint easing for professional unrolling
                   }}
-                  className="[writing-mode:vertical-rl] font-mono font-medium tracking-[1em] -mb-[1em] text-teal-600 dark:text-teal-300 transition-[color,filter,text-shadow] duration-1000 group-hover:text-teal-800 dark:group-hover:text-teal-100 group-hover:drop-shadow-[0_0_12px_rgba(20,184,166,0.3)]"
+                  className="[writing-mode:vertical-rl] font-mono font-medium tracking-[1em] -mb-[1em] text-teal-600 dark:text-teal-300 transition-[color,filter,text-shadow] duration-1000 group-hover:text-teal-800 dark:group-hover:text-teal-100 group-hover:drop-shadow-[0_0_12px_rgba(20,184,166,0.3)] select-none"
                 >
                   {feature.label}
                 </motion.span>
@@ -205,14 +207,16 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                   <motion.span
                     initial={{
                       opacity: 0,
-                      x: -12,
-                      clipPath: "inset(0 100% 0 0)",
+                      scaleX: 0,
+                      originX: 0,
+                      x: -10,
                       filter: "blur(8px)",
                     }}
                     animate={{
                       opacity: 1,
+                      scaleX: 1,
+                      originX: 0,
                       x: 0,
-                      clipPath: "inset(0 0 0 0)",
                       filter: "blur(0px)",
                     }}
                     transition={{
