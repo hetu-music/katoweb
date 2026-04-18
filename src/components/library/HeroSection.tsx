@@ -114,64 +114,61 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
               <Link
                 key={feature.id}
                 href={feature.href}
-                className="group relative outline-none text-[16px]"
+                className="group relative flex flex-col items-center outline-none text-[16px]"
+                style={{ gap: "0.8em" }}
               >
-                {/* 组合区域：左侧为展开面板，右侧为 [点 + 标题] 垂直组合 */}
-                <div className="flex flex-row-reverse items-center">
-                  {/* 右侧垂直轴：点 + 竖排标题 */}
-                  <div className="flex flex-col items-center" style={{ gap: "0.8em" }}>
-                    {/* 顶部发光点 */}
-                    <div className="relative flex items-center justify-center h-3 w-3">
-                      <div className={`absolute h-4 w-4 rounded-full ${feature.dotHaloBase} blur-[1.5px] transition-all duration-800 ease-out ${feature.dotHaloHover} group-hover:blur-sm group-hover:scale-125`} />
-                      <div
-                        className={`absolute h-1.5 w-1.5 rounded-full ${feature.dotCore} animate-pulse shadow-[0_0_8px_${feature.glow}]`}
-                        style={{ animationDuration: "2s" }}
-                      />
-                    </div>
+                {/* 顶部发光点 - 移除中心点，仅保留呼吸晕影 */}
+                <div
+                  className="relative flex items-center justify-center h-3 w-3"
+                >
+                  <div className={`absolute h-4 w-4 rounded-full ${feature.dotHaloBase} blur-[1.5px] transition-all duration-800 ease-out ${feature.dotHaloHover} group-hover:blur-sm group-hover:scale-125`} />
+                  <div
+                    className={`absolute h-1.5 w-1.5 rounded-full ${feature.dotCore} animate-pulse shadow-[0_0_8px_${feature.glow}]`}
+                    style={{ animationDuration: "2s" }}
+                  />
+                </div>
 
-                    {/* 竖排标题 */}
-                    <div className={`[writing-mode:vertical-rl] font-mono font-medium tracking-[0.85em] -mb-[0.85em] ${feature.textBase} ${feature.textHover} transition-[color,filter,text-shadow] duration-1000 group-hover:drop-shadow-[0_0_12px_${feature.glow}] select-none`}>
-                      {feature.label.split("").map((char, i) => (
-                        <motion.span
-                          key={i}
-                          initial={{ opacity: 0, scale: 0.8, filter: "blur(8px)" }}
-                          animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                          style={{
-                            backfaceVisibility: "hidden",
-                            WebkitFontSmoothing: "antialiased",
-                            transform: "translateZ(0)",
-                            willChange: "transform, opacity",
-                          }}
-                          transition={{
-                            delay: 0.45 + index * 0.15 + i * 0.15,
-                            duration: 2.0,
-                            ease: [0.215, 0.61, 0.355, 1],
-                          }}
-                          className="inline-block"
-                        >
-                          {char}
-                        </motion.span>
-                      ))}
-                    </div>
-                  </div>
+                {/* 竖排标题 - 移除 pr-1 防止不对称 padding 导致的盒子偏移，确保文字和光点绝对中心对齐 */}
+                <div className={`[writing-mode:vertical-rl] font-mono font-medium tracking-[0.85em] -mb-[0.85em] ${feature.textBase} ${feature.textHover} transition-[color,filter,text-shadow] duration-1000 group-hover:drop-shadow-[0_0_12px_${feature.glow}] select-none`}>
+                  {feature.label.split("").map((char, i) => (
+                    <motion.span
+                      key={i}
+                      initial={{ opacity: 0, scale: 0.8, filter: "blur(8px)" }}
+                      animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                      style={{
+                        backfaceVisibility: "hidden",
+                        WebkitFontSmoothing: "antialiased",
+                        transform: "translateZ(0)",
+                        willChange: "transform, opacity",
+                      }}
+                      transition={{
+                        delay: 0.45 + index * 0.15 + i * 0.15,
+                        duration: 2.0,
+                        ease: [0.215, 0.61, 0.355, 1],
+                      }}
+                      className="inline-block"
+                    >
+                      {char}
+                    </motion.span>
+                  ))}
+                </div>
 
-                  {/* 左侧：Hover 展开的说明面板 */}
-                  <div className="relative overflow-hidden w-0 opacity-0 transition-[width,opacity,margin] duration-2400 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:w-[210px] lg:group-hover:w-[240px] group-hover:opacity-100 group-hover:mr-3 z-10 will-change-[width,opacity]">
-                    <div className="flex w-max shrink-0 items-center gap-4 lg:gap-5 border-r border-slate-300/60 dark:border-slate-600/60 pr-4 lg:pr-5 py-1.5 h-full">
-                      <div className="flex flex-col items-end">
-                        <span className="text-[15px] font-serif font-medium tracking-[0.25em] text-slate-900 dark:text-slate-100 mb-1 whitespace-nowrap transition-colors duration-2000 ease-out drop-shadow-sm">
-                          {feature.label}
-                        </span>
-                        <span className="text-[12px] font-light tracking-[0.15em] text-slate-500 dark:text-slate-400 whitespace-nowrap transition-colors duration-2000 ease-out">
-                          {feature.desc}
-                        </span>
-                      </div>
-                      <Icon
-                        size={18}
-                        strokeWidth={1.5}
-                        className={`${feature.textBase.replace('text-', 'text-')} shrink-0 transition-colors duration-2000 ease-out`}
-                      />
+                {/* Hover 展开的说明面板 (画卷式向左侧缓慢延展展出) */}
+                <div className="absolute top-12 right-full mr-3 lg:mr-5 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-[width,opacity] duration-2400 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:w-[210px] lg:group-hover:w-[240px] group-hover:opacity-100 z-10 will-change-[width,opacity]">
+                  <div className="flex w-max shrink-0 items-center gap-4 lg:gap-5 border-r border-slate-300/60 dark:border-slate-600/60 pr-4 lg:pr-5 py-1.5 h-full">
+                    <div className="flex flex-col items-end">
+                      <span className="text-[15px] font-serif font-medium tracking-[0.25em] text-slate-900 dark:text-slate-100 mb-1 whitespace-nowrap transition-colors duration-2000 ease-out drop-shadow-sm">
+                        {feature.label}
+                      </span>
+                      <span className="text-[12px] font-light tracking-[0.15em] text-slate-500 dark:text-slate-400 whitespace-nowrap transition-colors duration-2000 ease-out">
+                        {feature.desc}
+                      </span>
                     </div>
+                    <Icon
+                      size={18}
+                      strokeWidth={1.5}
+                      className="text-teal-600/80 dark:text-teal-400/80 shrink-0 transition-colors duration-2000 ease-out"
+                    />
                   </div>
                 </div>
               </Link>
