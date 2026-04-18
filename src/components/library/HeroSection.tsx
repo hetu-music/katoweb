@@ -186,7 +186,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
         </div>
 
         {/* -- 移动端入口 (Mobile) - 与桌面端统一的青色系设计 -- */}
-        <div className="flex md:hidden flex-col gap-4 w-full mt-1">
+        <div className="flex md:hidden flex-row gap-8 w-full mt-2 flex-wrap">
           {/* 主副标题与入口间的分界线 - 古典编排风格的高级分界线 */}
           <div className="flex items-center w-full mt-2 mb-1.5 opacity-80">
             <div className="flex-1 h-px bg-linear-to-r from-transparent to-blue-600/30 dark:to-blue-400/20" />
