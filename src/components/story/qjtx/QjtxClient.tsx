@@ -462,9 +462,9 @@ export default function QjtxClient() {
         opacity: 1,
         scale: 1.2,
         scrollTrigger: {
-          trigger: ".timeline-container",
-          start: "bottom 80%",
-          end: "bottom 55%",
+          trigger: ".footer-final", // 使用 footer 作为触发源，因为它被 timeline 的 pin 间距正确推后
+          start: "top 95%",
+          end: "top 85%",
           scrub: true,
         },
       });
@@ -478,6 +478,7 @@ export default function QjtxClient() {
           scrub: 1.5, // 增加 scrub 延迟，让过渡更顺滑
           pin: true,
           pinSpacing: true,
+          invalidateOnRefresh: true,
         },
       });
 
