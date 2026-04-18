@@ -102,14 +102,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 style={{ gap: "0.8em" }}
               >
                 {/* 顶部发光点 - 移除中心点，仅保留呼吸晕影 */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.35, filter: "blur(10px)" }}
-                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                  transition={{
-                    delay: 0.15 + index * 0.12,
-                    duration: 0.9,
-                    ease: [0.23, 1, 0.32, 1],
-                  }}
+                <div
                   className="relative flex items-center justify-center h-3 w-3"
                 >
                   <div className="absolute h-5 w-5 rounded-full bg-teal-500/10 blur-[2px] transition-all duration-800 ease-out group-hover:bg-teal-500/30 group-hover:blur-md group-hover:scale-150" />
@@ -117,7 +110,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                     className="absolute h-1.5 w-1.5 rounded-full bg-teal-500/30 animate-pulse shadow-[0_0_8px_rgba(20,184,166,0.4)]"
                     style={{ animationDuration: "2s" }}
                   />
-                </motion.div>
+                </div>
 
                 {/* 竖排标题 - 移除 pr-1 防止不对称 padding 导致的盒子偏移，确保文字和光点绝对中心对齐 */}
                 <div className="[writing-mode:vertical-rl] font-mono font-medium tracking-[0.85em] -mb-[0.85em] text-teal-600 dark:text-teal-300 transition-[color,filter,text-shadow] duration-1000 group-hover:text-teal-800 dark:group-hover:text-teal-100 group-hover:drop-shadow-[0_0_12px_rgba(20,184,166,0.3)] select-none">
@@ -142,7 +135,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 <div className="absolute top-12 right-full mr-3 lg:mr-5 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-[width,opacity] duration-[2400ms] ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:w-[210px] lg:group-hover:w-[240px] group-hover:opacity-100 z-10 will-change-[width,opacity]">
                   <div className="flex w-max shrink-0 items-center gap-4 lg:gap-5 border-r border-slate-300/60 dark:border-slate-600/60 pr-4 lg:pr-5 py-1.5 h-full">
                     <div className="flex flex-col items-end">
-                      <span className="text-[15px] font-medium tracking-[0.25em] text-slate-900 dark:text-slate-100 mb-1 whitespace-nowrap transition-colors duration-2000 ease-out drop-shadow-sm">
+                      <span className="text-[15px] font-serif font-medium tracking-[0.25em] text-slate-900 dark:text-slate-100 mb-1 whitespace-nowrap transition-colors duration-2000 ease-out drop-shadow-sm">
                         {feature.label}
                       </span>
                       <span className="text-[12px] font-light tracking-[0.15em] text-slate-500 dark:text-slate-400 whitespace-nowrap transition-colors duration-2000 ease-out">
@@ -183,19 +176,12 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
               >
                 <div className="flex items-center gap-6">
                   {/* 发光晕影 (无实心中心，弱化呼吸) */}
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.35, filter: "blur(8px)" }}
-                    animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                    transition={{
-                      delay: 0.15 + index * 0.12,
-                      duration: 0.8,
-                      ease: [0.23, 1, 0.32, 1],
-                    }}
+                  <div
                     className="relative flex items-center justify-center h-3 w-3"
                   >
                     <div className="absolute h-5 w-5 rounded-full bg-teal-500/10 blur-[1px] transition-all group-active:scale-110" />
                     <div className="absolute h-1.5 w-1.5 rounded-full bg-teal-500/30 animate-pulse shadow-[0_0_6px_rgba(20,184,166,0.4)]" />
-                  </motion.div>
+                  </div>
                   {/* 标题 */}
                   <div className="flex items-center text-[16px] font-mono font-medium tracking-[0.1em] text-teal-600 dark:text-teal-300 leading-none">
                     {feature.label.split("").map((char, i) => (
