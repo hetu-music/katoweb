@@ -17,9 +17,10 @@ const FEATURE_ENTRANCES = [
     desc: "探索词中万千意象",
     href: "/imagery",
     icon: Sparkles,
-    gradient: "from-blue-500/10 to-indigo-500/10",
-    border: "group-hover:border-blue-500/30",
-    textGlow: "group-hover:text-blue-600 dark:group-hover:text-blue-400",
+    primary: "teal",
+    textBase: "text-teal-600 dark:text-teal-400",
+    textHover: "group-hover:text-teal-800 dark:group-hover:text-teal-200",
+    glow: "rgba(20,184,166,0.3)",
   },
   {
     id: "qjtx",
@@ -27,9 +28,10 @@ const FEATURE_ENTRANCES = [
     desc: "一纸长歌，倾尽天下",
     href: "/story/qjtx",
     icon: Sparkles,
-    gradient: "from-red-500/10 to-rose-500/10",
-    border: "group-hover:border-red-500/30",
-    textGlow: "group-hover:text-red-600 dark:group-hover:text-red-400",
+    primary: "red",
+    textBase: "text-red-600 dark:text-red-400",
+    textHover: "group-hover:text-red-800 dark:group-hover:text-red-200",
+    glow: "rgba(220,38,38,0.3)",
   },
   // 可以继续添加其他重大功能入口，例如：
   // {
@@ -115,15 +117,15 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 <div
                   className="relative flex items-center justify-center h-3 w-3"
                 >
-                  <div className="absolute h-4 w-4 rounded-full bg-teal-500/10 blur-[1.5px] transition-all duration-800 ease-out group-hover:bg-teal-500/30 group-hover:blur-sm group-hover:scale-125" />
+                  <div className={`absolute h-4 w-4 rounded-full bg-${feature.primary}-500/10 blur-[1.5px] transition-all duration-800 ease-out group-hover:bg-${feature.primary}-500/30 group-hover:blur-sm group-hover:scale-125`} />
                   <div
-                    className="absolute h-1.5 w-1.5 rounded-full bg-teal-500/30 animate-pulse shadow-[0_0_8px_rgba(20,184,166,0.4)]"
+                    className={`absolute h-1.5 w-1.5 rounded-full bg-${feature.primary}-500/30 animate-pulse shadow-[0_0_8px_${feature.glow}]`}
                     style={{ animationDuration: "2s" }}
                   />
                 </div>
 
                 {/* 竖排标题 - 移除 pr-1 防止不对称 padding 导致的盒子偏移，确保文字和光点绝对中心对齐 */}
-                <div className="[writing-mode:vertical-rl] font-mono font-medium tracking-[0.85em] -mb-[0.85em] text-teal-600 dark:text-teal-300 transition-[color,filter,text-shadow] duration-1000 group-hover:text-teal-800 dark:group-hover:text-teal-100 group-hover:drop-shadow-[0_0_12px_rgba(20,184,166,0.3)] select-none">
+                <div className={`[writing-mode:vertical-rl] font-mono font-medium tracking-[0.85em] -mb-[0.85em] ${feature.textBase} ${feature.textHover} transition-[color,filter,text-shadow] duration-1000 group-hover:drop-shadow-[0_0_12px_${feature.glow}] select-none`}>
                   {feature.label.split("").map((char, i) => (
                     <motion.span
                       key={i}
@@ -195,11 +197,11 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                   <div
                     className="relative flex items-center justify-center h-3 w-3"
                   >
-                    <div className="absolute h-4 w-4 rounded-full bg-teal-500/10 blur-[1px] transition-all group-active:scale-110" />
-                    <div className="absolute h-1.5 w-1.5 rounded-full bg-teal-500/30 animate-pulse shadow-[0_0_6px_rgba(20,184,166,0.4)]" />
+                    <div className={`absolute h-4 w-4 rounded-full bg-${feature.primary}-500/10 blur-[1px] transition-all group-active:scale-110`} />
+                    <div className={`absolute h-1.5 w-1.5 rounded-full bg-${feature.primary}-500/30 animate-pulse shadow-[0_0_6px_${feature.glow}]`} />
                   </div>
                   {/* 标题 */}
-                  <div className="flex items-center text-[16px] font-mono font-medium tracking-[0.5em] text-teal-600 dark:text-teal-300 leading-none">
+                  <div className={`flex items-center text-[16px] font-mono font-medium tracking-[0.5em] ${feature.textBase} ${feature.textHover} leading-none`}>
                     {feature.label.split("").map((char, i) => (
                       <motion.span
                         key={i}
