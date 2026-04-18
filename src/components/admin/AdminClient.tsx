@@ -3,6 +3,7 @@
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import Pagination from "@/components/shared/Pagination";
 import ThemeToggle from "@/components/shared/ThemeToggle";
+import { useSyncedQueryState } from "@/hooks/useSyncedQueryState";
 import {
   mergeAutoCompleteData,
   useAutoComplete,
@@ -52,7 +53,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
+import { parseAsInteger, parseAsString } from "nuqs";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Controller,
@@ -435,15 +436,18 @@ export default function AdminClientComponent({
   initialError: string | null;
 }) {
   // States
-  // 不使用 throttleMs：混用有/无 throttle 参数会导致 trailing-edge timer 竞态（第一次操作闪旧值）
-  const [{ q: searchTerm, page: currentPage }, setQueryState] = useQueryStates({
-    q: parseAsString.withDefault("").withOptions({
+  const [searchTerm, setSearchTerm] = useSyncedQueryState<string>(
+    "q",
+    parseAsString.withDefault("").withOptions({
       shallow: true,
     }),
-    page: parseAsInteger.withDefault(1).withOptions({
+  );
+  const [currentPage, setCurrentPage] = useSyncedQueryState<number>(
+    "page",
+    parseAsInteger.withDefault(1).withOptions({
       shallow: true,
     }),
-  });
+  );
   const [showIncompleteOnly, setShowIncompleteOnly] = useState(false);
 
   // Data Hooks
@@ -468,7 +472,6 @@ export default function AdminClientComponent({
       : baseSortedSongs;
   }, [baseSortedSongs, showIncompleteOnly]);
 
-  // 分页处理 — 直接用 nuqs 的 currentPage 作为唯一真值源，避免双层状态的时序竞争导致闪烁
   const ITEMS_PER_PAGE = 24;
   const totalPages = useMemo(
     () => Math.max(1, Math.ceil(sortedSongs.length / ITEMS_PER_PAGE)),
@@ -484,13 +487,17 @@ export default function AdminClientComponent({
   }, [sortedSongs, safePage]);
   const startIndex = (safePage - 1) * ITEMS_PER_PAGE + 1;
 
+  useEffect(() => {
+    if (safePage !== currentPage) {
+      setCurrentPage(safePage);
+    }
+  }, [currentPage, safePage, setCurrentPage]);
+
   const handlePageChange = useCallback(
     (page: number) => {
-      void setQueryState({
-        page: page > 1 ? page : null,
-      });
+      setCurrentPage(Math.max(1, page));
     },
-    [setQueryState],
+    [setCurrentPage],
   );
 
   // Auth & Actions
@@ -731,7 +738,7 @@ export default function AdminClientComponent({
               <button
                 onClick={() => {
                   setShowIncompleteOnly(false);
-                  void setQueryState({ page: null });
+                  setCurrentPage(1);
                 }}
                 className={cn(
                   "px-4 py-1.5 rounded-full text-sm border transition-all whitespace-nowrap",
@@ -745,7 +752,7 @@ export default function AdminClientComponent({
               <button
                 onClick={() => {
                   setShowIncompleteOnly(true);
-                  void setQueryState({ page: null });
+                  setCurrentPage(1);
                 }}
                 className={cn(
                   "px-4 py-1.5 rounded-full text-sm border transition-all whitespace-nowrap flex items-center gap-1.5",
@@ -770,17 +777,16 @@ export default function AdminClientComponent({
                 placeholder="搜索标题、专辑、作者..."
                 value={searchTerm}
                 onChange={(e) => {
-                  void setQueryState({
-                    q: e.target.value || null,
-                    page: null,
-                  });
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
                 }}
                 className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full py-2 pl-9 pr-8 text-sm outline-none focus:border-blue-500 transition-colors"
               />
               {searchTerm && (
                 <button
                   onClick={() => {
-                    void setQueryState({ q: null, page: null });
+                    setSearchTerm("");
+                    setCurrentPage(1);
                   }}
                   className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-300 hover:text-slate-500"
                 >
