@@ -2,10 +2,10 @@ import gsap from "gsap";
 import type { ImmersiveTheme, TimelineEvent } from "../types";
 
 export const theme: ImmersiveTheme = {
-  bg: "radial-gradient(circle at 50% 18%, rgba(125, 211, 252, 0.18) 0%, rgba(15, 23, 42, 0.58) 24%, rgba(2, 6, 23, 0.97) 100%), url(/story/qjtx/4.avif) center/cover no-repeat fixed",
-  titleColor: "#f8fafc",
-  bodyColor: "#dbeafe",
-  accentColor: "#7dd3fc",
+  bg: "radial-gradient(circle at 50% 10%, rgba(14, 165, 233, 0.08) 0%, rgba(15, 23, 42, 0.65) 30%, rgba(2, 6, 23, 0.98) 100%), url(/story/qjtx/4.avif) center/cover no-repeat fixed",
+  titleColor: "#e0f2fe",
+  bodyColor: "#bae6fd",
+  accentColor: "#38bdf8",
   layout: "horizontal",
   specialEffect: "none",
   maskPath:
@@ -26,114 +26,132 @@ export function NodeLayout({
   const bodyColumns = [detail.body.slice(0, 3), detail.body.slice(3, 6), detail.body.slice(6)];
 
   return (
-    <div className={`scrolly-text-${event.id} relative z-10 h-full w-full overflow-hidden`}>
+    <div className={`scrolly-text-${event.id} relative z-10 h-full w-full overflow-hidden font-serif`}>
+      {/* --- Ambient Rain Layers (Optimized with SVG Data URIs, no heavy blend modes) --- */}
       <div
-        className={`scrolly-rain-${event.id} absolute inset-0 pointer-events-none opacity-0 mix-blend-screen`}
+        className={`scrolly-rain-bg-${event.id} absolute inset-0 pointer-events-none opacity-0`}
         style={{
-          backgroundImage:
-            "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(191,219,254,0.28) 40%, rgba(255,255,255,0) 100%)",
-          backgroundSize: "2px 140px",
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cellipse cx='20' cy='20' rx='0.6' ry='15' fill='rgba(125,211,252,0.25)'/%3E%3Cellipse cx='80' cy='80' rx='0.6' ry='20' fill='rgba(125,211,252,0.15)'/%3E%3Cellipse cx='140' cy='40' rx='0.8' ry='18' fill='rgba(125,211,252,0.35)'/%3E%3Cellipse cx='50' cy='150' rx='0.6' ry='25' fill='rgba(125,211,252,0.2)'/%3E%3Cellipse cx='180' cy='170' rx='0.8' ry='12' fill='rgba(125,211,252,0.3)'/%3E%3Cellipse cx='110' cy='130' rx='0.6' ry='22' fill='rgba(125,211,252,0.15)'/%3E%3C/svg%3E")`,
+          backgroundSize: "180px 180px",
           backgroundRepeat: "repeat",
+          transform: "rotate(6deg) scale(1.2)",
         }}
       />
+      <div
+        className={`scrolly-rain-fg-${event.id} absolute inset-0 pointer-events-none opacity-0`}
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cellipse cx='30' cy='30' rx='1' ry='25' fill='rgba(224,242,254,0.45)'/%3E%3Cellipse cx='90' cy='100' rx='1' ry='30' fill='rgba(224,242,254,0.3)'/%3E%3Cellipse cx='150' cy='50' rx='1.2' ry='28' fill='rgba(224,242,254,0.5)'/%3E%3Cellipse cx='60' cy='170' rx='1' ry='35' fill='rgba(224,242,254,0.35)'/%3E%3Cellipse cx='190' cy='180' rx='1.2' ry='20' fill='rgba(224,242,254,0.55)'/%3E%3Cellipse cx='120' cy='140' rx='1' ry='32' fill='rgba(224,242,254,0.25)'/%3E%3C/svg%3E")`,
+          backgroundSize: "220px 220px",
+          backgroundRepeat: "repeat",
+          transform: "rotate(8deg) scale(1.2)",
+        }}
+      />
+      
+      {/* Fog/Mist */}
       <div
         className={`scrolly-aura-${event.id} absolute inset-0 pointer-events-none opacity-0`}
         style={{
           background:
-            "radial-gradient(circle at 50% 24%, rgba(125,211,252,0.18), transparent 48%), radial-gradient(circle at 50% 68%, rgba(14,165,233,0.10), transparent 62%)",
+            "radial-gradient(circle at 50% 20%, rgba(56,189,248,0.12), transparent 45%), radial-gradient(circle at 50% 80%, rgba(2,132,199,0.08), transparent 60%)",
         }}
       />
 
+      {/* --- Intro Scene --- */}
       <div className={`scrolly-intro-${event.id} absolute inset-0 flex flex-col items-center justify-center px-6`}>
-        <div className="relative flex flex-col items-center gap-8 md:gap-10">
-          <div className="scrolly-quote-wrap flex items-center gap-4 md:gap-6">
-            <div className="h-px w-10 bg-sky-200/30 md:w-16" />
-            <p
-              className={`scrolly-quote-${event.id} text-[11px] font-light tracking-[0.45em] text-center md:text-sm md:tracking-[0.7em]`}
-              style={{ color: bodyColor }}
-            >
-              {detail.quote}
-            </p>
-            <div className="h-px w-10 bg-sky-200/30 md:w-16" />
-          </div>
+        <div className="relative flex w-full max-w-4xl flex-col items-center justify-center gap-12 md:gap-16">
+          
+          <div className="flex flex-col items-center gap-6 text-center">
+            <div className="flex items-center gap-4">
+              <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-sky-300/40" />
+              <p
+                className={`scrolly-quote-${event.id} text-[12px] font-light tracking-[0.5em] md:text-sm md:tracking-[0.8em]`}
+                style={{ color: bodyColor }}
+              >
+                {detail.quote}
+              </p>
+              <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-sky-300/40" />
+            </div>
 
-          <div className="relative flex flex-col items-center gap-6">
             <h2
-              className={`scrolly-title-${event.id} text-center text-4xl font-serif font-light tracking-[0.45em] drop-shadow-[0_0_30px_rgba(125,211,252,0.18)] md:text-6xl md:tracking-[0.6em] lg:text-7xl`}
-              style={{ color: titleColor, paddingLeft: "0.45em" }}
+              className={`scrolly-title-${event.id} relative text-5xl font-light tracking-[0.35em] drop-shadow-[0_0_30px_rgba(56,189,248,0.3)] md:text-7xl lg:text-8xl`}
+              style={{ color: titleColor, paddingLeft: "0.35em" }}
             >
               {detail.title}
+              <div className="absolute -bottom-4 left-1/2 h-[1px] w-1/2 -translate-x-1/2 bg-gradient-to-r from-transparent via-sky-300/30 to-transparent" />
             </h2>
+          </div>
 
-            <div className={`scrolly-tower-${event.id} relative flex h-68 w-28 flex-col items-center md:h-88 md:w-36`}>
-              <div
-                className="absolute inset-x-0 top-0 h-10 rounded-full blur-2xl"
-                style={{ background: `radial-gradient(circle, ${accentColor}55 0%, transparent 72%)` }}
-              />
-              <div className="relative mt-4 flex h-full w-full flex-col items-center justify-start">
+          {/* Abstract Tower / Rain Gauge */}
+          <div className={`scrolly-tower-${event.id} relative flex h-[22rem] w-[8rem] flex-col items-center justify-center`}>
+            {/* Core glowing line */}
+            <div className="absolute top-0 bottom-0 left-1/2 w-[1px] -translate-x-1/2 bg-gradient-to-b from-sky-200/50 via-sky-400/20 to-transparent" />
+            <div className="absolute top-[20%] left-1/2 h-24 w-[2px] -translate-x-1/2 bg-sky-300 shadow-[0_0_15px_rgba(56,189,248,0.6)]" />
+
+            {/* Ripple Tiers */}
+            <div className="relative mt-8 flex h-full w-full flex-col items-center gap-6">
+              {Array.from({ length: 5 }, (_, i) => (
                 <div
-                  className="mb-3 h-3 w-3 rounded-full"
-                  style={{ backgroundColor: accentColor, boxShadow: `0 0 18px ${accentColor}` }}
-                />
-                {Array.from({ length: 9 }, (_, index) => (
-                  <div
-                    key={index}
-                    className={`scrolly-tier-${event.id} origin-center rounded-full border border-sky-100/20 bg-slate-950/35 backdrop-blur-sm`}
-                    style={{
-                      width: `${74 + (8 - index) * 7}px`,
-                      height: `${10 + Math.max(0, 6 - index)}px`,
-                      marginTop: index === 0 ? 0 : "0.5rem",
-                      boxShadow:
-                        index % 3 === 0
-                          ? `0 0 16px color-mix(in srgb, ${accentColor} 28%, transparent)`
-                          : undefined,
-                    }}
-                  />
-                ))}
-                <div className="mt-4 h-full w-[2px] rounded-full bg-linear-to-b from-sky-200/40 via-sky-300/30 to-transparent" />
-              </div>
+                  key={i}
+                  className={`scrolly-tier-${event.id} relative flex h-2 items-center justify-center`}
+                >
+                  <div className="absolute h-px w-full bg-gradient-to-r from-transparent via-sky-300/30 to-transparent" style={{ width: `${80 - i * 12}px` }} />
+                  <div className="h-[3px] w-[3px] rounded-full bg-sky-200 shadow-[0_0_8px_rgba(125,211,252,0.6)]" />
+                </div>
+              ))}
             </div>
+
+            <div
+              className={`scrolly-tower-glow-${event.id} absolute top-1/2 left-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full blur-[40px]`}
+              style={{ background: `radial-gradient(circle, ${accentColor}20 0%, transparent 60%)` }}
+            />
           </div>
         </div>
       </div>
 
-      <div className={`scrolly-body-container-${event.id} absolute inset-0 flex items-center justify-center px-6`}>
-        <div className={`scrolly-body-${event.id} grid w-full max-w-6xl grid-cols-1 gap-5 md:grid-cols-3 md:gap-8`}>
+      {/* --- Body Columns Scene --- */}
+      <div className={`scrolly-body-container-${event.id} absolute inset-0 flex items-center justify-center px-4 py-12 md:px-10`}>
+        <div className={`scrolly-body-${event.id} grid w-full max-w-7xl grid-cols-1 gap-6 md:grid-cols-3 md:gap-10`}>
           {bodyColumns.map((column, columnIndex) => (
-            <section
+            <div
               key={columnIndex}
-              className={`scrolly-column-${event.id} rounded-[1.75rem] border border-sky-100/10 bg-slate-950/30 px-6 py-7 backdrop-blur-md shadow-[0_0_40px_rgba(2,132,199,0.08)] md:px-7 md:py-8`}
+              className={`scrolly-column-${event.id} relative flex flex-col rounded-[2rem] border border-sky-100/10 bg-slate-900/30 p-8 backdrop-blur-md shadow-[0_10px_40px_rgba(0,0,0,0.5),inset_0_0_20px_rgba(14,165,233,0.05)]`}
             >
-              <div className="mb-5 flex items-center gap-3">
-                <div className="h-px flex-1 bg-sky-200/15" />
-                <span className="text-[10px] tracking-[0.35em] text-sky-100/45">
-                  第{columnIndex + 1}章
+              {/* Subtle permanent static accent line on left */}
+              <div className="absolute top-0 left-0 h-full w-[2px] bg-gradient-to-b from-transparent via-sky-300/20 to-transparent" />
+
+              <div className="mb-8 flex items-center gap-4">
+                <span className="text-[11px] font-light tracking-[0.4em] text-sky-200/50">
+                  {String(columnIndex + 1).padStart(2, '0')}
                 </span>
+                <div className="h-[1px] flex-1 bg-gradient-to-r from-sky-200/20 to-transparent" />
               </div>
-              <div className="flex flex-col gap-4 md:gap-5">
-                {column.map((paragraph, paragraphIndex) => (
-                  <p
-                    key={`${columnIndex}-${paragraphIndex}`}
-                    className={`scrolly-body-line text-sm leading-[2.15] tracking-[0.18em] md:text-[15px] ${paragraph.includes("九龙塔") || paragraph.includes("布雨") || paragraph.includes("国师")
-                      ? "text-sky-50"
-                      : "text-slate-200/88"
-                      }`}
-                    style={{ color: paragraph.includes("国师") ? titleColor : bodyColor }}
-                  >
-                    {paragraph}
-                  </p>
-                ))}
+
+              <div className="flex flex-col gap-6">
+                {column.map((paragraph, paragraphIndex) => {
+                  const emphasis = paragraph.includes("九龙塔") || paragraph.includes("布雨") || paragraph.includes("国师") || paragraph.includes("雨");
+                  return (
+                    <p
+                      key={`${columnIndex}-${paragraphIndex}`}
+                      className={`scrolly-body-line relative text-[15px] leading-[2.3] tracking-[0.2em] md:text-[16px]
+                        ${emphasis ? "text-sky-50 font-normal drop-shadow-[0_0_12px_rgba(56,189,248,0.4)]" : "text-slate-300 font-light"}`}
+                    >
+                      {paragraph}
+                    </p>
+                  );
+                })}
               </div>
-            </section>
+            </div>
           ))}
         </div>
       </div>
 
+      {/* --- Closing --- */}
       {detail.closing && (
-        <div className={`scrolly-closing-container-${event.id} pointer-events-none absolute inset-x-0 bottom-0 flex justify-end px-6 pb-12 md:px-12 md:pb-16`}>
+        <div className={`scrolly-closing-container-${event.id} pointer-events-none absolute inset-x-0 bottom-12 flex justify-center px-6 md:bottom-20`}>
           <div
-            className={`scrolly-closing-${event.id} rounded-full border border-sky-100/15 bg-slate-950/45 px-6 py-3 text-[11px] tracking-[0.38em] text-sky-50/80 shadow-[0_0_24px_rgba(56,189,248,0.12)] backdrop-blur-md md:text-xs`}
+            className={`scrolly-closing-${event.id} relative overflow-hidden rounded-full border border-sky-300/20 bg-slate-950/60 px-8 py-4 text-[12px] font-light tracking-[0.4em] text-sky-100/90 shadow-[0_0_30px_rgba(14,165,233,0.2)] backdrop-blur-md md:px-10 md:py-5 md:text-[13px]`}
           >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(56,189,248,0.1),transparent_70%)]" />
             {detail.closing}
           </div>
         </div>
@@ -152,103 +170,136 @@ export function animate(
   const intro = scrollyText.querySelector(`.scrolly-intro-${eventId}`);
   const title = scrollyText.querySelector(`.scrolly-title-${eventId}`);
   const quote = scrollyText.querySelector(`.scrolly-quote-${eventId}`);
+  const tower = scrollyText.querySelector(`.scrolly-tower-${eventId}`);
+  const tiers = scrollyText.querySelectorAll(`.scrolly-tier-${eventId}`);
+  const towerGlow = scrollyText.querySelector(`.scrolly-tower-glow-${eventId}`);
+
   const bodyContainer = scrollyText.querySelector(`.scrolly-body-container-${eventId}`);
   const columns = scrollyText.querySelectorAll(`.scrolly-column-${eventId}`);
   const bodyLines = scrollyText.querySelectorAll(`.scrolly-body-line`);
+  
   const closing = scrollyText.querySelector(`.scrolly-closing-${eventId}`);
-  const rain = scrollyText.querySelector(`.scrolly-rain-${eventId}`);
+  
+  const rainBg = scrollyText.querySelector(`.scrolly-rain-bg-${eventId}`);
+  const rainFg = scrollyText.querySelector(`.scrolly-rain-fg-${eventId}`);
   const aura = scrollyText.querySelector(`.scrolly-aura-${eventId}`);
-  const tower = scrollyText.querySelector(`.scrolly-tower-${eventId}`);
-  const tiers = scrollyText.querySelectorAll(`.scrolly-tier-${eventId}`);
 
-  tl.set([title, quote, rain, aura, tower, columns, bodyLines, closing], {
-    opacity: 0,
-  });
-  tl.set(tiers, { scaleX: 0.7, scaleY: 0, transformOrigin: "50% 50%" });
+  tl.set(
+    [
+      title,
+      quote,
+      tower,
+      towerGlow,
+      columns,
+      bodyLines,
+      closing,
+      rainBg,
+      rainFg,
+      aura
+    ],
+    { opacity: 0 }
+  );
+  tl.set(tiers, { scaleX: 0, opacity: 0 });
 
   tl.fromTo(
     scrollyBg,
     { "--radius": "0px" },
-    { "--radius": "150vmax", duration: 5.8, ease: "power2.inOut" },
-    0,
+    // Radius scaled up to 250vmax to ensure the mask shape always covers the screen corners
+    { "--radius": "250vmax", duration: 7, ease: "power2.inOut" },
+    0
   )
-    .to([aura, rain], { opacity: 1, duration: 2.4 }, 0.6)
+    .to([aura, rainBg, rainFg], { opacity: 1, duration: 3.5, stagger: 0.2 }, 0.5)
+    
     .fromTo(
       title,
-      { opacity: 0, y: 30, filter: "blur(18px)" },
-      { opacity: 1, y: 0, filter: "blur(0px)", duration: 3.8, ease: "power3.out" },
-      1.4,
+      { opacity: 0, y: 35, filter: "blur(12px)" },
+      { opacity: 1, y: 0, filter: "blur(0px)", duration: 4, ease: "power3.out" },
+      1.5
     )
     .fromTo(
       quote,
-      { opacity: 0, y: 16, letterSpacing: "0.7em", filter: "blur(10px)" },
-      { opacity: 1, y: 0, letterSpacing: "0.45em", filter: "blur(0px)", duration: 3.2, ease: "power2.out" },
-      1.9,
+      { opacity: 0, y: 15, letterSpacing: "0.8em", filter: "blur(8px)" },
+      { opacity: 1, y: 0, letterSpacing: "0.5em", filter: "blur(0px)", duration: 3.5, ease: "power2.out" },
+      2.0
+    )
+    
+    .fromTo(
+      tower,
+      { opacity: 0, y: 40, filter: "blur(10px)" },
+      { opacity: 1, y: 0, filter: "blur(0px)", duration: 4, ease: "power2.out" },
+      2.2
     )
     .fromTo(
       tiers,
-      { opacity: 0, scaleY: 0, y: 26 },
+      { opacity: 0, scaleX: 0 },
       {
         opacity: 1,
-        scaleY: 1,
-        y: 0,
-        duration: 1.2,
-        stagger: 0.12,
-        ease: "power2.out",
+        scaleX: 1,
+        duration: 2,
+        stagger: 0.15,
+        ease: "power3.out",
       },
-      2.1,
+      2.8
     )
-    .fromTo(
-      tower,
-      { opacity: 0, y: 32, filter: "blur(10px)" },
-      { opacity: 1, y: 0, filter: "blur(0px)", duration: 3.5, ease: "power2.out" },
-      2.2,
-    )
-    .to([title, quote, tower], { opacity: 0, y: -18, filter: "blur(16px)", duration: 3.2, ease: "power2.inOut" }, "+=2.2")
+    .to(towerGlow, { opacity: 1, duration: 3 }, 3)
+
+    .to([title, quote, tower, towerGlow], { opacity: 0, y: -25, filter: "blur(12px)", duration: 3.5, ease: "power2.inOut" }, "+=3.5")
     .set(intro, { display: "none" })
+    
     .fromTo(
       columns,
-      { opacity: 0, y: 34, scale: 0.96, filter: "blur(12px)" },
+      { opacity: 0, y: 35, scale: 0.96, filter: "blur(8px)" },
       {
         opacity: 1,
         y: 0,
         scale: 1,
         filter: "blur(0px)",
-        duration: 2.6,
-        stagger: 0.22,
+        duration: 3,
+        stagger: 0.2,
         ease: "power2.out",
       },
-      "-=0.4",
+      "-=0.5"
     )
     .fromTo(
       bodyLines,
-      { opacity: 0, y: 12, filter: "blur(8px)" },
+      { opacity: 0, y: 12, filter: "blur(6px)" },
       {
         opacity: 1,
         y: 0,
         filter: "blur(0px)",
-        duration: 1.8,
+        duration: 2,
         stagger: 0.08,
         ease: "power2.out",
       },
-      "-=1.8",
+      "-=2"
     )
-    .to([columns, bodyLines], { opacity: 0, y: -14, filter: "blur(12px)", duration: 3.2, ease: "power2.inOut" }, "+=3.3")
+    
+    .to([columns, bodyLines], { opacity: 0, y: -15, filter: "blur(10px)", duration: 4, ease: "power2.inOut" }, "+=4.5")
     .set(bodyContainer, { display: "none" })
+    
     .fromTo(
       closing,
-      { opacity: 0, x: 24, filter: "blur(10px)" },
-      { opacity: 1, x: 0, filter: "blur(0px)", duration: 2.8, ease: "power2.out" },
-      "-=0.6",
+      { opacity: 0, y: 15, filter: "blur(8px)", scale: 0.95 },
+      { opacity: 1, y: 0, filter: "blur(0px)", scale: 1, duration: 3, ease: "power2.out" },
+      "-=1"
     )
-    .to(closing, { opacity: 0, x: 20, filter: "blur(12px)", duration: 3.8, ease: "power2.inOut" }, "+=3")
-    .to([rain, aura], { opacity: 0, duration: 2.4 }, "-=2.8")
-    .to(scrollyBg, { "--radius": "0px", duration: 5.2, ease: "power2.inOut" }, "-=1.5");
+    .to(closing, { opacity: 0, y: -10, filter: "blur(10px)", duration: 3.5, ease: "power2.inOut" }, "+=3.5")
+    
+    .to([rainBg, rainFg, aura], { opacity: 0, duration: 3.5 }, "-=3")
+    .to(scrollyBg, { "--radius": "0px", duration: 5.5, ease: "power2.inOut" }, "-=2");
 
-  if (rain) {
-    gsap.to(rain, {
-      backgroundPosition: "0px 920px",
-      duration: 1.35,
+  if (rainBg && rainFg) {
+    // Background rain (slower, using Y offset)
+    gsap.to(rainBg, {
+      backgroundPosition: "20px 800px",
+      duration: 2.8,
+      repeat: -1,
+      ease: "none",
+    });
+    // Foreground rain (faster, using Y offset)
+    gsap.to(rainFg, {
+      backgroundPosition: "30px 1400px",
+      duration: 1.6,
       repeat: -1,
       ease: "none",
     });
