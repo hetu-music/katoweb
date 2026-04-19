@@ -2,10 +2,10 @@ import gsap from "gsap";
 import type { ImmersiveTheme, TimelineEvent } from "../types";
 
 export const theme: ImmersiveTheme = {
-  bg: "radial-gradient(circle at 50% 22%, rgba(134, 239, 172, 0.08) 0%, rgba(17, 24, 39, 0.55) 24%, rgba(2, 6, 23, 0.97) 100%), url(/story/qjtx/22.avif) center/cover no-repeat fixed",
-  titleColor: "#f8fafc",
-  bodyColor: "#d1d5db",
-  accentColor: "#86efac",
+  bg: "radial-gradient(circle at 50% 25%, rgba(52, 211, 153, 0.06) 0%, rgba(6, 78, 59, 0.55) 35%, rgba(2, 6, 23, 0.98) 100%), url(/story/qjtx/22.avif) center/cover no-repeat fixed",
+  titleColor: "#ecfdf5",
+  bodyColor: "#d1fae5",
+  accentColor: "#10b981",
   layout: "horizontal",
   specialEffect: "none",
   maskPath:
@@ -25,111 +25,123 @@ export function NodeLayout({
   const { titleColor, bodyColor, accentColor } = resolvedTheme;
 
   return (
-    <div className={`scrolly-text-${event.id} relative z-10 h-full w-full overflow-hidden`}>
-      <div className={`scrolly-wind-${event.id} absolute inset-0 pointer-events-none opacity-0`}>
-        {Array.from({ length: 7 }, (_, index) => (
-          <span
-            key={index}
-            className={`scrolly-leaf-${event.id} absolute rounded-full blur-[1px]`}
-            style={{
-              left: `${10 + index * 12}%`,
-              top: `${18 + (index % 4) * 15}%`,
-              width: `${16 + (index % 3) * 8}px`,
-              height: `${6 + (index % 2) * 2}px`,
-              background:
-                index % 2 === 0
-                  ? "linear-gradient(90deg, rgba(187,247,208,0.85), rgba(226,232,240,0.12))"
-                  : "linear-gradient(90deg, rgba(248,250,252,0.8), rgba(134,239,172,0.12))",
-              transform: `rotate(${index % 2 === 0 ? -24 : 20}deg)`,
-              opacity: 0.65,
-            }}
-          />
-        ))}
-      </div>
+    <div className={`scrolly-text-${event.id} relative z-10 h-full w-full overflow-hidden font-serif`}>
+      {/* Ambient Sparks / Fireflies (SVG Data URI for high performance) */}
+      <div
+        className={`scrolly-sparks-${event.id} absolute inset-0 pointer-events-none opacity-0 mix-blend-screen`}
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Ccircle cx='40' cy='250' r='1.5' fill='rgba(167,243,208,0.7)'/%3E%3Ccircle cx='120' cy='100' r='2' fill='rgba(52,211,153,0.5)'/%3E%3Ccircle cx='220' cy='180' r='1' fill='rgba(167,243,208,0.8)'/%3E%3Ccircle cx='280' cy='40' r='2.5' fill='rgba(16,185,129,0.4)'/%3E%3Ccircle cx='80' cy='60' r='1.5' fill='rgba(52,211,153,0.6)'/%3E%3Ccircle cx='180' cy='280' r='2' fill='rgba(167,243,208,0.5)'/%3E%3C/svg%3E")`,
+          backgroundSize: "300px 300px",
+          backgroundRepeat: "repeat",
+        }}
+      />
 
+      {/* --- Intro Scene --- */}
       <div className={`scrolly-intro-${event.id} absolute inset-0 flex flex-col items-center justify-center px-6`}>
-        <div className="relative flex max-w-4xl flex-col items-center text-center">
-          <div
-            className="mb-6 h-px w-28 bg-linear-to-r from-transparent via-emerald-200/40 to-transparent md:mb-8 md:w-44"
-            style={{ boxShadow: `0 0 18px ${accentColor}33` }}
-          />
-          <h2
-            className={`scrolly-title-${event.id} text-4xl font-serif font-light tracking-[0.42em] md:text-6xl md:tracking-[0.56em] lg:text-7xl`}
-            style={{ color: titleColor, paddingLeft: "0.42em" }}
-          >
-            {detail.title}
-          </h2>
-          <p
-            className={`scrolly-quote-${event.id} mt-7 text-sm font-light tracking-[0.45em] text-slate-100/75 md:mt-10 md:text-lg md:tracking-[0.65em]`}
-            style={{ color: bodyColor, paddingLeft: "0.45em" }}
-          >
-            {detail.quote}
-          </p>
-        </div>
-      </div>
+        <div className="relative flex max-w-4xl flex-col items-center text-center gap-10 md:gap-14">
+          
+          {/* Heavenly Mandate Seal */}
+          <div className={`scrolly-seal-${event.id} relative flex h-20 w-20 items-center justify-center md:h-24 md:w-24`}>
+            <div className="absolute inset-0 rotate-45 border border-emerald-500/40 bg-emerald-950/60 shadow-[0_0_40px_rgba(16,185,129,0.3)] backdrop-blur-md" />
+            <div className="absolute inset-2 rotate-45 border border-emerald-400/20" />
+            <div className="absolute inset-[-8px] rotate-45 border border-emerald-200/15 border-dashed md:inset-[-10px]" />
+            <span className="relative z-10 text-xl font-light tracking-[0.5em] text-emerald-100 drop-shadow-[0_0_10px_rgba(52,211,153,0.8)] md:text-2xl" style={{ writingMode: 'vertical-rl' }}>
+              天命
+            </span>
+          </div>
 
-      <div className={`scrolly-body-container-${event.id} absolute inset-0 flex items-center justify-center px-5 md:px-10`}>
-        <div className={`scrolly-body-${event.id} relative w-full max-w-6xl`}>
-          <div className={`scrolly-route-line-${event.id} absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-linear-to-b from-transparent via-emerald-200/30 to-transparent`} />
-          <div className="flex flex-col gap-3 md:gap-4">
-            {detail.body.map((paragraph, index) => {
-              const isSeparator = paragraph === "……";
-              const isKeyLine =
-                paragraph.includes("起兵") ||
-                paragraph.includes("即位") ||
-                paragraph.includes("远走海外");
-              const alignLeft = index % 2 === 0;
-
-              if (isSeparator) {
-                return (
-                  <div
-                    key={`${event.id}-${index}`}
-                    className="scrolly-route-item flex items-center justify-center py-2 md:py-3"
-                  >
-                    <span className="text-sm tracking-[0.8em] text-slate-300/35 md:text-base">
-                      ……
-                    </span>
-                  </div>
-                );
-              }
-
-              return (
-                <div
-                  key={`${event.id}-${index}`}
-                  className="scrolly-route-item grid grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-6"
-                >
-                  <div
-                    className={`${alignLeft ? "justify-self-end text-right" : "invisible"} max-w-[18rem] rounded-[1.4rem] border border-white/8 bg-black/20 px-4 py-3 text-sm leading-[1.95] tracking-[0.14em] backdrop-blur-sm md:max-w-[24rem] md:px-5 md:py-4 md:text-[15px] ${isKeyLine ? "text-slate-50 shadow-[0_0_24px_rgba(134,239,172,0.08)]" : ""
-                      }`}
-                    style={{ color: bodyColor }}
-                  >
-                    {alignLeft ? paragraph : "."}
-                  </div>
-
-                  <div className="relative flex h-8 w-8 items-center justify-center md:h-10 md:w-10">
-                    <span
-                      className={`scrolly-route-dot-${event.id} block h-2.5 w-2.5 rounded-full border border-emerald-100/50 bg-slate-950 md:h-3 md:w-3`}
-                      style={{ boxShadow: `0 0 0 0 ${accentColor}` }}
-                    />
-                  </div>
-
-                  <div
-                    className={`${!alignLeft ? "justify-self-start text-left" : "invisible"} max-w-[18rem] rounded-[1.4rem] border border-white/8 bg-black/20 px-4 py-3 text-sm leading-[1.95] tracking-[0.14em] backdrop-blur-sm md:max-w-[24rem] md:px-5 md:py-4 md:text-[15px] ${isKeyLine ? "text-slate-50 shadow-[0_0_24px_rgba(134,239,172,0.08)]" : ""
-                      }`}
-                    style={{ color: bodyColor }}
-                  >
-                    {!alignLeft ? paragraph : "."}
-                  </div>
-                </div>
-              );
-            })}
+          <div className="flex flex-col items-center gap-6">
+            <h2
+              className={`scrolly-title-${event.id} text-5xl font-light tracking-[0.45em] drop-shadow-[0_0_40px_rgba(16,185,129,0.5)] md:text-7xl lg:text-8xl`}
+              style={{ color: titleColor, paddingLeft: "0.45em" }}
+            >
+              {detail.title}
+            </h2>
+            <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-emerald-300/40 to-transparent" />
+            <p
+              className={`scrolly-quote-${event.id} max-w-lg text-[14px] font-light leading-[2.2] tracking-[0.3em] text-emerald-50/70 md:text-[16px] md:tracking-[0.5em]`}
+              style={{ paddingLeft: "0.3em" }}
+            >
+              {detail.quote}
+            </p>
           </div>
         </div>
       </div>
 
+      {/* --- Body Constellation / Fragments Scene --- */}
+      <div className={`scrolly-body-container-${event.id} absolute inset-0 flex items-center justify-center px-4 py-6 md:px-10`}>
+        
+        {/* Astrolabe / Bagua Compass Background */}
+        <div className={`scrolly-compass-${event.id} absolute top-1/2 left-1/2 flex h-[40rem] w-[40rem] -translate-x-1/2 -translate-y-1/2 pointer-events-none items-center justify-center opacity-0 mix-blend-screen md:h-[55rem] md:w-[55rem]`}>
+          <div className="absolute inset-0 rounded-full border-[1px] border-dashed border-emerald-300/20" />
+          <div className="absolute inset-[10%] rounded-full border-[1px] border-emerald-400/10" />
+          <div className="absolute inset-[25%] rounded-full border-[2px] border-dotted border-emerald-500/20" />
+          <div className="absolute inset-[40%] rounded-full border-[1px] border-emerald-300/10" />
+          
+          <div className="absolute inset-[25%] rotate-45 border-[1px] border-emerald-400/15" />
+          <div className="absolute inset-[25%] rotate-[22.5deg] border-[1px] border-emerald-300/10" />
+          <div className="absolute inset-[25%] rotate-[67.5deg] border-[1px] border-emerald-300/10" />
+          
+          <div className="absolute top-[5%] bottom-[5%] left-1/2 w-[1px] -translate-x-1/2 bg-gradient-to-b from-transparent via-emerald-300/20 to-transparent" />
+          <div className="absolute left-[5%] right-[5%] top-1/2 h-[1px] -translate-y-1/2 bg-gradient-to-r from-transparent via-emerald-300/20 to-transparent" />
+        </div>
+
+        {/* Free-floating scattered text fragments */}
+        <div className={`scrolly-body-${event.id} relative z-10 grid w-full max-w-6xl grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-3 md:gap-y-4 items-stretch content-center`}>
+          {detail.body.map((paragraph, index) => {
+            const isSeparator = paragraph === "……";
+            const isKeyLine = paragraph.includes("起兵") || paragraph.includes("即位") || paragraph.includes("远走海外");
+
+            if (isSeparator) {
+              return (
+                <div key={`sep-${index}`} className="scrolly-fragment col-span-1 md:col-span-2 lg:col-span-3 flex w-full justify-center py-1 opacity-0">
+                  <div className="flex items-center gap-4">
+                    <div className="h-[1px] w-10 bg-gradient-to-r from-transparent to-emerald-500/40" />
+                    <div className="h-1.5 w-1.5 rotate-45 bg-emerald-400/80 shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
+                    <div className="h-[1px] w-10 bg-gradient-to-l from-transparent to-emerald-500/40" />
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <div
+                key={`item-${index}`}
+                className={`scrolly-fragment relative flex w-full flex-col opacity-0 justify-center`}
+              >
+                <div className={`relative inline-block w-full h-full rounded-xl border ${isKeyLine ? 'border-emerald-400/30 bg-emerald-900/40 shadow-[0_0_20px_rgba(16,185,129,0.15)]' : 'border-emerald-500/10 bg-emerald-950/30'} p-4 md:p-5 backdrop-blur-md flex flex-col justify-center`}>
+                  {/* Decorative brackets for key lines */}
+                  {isKeyLine && (
+                    <>
+                      <div className={`absolute -top-1.5 -left-1.5 h-3 w-3 border-t border-l border-emerald-300 shadow-[-2px_-2px_8px_rgba(110,231,183,0.5)]`} />
+                      <div className={`absolute -bottom-1.5 -right-1.5 h-3 w-3 border-b border-r border-emerald-300 shadow-[2px_2px_8px_rgba(110,231,183,0.5)]`} />
+                      
+                      {/* Jade glowing aura behind the text */}
+                      <div className="absolute inset-0 bg-emerald-800/20 blur-xl" />
+                    </>
+                  )}
+                  
+                  <p
+                    className={`relative z-10 text-[13px] leading-[1.8] tracking-[0.12em] md:text-[14px] md:leading-[1.9] text-center ${
+                      isKeyLine 
+                        ? 'font-normal text-emerald-50 drop-shadow-[0_0_12px_rgba(52,211,153,0.8)]' 
+                        : 'font-light text-slate-200/95'
+                    }`}
+                  >
+                    {paragraph}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* --- Closing --- */}
       {detail.closing && (
-        <div className={`scrolly-closing-container-${event.id} pointer-events-none absolute inset-x-0 bottom-0 flex justify-center px-6 pb-10 md:pb-14`}>
-          <div className={`scrolly-closing-${event.id} rounded-full border border-emerald-100/15 bg-black/35 px-6 py-3 text-[11px] tracking-[0.36em] text-slate-100/85 backdrop-blur-md md:text-xs`}>
+        <div className={`scrolly-closing-container-${event.id} pointer-events-none absolute inset-x-0 bottom-10 flex justify-center px-6 md:bottom-16`}>
+          <div className={`scrolly-closing-${event.id} relative overflow-hidden rounded-full border border-emerald-400/20 bg-emerald-950/60 px-8 py-4 text-[12px] font-light tracking-[0.45em] text-emerald-50/90 shadow-[0_0_30px_rgba(16,185,129,0.2)] backdrop-blur-md md:px-10 md:py-5 md:text-[13px]`}>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(52,211,153,0.15),transparent_60%)]" />
             {detail.closing}
           </div>
         </div>
@@ -146,89 +158,96 @@ export function animate(
   eventId: string,
 ) {
   const intro = scrollyText.querySelector(`.scrolly-intro-${eventId}`);
+  const seal = scrollyText.querySelector(`.scrolly-seal-${eventId}`);
   const title = scrollyText.querySelector(`.scrolly-title-${eventId}`);
   const quote = scrollyText.querySelector(`.scrolly-quote-${eventId}`);
+  
   const bodyContainer = scrollyText.querySelector(`.scrolly-body-container-${eventId}`);
-  const routeItems = scrollyText.querySelectorAll(`.scrolly-route-item`);
-  const routeDots = scrollyText.querySelectorAll(`.scrolly-route-dot-${eventId}`);
-  const routeLine = scrollyText.querySelector(`.scrolly-route-line-${eventId}`);
-  const leaves = scrollyText.querySelectorAll(`.scrolly-leaf-${eventId}`);
-  const wind = scrollyText.querySelector(`.scrolly-wind-${eventId}`);
+  const compass = scrollyText.querySelector(`.scrolly-compass-${eventId}`);
+  const fragments = scrollyText.querySelectorAll(`.scrolly-fragment`);
+  
+  const sparks = scrollyText.querySelector(`.scrolly-sparks-${eventId}`);
   const closing = scrollyText.querySelector(`.scrolly-closing-${eventId}`);
 
-  tl.set([title, quote, routeItems, routeDots, routeLine, leaves, closing, wind], {
+  tl.set([seal, title, quote, fragments, closing, sparks, compass], {
     opacity: 0,
   });
-  tl.set(routeLine, { scaleY: 0, transformOrigin: "50% 0%" });
 
   tl.fromTo(
     scrollyBg,
     { "--radius": "0px" },
-    { "--radius": "150vmax", duration: 6, ease: "power2.inOut" },
+    { "--radius": "250vmax", duration: 7, ease: "power2.inOut" },
     0,
   )
-    .to([wind, leaves], { opacity: 1, duration: 2.2 }, 0.5)
+    .to(sparks, { opacity: 1, duration: 3.5 }, 0.5)
+    
+    .fromTo(
+      seal,
+      { opacity: 0, scale: 0.5, rotation: -45, filter: "blur(15px)" },
+      { opacity: 1, scale: 1, rotation: 0, filter: "blur(0px)", duration: 4, ease: "power3.out" },
+      1.2
+    )
     .fromTo(
       title,
-      { opacity: 0, y: 26, filter: "blur(16px)" },
-      { opacity: 1, y: 0, filter: "blur(0px)", duration: 3.6, ease: "power3.out" },
-      1.2,
+      { opacity: 0, y: 35, filter: "blur(15px)" },
+      { opacity: 1, y: 0, filter: "blur(0px)", duration: 4, ease: "power3.out" },
+      1.6,
     )
     .fromTo(
       quote,
-      { opacity: 0, y: 12, letterSpacing: "0.7em", filter: "blur(8px)" },
-      { opacity: 1, y: 0, letterSpacing: "0.45em", filter: "blur(0px)", duration: 3, ease: "power2.out" },
-      1.8,
+      { opacity: 0, y: 20, filter: "blur(10px)" },
+      { opacity: 1, y: 0, filter: "blur(0px)", duration: 3.5, ease: "power2.out" },
+      2.2,
     )
-    .to([title, quote], { opacity: 0, y: -12, filter: "blur(14px)", duration: 3, ease: "power2.inOut" }, "+=2")
+    
+    .to([seal, title, quote], { opacity: 0, y: -25, filter: "blur(15px)", duration: 3.5, ease: "power2.inOut" }, "+=3.5")
     .set(intro, { display: "none" })
+    
+    .to(compass, { opacity: 0.8, duration: 4 }, "-=1")
+    
     .fromTo(
-      routeLine,
-      { opacity: 0, scaleY: 0 },
-      { opacity: 1, scaleY: 1, duration: 1.8, ease: "power2.out" },
-      "-=0.2",
-    )
-    .fromTo(
-      routeDots,
-      { opacity: 0, scale: 0.2 },
-      { opacity: 1, scale: 1, duration: 0.8, stagger: 0.08, ease: "back.out(2.4)" },
-      "-=1.2",
-    )
-    .fromTo(
-      routeItems,
-      { opacity: 0, x: (index) => (index % 2 === 0 ? -34 : 34), filter: "blur(10px)" },
+      fragments,
+      { opacity: 0, y: 35, filter: "blur(12px)" },
       {
         opacity: 1,
-        x: 0,
+        y: 0,
         filter: "blur(0px)",
-        duration: 1.9,
-        stagger: 0.11,
+        duration: 3,
+        stagger: 0.25,
         ease: "power2.out",
       },
-      "-=1.1",
+      "-=1.5",
     )
-    .to(routeItems, { opacity: 0, y: -8, filter: "blur(10px)", duration: 3, stagger: 0.04, ease: "power2.inOut" }, "+=3.6")
-    .to(routeLine, { opacity: 0.25, duration: 1.4 }, "<")
+    
+    .to([fragments, compass], { opacity: 0, y: -20, filter: "blur(15px)", duration: 4, ease: "power2.inOut" }, "+=4.5")
     .set(bodyContainer, { display: "none" })
+    
     .fromTo(
       closing,
-      { opacity: 0, y: 20, filter: "blur(10px)" },
-      { opacity: 1, y: 0, filter: "blur(0px)", duration: 2.6, ease: "power2.out" },
-      "-=0.4",
+      { opacity: 0, y: 20, filter: "blur(10px)", scale: 0.95 },
+      { opacity: 1, y: 0, filter: "blur(0px)", scale: 1, duration: 3, ease: "power2.out" },
+      "-=1",
     )
-    .to(closing, { opacity: 0, y: 16, filter: "blur(12px)", duration: 3.6, ease: "power2.inOut" }, "+=2.8")
-    .to([wind, leaves], { opacity: 0, duration: 2.2 }, "-=2.6")
-    .to(scrollyBg, { "--radius": "0px", duration: 5.2, ease: "power2.inOut" }, "-=1.8");
+    .to(closing, { opacity: 0, y: -15, filter: "blur(12px)", duration: 3.5, ease: "power2.inOut" }, "+=3.5")
+    
+    .to(sparks, { opacity: 0, duration: 3.5 }, "-=3")
+    .to(scrollyBg, { "--radius": "0px", duration: 5.5, ease: "power2.inOut" }, "-=2");
 
-  leaves.forEach((leaf, index) => {
-    gsap.to(leaf, {
-      x: `${40 + index * 8}px`,
-      y: `${120 + (index % 3) * 35}px`,
-      rotation: index % 2 === 0 ? 18 : -22,
-      duration: 6 + index * 0.6,
+  if (sparks) {
+    gsap.to(sparks, {
+      backgroundPosition: "150px -600px",
+      duration: 15,
       repeat: -1,
-      yoyo: true,
-      ease: "sine.inOut",
+      ease: "none",
     });
-  });
+  }
+  
+  if (compass) {
+    gsap.to(compass, {
+      rotation: 360,
+      duration: 120,
+      repeat: -1,
+      ease: "none",
+    });
+  }
 }
