@@ -36,6 +36,7 @@
   --font-mono:
     ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, Monaco,
     "Courier New", var(--font-mono-cjk), monospace;
+  --font-calligraphy: var(--font-zhi-mang-xing), cursive;
 }
 
 .dark {
