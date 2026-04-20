@@ -745,7 +745,7 @@ export default function ImageryClient({ items, categories }: Props) {
             })}
           </div>
 
-          <h1 className="font-serif text-5xl md:text-7xl font-normal text-slate-800 dark:text-slate-100 mb-4 flex justify-center items-center gap-4 sm:gap-10 drop-shadow-[0_0_30px_rgba(255,255,255,0.05)]">
+          <h1 className="font-serif text-5xl md:text-7xl text-slate-800 dark:text-slate-100 mb-4 flex justify-center items-center gap-4 sm:gap-10 drop-shadow-[0_0_30px_rgba(255,255,255,0.05)]">
             {"意象词云".split("").map((char, i) => (
               <span
                 key={i}
