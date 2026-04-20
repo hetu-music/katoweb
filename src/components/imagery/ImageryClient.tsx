@@ -7,7 +7,7 @@ import type { ImageryCategory, ImageryItem } from "@/lib/types";
 import { useIntersection } from "@mantine/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import { motion } from "framer-motion";
+
 import React, {
   memo,
   useCallback,
@@ -747,33 +747,21 @@ export default function ImageryClient({ items, categories }: Props) {
 
           <h1 className="font-serif text-5xl md:text-7xl font-normal text-slate-800 dark:text-slate-100 mb-4 flex justify-center items-center gap-4 sm:gap-10 drop-shadow-[0_0_30px_rgba(255,255,255,0.05)]">
             {"意象词云".split("").map((char, i) => (
-              <motion.span
+              <span
                 key={i}
-                initial={{ opacity: 0, y: -20, filter: "blur(10px)" }}
-                animate={mounted ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
-                transition={{
-                  duration: 2.5,
-                  delay: i * 1.0,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-                className="inline-block"
+                className={`hero-title-char inline-block ${mounted ? "" : "opacity-0"}`}
+                style={{ animationDelay: `${i * 300}ms` }}
               >
                 {char}
-              </motion.span>
+              </span>
             ))}
           </h1>
-          <motion.p
-            initial={{ opacity: 0, y: -10, filter: "blur(5px)" }}
-            animate={mounted ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
-            transition={{
-              duration: 2,
-              delay: 4.5, // 让副标题在四个字都出来后开始出现
-              ease: [0.16, 1, 0.3, 1],
-            }}
-            className="font-serif text-base md:text-xl text-slate-500 dark:text-slate-400 tracking-[0.4em] pl-[0.4em] mb-3"
+          <p
+            className={`font-serif text-base md:text-xl text-slate-500 dark:text-slate-400 tracking-[0.4em] pl-[0.4em] mb-3 ${mounted ? "hero-unroll" : "opacity-0"}`}
+            style={{ animationDelay: "1600ms" }}
           >
             行过 {wordDisplayList.length} ，长歌踏雪去何方
-          </motion.p>
+          </p>
         </div>
       </header>
 
