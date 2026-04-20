@@ -4,7 +4,6 @@ import {
   Inter,
   Noto_Serif_SC,
   Noto_Sans_SC,
-  Zhi_Mang_Xing,
 } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -21,12 +20,6 @@ const playfairDisplay = Playfair_Display({
 const notoSerifSC = Noto_Serif_SC({
   variable: "--font-heading-sc",
   weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
-
-const zhiMangXing = Zhi_Mang_Xing({
-  variable: "--font-zhi-mang-xing",
-  weight: "400",
   display: "swap",
 });
 
@@ -103,7 +96,7 @@ export default function RootLayout({
     <html
       lang="zh-CN"
       suppressHydrationWarning
-      className={`${playfairDisplay.variable} ${notoSerifSC.variable} ${inter.variable} ${notoSansSC.variable} ${lxgwMono.variable} ${zhiMangXing.variable}`}
+      className={`${playfairDisplay.variable} ${notoSerifSC.variable} ${inter.variable} ${notoSansSC.variable} ${lxgwMono.variable}`}
     >
       <body className="antialiased">
         <PWARegistration />
