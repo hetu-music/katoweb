@@ -20,12 +20,10 @@
    2. CSS 变量（设计令牌）
    ============================================================================ */
 
-:root {
-  /* 颜色 */
-  --background: #ffffff;
-  --foreground: #171717;
-
-  /* 字体系列：优先英文，后退中文 */
+/* 字体变量：统一在 @theme 中定义。
+   @theme 会将变量输出到 :root（普通 CSS 可继续 var() 引用），
+   同时注册 Tailwind 工具类（font-sans / font-serif / font-calligraphy 等）。 */
+@theme {
   --font-sans:
     var(--font-body), var(--font-body-sc), ui-sans-serif, system-ui,
     -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial,
@@ -36,6 +34,14 @@
   --font-mono:
     ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, Monaco,
     "Courier New", var(--font-mono-cjk), monospace;
+  --font-calligraphy: var(--font-zhi-mang-xing), cursive;
+}
+
+/* 颜色 token 保留在 :root / .dark —— 因为需要在运行时通过
+   JavaScript 切换主题（.dark 类覆盖），不能放 @theme。 */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
 }
 
 .dark {
@@ -69,7 +75,7 @@ h6 {
   font-weight: 700;
 
   /* 调整标题中数字的垂直对齐，使其与中文字符更好地对齐 */
-  & > span {
+  &>span {
     position: relative;
     top: 0.05em;
   }
@@ -95,6 +101,7 @@ button {
 
 /* 禁用过渡效果 */
 @utility no-transitions {
+
   &,
   & *,
   & *::before,
@@ -119,10 +126,12 @@ button {
 
 /* 功能入口字符浮动动画 */
 @keyframes feature-drift {
+
   0%,
   100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-7px);
   }
@@ -133,14 +142,17 @@ button {
   from {
     transform: translateX(0);
   }
+
   to {
     transform: translateX(-50%);
   }
 }
+
 @keyframes imagery-marquee-rtl {
   from {
     transform: translateX(-50%);
   }
+
   to {
     transform: translateX(0);
   }
@@ -148,10 +160,12 @@ button {
 
 /* 词云词语呼吸浮动动画 */
 @keyframes word-breathe {
+
   0%,
   100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-5px);
   }
@@ -182,6 +196,7 @@ button {
     transform: translateY(6px) scale(0.88);
     filter: blur(2px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -200,6 +215,7 @@ button {
     transform: translateY(15px) scale(0.92);
     filter: blur(12px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -219,6 +235,7 @@ button {
     transform: translateY(10px);
     filter: blur(5px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -237,6 +254,7 @@ button {
     opacity: 0;
     transform: translateY(16px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -253,6 +271,7 @@ button {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -260,11 +279,9 @@ button {
 
 /* 渐变遮罩，用于横向滚动指示 */
 @utility mask-linear-fade-edges {
-  mask-image: linear-gradient(
-    to right,
-    transparent,
-    black 12px,
-    black calc(100% - 12px),
-    transparent
-  );
+  mask-image: linear-gradient(to right,
+      transparent,
+      black 12px,
+      black calc(100% - 12px),
+      transparent);
 }
