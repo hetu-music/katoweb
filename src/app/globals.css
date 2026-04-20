@@ -94,21 +94,23 @@ button {
 }
 
 /* 禁用过渡效果 */
-.no-transitions,
-.no-transitions *,
-.no-transitions *::before,
-.no-transitions *::after {
-  transition: none !important;
+@utility no-transitions {
+  &,
+  & *,
+  & *::before,
+  & *::after {
+    transition: none !important;
+  }
 }
 
 /* 隐藏滚动条 */
-.no-scrollbar {
+@utility no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
-}
 
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* ============================================================================
@@ -257,7 +259,7 @@ button {
 }
 
 /* 渐变遮罩，用于横向滚动指示 */
-.mask-linear-fade-edges {
+@utility mask-linear-fade-edges {
   mask-image: linear-gradient(
     to right,
     transparent,
