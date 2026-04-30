@@ -133,7 +133,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 </div>
 
                 {/* 竖排标题 - 移除 pr-1 防止不对称 padding 导致的盒子偏移，确保文字和光点绝对中心对齐 */}
-                <div className={`[writing-mode:vertical-rl] font-mono font-medium tracking-[0.85em] -mb-[0.85em] ${feature.textBase} ${feature.textHover} transition-[color,filter,text-shadow] duration-1000 group-hover:drop-shadow-[0_0_12px_${feature.glow}] select-none`}>
+                <div className={`[writing-mode:vertical-rl] font-calligraphy font-medium tracking-[0.85em] -mb-[0.85em] ${feature.textBase} ${feature.textHover} transition-[color,filter,text-shadow] duration-1000 group-hover:drop-shadow-[0_0_12px_${feature.glow}] select-none`}>
                       {feature.label.split("").map((char, i) => (
                         <motion.span
                           key={i}
@@ -166,7 +166,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 <div className="absolute top-12 right-full mr-3 lg:mr-5 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-[width,opacity] duration-2400 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:w-[210px] lg:group-hover:w-[240px] group-hover:opacity-100 z-10 will-change-[width,opacity]">
                   <div className="flex w-max shrink-0 items-center gap-4 lg:gap-5 border-r border-slate-300/60 dark:border-slate-600/60 pr-4 lg:pr-5 py-1.5 h-full">
                     <div className="flex flex-col items-end">
-                      <span className="text-[15px] font-serif font-medium tracking-[0.25em] text-slate-900 dark:text-slate-100 mb-1 whitespace-nowrap transition-colors duration-2000 ease-out drop-shadow-sm">
+                      <span className="text-[15px] font-calligraphy font-medium tracking-[0.25em] text-slate-900 dark:text-slate-100 mb-1 whitespace-nowrap transition-colors duration-2000 ease-out drop-shadow-sm">
                         {feature.label}
                       </span>
                       <span className="text-[12px] font-light tracking-[0.15em] text-slate-500 dark:text-slate-400 whitespace-nowrap transition-colors duration-2000 ease-out">
@@ -217,7 +217,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                     <div className={`absolute h-1.5 w-1.5 rounded-full ${feature.dotCore} animate-pulse shadow-[0_0_6px_${feature.glow}]`} />
                   </div>
                   {/* 标题 */}
-                  <div className={`flex items-center text-[16px] font-mono font-medium tracking-[0.5em] ${feature.textBase} ${feature.textHover} leading-none transition-opacity duration-500`}>
+                  <div className={`flex items-center text-[16px] font-calligraphy font-medium tracking-[0.5em] ${feature.textBase} ${feature.textHover} leading-none transition-opacity duration-500`}>
                     {feature.label.split("").map((char, i) => (
                       <motion.span
                         key={i}
