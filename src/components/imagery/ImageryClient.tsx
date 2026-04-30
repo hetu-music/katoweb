@@ -225,7 +225,7 @@ const WordItem = memo(function WordItem({
         <button
           data-item-id={data.item.id}
           aria-label={`意象：${data.item.name}，出现 ${data.item.count} 次`}
-          className={`font-calligraphy leading-none transition-opacity duration-200 word-breathe-anim ${isSelected ? "word-breathe-force-run" : ""} ${data.paletteText} ${isSelected ? "opacity-100" : "opacity-70 hover:opacity-100"}`}
+          className={`font-mono leading-none transition-opacity duration-200 word-breathe-anim ${isSelected ? "word-breathe-force-run" : ""} ${data.paletteText} ${isSelected ? "opacity-100" : "opacity-70 hover:opacity-100"}`}
           style={
             {
               fontSize: `${data.fontSize}rem`,
@@ -723,7 +723,7 @@ export default function ImageryClient({ items, categories }: Props) {
               return (
                 <div
                   key={ri}
-                  className="flex whitespace-nowrap font-calligraphy will-change-transform"
+                  className="flex whitespace-nowrap font-mono will-change-transform"
                   style={{
                     animationName: dir,
                     animationDuration: duration,

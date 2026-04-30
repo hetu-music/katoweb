@@ -27,7 +27,7 @@
   --font-mono:
     ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, Monaco,
     "Courier New", var(--font-mono-cjk), monospace;
-  --font-calligraphy: var(--font-hy-weibei), cursive;
+  --font-calligraphy: var(--font-zhi-mang-xing), cursive;
 }
 
 /* 颜色：保留在 :root / .dark，支持运行时主题切换 */
