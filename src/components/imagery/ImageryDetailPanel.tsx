@@ -385,51 +385,48 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
     });
   }, [selectedItem]);
 
+  // 面板开启时锁定页面滚动
   useEffect(() => {
     if (!open) return;
 
     const html = document.documentElement;
     const body = document.body;
-    const scrollY = window.scrollY;
-    const previousStyles = {
+
+    const prev = {
       htmlOverflow: html.style.overflow,
       htmlTouchAction: html.style.touchAction,
       htmlOverscrollBehavior: html.style.overscrollBehavior,
       bodyOverflow: body.style.overflow,
       bodyTouchAction: body.style.touchAction,
       bodyOverscrollBehavior: body.style.overscrollBehavior,
-      bodyPosition: body.style.position,
-      bodyTop: body.style.top,
-      bodyLeft: body.style.left,
-      bodyRight: body.style.right,
-      bodyWidth: body.style.width,
     };
 
+    // overflow:hidden 阻止窗口滚动，且不改变 window.scrollY。
+    // 不能用 position:fixed —— 它会将 scrollY 重置为 0，
+    // 破坏依赖 window.scrollY 定位的 useWindowVirtualizer。
     html.style.overflow = "hidden";
     html.style.touchAction = "none";
     html.style.overscrollBehavior = "none";
     body.style.overflow = "hidden";
     body.style.touchAction = "none";
     body.style.overscrollBehavior = "none";
-    body.style.position = "fixed";
-    body.style.top = `-${scrollY}px`;
-    body.style.left = "0";
-    body.style.right = "0";
-    body.style.width = "100%";
+
+    // 额外阻止 iOS Safari 橡皮筋回弹，同时放行面板内部滚动容器的触摸事件
+    const preventTouchMove = (e: TouchEvent) => {
+      const target = e.target as Element | null;
+      if (target?.closest(".overflow-y-auto")) return;
+      e.preventDefault();
+    };
+    document.addEventListener("touchmove", preventTouchMove, { passive: false });
 
     return () => {
-      html.style.overflow = previousStyles.htmlOverflow;
-      html.style.touchAction = previousStyles.htmlTouchAction;
-      html.style.overscrollBehavior = previousStyles.htmlOverscrollBehavior;
-      body.style.overflow = previousStyles.bodyOverflow;
-      body.style.touchAction = previousStyles.bodyTouchAction;
-      body.style.overscrollBehavior = previousStyles.bodyOverscrollBehavior;
-      body.style.position = previousStyles.bodyPosition;
-      body.style.top = previousStyles.bodyTop;
-      body.style.left = previousStyles.bodyLeft;
-      body.style.right = previousStyles.bodyRight;
-      body.style.width = previousStyles.bodyWidth;
-      window.scrollTo({ top: scrollY, left: 0 });
+      html.style.overflow = prev.htmlOverflow;
+      html.style.touchAction = prev.htmlTouchAction;
+      html.style.overscrollBehavior = prev.htmlOverscrollBehavior;
+      body.style.overflow = prev.bodyOverflow;
+      body.style.touchAction = prev.bodyTouchAction;
+      body.style.overscrollBehavior = prev.bodyOverscrollBehavior;
+      document.removeEventListener("touchmove", preventTouchMove);
     };
   }, [open]);
 
