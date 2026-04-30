@@ -51,6 +51,14 @@ const lxgwMono = localFont({
   preload: false,
 });
 
+const hyWeiBei = localFont({
+  src: "../../public/fonts/HYWeiBeiJ.woff2",
+  variable: "--font-hy-weibei",
+  weight: "400",
+  display: "swap",
+  preload: false,
+});
+
 // PWA Viewport 配置
 export const viewport: Viewport = {
   themeColor: [
@@ -103,7 +111,7 @@ export default function RootLayout({
     <html
       lang="zh-CN"
       suppressHydrationWarning
-      className={`${playfairDisplay.variable} ${notoSerifSC.variable} ${inter.variable} ${notoSansSC.variable} ${lxgwMono.variable} ${zhiMangXing.variable}`}
+      className={`${playfairDisplay.variable} ${notoSerifSC.variable} ${inter.variable} ${notoSansSC.variable} ${lxgwMono.variable} ${zhiMangXing.variable} ${hyWeiBei.variable}`}
     >
       <body className="antialiased">
         <PWARegistration />
