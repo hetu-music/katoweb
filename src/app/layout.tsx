@@ -5,7 +5,6 @@ import {
   Noto_Sans_SC,
   Noto_Serif_SC,
   Playfair_Display,
-  Zhi_Mang_Xing,
 } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -24,11 +23,6 @@ const notoSerifSC = Noto_Serif_SC({
   display: "swap",
 });
 
-const zhiMangXing = Zhi_Mang_Xing({
-  variable: "--font-zhi-mang-xing",
-  weight: "400",
-  display: "swap",
-});
 
 // 正文字体 - 无衬线体
 const inter = Inter({
@@ -46,6 +40,14 @@ const notoSansSC = Noto_Sans_SC({
 const lxgwMono = localFont({
   src: "../../public/fonts/LXGWMono.woff2",
   variable: "--font-mono-cjk",
+  weight: "400",
+  display: "swap",
+  preload: false,
+});
+
+const keben = localFont({
+  src: "../../public/fonts/keben.woff2",
+  variable: "--font-keben",
   weight: "400",
   display: "swap",
   preload: false,
@@ -103,7 +105,7 @@ export default function RootLayout({
     <html
       lang="zh-CN"
       suppressHydrationWarning
-      className={`${playfairDisplay.variable} ${notoSerifSC.variable} ${inter.variable} ${notoSansSC.variable} ${lxgwMono.variable} ${zhiMangXing.variable}`}
+      className={`${playfairDisplay.variable} ${notoSerifSC.variable} ${inter.variable} ${notoSansSC.variable} ${lxgwMono.variable} ${keben.variable}`}
     >
       <body className="antialiased">
         <PWARegistration />
