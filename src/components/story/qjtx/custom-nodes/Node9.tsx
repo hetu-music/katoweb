@@ -12,6 +12,12 @@ export const theme: ImmersiveTheme = {
     maskPath: "M 50 0 C 80 0 100 20 100 50 C 100 80 80 100 50 100 C 20 100 0 80 0 50 C 0 20 20 0 50 0 Z",
 };
 
+// Pseudo-random generator for consistent rendering without hydration errors
+const prand = (seed: number) => {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+};
+
 export function NodeLayout({
     event,
 }: {
@@ -45,27 +51,32 @@ export function NodeLayout({
                 <div className={`ambient-embers-${event.id} absolute inset-0 pointer-events-none opacity-0`}>
                     {Array.from({ length: 20 }).map((_, i) => (
                         <div key={i} className="absolute bg-rose-200/50 rounded-full blur-[1px]"
-                            style={{ width: `${Math.random() * 3 + 1}px`, height: `${Math.random() * 3 + 1}px`, left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }} />
+                            style={{ 
+                                width: `${(prand(i) * 3 + 1).toFixed(4)}px`, 
+                                height: `${(prand(i + 0.1) * 3 + 1).toFixed(4)}px`, 
+                                left: `${(prand(i + 0.2) * 100).toFixed(4)}%`, 
+                                top: `${(prand(i + 0.3) * 100).toFixed(4)}%` 
+                            }} />
                     ))}
                 </div>
 
                 {/* Flying Petals - Enhanced Quantity and Visuals */}
                 <div className={`ambient-petals-${event.id} absolute inset-0 pointer-events-none opacity-0 overflow-hidden`}>
                     {Array.from({ length: 60 }).map((_, i) => {
-                        const size = Math.random() * 10 + 6;
+                        const size = prand(i * 0.5) * 10 + 6;
                         const colors = ['bg-rose-200', 'bg-rose-300', 'bg-rose-400'];
-                        const color = colors[Math.floor(Math.random() * colors.length)];
-                        const blur = Math.random() > 0.7 ? 'blur-[1.5px]' : 'blur-[0.5px]';
+                        const color = colors[Math.floor(prand(i * 0.6) * colors.length)];
+                        const blur = prand(i * 0.7) > 0.7 ? 'blur-[1.5px]' : 'blur-[0.5px]';
                         
                         return (
                             <div key={i} className={`petal-${event.id} absolute ${color} ${blur} opacity-40 shadow-[0_0_10px_rgba(251,207,232,0.2)]`}
                                 style={{ 
-                                    width: `${size}px`, 
-                                    height: `${size * 0.7}px`, 
-                                    left: `${Math.random() * 120 - 20}%`, 
-                                    top: `${Math.random() * 120 - 20}%`,
+                                    width: `${size.toFixed(4)}px`, 
+                                    height: `${(size * 0.7).toFixed(4)}px`, 
+                                    left: `${(prand(i * 0.8) * 120 - 20).toFixed(4)}%`, 
+                                    top: `${(prand(i * 0.9) * 120 - 20).toFixed(4)}%`,
                                     borderRadius: '100% 10% 100% 10%',
-                                    transform: `rotate(${Math.random() * 360}deg)`
+                                    transform: `rotate(${(prand(i) * 360).toFixed(4)}deg)`
                                 }} />
                         );
                     })}

@@ -12,6 +12,12 @@ export const theme: ImmersiveTheme = {
     maskPath: "M50 0 C68 7 84 20 100 50 C84 80 68 93 50 100 C32 93 16 80 0 50 C16 20 32 7 50 0 Z",
 };
 
+// Pseudo-random generator for consistent rendering without hydration errors
+const prand = (seed: number) => {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+};
+
 export function NodeLayout({
     event,
 }: {
@@ -45,12 +51,22 @@ export function NodeLayout({
                     {/* Falling Ash */}
                     {Array.from({ length: 25 }).map((_, i) => (
                         <div key={`ash-${i}`} className={`ash-particle-${event.id} absolute bg-zinc-400/40 rounded-full blur-[1px]`}
-                            style={{ width: `${Math.random() * 3 + 1}px`, height: `${Math.random() * 3 + 1}px`, left: `${Math.random() * 100}%`, top: "-5%" }} />
+                            style={{ 
+                                width: `${(prand(i) * 3 + 1).toFixed(4)}px`, 
+                                height: `${(prand(i + 0.1) * 3 + 1).toFixed(4)}px`, 
+                                left: `${(prand(i + 0.2) * 100).toFixed(4)}%`, 
+                                top: "-5%" 
+                            }} />
                     ))}
                     {/* Rising Embers */}
                     {Array.from({ length: 20 }).map((_, i) => (
                         <div key={`ember-${i}`} className={`ember-particle-${event.id} absolute bg-red-500 rounded-full blur-[2px] shadow-[0_0_10px_rgba(239,68,68,0.8)]`}
-                            style={{ width: `${Math.random() * 4 + 2}px`, height: `${Math.random() * 4 + 2}px`, left: `${Math.random() * 100}%`, bottom: "-5%" }} />
+                            style={{ 
+                                width: `${(prand(i + 0.3) * 4 + 2).toFixed(4)}px`, 
+                                height: `${(prand(i + 0.4) * 4 + 2).toFixed(4)}px`, 
+                                left: `${(prand(i + 0.5) * 100).toFixed(4)}%`, 
+                                bottom: "-5%" 
+                            }} />
                     ))}
                 </div>
 

@@ -67,7 +67,12 @@ export function NodeLayout({
         <div className={`war-embers-${event.id} absolute inset-0 pointer-events-none z-0`}>
             {Array.from({ length: 40 }).map((_, i) => (
                 <div key={i} className={`ember-particle-${event.id} absolute bg-orange-400 rounded-full blur-[1px] shadow-[0_0_15px_rgba(239,68,68,0.9)]`} 
-                     style={{ width: `${prand(i)*4+2}px`, height: `${prand(i*1.1)*4+2}px`, left: `${prand(i*1.2)*100}%`, top: `${prand(i*1.3)*100}%` }} />
+                     style={{ 
+                         width: `${(prand(i)*4+2).toFixed(4)}px`, 
+                         height: `${(prand(i*1.1)*4+2).toFixed(4)}px`, 
+                         left: `${(prand(i*1.2)*100).toFixed(4)}%`, 
+                         top: `${(prand(i*1.3)*100).toFixed(4)}%` 
+                     }} />
             ))}
         </div>
 
@@ -78,7 +83,12 @@ export function NodeLayout({
         <div className={`peace-snow-${event.id} absolute inset-0 pointer-events-none opacity-0 z-0`}>
             {Array.from({ length: 60 }).map((_, i) => (
                 <div key={i} className={`snow-particle-${event.id} absolute bg-slate-300/40 rounded-full blur-[1px]`} 
-                     style={{ width: `${prand(i*2)*3+1}px`, height: `${prand(i*2.1)*3+1}px`, left: `${prand(i*2.2)*100}%`, top: "-10%" }} />
+                     style={{ 
+                         width: `${(prand(i*2)*3+1).toFixed(4)}px`, 
+                         height: `${(prand(i*2.1)*3+1).toFixed(4)}px`, 
+                         left: `${(prand(i*2.2)*100).toFixed(4)}%`, 
+                         top: "-10%" 
+                     }} />
             ))}
         </div>
 

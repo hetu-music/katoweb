@@ -12,6 +12,12 @@ export const theme: ImmersiveTheme = {
   maskPath: "M50 0 C76 8 92 24 100 50 C92 76 76 92 50 100 C24 92 8 76 0 50 C8 24 24 8 50 0 Z",
 };
 
+// Pseudo-random generator for consistent rendering without hydration errors
+const prand = (seed: number) => {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+};
+
 export function NodeLayout({
   event,
 }: {
@@ -37,10 +43,10 @@ export function NodeLayout({
           {Array.from({ length: 40 }).map((_, i) => (
             <div key={i} className={`dust-${event.id} absolute bg-white/20 rounded-full blur-[1px]`}
               style={{
-                width: Math.random() * 3 + 1,
-                height: Math.random() * 3 + 1,
-                left: `${Math.random() * 100}%`,
-                top: `${(Math.random() - 0.2) * 100}%`
+                width: `${(prand(i) * 3 + 1).toFixed(4)}px`,
+                height: `${(prand(i + 0.1) * 3 + 1).toFixed(4)}px`,
+                left: `${(prand(i + 0.2) * 100).toFixed(4)}%`,
+                top: `${((prand(i + 0.3) - 0.2) * 100).toFixed(4)}%`
               }} />
           ))}
         </div>

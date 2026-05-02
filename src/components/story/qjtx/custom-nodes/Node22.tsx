@@ -13,6 +13,12 @@ export const theme: ImmersiveTheme = {
     "M 50 0 L 100 50 L 50 100 L 0 50 Z", // Diamond shape mask
 };
 
+// Pseudo-random generator for consistent rendering without hydration errors
+const prand = (seed: number) => {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+};
+
 export function NodeLayout({
   event,
   resolvedTheme,
@@ -49,14 +55,14 @@ export function NodeLayout({
         {/* Ambient Heavenly Dust (Sparks/Stars) */}
         <div className={`celestial-dust-${event.id} absolute inset-0 pointer-events-none mix-blend-screen opacity-0`}>
           {Array.from({ length: 20 }).map((_, i) => {
-            const size = 1 + Math.random() * 2;
+            const size = 1 + prand(i) * 2;
             return (
               <div key={i} className={`dust-particle-${event.id}-${i} absolute bg-emerald-300 rounded-full blur-[1px] opacity-0 shadow-[0_0_10px_2px_rgba(52,211,153,0.6)]`}
                 style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  width: `${size}px`,
-                  height: `${size}px`
+                  left: `${(prand(i + 0.1) * 100).toFixed(4)}%`,
+                  top: `${(prand(i + 0.2) * 100).toFixed(4)}%`,
+                  width: `${size.toFixed(4)}px`,
+                  height: `${size.toFixed(4)}px`
                 }} />
             )
           })}
