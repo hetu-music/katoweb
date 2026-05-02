@@ -165,7 +165,7 @@ export function animate(
     tl.set(bgImg, { filter: "grayscale(100%)" });
 
     // Petal movement logic
-    petals.forEach((p, i) => {
+    petals.forEach((p) => {
         const duration = 8 + Math.random() * 7;
         const delay = Math.random() * -15;
         gsap.to(p, {

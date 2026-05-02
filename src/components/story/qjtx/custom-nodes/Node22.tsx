@@ -21,7 +21,6 @@ const prand = (seed: number) => {
 
 export function NodeLayout({
   event,
-  resolvedTheme,
 }: {
   event: TimelineEvent;
   resolvedTheme: Required<ImmersiveTheme>;

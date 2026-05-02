@@ -248,14 +248,14 @@ export default function AuditLogsPanel() {
                                     {k}
                                   </td>
                                   <td className="px-4 py-1.5 font-mono text-rose-500 dark:text-rose-400 align-top break-all">
-                                    {log.old_data![k] === null
+                                    {log.old_data?.[k] === null
                                       ? <span className="italic text-slate-400">null</span>
-                                      : String(log.old_data![k])}
+                                      : String(log.old_data?.[k] ?? "")}
                                   </td>
                                   <td className="px-4 py-1.5 font-mono text-emerald-600 dark:text-emerald-400 align-top break-all">
-                                    {log.new_data![k] === null
+                                    {log.new_data?.[k] === null
                                       ? <span className="italic text-slate-400">null</span>
-                                      : String(log.new_data![k])}
+                                      : String(log.new_data?.[k] ?? "")}
                                   </td>
                                 </tr>
                               ))}

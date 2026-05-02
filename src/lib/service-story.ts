@@ -25,7 +25,7 @@ function mapRowToEvent(row: StoryQjtxRow): TimelineEvent {
     important: row.important,
     detail: hasDetail
       ? {
-          title: row.detail_title!,
+          title: row.detail_title ?? "",
           quote: row.detail_quote ?? undefined,
           body: row.detail_body ?? [],
           closing: row.detail_closing ?? undefined,
