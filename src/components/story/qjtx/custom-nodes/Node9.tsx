@@ -3,7 +3,7 @@ import type { ImmersiveTheme, TimelineEvent } from "../types";
 
 export const theme: ImmersiveTheme = {
   // A dramatic, high-end crimson & void theme
-  bg: "radial-gradient(ellipse at 50% 30%, #30050f 0%, #0a0104 50%, #000000 100%)",
+  bg: "#050002", // Handled inside the component for better animation control
   titleColor: "#ffe4e6",
   bodyColor: "#fda4af",
   accentColor: "#e11d48",
@@ -26,13 +26,24 @@ export function NodeLayout({
   const aftermathLines = detail.body.slice(4);
 
   return (
-    <div className={`scrolly-text-${event.id} relative z-10 h-full w-full overflow-hidden font-serif select-none bg-[#050002]`}>
+    <div className={`scrolly-text-${event.id} relative z-10 h-full w-full overflow-hidden font-serif select-none`}>
+      
+      {/* Wrapper for Entrance/Exit Animations */}
+      <div className={`node-wrapper-${event.id} absolute inset-0`}>
         
+        {/* Solid Base Background to block underlying timeline */}
+        <div className="absolute inset-0 bg-[#050002] pointer-events-none" />
+
+        {/* Background Image & Overlay */}
+        <div className="absolute inset-0 bg-[url('/story/qjtx/9.avif')] bg-cover bg-center opacity-60 mix-blend-luminosity scale-105 pointer-events-none" />
+        <div className="absolute inset-0 bg-linear-to-b from-black/80 via-[#30050f]/30 to-black/80 pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,transparent_0%,#000000_80%)] pointer-events-none" />
+
         {/* Global ambient elements: The Veils / Fog */}
         <div className={`veil-container-${event.id} absolute inset-0 pointer-events-none mix-blend-screen opacity-0`}>
              <div className="absolute top-0 left-[20%] w-[1px] h-full bg-linear-to-b from-transparent via-rose-500/20 to-transparent shadow-[0_0_30px_rgba(225,29,72,0.6)]" />
              <div className="absolute top-0 right-[30%] w-[2px] h-full bg-linear-to-b from-transparent via-rose-600/10 to-transparent shadow-[0_0_40px_rgba(225,29,72,0.4)]" />
-             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(225,29,72,0.08)_0%,transparent_60%)]" />
+             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(225,29,72,0.1)_0%,transparent_60%)]" />
         </div>
 
         {/* Floating embers (Ashes of the fallen city) */}
@@ -44,18 +55,18 @@ export function NodeLayout({
         </div>
 
         {/* Central Axis Line that shrinks into the dot */}
-        <div className={`central-axis-${event.id} absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[1px] bg-linear-to-b from-transparent via-rose-500/40 to-transparent opacity-0`} />
+        <div className={`central-axis-${event.id} absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[1px] bg-linear-to-b from-transparent via-rose-500/50 to-transparent opacity-0`} />
 
         {/* Stage 1: Title & Quote */}
-        <div className={`scrolly-intro-${event.id} absolute inset-0 flex flex-col items-center justify-center`}>
-            <div className="relative flex flex-col items-center">
-                <div className="absolute -inset-10 bg-rose-900/20 blur-[50px] rounded-full pointer-events-none" />
-                <h2 className="relative text-5xl md:text-[6rem] text-transparent bg-clip-text bg-linear-to-b from-rose-50 to-rose-300/50 tracking-[0.6em] pl-[0.6em] font-light text-center drop-shadow-[0_0_30px_rgba(225,29,72,0.3)]">
+        <div className={`scrolly-intro-${event.id} absolute inset-0 flex flex-col items-center justify-center px-4 md:px-8`}>
+            <div className="relative flex flex-col items-center w-full max-w-[90vw]">
+                <div className="absolute -inset-10 bg-rose-900/30 blur-[50px] rounded-full pointer-events-none" />
+                <h2 className="relative text-4xl md:text-[5.5rem] text-transparent bg-clip-text bg-linear-to-b from-rose-50 to-rose-300/60 tracking-[0.5em] md:tracking-[0.6em] pl-[0.5em] md:pl-[0.6em] font-light text-center drop-shadow-[0_0_30px_rgba(225,29,72,0.5)] break-words leading-tight">
                     {detail.title}
                 </h2>
-                <div className="w-[1px] h-16 md:h-24 bg-linear-to-b from-rose-500/50 to-transparent mt-12" />
+                <div className="w-[1px] h-12 md:h-24 bg-linear-to-b from-rose-500/60 to-transparent mt-8 md:mt-12" />
             </div>
-            <div className="mt-8 text-rose-300/60 text-sm md:text-base tracking-[0.8em] font-light text-center px-4 max-w-lg leading-loose pl-[0.8em]">
+            <div className="mt-6 md:mt-8 text-rose-200/70 text-xs md:text-base tracking-[0.6em] md:tracking-[0.8em] font-light text-center w-full max-w-[85vw] md:max-w-lg leading-[2.2] md:leading-loose pl-[0.6em] md:pl-[0.8em] whitespace-normal break-words">
                 {detail.quote}
             </div>
         </div>
@@ -63,13 +74,13 @@ export function NodeLayout({
         {/* Stage 2: Moli (The Artist) - Classical Vertical layout */}
         <div className={`scrolly-artist-${event.id} absolute inset-0 flex items-center justify-center opacity-0`}>
             {/* Faint background watermark */}
-            <div className="text-rose-950/40 text-[8rem] md:text-[15rem] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap tracking-widest font-serif blur-[4px] pointer-events-none select-none">
+            <div className="text-rose-950/40 text-[6rem] md:text-[15rem] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap tracking-widest font-serif blur-[4px] pointer-events-none select-none">
                 墨离
             </div>
-            {/* Vertical text blocks */}
-            <div className="flex gap-12 md:gap-24 h-[50%] md:h-[60%] items-center justify-center z-10">
+            {/* Vertical text blocks - Fix overflow with wrap and max height */}
+            <div className="flex flex-row-reverse flex-wrap content-center gap-8 md:gap-20 w-[90vw] md:w-auto h-[80vh] md:h-[70%] items-center justify-center z-10 mx-auto">
                 {openingLines.map((line, i) => (
-                    <div key={i} className="writing-vertical-rl text-rose-100/90 text-base md:text-xl tracking-[0.5em] leading-[2.5] font-light drop-shadow-[0_2px_15px_rgba(225,29,72,0.3)] h-full flex items-center">
+                    <div key={i} className="writing-vertical-rl text-rose-100/90 text-[13px] md:text-xl tracking-[0.4em] md:tracking-[0.5em] leading-[2.2] md:leading-[2.5] font-light drop-shadow-[0_2px_15px_rgba(225,29,72,0.4)] max-h-[100%] whitespace-normal break-words">
                         {line}
                     </div>
                 ))}
@@ -80,33 +91,33 @@ export function NodeLayout({
         <div className={`scrolly-cinnabar-${event.id} absolute inset-0 flex items-center justify-center opacity-0`}>
             {/* The Dot Complex */}
             <div className={`cinnabar-dot-container-${event.id} relative flex items-center justify-center`}>
-                <div className={`cinnabar-dot-${event.id} relative w-3 h-3 md:w-5 md:h-5 bg-rose-600 rounded-full shadow-[0_0_40px_15px_rgba(225,29,72,0.8),inset_0_0_5px_rgba(255,255,255,0.5)] z-20`} />
-                <div className={`cinnabar-ring-1-${event.id} absolute w-24 h-24 md:w-48 md:h-48 border border-rose-500/30 rounded-full z-10`} />
-                <div className={`cinnabar-ring-2-${event.id} absolute w-[40vw] h-[40vw] max-w-[300px] max-h-[300px] border-[0.5px] border-rose-500/10 rounded-full z-10`} />
+                <div className={`cinnabar-dot-${event.id} relative w-3 h-3 md:w-5 md:h-5 bg-rose-500 rounded-full shadow-[0_0_40px_15px_rgba(225,29,72,0.9),inset_0_0_5px_rgba(255,255,255,0.6)] z-20`} />
+                <div className={`cinnabar-ring-1-${event.id} absolute w-20 h-20 md:w-48 md:h-48 border border-rose-400/40 rounded-full z-10`} />
+                <div className={`cinnabar-ring-2-${event.id} absolute w-[40vw] h-[40vw] max-w-[280px] max-h-[280px] border-[0.5px] border-rose-400/20 rounded-full z-10`} />
                 
                 {/* Background glow for the masterpiece */}
-                <div className={`cinnabar-glow-${event.id} absolute w-[60vw] h-[60vw] max-w-[500px] max-h-[500px] bg-[radial-gradient(circle_at_center,rgba(225,29,72,0.15)_0%,transparent_70%)] rounded-full mix-blend-screen pointer-events-none z-0`} />
+                <div className={`cinnabar-glow-${event.id} absolute w-[60vw] h-[60vw] max-w-[500px] max-h-[500px] bg-[radial-gradient(circle_at_center,rgba(225,29,72,0.2)_0%,transparent_70%)] rounded-full mix-blend-screen pointer-events-none z-0`} />
             </div>
 
-            {/* Floating text around the dot */}
-            <div className={`cinnabar-text-left-${event.id} absolute left-[12%] md:left-[25%] top-1/2 -translate-y-1/2 writing-vertical-rl text-rose-100/80 text-lg md:text-2xl tracking-[0.6em] font-light h-[35%] md:h-[40%]`}>
+            {/* Floating text around the dot - Fix vertical text overflow */}
+            <div className={`cinnabar-text-left-${event.id} absolute left-[8%] md:left-[22%] top-1/2 -translate-y-1/2 writing-vertical-rl text-rose-100/90 text-base md:text-2xl tracking-[0.5em] md:tracking-[0.6em] font-light max-h-[80vh] whitespace-normal break-words`}>
                 眉间朱砂一点
             </div>
-            <div className={`cinnabar-text-right-${event.id} absolute right-[12%] md:right-[25%] top-1/2 -translate-y-1/2 writing-vertical-rl text-rose-200/50 text-sm md:text-lg tracking-[0.6em] font-light h-[25%] md:h-[30%]`}>
+            <div className={`cinnabar-text-right-${event.id} absolute right-[8%] md:right-[22%] top-1/2 -translate-y-1/2 writing-vertical-rl text-rose-200/60 text-xs md:text-lg tracking-[0.5em] md:tracking-[0.6em] font-light max-h-[80vh] whitespace-normal break-words`}>
                 颜色犹胜摇光
             </div>
         </div>
 
         {/* Stage 4: Aftermath (城陷绝唱) - Scattered layout */}
-        <div className={`scrolly-aftermath-${event.id} absolute inset-0 flex items-center justify-center opacity-0`}>
-             <div className="absolute inset-0 bg-black/60 backdrop-blur-[4px] pointer-events-none" />
+        <div className={`scrolly-aftermath-${event.id} absolute inset-0 flex items-center justify-center opacity-0 px-4 md:px-8`}>
+             <div className="absolute inset-0 bg-black/50 backdrop-blur-[6px] pointer-events-none" />
              
-             <div className="relative z-10 w-full max-w-4xl px-8 md:px-12 flex flex-col items-center gap-10 md:gap-14 text-center">
+             <div className="relative z-10 w-full max-w-[90vw] md:max-w-4xl flex flex-col items-center gap-6 md:gap-14 text-center">
                  {aftermathLines.map((line, i) => {
                      if (line.includes("画中女子眉间朱砂一点")) return null;
                      const isTragic = line.includes("绝世") || line.includes("死于乱军") || line.includes("春风复来");
                      return (
-                         <p key={i} className={`aftermath-line-${event.id} text-[15px] md:text-lg tracking-[0.3em] leading-[2.5] ${isTragic ? 'text-rose-400 drop-shadow-[0_0_15px_rgba(225,29,72,0.5)] font-normal' : 'text-rose-100/60 font-light'}`}>
+                         <p key={i} className={`aftermath-line-${event.id} text-[13px] md:text-lg tracking-[0.2em] md:tracking-[0.3em] leading-[1.8] md:leading-[2.5] w-full break-words whitespace-normal ${isTragic ? 'text-rose-300 drop-shadow-[0_0_15px_rgba(225,29,72,0.6)] font-normal' : 'text-rose-100/70 font-light'}`}>
                              {line}
                          </p>
                      )
@@ -115,13 +126,15 @@ export function NodeLayout({
         </div>
 
         {/* Stage 5: Closing */}
-        <div className={`scrolly-closing-${event.id} absolute inset-0 flex flex-col items-center justify-center opacity-0`}>
-            <div className="w-[1px] h-16 md:h-24 bg-linear-to-b from-transparent to-rose-500/50 mb-10" />
-            <div className="text-rose-300/90 text-sm md:text-base tracking-[1.2em] pl-[1.2em] font-light drop-shadow-[0_0_12px_rgba(225,29,72,0.5)] text-center px-6">
+        <div className={`scrolly-closing-${event.id} absolute inset-0 flex flex-col items-center justify-center opacity-0 px-4 md:px-8`}>
+            <div className="w-[1px] h-12 md:h-24 bg-linear-to-b from-transparent to-rose-500/60 mb-6 md:mb-10" />
+            <div className="text-rose-200/90 text-xs md:text-base tracking-[0.8em] md:tracking-[1.2em] pl-[0.8em] md:pl-[1.2em] font-light drop-shadow-[0_0_15px_rgba(225,29,72,0.6)] text-center w-full max-w-[90vw] leading-loose break-words whitespace-normal">
                 {detail.closing}
             </div>
-            <div className="w-[1px] h-16 md:h-24 bg-linear-to-t from-transparent to-rose-500/50 mt-10" />
+            <div className="w-[1px] h-12 md:h-24 bg-linear-to-t from-transparent to-rose-500/60 mt-6 md:mt-10" />
         </div>
+
+      </div>
     </div>
   );
 }
@@ -136,6 +149,7 @@ export function animate(
   const sel = (s: string) => scrollyText.querySelector(s);
   const selAll = (s: string) => scrollyText.querySelectorAll(s);
 
+  const wrapper = sel(`.node-wrapper-${eventId}`);
   const veils = sel(`.veil-container-${eventId}`);
   const centralAxis = sel(`.central-axis-${eventId}`);
   
@@ -167,6 +181,13 @@ export function animate(
   if (aftermathLines) tl.set(aftermathLines, { opacity: 0, y: 15 });
   if (closingElements) tl.set(closingElements, { opacity: 0, scaleY: 0, transformOrigin: "center" });
 
+  // Entrance Animation (Expand and fade in)
+  tl.fromTo(wrapper, 
+    { scale: 1.1, opacity: 0, filter: "blur(20px)" }, 
+    { scale: 1, opacity: 1, filter: "blur(0px)", duration: 2.5, ease: "power3.out" }, 
+    0
+  );
+
   // Floating Embers Loop
   const embers = selAll(`[class^="ember-${eventId}-"]`);
   embers.forEach((ember) => {
@@ -183,13 +204,13 @@ export function animate(
   });
 
   // 1. Ambient & Axis Entry
-  tl.to(veils, { opacity: 1, duration: 3 }, 0);
-  tl.to(centralAxis, { opacity: 1, duration: 4, ease: "power2.inOut" }, 0);
+  tl.to(veils, { opacity: 1, duration: 3 }, 1);
+  tl.to(centralAxis, { opacity: 1, duration: 4, ease: "power2.inOut" }, 1);
 
   // 2. Intro Sequence
   if (introElements && introElements.length >= 2) {
-      tl.fromTo(introElements[0], { opacity: 0, scale: 0.9, filter: "blur(12px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 3.5, ease: "power3.out" }, 1)
-        .fromTo(introElements[1], { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 3, ease: "power2.out" }, 2)
+      tl.fromTo(introElements[0], { opacity: 0, scale: 0.9, filter: "blur(12px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 3.5, ease: "power3.out" }, 1.5)
+        .fromTo(introElements[1], { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 3, ease: "power2.out" }, 2.5)
         // Exit Intro
         .to(introElements, { opacity: 0, y: -40, filter: "blur(16px)", duration: 2.5, ease: "power2.inOut", stagger: 0.2 }, "+=3.5")
         .set(intro, { display: "none" });
@@ -237,10 +258,16 @@ export function animate(
       tl.to(closingElements[0], { opacity: 1, scaleY: 1, duration: 2, ease: "power2.out" })
         .to(closingElements[2], { opacity: 1, scaleY: 1, duration: 2, ease: "power2.out" }, "<")
         .fromTo(closingElements[1], { opacity: 0, filter: "blur(16px)", scale: 0.9 }, { opacity: 1, filter: "blur(0px)", scale: 1, duration: 3, ease: "power3.out" }, "-=1")
-        // Final Exit
-        .to(closingElements, { opacity: 0, filter: "blur(12px)", duration: 2.5, ease: "power2.in" }, "+=4");
+        // Final text Exit before the global collapse
+        .to(closingElements, { opacity: 0, filter: "blur(12px)", duration: 2, ease: "power2.in" }, "+=4");
   }
 
   // Fade out ambient elements at the very end
-  tl.to(veils, { opacity: 0, duration: 3 }, "-=2.5");
+  tl.to(veils, { opacity: 0, duration: 3 }, "-=2");
+
+  // Exit Animation (Collapse and fade out)
+  tl.to(wrapper, 
+    { scale: 0.9, opacity: 0, filter: "blur(20px)", duration: 2.5, ease: "power2.inOut" }, 
+    "-=1"
+  );
 }
