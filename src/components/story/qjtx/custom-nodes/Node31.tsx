@@ -27,10 +27,21 @@ export function NodeLayout({
   const detail = event.detail;
   if (!detail) return null;
 
-  // Split lines for monumental pillar-like layout
-  const splitIndex = Math.ceil(detail.body.length / 2);
-  const leftLines = detail.body.slice(0, splitIndex);
-  const rightLines = detail.body.slice(splitIndex);
+  // Divide body into 4 sequential phases exactly as requested (6, 9, 12, rest)
+  const p1 = detail.body.slice(0, 6);
+  const p2 = detail.body.slice(6, 9);
+  const p3 = detail.body.slice(9, 12);
+  const p4 = detail.body.slice(12);
+
+  // Helper for ornate corners
+  const AncientFrame = () => (
+    <>
+      <div className="absolute -top-1 -left-1 w-8 h-8 border-t-2 border-l-2 border-slate-400/30 rounded-tl-sm" />
+      <div className="absolute -top-1 -right-1 w-8 h-8 border-t-2 border-r-2 border-slate-400/30 rounded-tr-sm" />
+      <div className="absolute -bottom-1 -left-1 w-8 h-8 border-b-2 border-l-2 border-slate-400/30 rounded-bl-sm" />
+      <div className="absolute -bottom-1 -right-1 w-8 h-8 border-b-2 border-r-2 border-slate-400/30 rounded-br-sm" />
+    </>
+  );
 
   return (
     <div className={`scrolly-text-${event.id} relative z-10 h-full w-full overflow-hidden font-serif select-none`}>
@@ -38,8 +49,15 @@ export function NodeLayout({
       {/* Global Wrapper */}
       <div className={`node-wrapper-${event.id} absolute inset-0 opacity-0 bg-[#020617]`}>
         
-        {/* Base Background Image */}
-        <div className="absolute inset-0 bg-[url('/story/qjtx/31.avif')] bg-cover bg-center mix-blend-luminosity scale-105 pointer-events-none opacity-40" />
+        {/* Solid Base Background */}
+        <div className="absolute inset-0 bg-[#02040a] pointer-events-none" />
+
+        {/* Clear Background Image with Tranquil Cold Tint */}
+        <div className="absolute inset-0 bg-[url('/story/qjtx/31.avif')] bg-cover bg-center opacity-85 pointer-events-none" />
+
+        {/* Frost / Moonlight Overlay Gradient - Weakened for clarity */}
+        <div className="absolute inset-0 bg-linear-to-b from-[#020617]/60 via-transparent to-[#020617]/80 pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(241,245,249,0.05)_0%,transparent_60%)] pointer-events-none" />
 
         {/* --- The Storm (The past chaos) --- */}
         {/* Violent red/orange overlay that will fade out to represent the clamor dying down */}
@@ -53,9 +71,8 @@ export function NodeLayout({
             ))}
         </div>
 
-        {/* --- The Tranquility (The cold aftermath) --- */}
-        {/* Cold, slate-blue overlay that remains after the fire dies */}
-        <div className={`peace-overlay-${event.id} absolute inset-0 bg-linear-to-b from-[#020617]/90 via-[#0f172a]/60 to-[#020617]/95 pointer-events-none z-0 opacity-0`} />
+        {/* Cold, slate-blue overlay that remains after the fire dies - Restored some atmosphere */}
+        <div className={`peace-overlay-${event.id} absolute inset-0 bg-linear-to-b from-[#020617]/85 via-[#0f172a]/40 to-[#020617]/90 pointer-events-none z-0 opacity-0`} />
         
         {/* Slow, silent, infinite snow/ash falling in the cold void */}
         <div className={`peace-snow-${event.id} absolute inset-0 pointer-events-none opacity-0 z-0`}>
@@ -79,42 +96,32 @@ export function NodeLayout({
             <div className="w-[1px] h-24 md:h-32 bg-linear-to-t from-transparent to-slate-400/50 mt-8" />
         </div>
 
-        {/* Phase 2: The Monumental Body (Two giant pillars of text fading into the cold) */}
-        <div className={`content-body-${event.id} absolute inset-0 flex flex-col md:flex-row items-center justify-center gap-12 md:gap-32 px-6 md:px-12 pointer-events-none z-10 opacity-0`}>
-            
-            {/* Left Pillar */}
-            <div className="flex flex-col gap-8 md:gap-12 max-w-xl text-center md:text-right">
-                {leftLines.map((line, i) => (
-                    <p key={i} className={`body-line-${event.id} text-[15px] md:text-[18px] leading-[2.5] tracking-[0.3em] md:tracking-[0.4em] text-slate-300 font-light whitespace-normal break-words`}>
-                        {line}
-                    </p>
-                ))}
-            </div>
-
-            {/* Center: The Altar / The Cinnabar Focus */}
-            <div className="hidden md:flex flex-col items-center justify-center h-3/4 relative w-32 shrink-0">
-                <div className="absolute top-0 bottom-0 w-[1px] bg-linear-to-b from-transparent via-slate-500/20 to-transparent" />
-                <div className={`cinnabar-dot-${event.id} absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-red-600 rounded-full shadow-[0_0_40px_10px_rgba(225,29,72,0.8)] opacity-0`} />
-            </div>
-
-            {/* Right Pillar */}
-            <div className="flex flex-col gap-8 md:gap-12 max-w-xl text-center md:text-left">
-                {rightLines.map((line, i) => {
-                    const emphasis = line.includes("朱砂") || line.includes("颜色无双") || line.includes("大慈悲者");
-                    return (
-                        <p key={i} className={`body-line-${event.id} text-[15px] md:text-[18px] leading-[2.5] tracking-[0.3em] md:tracking-[0.4em] whitespace-normal break-words ${emphasis ? 'text-rose-200 drop-shadow-[0_0_15px_rgba(225,29,72,0.5)] font-normal' : 'text-slate-300 font-light'}`}>
-                            {line}
-                        </p>
-                    )
-                })}
-            </div>
-        </div>
+        {/* --- Phase 1 to 4: Sequential Narrative --- */}
+        {[p1, p2, p3, p4].map((lines, phaseIdx) => (
+          <div key={phaseIdx} className={`content-phase-${phaseIdx + 1}-${event.id} absolute inset-0 flex flex-col items-center justify-center px-6 md:px-12 pointer-events-none z-10 opacity-0`}>
+              <div className="relative p-10 md:p-20 max-w-4xl bg-[radial-gradient(circle_at_50%_50%,rgba(2,6,23,0.6)_0%,transparent_80%)]">
+                  <AncientFrame />
+                  <div className="flex flex-col gap-6 md:gap-8 text-center">
+                      {lines.map((line, i) => {
+                          const emphasis = line.includes("朱砂") || line.includes("颜色无双") || line.includes("追随那人而去");
+                          return (
+                            <p key={i} className={`text-[15px] md:text-[18px] leading-[2.5] tracking-[0.3em] md:tracking-[0.4em] whitespace-normal break-words ${emphasis ? 'text-rose-100 drop-shadow-[0_0_15px_rgba(225,29,72,0.4)] font-normal' : 'text-slate-300 font-light'}`}>
+                                {line}
+                            </p>
+                          );
+                      })}
+                  </div>
+              </div>
+          </div>
+        ))}
 
         {/* Phase 3: Closing (The Echo in the void) */}
         <div className={`content-closing-${event.id} absolute inset-0 flex flex-col items-center justify-center px-6 pointer-events-none z-10 opacity-0`}>
+             <div className="w-px h-16 md:h-24 bg-linear-to-b from-transparent to-slate-400/30 mb-10" />
              <div className="text-slate-200 text-sm md:text-xl tracking-[1em] md:tracking-[1.5em] pl-[1em] md:pl-[1.5em] font-light max-w-4xl text-center leading-[3] drop-shadow-[0_0_20px_rgba(241,245,249,0.3)] whitespace-normal break-words">
                  {detail.closing}
              </div>
+             <div className="w-px h-16 md:h-24 bg-linear-to-t from-transparent to-slate-400/30 mt-10" />
         </div>
 
       </div>
@@ -146,14 +153,15 @@ export function animate(
   const titleText = sel(`.title-text-${eventId}`);
   const quoteText = sel(`.quote-text-${eventId}`);
   
-  const bodyStage = sel(`.content-body-${eventId}`);
-  const bodyLines = selAll(`.body-line-${eventId}`);
-  const cinnabarDot = sel(`.cinnabar-dot-${eventId}`);
+  const p1 = sel(`.content-phase-1-${eventId}`);
+  const p2 = sel(`.content-phase-2-${eventId}`);
+  const p3 = sel(`.content-phase-3-${eventId}`);
+  const p4 = sel(`.content-phase-4-${eventId}`);
   
   const closingStage = sel(`.content-closing-${eventId}`);
 
   // Initial States
-  tl.set([wrapper, intro, bodyStage, closingStage], { opacity: 0 });
+  tl.set([wrapper, intro, p1, p2, p3, p4, closingStage], { opacity: 0 });
   
   // Set text to start "hot" (smoldering)
   tl.set(titleText, { color: "#fca5a5", textShadow: "0 0 30px #e11d48", scale: 0.95, filter: "blur(8px)" });
@@ -193,7 +201,7 @@ export function animate(
   // The red burns out into cold slate blue, embers vanish, snow begins.
   tl.to(warOverlay, { opacity: 0, duration: 5, ease: "power2.inOut" }, 1.5);
   tl.to(warEmbers, { opacity: 0, filter: "blur(10px)", duration: 4, ease: "power2.in" }, 1.5);
-  tl.to(peaceOverlay, { opacity: 1, duration: 5, ease: "power2.inOut" }, 2);
+  tl.to(peaceOverlay, { opacity: 0.8, duration: 5, ease: "power2.inOut" }, 2);
   tl.to(peaceSnow, { opacity: 1, duration: 4, ease: "power2.out" }, 2.5);
 
   // 2. The Text Cools Down (Intro)
@@ -221,22 +229,16 @@ export function animate(
   tl.to(intro, { opacity: 0, y: -20, filter: "blur(15px)", duration: 3, ease: "power2.inOut" }, "+=4");
   tl.set(intro, { display: "none" });
 
-  // 3. The Monumental Body (Memory Pillars)
-  tl.set(bodyStage, { display: "flex", opacity: 1 });
-  
-  // Lines fade in slowly like inscriptions appearing on cold stone
-  tl.fromTo(bodyLines, 
-      { opacity: 0, y: 15, filter: "blur(10px)", color: "#fca5a5" }, // Start slightly warm/blurred
-      { opacity: 1, y: 0, filter: "blur(0px)", color: (i, el) => el.classList.contains('text-rose-200') ? "#fecdd3" : "#cbd5e1", duration: 3, stagger: 0.3, ease: "power2.out" },
-      "+=0.5"
-  );
-
-  // The Cinnabar appears exactly as the profound tragedy sinks in
-  tl.to(cinnabarDot, { opacity: 1, scale: 1.5, duration: 4, ease: "elastic.out(1, 0.3)" }, "-=2");
-  
-  // Linger on the body, then fade out
-  tl.to([bodyLines, cinnabarDot], { opacity: 0, y: -15, filter: "blur(15px)", duration: 3, ease: "power2.in" }, "+=5");
-  tl.set(bodyStage, { display: "none" });
+  // 3. Sequential Body Phases
+  [p1, p2, p3, p4].forEach((p, idx) => {
+    if (!p) return;
+    tl.fromTo(p, 
+        { opacity: 0, y: 20, filter: "blur(10px)" },
+        { opacity: 1, y: 0, filter: "blur(0px)", duration: 2.5, ease: "power2.out" },
+        idx === 0 ? "-=1" : "+=1"
+    );
+    tl.to(p, { opacity: 0, y: -20, filter: "blur(10px)", duration: 2.5, ease: "power2.inOut" }, "+=4");
+  });
 
   // 4. Closing (The Final Echo in the void)
   tl.set(closingStage, { display: "flex", opacity: 1 });
@@ -250,5 +252,5 @@ export function animate(
 
   // 5. Global Exit (The complete silence)
   tl.to(peaceSnow, { opacity: 0, duration: 3 }, "-=2");
-  tl.to(wrapper, { opacity: 0, duration: 2.5, ease: "power2.inOut" }, "-=1");
+  tl.to(wrapper, { opacity: 0, duration: 3, ease: "power2.inOut" }, "-=1");
 }
