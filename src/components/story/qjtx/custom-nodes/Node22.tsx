@@ -41,10 +41,10 @@ export function NodeLayout({
         {/* Solid Base Background to block underlying timeline */}
         <div className="absolute inset-0 bg-[#02040a] pointer-events-none" />
 
-        {/* Background Image & Overlays - Made clearer */}
-        <div className="absolute inset-0 bg-[url('/story/qjtx/22.avif')] bg-cover bg-center opacity-65 scale-105 pointer-events-none" />
-        <div className="absolute inset-0 bg-linear-to-b from-[#020617]/80 via-[#064e3b]/40 to-[#020617]/90 pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,transparent_0%,#02040a_90%)] pointer-events-none" />
+        {/* Background Image & Overlays - Made clearer and fixed edge coverage */}
+        <div className="absolute inset-0 bg-[url('/story/qjtx/22.avif')] bg-cover bg-center opacity-85 scale-105 pointer-events-none" />
+        <div className="absolute inset-[-2px] bg-linear-to-b from-[#020617]/50 via-transparent to-[#020617]/70 pointer-events-none" />
+        <div className="absolute inset-[-2px] bg-[radial-gradient(circle_at_50%_35%,transparent_0%,#02040a_100%)] pointer-events-none" />
 
         {/* Ambient Heavenly Dust (Sparks/Stars) */}
         <div className={`celestial-dust-${event.id} absolute inset-0 pointer-events-none mix-blend-screen opacity-0`}>
@@ -65,13 +65,14 @@ export function NodeLayout({
         {/* Stage 1: Intro */}
         <div className={`scrolly-intro-${event.id} absolute inset-0 flex flex-col items-center justify-center px-4 md:px-8`}>
           <div className="relative flex flex-col items-center w-full max-w-[90vw]">
-            <h2 className={`title-text-${event.id} relative text-4xl md:text-[5rem] text-transparent bg-clip-text bg-linear-to-b from-emerald-50 to-emerald-400/60 tracking-[0.6em] md:tracking-[0.8em] pl-[0.6em] md:pl-[0.8em] font-light text-center drop-shadow-[0_0_30px_rgba(16,185,129,0.4)] wrap-break-word leading-tight`}>
+            <div className="absolute -inset-16 bg-emerald-500/10 blur-3xl rounded-full pointer-events-none" />
+            <h2 className={`title-text-${event.id} relative text-4xl md:text-[5rem] text-transparent bg-clip-text bg-linear-to-b from-emerald-50 to-emerald-400 tracking-[0.6em] md:tracking-[0.8em] pl-[0.6em] md:pl-[0.8em] font-light text-center drop-shadow-[0_0_30px_rgba(16,185,129,0.5)] wrap-break-word leading-tight`}>
               {detail.title}
             </h2>
             <div className={`title-line-${event.id} w-px h-12 md:h-20 bg-linear-to-b from-emerald-400/60 to-transparent mt-8 md:mt-12`} />
           </div>
 
-          <div className={`quote-text-${event.id} mt-6 md:mt-8 text-emerald-200/80 text-xs md:text-[15px] tracking-[0.6em] md:tracking-[0.8em] font-light text-center w-full max-w-[85vw] md:max-w-lg leading-[2.2] md:leading-[2.5] pl-[0.6em] md:pl-[0.8em] whitespace-normal wrap-break-word max-h-[40vh] overflow-y-auto no-scrollbar`}>
+          <div className={`quote-text-${event.id} mt-6 md:mt-8 text-emerald-100 text-xs md:text-[15px] tracking-[0.6em] md:tracking-[0.8em] font-light text-center w-full max-w-[85vw] md:max-w-lg leading-[2.2] md:leading-[2.5] pl-[0.6em] md:pl-[0.8em] whitespace-normal wrap-break-word max-h-[40vh] overflow-y-auto no-scrollbar px-6 py-4 rounded-2xl bg-emerald-950/20 backdrop-blur-[2px] shadow-[0_8px_32px_rgba(0,0,0,0.2)]`}>
             {detail.quote}
           </div>
         </div>
