@@ -143,3 +143,28 @@ export type SongFieldConfig = {
   isUrl?: boolean;
   arrayMaxLength?: number;
 };
+
+// 用户记录类型（管理员用户管理面板）
+// navid_pw 为只写字段，不在读取结果中返回
+export type UserRecord = {
+  id: string;
+  name: string;
+  display: boolean;
+  intro: string | null;
+  is_admin: boolean;
+  navid_id: string | null;
+  endpoint: string | null;
+  sort_order: number | null;
+};
+
+// 用户更新字段类型（超级管理员可编辑的字段）
+export type UserUpdatePayload = {
+  id: string;
+  name?: string;
+  display?: boolean;
+  intro?: string | null;
+  is_admin?: boolean;
+  navid_id?: string | null;
+  navid_pw?: string | null;
+  endpoint?: string | null;
+};

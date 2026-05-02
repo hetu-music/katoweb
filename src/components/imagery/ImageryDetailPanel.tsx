@@ -385,15 +385,50 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
     });
   }, [selectedItem]);
 
-  // Simple scroll lock (no jump since scrollbar is globally hidden)
+  // 面板开启时锁定页面滚动
   useEffect(() => {
-    if (open && isDesktop) {
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = "";
-      };
-    }
-  }, [open, isDesktop]);
+    if (!open) return;
+
+    const html = document.documentElement;
+    const body = document.body;
+
+    const prev = {
+      htmlOverflow: html.style.overflow,
+      htmlTouchAction: html.style.touchAction,
+      htmlOverscrollBehavior: html.style.overscrollBehavior,
+      bodyOverflow: body.style.overflow,
+      bodyTouchAction: body.style.touchAction,
+      bodyOverscrollBehavior: body.style.overscrollBehavior,
+    };
+
+    // overflow:hidden 阻止窗口滚动，且不改变 window.scrollY。
+    // 不能用 position:fixed —— 它会将 scrollY 重置为 0，
+    // 破坏依赖 window.scrollY 定位的 useWindowVirtualizer。
+    html.style.overflow = "hidden";
+    html.style.touchAction = "none";
+    html.style.overscrollBehavior = "none";
+    body.style.overflow = "hidden";
+    body.style.touchAction = "none";
+    body.style.overscrollBehavior = "none";
+
+    // 额外阻止 iOS Safari 橡皮筋回弹，同时放行面板内部滚动容器的触摸事件
+    const preventTouchMove = (e: TouchEvent) => {
+      const target = e.target as Element | null;
+      if (target?.closest(".overflow-y-auto")) return;
+      e.preventDefault();
+    };
+    document.addEventListener("touchmove", preventTouchMove, { passive: false });
+
+    return () => {
+      html.style.overflow = prev.htmlOverflow;
+      html.style.touchAction = prev.htmlTouchAction;
+      html.style.overscrollBehavior = prev.htmlOverscrollBehavior;
+      body.style.overflow = prev.bodyOverflow;
+      body.style.touchAction = prev.bodyTouchAction;
+      body.style.overscrollBehavior = prev.bodyOverscrollBehavior;
+      document.removeEventListener("touchmove", preventTouchMove);
+    };
+  }, [open]);
 
   const handleLyricistClick = useCallback((name: string) => {
     setActiveLyricist((prev) => (name === "" || prev === name ? null : name));

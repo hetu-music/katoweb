@@ -1,31 +1,22 @@
 /* ============================================================================
-   GLOBALS.CSS - 全局样式文件
-   ============================================================================
-   目录：
-   1. Tailwind 配置与导入
-   2. CSS 变量（设计令牌）
-   3. 基础样式重置
+   GLOBALS.CSS
+   1. Tailwind 导入与配置
+   2. 主题 Token（字体 · 颜色）
+   3. 基础样式
    4. 工具类
+   5. 业务动画
    ============================================================================ */
 
-/* ============================================================================
-   1. TAILWIND 配置与导入
-   ============================================================================ */
+/* ── 1. Tailwind 导入与配置 ─────────────────────────────────────────────────── */
 
 @import "tailwindcss";
 @import "tw-animate-css";
 @variant dark (&:where(.dark, .dark *));
 
-/* ============================================================================
-   2. CSS 变量（设计令牌）
-   ============================================================================ */
+/* ── 2. 主题 Token ──────────────────────────────────────────────────────────── */
 
-:root {
-  /* 颜色 */
-  --background: #ffffff;
-  --foreground: #171717;
-
-  /* 字体系列：优先英文，后退中文 */
+/* 字体：放入 @theme，同时输出到 :root 并生成 font-* 工具类 */
+@theme {
   --font-sans:
     var(--font-body), var(--font-body-sc), ui-sans-serif, system-ui,
     -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial,
@@ -36,6 +27,13 @@
   --font-mono:
     ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, Monaco,
     "Courier New", var(--font-mono-cjk), monospace;
+  --font-calligraphy: var(--font-keben), cursive;
+}
+
+/* 颜色：保留在 :root / .dark，支持运行时主题切换 */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
 }
 
 .dark {
@@ -43,116 +41,97 @@
   --foreground: #ededed;
 }
 
-/* ============================================================================
-   3. 基础样式重置
-   ============================================================================ */
+/* ── 3. 基础样式 ─────────────────────────────────────────────────────────────── */
 
-body {
-  margin: 0;
-  padding: 0;
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
-  transition:
-    background-color 0.3s ease-out,
-    color 0.3s ease-out;
-}
+@layer base {
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition:
+      background-color 0.3s ease-out,
+      color 0.3s ease-out;
+  }
 
-/* 标题样式 */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: var(--font-serif);
-  font-weight: 700;
+  /* 标题使用衬线字体；子 span 补偿 CJK 数字垂直偏移 */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+    font-weight: 700;
 
-  /* 调整标题中数字的垂直对齐，使其与中文字符更好地对齐 */
-  & > span {
-    position: relative;
-    top: 0.05em;
+    & > span {
+      position: relative;
+      top: 0.05em;
+    }
+  }
+
+  /* 补偿 CJK 字体垂直度量差异 */
+  input[type="text"],
+  input[type="search"],
+  button {
+    line-height: 1.4;
+  }
+
+  /* 禁用 View Transitions 默认动画 */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
   }
 }
 
-/* 表单元素：微调输入框和按钮文字的垂直对齐（补偿 CJK 字体的垂直度量差异） */
-input[type="text"],
-input[type="search"],
-button {
-  line-height: 1.4;
+/* ── 4. 工具类 ──────────────────────────────────────────────────────────────── */
+
+@utility no-transitions {
+  &, & *, & *::before, & *::after {
+    transition: none !important;
+  }
 }
 
-/* ============================================================================
-   4. 工具类
-   ============================================================================ */
-
-/* View Transitions API 自定义 */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none;
-  mix-blend-mode: normal;
-}
-
-/* 禁用过渡效果 */
-.no-transitions,
-.no-transitions *,
-.no-transitions *::before,
-.no-transitions *::after {
-  transition: none !important;
-}
-
-/* 隐藏滚动条 */
-.no-scrollbar {
+@utility no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
+@utility mask-linear-fade-edges {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 12px,
+    black calc(100% - 12px),
+    transparent
+  );
 }
 
-/* ============================================================================
-   6. 业务动画 (Animations)
-   ============================================================================ */
+/* ── 5. 业务动画 ─────────────────────────────────────────────────────────────── */
 
-/* 功能入口字符浮动动画 */
+/* 功能入口字符浮动 */
 @keyframes feature-drift {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-7px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-7px); }
 }
 
-/* 意象页背景滚动字幕 */
+/* 意象页背景字幕滚动 */
 @keyframes imagery-marquee-ltr {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-@keyframes imagery-marquee-rtl {
-  from {
-    transform: translateX(-50%);
-  }
-  to {
-    transform: translateX(0);
-  }
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
 
-/* 词云词语呼吸浮动动画 */
+@keyframes imagery-marquee-rtl {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
+
+/* 词云词语呼吸浮动 */
 @keyframes word-breathe {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-5px); }
 }
 
 .word-breathe-anim {
@@ -162,18 +141,19 @@ button {
   animation-duration: var(--word-breathe-duration, 4s);
   animation-delay: var(--word-breathe-delay, 0s);
   animation-fill-mode: both;
+
+  &:hover,
+  &.word-breathe-paused {
+    animation-play-state: paused;
+  }
 }
 
-.word-breathe-anim:hover,
-.word-breathe-paused {
-  animation-play-state: paused;
-}
-
-/* Force the breathe animation to run even on hover (e.g. when word is selected) */
+/* 强制保持动画运行（词语被选中时覆盖 hover 暂停） */
 .word-breathe-force-run {
   animation-play-state: running !important;
 }
 
+/* Tooltip 出现 */
 @keyframes tooltip-appear {
   from {
     opacity: 0;
@@ -191,7 +171,7 @@ button {
   animation: tooltip-appear 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* 逐字展开动画 */
+/* Hero 标题逐字展开 */
 @keyframes hero-title-reveal {
   from {
     opacity: 0;
@@ -206,10 +186,11 @@ button {
 }
 
 .hero-title-char {
-  animation: hero-title-reveal 2.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: hero-title-reveal 3.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity, filter;
 }
 
-/* 描述文字淡入 */
+/* Hero 描述文字淡入 */
 @keyframes hero-unroll {
   from {
     opacity: 0;
@@ -224,10 +205,11 @@ button {
 }
 
 .hero-unroll {
-  animation: hero-unroll 2s cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: hero-unroll 2.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity, filter;
 }
 
-/* 词云柔和淡入动画 - 移除蓝光滤镜以优化滚动性能 */
+/* 词云词语淡入（移除 blur 以优化滚动性能） */
 @keyframes word-fade-in {
   from {
     opacity: 0;
@@ -246,21 +228,6 @@ button {
 
 /* 页面主内容淡入 */
 @keyframes main-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* 渐变遮罩，用于横向滚动指示 */
-.mask-linear-fade-edges {
-  mask-image: linear-gradient(
-    to right,
-    transparent,
-    black 12px,
-    black calc(100% - 12px),
-    transparent
-  );
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }

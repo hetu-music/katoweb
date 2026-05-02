@@ -3,6 +3,7 @@
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import Pagination from "@/components/shared/Pagination";
 import ThemeToggle from "@/components/shared/ThemeToggle";
+import { useSyncedQueryState } from "@/hooks/useSyncedQueryState";
 import {
   mergeAutoCompleteData,
   useAutoComplete,
@@ -52,7 +53,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
+import { parseAsInteger, parseAsString } from "nuqs";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Controller,
@@ -111,6 +112,10 @@ const CREATOR_FIELD_KEYS = [
 
 type CreatorFieldKey = (typeof CREATOR_FIELD_KEYS)[number];
 
+const MISSING_FIELD_LABEL_OVERRIDES: Partial<Record<SongFormFieldKey, string>> = {
+  lyrics: "歌词",
+};
+
 function isCreatorFieldKey(value: SongFormFieldKey): value is CreatorFieldKey {
   return CREATOR_FIELD_KEYS.includes(value as CreatorFieldKey);
 }
@@ -157,7 +162,9 @@ function getMissingFields(song: SongDetail): string[] {
     } else if (typeof value === "string" && value.trim() === "") {
       isEmpty = true;
     }
-    if (isEmpty) missing.push(field.label);
+    if (isEmpty) {
+      missing.push(MISSING_FIELD_LABEL_OVERRIDES[field.key] ?? field.label);
+    }
   }
   return missing;
 }
@@ -178,6 +185,10 @@ const AdminListRow = React.memo(
     toggleRowExpansion: (id: number) => void;
     handleEdit: (song: SongDetail) => void;
   }) => {
+    const missingFields = getMissingFields(song);
+    const visibleMissingFields = missingFields.slice(0, 4);
+    const hiddenMissingCount = missingFields.length - visibleMissingFields.length;
+
     return (
       <div className="flex flex-col bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden transition-all hover:shadow-md hover:border-blue-200 dark:hover:border-blue-900/30">
         {/* Main Row Content */}
@@ -200,13 +211,21 @@ const AdminListRow = React.memo(
 
           {/* Title & Status */}
           <div className="flex-1 min-w-0 flex flex-col justify-center">
-            <div className="flex items-center gap-2">
-              <h3 className="font-medium text-slate-900 dark:text-slate-100 truncate">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="max-w-full font-medium text-slate-900 dark:text-slate-100 truncate">
                 {song.title}
               </h3>
-              {isSongIncomplete(song) && (
-                <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-200 dark:border-amber-700/50">
-                  待完善
+              {visibleMissingFields.map((field) => (
+                <span
+                  key={field}
+                  className="shrink-0 inline-flex items-center rounded-full border border-amber-200 bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:border-amber-700/50 dark:bg-amber-900/40 dark:text-amber-300"
+                >
+                  {field}
+                </span>
+              ))}
+              {hiddenMissingCount > 0 && (
+                <span className="shrink-0 inline-flex items-center rounded-full border border-amber-200/80 bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-600 dark:border-amber-700/40 dark:bg-amber-900/20 dark:text-amber-300">
+                  +{hiddenMissingCount}项
                 </span>
               )}
             </div>
@@ -417,15 +436,18 @@ export default function AdminClientComponent({
   initialError: string | null;
 }) {
   // States
-  // 不使用 throttleMs：混用有/无 throttle 参数会导致 trailing-edge timer 竞态（第一次操作闪旧值）
-  const [{ q: searchTerm, page: currentPage }, setQueryState] = useQueryStates({
-    q: parseAsString.withDefault("").withOptions({
+  const [searchTerm, setSearchTerm] = useSyncedQueryState<string>(
+    "q",
+    parseAsString.withDefault("").withOptions({
       shallow: true,
     }),
-    page: parseAsInteger.withDefault(1).withOptions({
+  );
+  const [currentPage, setCurrentPage] = useSyncedQueryState<number>(
+    "page",
+    parseAsInteger.withDefault(1).withOptions({
       shallow: true,
     }),
-  });
+  );
   const [showIncompleteOnly, setShowIncompleteOnly] = useState(false);
 
   // Data Hooks
@@ -450,7 +472,6 @@ export default function AdminClientComponent({
       : baseSortedSongs;
   }, [baseSortedSongs, showIncompleteOnly]);
 
-  // 分页处理 — 直接用 nuqs 的 currentPage 作为唯一真值源，避免双层状态的时序竞争导致闪烁
   const ITEMS_PER_PAGE = 24;
   const totalPages = useMemo(
     () => Math.max(1, Math.ceil(sortedSongs.length / ITEMS_PER_PAGE)),
@@ -466,13 +487,17 @@ export default function AdminClientComponent({
   }, [sortedSongs, safePage]);
   const startIndex = (safePage - 1) * ITEMS_PER_PAGE + 1;
 
+  useEffect(() => {
+    if (safePage !== currentPage) {
+      setCurrentPage(safePage);
+    }
+  }, [currentPage, safePage, setCurrentPage]);
+
   const handlePageChange = useCallback(
     (page: number) => {
-      void setQueryState({
-        page: page > 1 ? page : null,
-      });
+      setCurrentPage(Math.max(1, page));
     },
-    [setQueryState],
+    [setCurrentPage],
   );
 
   // Auth & Actions
@@ -713,7 +738,7 @@ export default function AdminClientComponent({
               <button
                 onClick={() => {
                   setShowIncompleteOnly(false);
-                  void setQueryState({ page: null });
+                  setCurrentPage(1);
                 }}
                 className={cn(
                   "px-4 py-1.5 rounded-full text-sm border transition-all whitespace-nowrap",
@@ -727,7 +752,7 @@ export default function AdminClientComponent({
               <button
                 onClick={() => {
                   setShowIncompleteOnly(true);
-                  void setQueryState({ page: null });
+                  setCurrentPage(1);
                 }}
                 className={cn(
                   "px-4 py-1.5 rounded-full text-sm border transition-all whitespace-nowrap flex items-center gap-1.5",
@@ -752,17 +777,16 @@ export default function AdminClientComponent({
                 placeholder="搜索标题、专辑、作者..."
                 value={searchTerm}
                 onChange={(e) => {
-                  void setQueryState({
-                    q: e.target.value || null,
-                    page: null,
-                  });
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
                 }}
                 className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full py-2 pl-9 pr-8 text-sm outline-none focus:border-blue-500 transition-colors"
               />
               {searchTerm && (
                 <button
                   onClick={() => {
-                    void setQueryState({ q: null, page: null });
+                    setSearchTerm("");
+                    setCurrentPage(1);
                   }}
                   className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-300 hover:text-slate-500"
                 >

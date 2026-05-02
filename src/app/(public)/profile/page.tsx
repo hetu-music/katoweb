@@ -1,5 +1,7 @@
 "use client";
 
+import AuditLogsPanel from "@/components/admin/AuditLogsPanel";
+import UserManagePanel from "@/components/admin/UserManagePanel";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import { useFavorites } from "@/context/FavoritesContext";
 import { useUserContext } from "@/context/UserContext";
@@ -16,6 +18,10 @@ import {
   ArrowLeft,
   Check,
   ChevronRight,
+  ClipboardList,
+  Copy,
+  Eye,
+  EyeOff,
   Heart,
   Home,
   Loader2,
@@ -23,8 +29,10 @@ import {
   Mail,
   Settings,
   ShieldCheck,
+  Sparkles,
   Trash2,
   User,
+  Users,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -32,8 +40,8 @@ import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
-type TabType = "favorites" | "account";
-const PROFILE_TABS = ["favorites", "account"] as const;
+type TabType = "favorites" | "account" | "benefits" | "users" | "logs";
+const PROFILE_TABS = ["favorites", "account", "benefits", "users", "logs"] as const;
 
 function ProfileContent() {
   const router = useRouter();
@@ -47,6 +55,21 @@ function ProfileContent() {
   );
 
   const { user, loaded: userLoaded, logout, loggingOut } = useUserContext();
+
+  const isSuperAdmin =
+    userLoaded && !!user?.isAdmin && user?.sortOrder === 1;
+
+  const hasBenefits =
+    userLoaded && !!user?.navidId && !!user?.navidPw && !!user?.endpointText;
+
+  // Gate: fall back to favorites if accessing a restricted tab without permission
+  useEffect(() => {
+    if (!userLoaded) return;
+    if (activeTab === "users" && !isSuperAdmin) setActiveTab("favorites");
+    if (activeTab === "logs" && !isSuperAdmin) setActiveTab("favorites");
+    if (activeTab === "benefits" && !hasBenefits) setActiveTab("favorites");
+  }, [userLoaded, activeTab, isSuperAdmin, hasBenefits, setActiveTab]);
+
   const {
     favorites,
     favoriteSongs,
@@ -96,6 +119,9 @@ function ProfileContent() {
 
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [csrfToken, setCsrfToken] = useState("");
+  const [displayPublic, setDisplayPublic] = useState(false);
+  const [navidPwVisible, setNavidPwVisible] = useState(false);
+  const [copied, setCopied] = useState<"id" | "pw" | "ep" | null>(null);
 
   const [pwdMsg, setPwdMsg] = useState<string | null>(null);
 
@@ -125,14 +151,26 @@ function ProfileContent() {
       displayName: user?.name ?? "",
       intro: user?.intro ?? "",
     });
+    setDisplayPublic(user?.display ?? false);
   }, [accountForm, user]);
 
   useEffect(() => {
-    if (!user || activeTab !== "account") return;
+    if (
+      !user ||
+      (activeTab !== "account" && activeTab !== "users")
+    )
+      return;
     fetch("/api/public/csrf-token")
       .then((r) => r.json())
       .then((d) => setCsrfToken(d.csrfToken || ""));
   }, [activeTab, user]);
+
+  const handleCopy = useCallback((text: string, type: "id" | "pw" | "ep") => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(type);
+      setTimeout(() => setCopied(null), 2000);
+    });
+  }, []);
 
   const handleSave = accountForm.handleSubmit(
     async ({ displayName, intro }) => {
@@ -148,7 +186,11 @@ function ProfileContent() {
             "Content-Type": "application/json",
             "x-csrf-token": csrfToken,
           },
-          body: JSON.stringify({ displayName, intro }),
+          body: JSON.stringify({
+            displayName,
+            intro,
+            ...(user?.isAdmin ? { display: displayPublic } : {}),
+          }),
         });
         if (res.ok) {
           setSaveMsg("已保存");
@@ -342,7 +384,14 @@ function ProfileContent() {
           <div className="lg:col-span-9 space-y-6 min-h-[calc(100vh-240px)] flex flex-col">
             {/* Tabs Controller - Styled like site filters */}
             <div className="flex p-1 bg-slate-100 dark:bg-slate-900/50 rounded-xl border border-slate-200/50 dark:border-slate-800/50 w-fit shrink-0">
-              {(["favorites", "account"] as TabType[]).map((tab) => (
+              {(
+                [
+                  "favorites",
+                  "account",
+                  ...(hasBenefits ? (["benefits"] as TabType[]) : []),
+                  ...(isSuperAdmin ? (["users", "logs"] as TabType[]) : []),
+                ] as TabType[]
+              ).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -360,7 +409,18 @@ function ProfileContent() {
                     />
                   )}
                   {tab === "account" && <Settings size={14} />}
-                  {tab === "favorites" ? "我的收藏" : "账户设置"}
+                  {tab === "benefits" && <Sparkles size={14} />}
+                  {tab === "users" && <Users size={14} />}
+                  {tab === "logs" && <ClipboardList size={14} />}
+                  {tab === "favorites"
+                    ? "我的收藏"
+                    : tab === "account"
+                      ? "账户设置"
+                      : tab === "benefits"
+                        ? "权益"
+                        : tab === "users"
+                          ? "用户管理"
+                          : "操作日志"}
                 </button>
               ))}
             </div>
@@ -585,6 +645,41 @@ function ProfileContent() {
                             )}
                           </div>
 
+                          {/* Display 公开展示 — 仅管理员可见 */}
+                          {user?.isAdmin && (
+                            <div className="rounded-xl border border-blue-100 dark:border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/5 px-4 py-3.5 space-y-1.5">
+                              <div className="flex items-center justify-between">
+                                <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                                  公开展示
+                                </p>
+                                <button
+                                  type="button"
+                                  onClick={() => setDisplayPublic((v) => !v)}
+                                  className={cn(
+                                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500/50",
+                                    displayPublic
+                                      ? "bg-blue-500"
+                                      : "bg-slate-300 dark:bg-slate-700",
+                                  )}
+                                  aria-pressed={displayPublic}
+                                  aria-label="切换公开展示"
+                                >
+                                  <span
+                                    className={cn(
+                                      "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                                      displayPublic
+                                        ? "translate-x-5"
+                                        : "translate-x-0",
+                                    )}
+                                  />
+                                </button>
+                              </div>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed pr-10">
+                                开启后，你的用户名和个人简介将在站内 关于-维护团队 页面中展示。
+                              </p>
+                            </div>
+                          )}
+
                           <div className="pt-2">
                             <button
                               type="submit"
@@ -642,13 +737,13 @@ function ProfileContent() {
                               />
                               {passwordForm.formState.errors
                                 .currentPassword && (
-                                <p className="text-xs text-rose-500 ml-1">
-                                  {
-                                    passwordForm.formState.errors
-                                      .currentPassword.message
-                                  }
-                                </p>
-                              )}
+                                  <p className="text-xs text-rose-500 ml-1">
+                                    {
+                                      passwordForm.formState.errors
+                                        .currentPassword.message
+                                    }
+                                  </p>
+                                )}
                             </div>
                             <div className="space-y-1.5">
                               <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
@@ -691,13 +786,13 @@ function ProfileContent() {
                               />
                               {passwordForm.formState.errors
                                 .confirmPassword && (
-                                <p className="text-xs text-rose-500 ml-1">
-                                  {
-                                    passwordForm.formState.errors
-                                      .confirmPassword.message
-                                  }
-                                </p>
-                              )}
+                                  <p className="text-xs text-rose-500 ml-1">
+                                    {
+                                      passwordForm.formState.errors
+                                        .confirmPassword.message
+                                    }
+                                  </p>
+                                )}
                             </div>
                           </div>
                           <div className="pt-2 flex items-center gap-3">
@@ -737,6 +832,182 @@ function ProfileContent() {
                       </div>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Benefits Tab — shown when navid_id, navid_pw or endpoint is set */}
+              {activeTab === "benefits" && hasBenefits && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-6 flex-1">
+                    <div className="space-y-1 mb-6">
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <Sparkles size={18} className="text-blue-500" />
+                        权益信息
+                      </h3>
+                      <p className="text-xs text-slate-400">
+                        以下凭证仅对您本人可见，请妥善保管
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* Navid ID */}
+                      <div className="rounded-xl border border-slate-200/60 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-800/50 overflow-hidden">
+                        <div className="px-4 py-2.5 border-b border-slate-200/60 dark:border-slate-800/60">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            Navid ID
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 px-4 py-3">
+                          <span className="flex-1 text-sm font-mono text-slate-800 dark:text-slate-100 break-all select-all">
+                            {user?.navidId}
+                          </span>
+                          <button
+                            onClick={() =>
+                              handleCopy(user?.navidId ?? "", "id")
+                            }
+                            className={cn(
+                              "shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                              copied === "id"
+                                ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                                : "bg-slate-200/60 dark:bg-slate-700 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-300/60 dark:hover:bg-slate-600",
+                            )}
+                          >
+                            {copied === "id" ? (
+                              <Check size={12} />
+                            ) : (
+                              <Copy size={12} />
+                            )}
+                            {copied === "id" ? "已复制" : "复制"}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Navid PW */}
+                      <div className="rounded-xl border border-slate-200/60 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-800/50 overflow-hidden">
+                        <div className="px-4 py-2.5 border-b border-slate-200/60 dark:border-slate-800/60">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            Navid 密码
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 px-4 py-3">
+                          <span className="flex-1 text-sm font-mono text-slate-800 dark:text-slate-100 break-all select-all">
+                            {navidPwVisible
+                              ? user?.navidPw
+                              : "•".repeat(
+                                Math.min(user?.navidPw?.length ?? 8, 16),
+                              )}
+                          </span>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              onClick={() =>
+                                setNavidPwVisible((v) => !v)
+                              }
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-700 transition-colors"
+                              aria-label={navidPwVisible ? "隐藏密码" : "显示密码"}
+                            >
+                              {navidPwVisible ? (
+                                <EyeOff size={14} />
+                              ) : (
+                                <Eye size={14} />
+                              )}
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleCopy(user?.navidPw ?? "", "pw")
+                              }
+                              className={cn(
+                                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                                copied === "pw"
+                                  ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                                  : "bg-slate-200/60 dark:bg-slate-700 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-300/60 dark:hover:bg-slate-600",
+                              )}
+                            >
+                              {copied === "pw" ? (
+                                <Check size={12} />
+                              ) : (
+                                <Copy size={12} />
+                              )}
+                              {copied === "pw" ? "已复制" : "复制"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Endpoint — 登录网址 */}
+                      {user?.endpointText && (
+                        <div className="rounded-xl border border-slate-200/60 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-800/50 overflow-hidden">
+                          <div className="px-4 py-2.5 border-b border-slate-200/60 dark:border-slate-800/60">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                              登录网址
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 px-4 py-3">
+                            <a
+                              href={user.endpointText}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-1 text-sm font-mono text-blue-600 dark:text-blue-400 break-all hover:underline"
+                            >
+                              {user.endpointText}
+                            </a>
+                            <button
+                              onClick={() =>
+                                handleCopy(user?.endpointText ?? "", "ep")
+                              }
+                              className={cn(
+                                "shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                                copied === "ep"
+                                  ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                                  : "bg-slate-200/60 dark:bg-slate-700 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-300/60 dark:hover:bg-slate-600",
+                              )}
+                            >
+                              {copied === "ep" ? (
+                                <Check size={12} />
+                              ) : (
+                                <Copy size={12} />
+                              )}
+                              {copied === "ep" ? "已复制" : "复制"}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Users Management Tab — super admin only */}
+              {activeTab === "users" && isSuperAdmin && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-6 flex-1">
+                    <div className="space-y-1 mb-6">
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                        用户管理
+                      </h3>
+                      <p className="text-xs text-slate-400">
+                        管理所有注册用户的资料与权限
+                      </p>
+                    </div>
+                    <UserManagePanel csrfToken={csrfToken} />
+                  </div>
+                </div>
+              )}
+
+              {/* Audit Logs Tab — super admin only */}
+              {activeTab === "logs" && isSuperAdmin && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-6 flex-1">
+                    <div className="space-y-1 mb-6">
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <ClipboardList size={18} className="text-blue-500" />
+                        操作日志
+                      </h3>
+                      <p className="text-xs text-slate-400">
+                        数据库审计记录，仅供查阅
+                      </p>
+                    </div>
+                    <AuditLogsPanel />
+                  </div>
                 </div>
               )}
             </div>
