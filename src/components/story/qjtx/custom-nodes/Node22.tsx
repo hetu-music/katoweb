@@ -2,8 +2,8 @@ import gsap from "gsap";
 import type { ImmersiveTheme, TimelineEvent } from "../types";
 
 export const theme: ImmersiveTheme = {
-  // Deep jade/emerald void. 
-  bg: "#020617", // Handled inside the component for better animation control
+  // Opaque black background to ensure the timeline is fully covered during the circular mask expansion.
+  bg: "#02040a", 
   titleColor: "#ecfdf5",
   bodyColor: "#a7f3d0",
   accentColor: "#10b981",
@@ -211,11 +211,18 @@ export function animate(
     gsap.to(astrolabe, { rotation: 360, duration: 150, repeat: -1, ease: "none" });
   }
 
-  // 0. Global Entrance (Expanding out of the void)
-  tl.fromTo(wrapper,
-    { scale: 1.1, opacity: 0, filter: "blur(20px)" },
-    { scale: 1, opacity: 1, filter: "blur(0px)", duration: 2.5, ease: "power3.out" },
+  // 0. Global Entrance - Expanding from a dot via --radius mask
+  tl.fromTo(
+    scrollyBg,
+    { "--radius": "0px" },
+    { "--radius": "250vmax", duration: 6, ease: "power2.inOut" },
     0
+  );
+
+  tl.fromTo(wrapper,
+    { opacity: 0 },
+    { opacity: 1, duration: 2.5, ease: "power2.out" },
+    0.5
   );
   tl.to(dust, { opacity: 1, duration: 3 }, 1);
 
@@ -269,10 +276,14 @@ export function animate(
     // Exit Closing Text before global wrapper collapse
     .to([closingText, closingSeals], { opacity: 0, filter: "blur(20px)", duration: 2.5, ease: "power2.in" }, "+=4");
 
-  // 4. Global Exit (Collapse back into the void)
+  // 4. Global Exit (Collapse back into the dot)
   tl.to(dust, { opacity: 0, duration: 3 }, "-=2.5");
   tl.to(wrapper,
-    { scale: 0.9, opacity: 0, filter: "blur(20px)", duration: 2.5, ease: "power2.inOut" },
-    "-=1"
+    { opacity: 0, filter: "blur(20px)", duration: 2.5, ease: "power2.inOut" },
+    "-=1.5"
+  );
+  tl.to(scrollyBg,
+    { "--radius": "0px", duration: 5.5, ease: "power2.inOut" },
+    "-=2"
   );
 }
