@@ -1,3 +1,4 @@
+import gsap from "gsap";
 import type { ImmersiveTheme, TimelineEvent } from "../types";
 
 export const theme: ImmersiveTheme = {
@@ -46,6 +47,28 @@ export function NodeLayout({
                         <div key={i} className="absolute bg-rose-200/50 rounded-full blur-[1px]"
                             style={{ width: `${Math.random() * 3 + 1}px`, height: `${Math.random() * 3 + 1}px`, left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }} />
                     ))}
+                </div>
+
+                {/* Flying Petals - Enhanced Quantity and Visuals */}
+                <div className={`ambient-petals-${event.id} absolute inset-0 pointer-events-none opacity-0 overflow-hidden`}>
+                    {Array.from({ length: 60 }).map((_, i) => {
+                        const size = Math.random() * 10 + 6;
+                        const colors = ['bg-rose-200', 'bg-rose-300', 'bg-rose-400'];
+                        const color = colors[Math.floor(Math.random() * colors.length)];
+                        const blur = Math.random() > 0.7 ? 'blur-[1.5px]' : 'blur-[0.5px]';
+                        
+                        return (
+                            <div key={i} className={`petal-${event.id} absolute ${color} ${blur} opacity-40 shadow-[0_0_10px_rgba(251,207,232,0.2)]`}
+                                style={{ 
+                                    width: `${size}px`, 
+                                    height: `${size * 0.7}px`, 
+                                    left: `${Math.random() * 120 - 20}%`, 
+                                    top: `${Math.random() * 120 - 20}%`,
+                                    borderRadius: '100% 10% 100% 10%',
+                                    transform: `rotate(${Math.random() * 360}deg)`
+                                }} />
+                        );
+                    })}
                 </div>
 
                 <div className="absolute inset-0 flex items-center justify-center p-4 md:p-8 z-10">
@@ -110,10 +133,13 @@ export function animate(
     eventId: string,
 ) {
     const sel = (s: string) => scrollyText.querySelector(s);
+    const selAll = (s: string) => scrollyText.querySelectorAll(s);
 
     const wrapper = sel(`.node-wrapper-${eventId}`);
     const bgImg = sel(`.masterpiece-bg-${eventId}`);
     const embers = sel(`.ambient-embers-${eventId}`);
+    const petalsContainer = sel(`.ambient-petals-${eventId}`);
+    const petals = selAll(`.petal-${eventId}`);
 
     const intro = sel(`.content-intro-${eventId}`);
     const phase1 = sel(`.content-phase1-${eventId}`);
@@ -124,12 +150,35 @@ export function animate(
     const closing = sel(`.content-closing-${eventId}`);
 
     // Initial States
-    tl.set([wrapper, embers, intro, phase1, phase2, phase3, cinnabar, phase5, closing], { opacity: 0 });
+    tl.set([wrapper, embers, petalsContainer, intro, phase1, phase2, phase3, cinnabar, phase5, closing], { opacity: 0 });
     tl.set(bgImg, { filter: "grayscale(100%)" });
+
+    // Petal movement logic
+    petals.forEach((p, i) => {
+        const duration = 8 + Math.random() * 7;
+        const delay = Math.random() * -15;
+        gsap.to(p, {
+            x: "120vw",
+            y: "-120vh",
+            rotation: 720,
+            duration: duration,
+            repeat: -1,
+            ease: "none",
+            delay: delay
+        });
+        // Swaying using xPercent to avoid conflict with main x/y animation
+        gsap.to(p, {
+            xPercent: 150,
+            duration: 2 + Math.random() * 2,
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut"
+        });
+    });
 
     // 0. Entrance
     tl.to(wrapper, { opacity: 1, duration: 2, ease: "power2.inOut" }, 0);
-    tl.to(embers, { opacity: 1, duration: 3 }, 1);
+    tl.to([embers, petalsContainer], { opacity: 1, duration: 3 }, 1);
 
     // Phase 0: Intro
     tl.fromTo(intro, { opacity: 0, y: 20, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 2.5, ease: "power2.out" }, "+=0.5");
