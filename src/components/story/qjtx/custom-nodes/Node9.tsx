@@ -37,9 +37,9 @@ export function NodeLayout({
                 <div className="absolute inset-0 bg-[#faf8f5] pointer-events-none" />
 
                 {/* Background Image & Warm Overlays for "Spring Breeze" / "Golden Age" */}
-                <div className="absolute inset-0 bg-[url('/story/qjtx/9.avif')] bg-cover bg-center opacity-70 mix-blend-multiply scale-105 pointer-events-none" />
-                <div className="absolute inset-0 bg-linear-to-b from-[#fffbeb]/70 via-[#fef3c7]/40 to-[#faf8f5]/70 pointer-events-none" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,transparent_0%,rgba(250,248,245,0.6)_80%)] pointer-events-none" />
+                <div className="absolute inset-0 bg-[url('/story/qjtx/9.avif')] bg-cover bg-center opacity-85 mix-blend-normal scale-105 pointer-events-none" />
+                <div className="absolute inset-0 bg-linear-to-b from-[#fffbeb]/40 via-transparent to-[#faf8f5]/50 pointer-events-none" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,transparent_0%,rgba(250,248,245,0.3)_100%)] pointer-events-none" />
 
                 {/* Ambient Spring Petals (Soft pinks and golds) */}
                 <div className={`spring-petals-${event.id} absolute inset-0 pointer-events-none opacity-0`}>
@@ -55,24 +55,24 @@ export function NodeLayout({
                 {/* Stage 0: Intro (Title & Quote) */}
                 <div className={`scrolly-intro-${event.id} absolute inset-0 flex flex-col items-center justify-center px-4 md:px-8`}>
                     <div className="relative flex flex-col items-center w-full max-w-[90vw]">
-                        <div className="absolute -inset-10 bg-amber-100/50 blur-2xl rounded-full pointer-events-none" />
-                        <h2 className="relative text-4xl md:text-[5rem] text-transparent bg-clip-text bg-linear-to-b from-rose-800 to-rose-600 tracking-[0.5em] md:tracking-[0.6em] pl-[0.5em] md:pl-[0.6em] font-medium text-center drop-shadow-[0_2px_10px_rgba(159,18,57,0.2)] wrap-break-word leading-tight">
+                        <div className="absolute -inset-16 bg-white/60 blur-3xl rounded-full pointer-events-none" />
+                        <h2 className="relative text-4xl md:text-[5rem] text-transparent bg-clip-text bg-linear-to-b from-rose-900 to-rose-700 tracking-[0.5em] md:tracking-[0.6em] pl-[0.5em] md:pl-[0.6em] font-medium text-center drop-shadow-[0_2px_15px_rgba(255,255,255,0.8)] wrap-break-word leading-tight">
                             {detail.title}
                         </h2>
                         <div className="w-1.5 h-1.5 rotate-45 bg-amber-400 mt-8 md:mt-12 shadow-[0_0_10px_rgba(251,191,36,0.8)]" />
                     </div>
 
-                    <div className={`quote-text-${event.id} mt-6 md:mt-8 text-stone-600 text-xs md:text-[15px] tracking-[0.6em] md:tracking-[0.8em] font-light text-center w-full max-w-[85vw] md:max-w-lg leading-[2.2] md:leading-loose pl-[0.6em] md:pl-[0.8em] whitespace-normal wrap-break-word`}>
+                    <div className={`quote-text-${event.id} mt-6 md:mt-8 text-stone-700 text-xs md:text-[15px] tracking-[0.6em] md:tracking-[0.8em] font-light text-center w-full max-w-[85vw] md:max-w-lg leading-[2.2] md:leading-loose pl-[0.6em] md:pl-[0.8em] whitespace-normal wrap-break-word px-6 py-4 rounded-2xl bg-white/20 backdrop-blur-[2px] shadow-[0_8px_32px_rgba(0,0,0,0.05)]`}>
                         {detail.quote}
                     </div>
                 </div>
 
                 {/* Stage 1: The Prodigy (Moli's Rise) */}
                 <div className={`scrolly-phase1-${event.id} absolute inset-0 flex flex-col items-center justify-center opacity-0 px-4 md:px-8`}>
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] max-w-[600px] max-h-[600px] border border-amber-300/30 rounded-full pointer-events-none" />
-                    <div className="relative z-10 flex flex-col items-center gap-8 md:gap-12 text-center max-w-3xl">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] max-w-[600px] max-h-[600px] border border-amber-300/20 rounded-full pointer-events-none" />
+                    <div className="relative z-10 flex flex-col items-center gap-8 md:gap-12 text-center max-w-3xl px-10 py-12 rounded-3xl bg-white/20 backdrop-blur-[3px] shadow-[0_8px_32px_rgba(0,0,0,0.05)] border border-white/30">
                         {phase1Lines.map((line, i) => (
-                            <p key={i} className="text-[15px] md:text-[18px] tracking-[0.25em] md:tracking-[0.35em] leading-[2.2] md:leading-[2.5] whitespace-normal wrap-break-word text-stone-700 font-light">
+                            <p key={i} className="text-[15px] md:text-[18px] tracking-[0.25em] md:tracking-[0.35em] leading-[2.2] md:leading-[2.5] whitespace-normal wrap-break-word text-stone-800 font-light drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)]">
                                 {line}
                             </p>
                         ))}
@@ -82,15 +82,15 @@ export function NodeLayout({
                 {/* Stage 2: The Fall & The Discovery */}
                 <div className={`scrolly-phase2-${event.id} absolute inset-0 flex flex-col items-center justify-center opacity-0 px-4 md:px-8`}>
                     {/* A subtle shift in lighting for the passage of time */}
-                    <div className="absolute inset-0 bg-stone-900/5 backdrop-blur-[2px] pointer-events-none" />
-                    <div className="relative z-10 flex flex-col items-center gap-6 md:gap-10 text-center max-w-4xl">
+                    <div className="absolute inset-0 bg-stone-900/5 backdrop-blur-[1px] pointer-events-none" />
+                    <div className="relative z-10 flex flex-col items-center gap-6 md:gap-10 text-center max-w-4xl px-10 py-12 rounded-3xl bg-white/20 backdrop-blur-[3px] shadow-[0_8px_32px_rgba(0,0,0,0.05)] border border-white/30">
                         {phase2Lines.map((line, i) => {
                             const isTragic = line.includes("城陷") || line.includes("公子没");
                             const isSeparator = line === "……";
                             return (
-                                <p key={i} className={`text-[14px] md:text-[16px] tracking-[0.2em] md:tracking-[0.3em] leading-[2.2] md:leading-[2.5] whitespace-normal wrap-break-word ${isSeparator ? "text-stone-400 tracking-[1em]"
-                                        : isTragic ? "text-stone-500 font-normal"
-                                            : "text-stone-700 font-light"
+                                <p key={i} className={`text-[14px] md:text-[16px] tracking-[0.2em] md:tracking-[0.3em] leading-[2.2] md:leading-[2.5] whitespace-normal wrap-break-word drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] ${isSeparator ? "text-stone-400 tracking-[1em]"
+                                        : isTragic ? "text-stone-600 font-normal"
+                                            : "text-stone-800 font-light"
                                     }`}>
                                     {line}
                                 </p>
@@ -110,9 +110,9 @@ export function NodeLayout({
                         <div className={`cinnabar-glow-${event.id} absolute w-[50vw] h-[50vw] max-w-[400px] max-h-[400px] bg-[radial-gradient(circle_at_center,rgba(251,191,36,0.15)_0%,transparent_70%)] rounded-full mix-blend-multiply pointer-events-none z-0`} />
                     </div>
 
-                    <div className="relative z-10 flex flex-col items-center gap-6 md:gap-8 text-center max-w-3xl">
+                    <div className="relative z-10 flex flex-col items-center gap-6 md:gap-8 text-center max-w-3xl px-10 py-12 rounded-3xl bg-white/20 backdrop-blur-[3px] shadow-[0_8px_32px_rgba(0,0,0,0.05)] border border-white/30">
                         {phase3Lines.map((line, i) => (
-                            <p key={i} className="text-[16px] md:text-[22px] tracking-[0.3em] md:tracking-[0.4em] leading-[2.2] md:leading-[2.5] text-rose-900 font-normal drop-shadow-[0_2px_10px_rgba(159,18,57,0.1)] whitespace-normal wrap-break-word">
+                            <p key={i} className="text-[16px] md:text-[22px] tracking-[0.3em] md:tracking-[0.4em] leading-[2.2] md:leading-[2.5] text-rose-950 font-normal drop-shadow-[0_2px_8px_rgba(255,255,255,0.9)] whitespace-normal wrap-break-word">
                                 {line}
                             </p>
                         ))}
@@ -121,9 +121,9 @@ export function NodeLayout({
 
                 {/* Stage 4: The Emperor's Sigh */}
                 <div className={`scrolly-phase4-${event.id} absolute inset-0 flex flex-col items-center justify-center opacity-0 px-4 md:px-8`}>
-                    <div className="relative z-10 flex flex-col items-center gap-8 md:gap-12 text-center max-w-4xl">
+                    <div className="relative z-10 flex flex-col items-center gap-8 md:gap-12 text-center max-w-4xl px-10 py-12 rounded-3xl bg-white/20 backdrop-blur-[3px] shadow-[0_8px_32px_rgba(0,0,0,0.05)] border border-white/30">
                         {phase4Lines.map((line, i) => (
-                            <p key={i} className={`text-[15px] md:text-[18px] tracking-[0.25em] md:tracking-[0.35em] leading-[2.2] md:leading-[2.5] whitespace-normal wrap-break-word ${line.includes("争寻画卷") ? "text-amber-700 font-normal drop-shadow-[0_0_10px_rgba(251,191,36,0.3)]" : "text-stone-700 font-light"}`}>
+                            <p key={i} className={`text-[15px] md:text-[18px] tracking-[0.25em] md:tracking-[0.35em] leading-[2.2] md:leading-[2.5] whitespace-normal wrap-break-word drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] ${line.includes("争寻画卷") ? "text-amber-800 font-normal drop-shadow-[0_0_10px_rgba(255,255,255,0.9)]" : "text-stone-800 font-light"}`}>
                                 {line}
                             </p>
                         ))}
@@ -133,7 +133,7 @@ export function NodeLayout({
                 {/* Stage 5: Closing */}
                 <div className={`scrolly-closing-container-${event.id} absolute inset-0 flex flex-col items-center justify-center opacity-0 px-4 md:px-8`}>
                     <div className="w-px h-12 md:h-24 bg-linear-to-b from-transparent to-amber-500/50 mb-6 md:mb-10" />
-                    <div className="text-stone-500 text-xs md:text-base tracking-[0.8em] md:tracking-[1.2em] pl-[0.8em] md:pl-[1.2em] font-light text-center w-full max-w-[90vw] leading-loose wrap-break-word whitespace-normal">
+                    <div className="text-stone-700 text-xs md:text-base tracking-[0.8em] md:tracking-[1.2em] pl-[0.8em] md:pl-[1.2em] font-light text-center w-full max-w-[90vw] leading-loose wrap-break-word whitespace-normal px-8 py-6 rounded-2xl bg-white/20 backdrop-blur-[2px] shadow-[0_8px_32px_rgba(0,0,0,0.05)]">
                         {detail.closing}
                     </div>
                     <div className="w-px h-12 md:h-24 bg-linear-to-t from-transparent to-amber-500/50 mt-6 md:mt-10" />

@@ -36,9 +36,9 @@ export function NodeLayout({
                 <div className="absolute inset-0 bg-[#050000] pointer-events-none" />
 
                 {/* Background Image & Apocalyptic Overlays */}
-                <div className="absolute inset-0 bg-[url('/story/qjtx/26.avif')] bg-cover bg-center opacity-40 mix-blend-color-dodge scale-105 pointer-events-none" />
-                <div className="absolute inset-0 bg-linear-to-b from-[#0a0202]/80 via-[#3f0707]/30 to-[#0a0202]/95 pointer-events-none" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,transparent_0%,#050000_90%)] pointer-events-none" />
+                <div className="absolute inset-0 bg-[url('/story/qjtx/26.avif')] bg-cover bg-center opacity-80 mix-blend-normal scale-105 pointer-events-none" />
+                <div className="absolute inset-0 bg-linear-to-b from-[#0a0202]/40 via-transparent to-[#0a0202]/60 pointer-events-none" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,transparent_0%,rgba(5,0,0,0.4)_100%)] pointer-events-none" />
 
                 {/* Apocalyptic Weather (Falling Ash & Rising Embers) */}
                 <div className={`apocalypse-weather-${event.id} absolute inset-0 pointer-events-none opacity-0`}>
@@ -57,16 +57,6 @@ export function NodeLayout({
                 {/* Stage 1: Intro (The Dark Sun / Eclipse) */}
                 <div className={`scrolly-intro-${event.id} absolute inset-0 flex flex-col items-center justify-center px-4 md:px-8`}>
 
-                    <div className={`dark-sun-${event.id} relative w-48 h-48 md:w-64 md:h-64 rounded-full bg-[#050000] shadow-[0_0_80px_20px_rgba(220,38,38,0.6),inset_0_0_30px_rgba(0,0,0,1)] flex items-center justify-center mb-10`}>
-                        {/* Solar flare elements */}
-                        <div className="absolute inset-[-10%] rounded-full bg-[conic-gradient(from_0deg,transparent_0deg,rgba(220,38,38,0.2)_60deg,transparent_120deg)] animate-[spin_10s_linear_infinite]" />
-                        <div className="absolute inset-[-30%] rounded-full bg-[conic-gradient(from_180deg,transparent_0deg,rgba(220,38,38,0.15)_60deg,transparent_120deg)] animate-[spin_15s_linear_infinite_reverse]" />
-
-                        {/* Core text overlaying the sun */}
-                        <div className={`sun-text-${event.id} absolute w-[200%] text-center`}>
-                            <div className="text-red-500/60 text-xs md:text-sm tracking-[1.5em] pl-[1.5em] font-light">长歌送魂</div>
-                        </div>
-                    </div>
 
                     <div className="relative flex flex-col items-center w-full max-w-[90vw]">
                         <h2 className={`title-text-${event.id} relative text-4xl md:text-[5rem] text-transparent bg-clip-text bg-linear-to-b from-red-50 to-red-600/80 tracking-[0.5em] md:tracking-[0.6em] pl-[0.5em] md:pl-[0.6em] font-light text-center drop-shadow-[0_0_40px_rgba(220,38,38,0.6)] wrap-break-word leading-tight`}>
@@ -86,10 +76,6 @@ export function NodeLayout({
                         {/* Pillar 1: Prelude */}
                         <div className={`monolith-${event.id} relative w-full md:w-[30%] bg-zinc-950/90 border border-zinc-800/50 rounded-t-2xl shadow-[0_-10px_30px_rgba(0,0,0,0.5)] p-6 md:p-8 flex flex-col justify-start overflow-y-auto no-scrollbar md:h-[75%]`}>
                             <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-zinc-500 to-transparent opacity-20" />
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="text-[10px] md:text-xs tracking-[0.4em] text-zinc-500 uppercase">国师旧闻</div>
-                                <div className="h-px grow bg-zinc-800" />
-                            </div>
                             <div className="space-y-4">
                                 {preludeLines.map((line, i) => (
                                     <p key={i} className="text-[13px] md:text-[14px] leading-relaxed tracking-[0.15em] text-zinc-300/80 font-light">
@@ -105,10 +91,6 @@ export function NodeLayout({
                             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(220,38,38,0.15),transparent_70%)] pointer-events-none" />
                             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[60%] h-[2px] bg-red-600/80 shadow-[0_0_30px_rgba(220,38,38,1)]" />
 
-                            <div className="flex justify-between items-center mb-8 border-b border-red-900/20 pb-4">
-                                <div className="text-[10px] md:text-xs tracking-[0.4em] text-red-400/60">帝都天岁</div>
-                                <div className="text-[10px] md:text-xs tracking-[0.4em] text-red-500/90 font-medium">城破前三日</div>
-                            </div>
 
                             <div className="space-y-5">
                                 {siegeLines.map((line, i) => {
@@ -120,18 +102,11 @@ export function NodeLayout({
                                     )
                                 })}
                             </div>
-                            <div className="mt-10 flex justify-center">
-                                <div className="border border-red-500/20 bg-red-950/30 px-6 py-3 rounded-full text-xs tracking-[0.4em] pl-[0.4em] text-red-200/80 shadow-[0_0_15px_rgba(220,38,38,0.2)]">活人无数</div>
-                            </div>
                         </div>
 
                         {/* Pillar 3: Legend */}
                         <div className={`monolith-${event.id} relative w-full md:w-[30%] bg-zinc-950/90 border border-zinc-800/50 rounded-t-2xl shadow-[0_-10px_30px_rgba(0,0,0,0.5)] p-6 md:p-8 flex flex-col justify-start overflow-y-auto no-scrollbar md:h-[85%]`}>
                             <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-zinc-500 to-transparent opacity-20" />
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="h-px grow bg-zinc-800" />
-                                <div className="text-[10px] md:text-xs tracking-[0.4em] text-zinc-500 uppercase">市井遗歌</div>
-                            </div>
                             <div className="space-y-4 grow">
                                 {legendLines.map((line, i) => {
                                     const isHoly = line.includes("大慈悲者");
@@ -142,7 +117,6 @@ export function NodeLayout({
                                     )
                                 })}
                             </div>
-                            <div className="mt-8 self-end border border-zinc-700/50 bg-zinc-900/50 px-4 py-2 rounded-full text-[10px] md:text-xs tracking-[0.4em] pl-[0.4em] text-zinc-400">国师白发</div>
                         </div>
 
                     </div>
@@ -175,8 +149,6 @@ export function animate(
     const weather = sel(`.apocalypse-weather-${eventId}`);
 
     const intro = sel(`.scrolly-intro-${eventId}`);
-    const darkSun = sel(`.dark-sun-${eventId}`);
-    const sunText = sel(`.sun-text-${eventId}`);
     const titleText = sel(`.title-text-${eventId}`);
     const quoteText = sel(`.quote-text-${eventId}`);
 
@@ -189,8 +161,6 @@ export function animate(
 
     // Initial States
     tl.set([weather, bodyContainer, closingContainer], { opacity: 0 });
-    tl.set(darkSun, { scale: 0.5, opacity: 0, filter: "blur(20px)" });
-    tl.set(sunText, { opacity: 0, y: 20 });
     tl.set(titleText, { opacity: 0, y: 30, filter: "blur(12px)" });
     tl.set(quoteText, { opacity: 0, y: 20 });
     tl.set(monoliths, { opacity: 0, y: 150 });
@@ -232,14 +202,11 @@ export function animate(
     tl.to(weather, { opacity: 1, duration: 3 }, 1);
 
     // 1. Intro Sequence (The Eclipse)
-    tl.to(darkSun, { scale: 1, opacity: 1, filter: "blur(0px)", duration: 4, ease: "power2.out" }, 1)
-        .to(sunText, { opacity: 1, y: 0, duration: 2, ease: "power2.out" }, 2)
-        .to(titleText, { opacity: 1, y: 0, filter: "blur(0px)", duration: 3, ease: "power3.out" }, 2.5)
-        .to(quoteText, { opacity: 1, y: 0, duration: 3, ease: "power2.out" }, 3)
+    tl.to(titleText, { opacity: 1, y: 0, filter: "blur(0px)", duration: 3, ease: "power3.out" }, 1.5)
+        .to(quoteText, { opacity: 1, y: 0, duration: 3, ease: "power2.out" }, 2)
 
         // Exit Intro
-        .to([sunText, titleText, quoteText], { opacity: 0, y: -30, filter: "blur(15px)", duration: 3, ease: "power2.inOut", stagger: 0.1 }, "+=4")
-        .to(darkSun, { scale: 1.5, opacity: 0, filter: "blur(30px)", duration: 3, ease: "power2.in" }, "-=2.5")
+        .to([titleText, quoteText], { opacity: 0, y: -30, filter: "blur(15px)", duration: 3, ease: "power2.inOut", stagger: 0.1 }, "+=4")
         .set(intro, { display: "none" });
 
     // 2. Body Sequence (The Obsidian Pillars)
