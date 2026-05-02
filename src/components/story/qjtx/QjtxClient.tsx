@@ -668,7 +668,7 @@ export default function QjtxClient() {
                       <EventLines
                         content={event.content}
                         important={event.important}
-                        align="right"
+                        align="left"
                       />
                       <EventDate
                         year={event.year}
