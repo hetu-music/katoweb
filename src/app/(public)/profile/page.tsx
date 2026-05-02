@@ -165,7 +165,7 @@ function ProfileContent() {
       .then((d) => setCsrfToken(d.csrfToken || ""));
   }, [activeTab, user]);
 
-  const handleCopy = useCallback((text: string, type: "id" | "pw") => {
+  const handleCopy = useCallback((text: string, type: "id" | "pw" | "ep") => {
     navigator.clipboard.writeText(text).then(() => {
       setCopied(type);
       setTimeout(() => setCopied(null), 2000);
