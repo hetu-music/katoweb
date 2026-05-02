@@ -258,8 +258,8 @@ export function animate(
   tl.fromTo(
     scrollyBg,
     { "--radius": "0px" },
-    // Radius scaled up to 250vmax to ensure the mask shape always covers the screen corners
-    { "--radius": "250vmax", duration: 7, ease: "power2.inOut" },
+    // Radius scaled up to 500vmax to ensure the mask shape always covers the screen corners
+    { "--radius": "400vmax", duration: 7, ease: "power2.inOut" },
     0,
   )
     .to(
