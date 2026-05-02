@@ -2,8 +2,8 @@ import gsap from "gsap";
 import type { ImmersiveTheme, TimelineEvent } from "../types";
 
 export const theme: ImmersiveTheme = {
-  // The absolute void for the curtain call
-  bg: "#000000",
+  // A deep, cinnabar-tinted black to differentiate from the absolute black background
+  bg: "#120a0a", 
   titleColor: "#e5e5e5",
   bodyColor: "#a3a3a3",
   accentColor: "#ffffff",
@@ -22,7 +22,7 @@ export function NodeLayout({
   if (!detail) return null;
 
   return (
-    <div className={`scrolly-text-${event.id} relative z-10 h-full w-full overflow-hidden font-serif select-none bg-black text-white`}>
+    <div className={`scrolly-text-${event.id} relative z-10 h-full w-full overflow-hidden font-serif select-none text-white`}>
       <div className={`node-wrapper-${event.id} absolute inset-0 opacity-0 bg-black`}>
 
         {/* Background Image: 40.avif - Starts full color, fades to grayscale only at the end */}
@@ -139,7 +139,8 @@ export function animate(
     });
   });
 
-  // 1. Enter the Scene
+  // 1. Enter the Scene (Expansion & Fade)
+  tl.fromTo(scrollyBg, { "--radius": "0px" }, { "--radius": "250vmax", duration: 5, ease: "power2.inOut" }, 0);
   tl.to(wrapper, { opacity: 1, duration: 4, ease: "power2.inOut" }, 0);
   tl.to(dustContainer, { opacity: 1, duration: 6 }, 1);
 
@@ -188,6 +189,7 @@ export function animate(
   // Fade out dust behind the curtain
   tl.to(dustContainer, { opacity: 0, duration: 3 }, "-=3");
 
-  // 6. Global Exit (Return to timeline, though typically the screen remains black for a moment)
-  tl.to(wrapper, { opacity: 0, duration: 3, ease: "power2.inOut" }, "+=1");
+  // 6. Global Exit (Collapse back to the node)
+  tl.to(scrollyBg, { "--radius": "0px", duration: 4, ease: "power3.inOut" }, "+=1");
+  tl.to(wrapper, { opacity: 0, duration: 3, ease: "power2.inOut" }, "<+0.5");
 }
