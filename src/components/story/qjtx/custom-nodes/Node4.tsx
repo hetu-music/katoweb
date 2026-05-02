@@ -23,10 +23,16 @@ export function NodeLayout({
   if (!detail) return null;
 
   const { titleColor, bodyColor, accentColor } = resolvedTheme;
-  const bodyColumns = [detail.body.slice(0, 2), detail.body.slice(2, 6), detail.body.slice(6)];
+  const bodyColumns = [
+    detail.body.slice(0, 2),
+    detail.body.slice(2, 6),
+    detail.body.slice(6),
+  ];
 
   return (
-    <div className={`scrolly-text-${event.id} relative z-10 h-full w-full overflow-hidden font-serif`}>
+    <div
+      className={`scrolly-text-${event.id} relative z-10 h-full w-full overflow-hidden font-serif`}
+    >
       {/* --- Ambient Rain Layers (Optimized with SVG Data URIs, no heavy blend modes) --- */}
       <div
         className={`scrolly-rain-bg-${event.id} absolute inset-0 pointer-events-none opacity-0`}
@@ -57,9 +63,10 @@ export function NodeLayout({
       />
 
       {/* --- Intro Scene --- */}
-      <div className={`scrolly-intro-${event.id} absolute inset-0 flex flex-col items-center justify-center px-6`}>
+      <div
+        className={`scrolly-intro-${event.id} absolute inset-0 flex flex-col items-center justify-center px-6`}
+      >
         <div className="relative flex w-full max-w-4xl flex-col items-center justify-center gap-12 md:gap-16">
-
           <div className="flex flex-col items-center gap-6 text-center">
             <div className="flex items-center gap-4">
               <div className="h-px w-12 bg-linear-to-r from-transparent to-sky-300/40" />
@@ -82,7 +89,9 @@ export function NodeLayout({
           </div>
 
           {/* Abstract Tower / Rain Gauge */}
-          <div className={`scrolly-tower-${event.id} relative flex h-88 w-32 flex-col items-center justify-center`}>
+          <div
+            className={`scrolly-tower-${event.id} relative flex h-88 w-32 flex-col items-center justify-center`}
+          >
             {/* Core glowing line */}
             <div className="absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 bg-linear-to-b from-sky-200/50 via-sky-400/20 to-transparent" />
             <div className="absolute top-[20%] left-1/2 h-24 w-[2px] -translate-x-1/2 bg-sky-300 shadow-[0_0_15px_rgba(56,189,248,0.6)]" />
@@ -94,7 +103,10 @@ export function NodeLayout({
                   key={i}
                   className={`scrolly-tier-${event.id} relative flex h-2 items-center justify-center`}
                 >
-                  <div className="absolute h-px w-full bg-linear-to-r from-transparent via-sky-300/30 to-transparent" style={{ width: `${80 - i * 12}px` }} />
+                  <div
+                    className="absolute h-px w-full bg-linear-to-r from-transparent via-sky-300/30 to-transparent"
+                    style={{ width: `${80 - i * 12}px` }}
+                  />
                   <div className="h-[3px] w-[3px] rounded-full bg-sky-200 shadow-[0_0_8px_rgba(125,211,252,0.6)]" />
                 </div>
               ))}
@@ -102,15 +114,21 @@ export function NodeLayout({
 
             <div
               className={`scrolly-tower-glow-${event.id} absolute top-1/2 left-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl`}
-              style={{ background: `radial-gradient(circle, ${accentColor}20 0%, transparent 60%)` }}
+              style={{
+                background: `radial-gradient(circle, ${accentColor}20 0%, transparent 60%)`,
+              }}
             />
           </div>
         </div>
       </div>
 
       {/* --- Body Columns Scene --- */}
-      <div className={`scrolly-body-container-${event.id} absolute inset-0 flex items-center justify-center px-4 py-12 md:px-10`}>
-        <div className={`scrolly-body-${event.id} grid w-full max-w-7xl grid-cols-1 gap-6 md:grid-cols-3 md:gap-10`}>
+      <div
+        className={`scrolly-body-container-${event.id} absolute inset-0 flex items-center justify-center px-4 py-12 md:px-10`}
+      >
+        <div
+          className={`scrolly-body-${event.id} grid w-full max-w-7xl grid-cols-1 gap-6 md:grid-cols-3 md:gap-10`}
+        >
           {bodyColumns.map((column, columnIndex) => (
             <div
               key={columnIndex}
@@ -121,14 +139,18 @@ export function NodeLayout({
 
               <div className="mb-8 flex items-center gap-4">
                 <span className="text-[11px] font-light tracking-[0.4em] text-sky-200/50">
-                  {String(columnIndex + 1).padStart(2, '0')}
+                  {String(columnIndex + 1).padStart(2, "0")}
                 </span>
                 <div className="h-px flex-1 bg-linear-to-r from-sky-200/20 to-transparent" />
               </div>
 
               <div className="flex flex-col gap-6">
                 {column.map((paragraph, paragraphIndex) => {
-                  const emphasis = paragraph.includes("九龙塔") || paragraph.includes("布雨") || paragraph.includes("国师") || paragraph.includes("雨");
+                  const emphasis =
+                    paragraph.includes("九龙塔") ||
+                    paragraph.includes("布雨") ||
+                    paragraph.includes("国师") ||
+                    paragraph.includes("雨");
                   return (
                     <p
                       key={`${columnIndex}-${paragraphIndex}`}
@@ -147,7 +169,9 @@ export function NodeLayout({
 
       {/* --- Closing --- */}
       {detail.closing && (
-        <div className={`scrolly-closing-container-${event.id} pointer-events-none absolute inset-x-0 bottom-12 flex justify-center px-6 md:bottom-20`}>
+        <div
+          className={`scrolly-closing-container-${event.id} pointer-events-none absolute inset-x-0 bottom-12 flex justify-center px-6 md:bottom-20`}
+        >
           <div
             className={`scrolly-closing-${event.id} relative overflow-hidden rounded-full border border-sky-300/20 bg-slate-950/60 px-8 py-4 text-[12px] font-light tracking-[0.4em] text-sky-100/90 shadow-[0_0_30px_rgba(14,165,233,0.2)] backdrop-blur-md md:px-10 md:py-5 md:text-[13px]`}
           >
@@ -174,31 +198,61 @@ export function animate(
   const tiers = scrollyText.querySelectorAll(`.scrolly-tier-${eventId}`);
   const towerGlow = scrollyText.querySelector(`.scrolly-tower-glow-${eventId}`);
 
-  const bodyContainer = scrollyText.querySelector(`.scrolly-body-container-${eventId}`);
-  const columns = scrollyText.querySelectorAll(`.scrolly-column-${eventId}`);
-  const bodyLines = scrollyText.querySelectorAll(`.scrolly-body-line`);
+  const bodyContainer = scrollyText.querySelector(
+    `.scrolly-body-container-${eventId}`,
+  );
+  const columns = Array.from(
+    scrollyText.querySelectorAll<HTMLElement>(`.scrolly-column-${eventId}`),
+  );
+  const bodyLines = Array.from(
+    scrollyText.querySelectorAll<HTMLElement>(`.scrolly-body-line`),
+  );
+  const columnLineGroups = columns.map((column) =>
+    Array.from(column.querySelectorAll<HTMLElement>(`.scrolly-body-line`)),
+  );
 
   const closing = scrollyText.querySelector(`.scrolly-closing-${eventId}`);
 
   const rainBg = scrollyText.querySelector(`.scrolly-rain-bg-${eventId}`);
   const rainFg = scrollyText.querySelector(`.scrolly-rain-fg-${eventId}`);
   const aura = scrollyText.querySelector(`.scrolly-aura-${eventId}`);
+  const isMobile = window.innerWidth < 768;
 
-  tl.set(
-    [
-      title,
-      quote,
-      tower,
-      towerGlow,
-      columns,
-      bodyLines,
-      closing,
-      rainBg,
-      rainFg,
-      aura
-    ],
-    { opacity: 0 }
-  );
+  if (isMobile) {
+    tl.set(
+      [
+        title,
+        quote,
+        tower,
+        towerGlow,
+        columns[0],
+        columnLineGroups[0],
+        closing,
+        rainBg,
+        rainFg,
+        aura,
+      ],
+      { opacity: 0 },
+    );
+    tl.set(columns.slice(1), { display: "none", opacity: 0 });
+    tl.set(columnLineGroups.slice(1).flat(), { opacity: 0 });
+  } else {
+    tl.set(
+      [
+        title,
+        quote,
+        tower,
+        towerGlow,
+        columns,
+        bodyLines,
+        closing,
+        rainBg,
+        rainFg,
+        aura,
+      ],
+      { opacity: 0 },
+    );
+  }
   tl.set(tiers, { scaleX: 0, opacity: 0 });
 
   tl.fromTo(
@@ -206,28 +260,51 @@ export function animate(
     { "--radius": "0px" },
     // Radius scaled up to 250vmax to ensure the mask shape always covers the screen corners
     { "--radius": "250vmax", duration: 7, ease: "power2.inOut" },
-    0
+    0,
   )
-    .to([aura, rainBg, rainFg], { opacity: 1, duration: 3.5, stagger: 0.2 }, 0.5)
+    .to(
+      [aura, rainBg, rainFg],
+      { opacity: 1, duration: 3.5, stagger: 0.2 },
+      0.5,
+    )
 
     .fromTo(
       title,
       { opacity: 0, y: 35, filter: "blur(12px)" },
-      { opacity: 1, y: 0, filter: "blur(0px)", duration: 4, ease: "power3.out" },
-      1.5
+      {
+        opacity: 1,
+        y: 0,
+        filter: "blur(0px)",
+        duration: 4,
+        ease: "power3.out",
+      },
+      1.5,
     )
     .fromTo(
       quote,
       { opacity: 0, y: 15, letterSpacing: "0.8em", filter: "blur(8px)" },
-      { opacity: 1, y: 0, letterSpacing: "0.5em", filter: "blur(0px)", duration: 3.5, ease: "power2.out" },
-      2.0
+      {
+        opacity: 1,
+        y: 0,
+        letterSpacing: "0.5em",
+        filter: "blur(0px)",
+        duration: 3.5,
+        ease: "power2.out",
+      },
+      2.0,
     )
 
     .fromTo(
       tower,
       { opacity: 0, y: 40, filter: "blur(10px)" },
-      { opacity: 1, y: 0, filter: "blur(0px)", duration: 4, ease: "power2.out" },
-      2.2
+      {
+        opacity: 1,
+        y: 0,
+        filter: "blur(0px)",
+        duration: 4,
+        ease: "power2.out",
+      },
+      2.2,
     )
     .fromTo(
       tiers,
@@ -239,14 +316,74 @@ export function animate(
         stagger: 0.15,
         ease: "power3.out",
       },
-      2.8
+      2.8,
     )
     .to(towerGlow, { opacity: 1, duration: 3 }, 3)
 
-    .to([title, quote, tower, towerGlow], { opacity: 0, y: -25, filter: "blur(12px)", duration: 3.5, ease: "power2.inOut" }, "+=3.5")
-    .set(intro, { display: "none" })
+    .to(
+      [title, quote, tower, towerGlow],
+      {
+        opacity: 0,
+        y: -25,
+        filter: "blur(12px)",
+        duration: 3.5,
+        ease: "power2.inOut",
+      },
+      "+=3.5",
+    )
+    .set(intro, { display: "none" });
 
-    .fromTo(
+  if (isMobile) {
+    columns.forEach((column, index) => {
+      const lines = columnLineGroups[index];
+
+      if (index > 0) {
+        tl.set(column, { display: "", opacity: 0 });
+      }
+
+      tl.fromTo(
+        column,
+        { opacity: 0, y: 35, scale: 0.96, filter: "blur(8px)" },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          filter: "blur(0px)",
+          duration: 2.4,
+          ease: "power2.out",
+        },
+        index === 0 ? "-=0.5" : undefined,
+      )
+        .fromTo(
+          lines,
+          { opacity: 0, y: 12, filter: "blur(6px)" },
+          {
+            opacity: 1,
+            y: 0,
+            filter: "blur(0px)",
+            duration: 1.6,
+            stagger: 0.08,
+            ease: "power2.out",
+          },
+          "-=1.8",
+        )
+        .to(
+          [column, lines],
+          {
+            opacity: 0,
+            y: -15,
+            filter: "blur(10px)",
+            duration: 2.2,
+            ease: "power2.inOut",
+          },
+          "+=2.2",
+        )
+        .set(column, { display: "none" });
+    });
+
+    tl.set(bodyContainer, { display: "none" });
+  } else {
+    tl.fromTo(
       columns,
       { opacity: 0, y: 35, scale: 0.96, filter: "blur(8px)" },
       {
@@ -258,35 +395,66 @@ export function animate(
         stagger: 0.2,
         ease: "power2.out",
       },
-      "-=0.5"
+      "-=0.5",
     )
-    .fromTo(
-      bodyLines,
-      { opacity: 0, y: 12, filter: "blur(6px)" },
-      {
-        opacity: 1,
-        y: 0,
-        filter: "blur(0px)",
-        duration: 2,
-        stagger: 0.08,
-        ease: "power2.out",
-      },
-      "-=2"
-    )
+      .fromTo(
+        bodyLines,
+        { opacity: 0, y: 12, filter: "blur(6px)" },
+        {
+          opacity: 1,
+          y: 0,
+          filter: "blur(0px)",
+          duration: 2,
+          stagger: 0.08,
+          ease: "power2.out",
+        },
+        "-=2",
+      )
+      .to(
+        [columns, bodyLines],
+        {
+          opacity: 0,
+          y: -15,
+          filter: "blur(10px)",
+          duration: 4,
+          ease: "power2.inOut",
+        },
+        "+=4.5",
+      )
+      .set(bodyContainer, { display: "none" });
+  }
 
-    .to([columns, bodyLines], { opacity: 0, y: -15, filter: "blur(10px)", duration: 4, ease: "power2.inOut" }, "+=4.5")
-    .set(bodyContainer, { display: "none" })
-
-    .fromTo(
+  tl.fromTo(
+    closing,
+    { opacity: 0, y: 15, filter: "blur(8px)", scale: 0.95 },
+    {
+      opacity: 1,
+      y: 0,
+      filter: "blur(0px)",
+      scale: 1,
+      duration: 3,
+      ease: "power2.out",
+    },
+    "-=1",
+  )
+    .to(
       closing,
-      { opacity: 0, y: 15, filter: "blur(8px)", scale: 0.95 },
-      { opacity: 1, y: 0, filter: "blur(0px)", scale: 1, duration: 3, ease: "power2.out" },
-      "-=1"
+      {
+        opacity: 0,
+        y: -10,
+        filter: "blur(10px)",
+        duration: 3.5,
+        ease: "power2.inOut",
+      },
+      "+=3.5",
     )
-    .to(closing, { opacity: 0, y: -10, filter: "blur(10px)", duration: 3.5, ease: "power2.inOut" }, "+=3.5")
 
     .to([rainBg, rainFg, aura], { opacity: 0, duration: 3.5 }, "-=3")
-    .to(scrollyBg, { "--radius": "0px", duration: 5.5, ease: "power2.inOut" }, "-=2");
+    .to(
+      scrollyBg,
+      { "--radius": "0px", duration: 5.5, ease: "power2.inOut" },
+      "-=2",
+    );
 
   if (rainBg && rainFg) {
     // Background rain (slower, using Y offset)
