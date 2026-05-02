@@ -6,13 +6,13 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import { useEffect, useRef } from "react";
-import { timelineData } from "./data";
 import {
   CUSTOM_NODE_REGISTRY,
   DefaultNodeLayout,
   animateDefault,
   defaultTheme,
 } from "./custom-nodes";
+import { timelineData } from "./data";
 import { type ImmersiveTheme } from "./types";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -447,7 +447,7 @@ export default function QjtxClient() {
       });
 
       // --- 终章：泪滴坠落与墨染动画 ---
-      
+
       // 1. 红线底部生成泪滴
       gsap.set(".tear-drop-tip", { opacity: 0, scale: 0 });
       gsap.to(".tear-drop-tip", {
@@ -455,8 +455,8 @@ export default function QjtxClient() {
         scale: 1.2,
         scrollTrigger: {
           trigger: ".footer-final", // 使用 footer 作为触发源，因为它被 timeline 的 pin 间距正确推后
-          start: "top 95%",
-          end: "top 85%",
+          start: "top 100%", // Footer刚进入视口（即刚划过一小段距离）时就开始形成
+          end: "top 55%",    // Footer到达55vh（即与红线底部接触的位置）时刚好完全形成
           scrub: true,
         },
       });
@@ -476,7 +476,7 @@ export default function QjtxClient() {
 
       // 初始大小设为 1.2 以完美衔接红线末端的 tear-drop-tip
       gsap.set(".falling-tear", { opacity: 0, y: 0, scale: 1.2 });
-      
+
       endTl
         // 确保在滚动到此之前泪滴不可见，防止和红线尾端同时出现
         .set(".falling-tear", { opacity: 1 })
@@ -628,7 +628,7 @@ export default function QjtxClient() {
           </div>
         </div>
 
-        <div className="relative flex w-full flex-col pt-10 pb-40">
+        <div className="relative flex w-full flex-col pt-10 pb-[30vh]">
           {timelineData.map((event, index) => {
             const isLeft = index % 2 === 0;
 
