@@ -19,6 +19,8 @@ const userUpdateSchema = z.object({
   navid_id: z.string().max(100).nullable().optional(),
   // navid_pw 为只写字段，允许为空字符串（表示不修改）
   navid_pw: z.string().max(200).nullable().optional(),
+  // endpoint 为登录网址，普通字段
+  endpoint: z.string().max(500).nullable().optional(),
 });
 
 // ─── GET: 列出所有用户（不含 navid_pw）────────────────────────────────────────
@@ -36,7 +38,7 @@ export const GET = withAuth(
     const users = await fetchAll<UserRecord>(
       supabase,
       TABLES.USERS,
-      "id, name, display, intro, is_admin, navid_id, sort_order",
+      "id, name, display, intro, is_admin, navid_id, endpoint, sort_order",
       (q) => q.order("sort_order", { ascending: true, nullsFirst: false }),
     );
 

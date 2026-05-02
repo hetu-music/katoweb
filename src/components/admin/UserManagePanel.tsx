@@ -28,6 +28,7 @@ interface EditState {
   is_admin: boolean;
   navid_id: string;
   navid_pw: string; // write-only, empty = no change
+  endpoint: string;
 }
 
 function buildEditState(user: UserRecord): EditState {
@@ -38,6 +39,7 @@ function buildEditState(user: UserRecord): EditState {
     is_admin: user.is_admin,
     navid_id: user.navid_id ?? "",
     navid_pw: "",
+    endpoint: user.endpoint ?? "",
   };
 }
 
@@ -86,12 +88,12 @@ export default function UserManagePanel({ csrfToken }: UserManagePanelProps) {
       setSaveMsg(null);
       try {
         await apiUpdateUser(
-          { id: userId, navid_id: null, navid_pw: null },
+          { id: userId, navid_id: null, navid_pw: null, endpoint: null },
           csrfToken,
         );
         setUsers((prev) =>
           prev.map((u) =>
-            u.id === userId ? { ...u, navid_id: null } : u,
+            u.id === userId ? { ...u, navid_id: null, endpoint: null } : u,
           ),
         );
         setSaveMsg("已清空");
@@ -118,6 +120,7 @@ export default function UserManagePanel({ csrfToken }: UserManagePanelProps) {
           intro: editState.intro || null,
           is_admin: editState.is_admin,
           navid_id: editState.navid_id || null,
+          endpoint: editState.endpoint || null,
         };
         // Only send navid_pw when user typed something
         if (editState.navid_pw) {
@@ -134,6 +137,7 @@ export default function UserManagePanel({ csrfToken }: UserManagePanelProps) {
                   intro: editState.intro || null,
                   is_admin: editState.is_admin,
                   navid_id: editState.navid_id || null,
+                  endpoint: editState.endpoint || null,
                 }
               : u,
           ),
@@ -336,6 +340,24 @@ export default function UserManagePanel({ csrfToken }: UserManagePanelProps) {
                           />
                         </div>
 
+                        {/* endpoint */}
+                        <div className="space-y-1 sm:col-span-2">
+                          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">
+                            登录网址 (Endpoint)
+                          </label>
+                          <input
+                            type="url"
+                            value={editState.endpoint}
+                            onChange={(e) =>
+                              setEditState((s) =>
+                                s ? { ...s, endpoint: e.target.value } : s,
+                              )
+                            }
+                            placeholder="https://示例网址"
+                            className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                          />
+                        </div>
+
                         {/* intro */}
                         <div className="space-y-1 sm:col-span-2">
                           <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">
@@ -486,6 +508,16 @@ export default function UserManagePanel({ csrfToken }: UserManagePanelProps) {
                           {user.navid_id || "—"}
                         </p>
                       </div>
+                      {user.endpoint && (
+                        <div className="col-span-2 sm:col-span-3">
+                          <span className="text-slate-400 font-bold uppercase tracking-wide text-[10px]">
+                            登录网址
+                          </span>
+                          <p className="text-slate-700 dark:text-slate-300 mt-0.5 font-mono break-all">
+                            {user.endpoint}
+                          </p>
+                        </div>
+                      )}
                       {user.intro && (
                         <div className="col-span-2 sm:col-span-3">
                           <span className="text-slate-400 font-bold uppercase tracking-wide text-[10px]">

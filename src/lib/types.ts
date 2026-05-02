@@ -153,6 +153,7 @@ export type UserRecord = {
   intro: string | null;
   is_admin: boolean;
   navid_id: string | null;
+  endpoint: string | null;
   sort_order: number | null;
 };
 
@@ -165,4 +166,5 @@ export type UserUpdatePayload = {
   is_admin?: boolean;
   navid_id?: string | null;
   navid_pw?: string | null;
+  endpoint?: string | null;
 };

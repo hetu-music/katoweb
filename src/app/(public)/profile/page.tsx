@@ -60,7 +60,7 @@ function ProfileContent() {
     userLoaded && !!user?.isAdmin && user?.sortOrder === 1;
 
   const hasBenefits =
-    userLoaded && !!user?.navidId && !!user?.navidPw;
+    userLoaded && !!user?.navidId && !!user?.navidPw && !!user?.endpointText;
 
   // Gate: fall back to favorites if accessing a restricted tab without permission
   useEffect(() => {
@@ -835,7 +835,7 @@ function ProfileContent() {
                 </div>
               )}
 
-              {/* Benefits Tab — shown when navid_id and navid_pw are set */}
+              {/* Benefits Tab — shown when navid_id, navid_pw or endpoint is set */}
               {activeTab === "benefits" && hasBenefits && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
                   <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-6 flex-1">
@@ -932,6 +932,45 @@ function ProfileContent() {
                           </div>
                         </div>
                       </div>
+
+                      {/* Endpoint — 登录网址 */}
+                      {user?.endpointText && (
+                        <div className="rounded-xl border border-slate-200/60 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-800/50 overflow-hidden">
+                          <div className="px-4 py-2.5 border-b border-slate-200/60 dark:border-slate-800/60">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                              登录网址
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 px-4 py-3">
+                            <a
+                              href={user.endpointText}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-1 text-sm font-mono text-blue-600 dark:text-blue-400 break-all hover:underline"
+                            >
+                              {user.endpointText}
+                            </a>
+                            <button
+                              onClick={() =>
+                                handleCopy(user?.endpointText ?? "", "id")
+                              }
+                              className={cn(
+                                "shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                                copied === "id"
+                                  ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                                  : "bg-slate-200/60 dark:bg-slate-700 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-300/60 dark:hover:bg-slate-600",
+                              )}
+                            >
+                              {copied === "id" ? (
+                                <Check size={12} />
+                              ) : (
+                                <Copy size={12} />
+                              )}
+                              {copied === "id" ? "已复制" : "复制"}
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

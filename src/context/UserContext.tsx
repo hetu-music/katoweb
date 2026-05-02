@@ -13,6 +13,7 @@ export interface UserInfo {
   sortOrder: number | null;
   navidId: string | null;
   navidPw: string | null;
+  endpointText: string | null;
 }
 
 interface UserContextValue {
