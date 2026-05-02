@@ -221,11 +221,17 @@ export function animate(
     filter: "blur(15px)",
   });
 
+  const isMobile = window.innerWidth < 768;
+
   // Ash and Embers continuous weather animation
   const ashes = selAll(`.ash-particle-${eventId}`);
   const embers = selAll(`.ember-particle-${eventId}`);
 
-  ashes.forEach((p) => {
+  // 移动端只动画前 N 个粒子
+  const maxAsh = isMobile ? 10 : ashes.length;
+  const maxEmb = isMobile ? 8 : embers.length;
+
+  Array.from(ashes).slice(0, maxAsh).forEach((p) => {
     gsap.to(p, {
       y: "110vh",
       x: `+=${(Math.random() - 0.5) * 100}px`,
@@ -236,7 +242,7 @@ export function animate(
     });
   });
 
-  embers.forEach((p) => {
+  Array.from(embers).slice(0, maxEmb).forEach((p) => {
     gsap.to(p, {
       y: "-110vh",
       x: `+=${(Math.random() - 0.5) * 150}px`,
@@ -251,11 +257,11 @@ export function animate(
   // 0. Global Entrance
   tl.fromTo(
     wrapper,
-    { scale: 1.05, opacity: 0, filter: "blur(20px)" },
+    { scale: 1.05, opacity: 0, ...(isMobile ? {} : { filter: "blur(20px)" }) },
     {
       scale: 1,
       opacity: 1,
-      filter: "blur(0px)",
+      ...(isMobile ? {} : { filter: "blur(0px)" }),
       duration: 2.5,
       ease: "power3.out",
     },
@@ -277,7 +283,7 @@ export function animate(
       {
         opacity: 0,
         y: -30,
-        filter: "blur(15px)",
+        ...(isMobile ? {} : { filter: "blur(15px)" }),
         duration: 3,
         ease: "power2.inOut",
         stagger: 0.1,
@@ -307,7 +313,7 @@ export function animate(
       {
         opacity: 0,
         y: 50,
-        filter: "blur(10px)",
+        ...(isMobile ? {} : { filter: "blur(10px)" }),
         duration: 3,
         stagger: 0.1,
         ease: "power2.in",
@@ -323,7 +329,7 @@ export function animate(
     [closingText, closingLine],
     {
       opacity: 1,
-      filter: "blur(0px)",
+      ...(isMobile ? {} : { filter: "blur(0px)" }),
       scale: 1,
       duration: 3,
       stagger: 0.2,
@@ -337,7 +343,7 @@ export function animate(
       [closingText, closingLine],
       {
         opacity: 0,
-        filter: "blur(20px)",
+        ...(isMobile ? {} : { filter: "blur(20px)" }),
         scale: 1.1,
         duration: 2.5,
         ease: "power2.in",
@@ -352,7 +358,7 @@ export function animate(
     {
       scale: 0.95,
       opacity: 0,
-      filter: "blur(20px)",
+      ...(isMobile ? {} : { filter: "blur(20px)" }),
       duration: 2.5,
       ease: "power2.inOut",
     },

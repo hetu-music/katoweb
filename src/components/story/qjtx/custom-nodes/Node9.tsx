@@ -231,26 +231,37 @@ export function animate(
   );
   tl.set(bgImg, { filter: "grayscale(100%)" });
 
+  const isMobile = window.innerWidth < 768;
+
+  // 移动端只动画前 15 个花瓣和前 8 个余烬，降低 GPU 合成层负担
+  const maxPetals = isMobile ? 15 : petals.length;
+  // embers 容器内的实际粒子
+  const emberParticles = selAll(".ambient-embers-" + eventId + " > div");
+  const maxEmbers = isMobile ? 8 : emberParticles.length;
+
   // Petal movement logic
-  petals.forEach((p) => {
-    const duration = 8 + Math.random() * 7;
-    const delay = Math.random() * -15;
+  Array.from(petals).slice(0, maxPetals).forEach((p) => {
     gsap.to(p, {
       x: "120vw",
       y: "-120vh",
       rotation: 720,
-      duration: duration,
+      duration: 8 + Math.random() * 7,
       repeat: -1,
       ease: "none",
-      delay: delay,
+      delay: Math.random() * -15,
     });
-    // Swaying using xPercent to avoid conflict with main x/y animation
+  });
+
+  // 余烬动画
+  Array.from(emberParticles).slice(0, maxEmbers).forEach((p) => {
     gsap.to(p, {
-      xPercent: 150,
-      duration: 2 + Math.random() * 2,
+      y: "-110vh",
+      x: `+=${(Math.random() - 0.5) * 120}px`,
+      opacity: Math.random() * 0.7 + 0.2,
+      duration: 3 + Math.random() * 4,
       repeat: -1,
-      yoyo: true,
-      ease: "sine.inOut",
+      ease: "power1.in",
+      delay: Math.random() * -5,
     });
   });
 
@@ -261,11 +272,11 @@ export function animate(
   // Phase 0: Intro
   tl.fromTo(
     intro,
-    { opacity: 0, y: 20, filter: "blur(10px)" },
+    { opacity: 0, y: 20, ...(isMobile ? {} : { filter: "blur(10px)" }) },
     {
       opacity: 1,
       y: 0,
-      filter: "blur(0px)",
+      ...(isMobile ? {} : { filter: "blur(0px)" }),
       duration: 2.5,
       ease: "power2.out",
     },
@@ -276,7 +287,7 @@ export function animate(
     {
       opacity: 0,
       y: -20,
-      filter: "blur(10px)",
+      ...(isMobile ? {} : { filter: "blur(10px)" }),
       duration: 2.5,
       ease: "power2.inOut",
     },
@@ -286,11 +297,11 @@ export function animate(
   // Phase 1 (Rise)
   tl.fromTo(
     phase1,
-    { opacity: 0, y: 20, filter: "blur(10px)" },
+    { opacity: 0, y: 20, ...(isMobile ? {} : { filter: "blur(10px)" }) },
     {
       opacity: 1,
       y: 0,
-      filter: "blur(0px)",
+      ...(isMobile ? {} : { filter: "blur(0px)" }),
       duration: 2.5,
       ease: "power2.out",
     },
@@ -301,7 +312,7 @@ export function animate(
     {
       opacity: 0,
       y: -20,
-      filter: "blur(10px)",
+      ...(isMobile ? {} : { filter: "blur(10px)" }),
       duration: 2.5,
       ease: "power2.in",
     },
@@ -311,11 +322,11 @@ export function animate(
   // Phase 2 (Fall)
   tl.fromTo(
     phase2,
-    { opacity: 0, y: 20, filter: "blur(10px)" },
+    { opacity: 0, y: 20, ...(isMobile ? {} : { filter: "blur(10px)" }) },
     {
       opacity: 1,
       y: 0,
-      filter: "blur(0px)",
+      ...(isMobile ? {} : { filter: "blur(0px)" }),
       duration: 2.5,
       ease: "power2.out",
     },
@@ -326,7 +337,7 @@ export function animate(
     {
       opacity: 0,
       y: -20,
-      filter: "blur(10px)",
+      ...(isMobile ? {} : { filter: "blur(10px)" }),
       duration: 2.5,
       ease: "power2.in",
     },
@@ -336,11 +347,11 @@ export function animate(
   // Phase 3 (Discovery)
   tl.fromTo(
     phase3,
-    { opacity: 0, y: 20, filter: "blur(10px)" },
+    { opacity: 0, y: 20, ...(isMobile ? {} : { filter: "blur(10px)" }) },
     {
       opacity: 1,
       y: 0,
-      filter: "blur(0px)",
+      ...(isMobile ? {} : { filter: "blur(0px)" }),
       duration: 2.5,
       ease: "power2.out",
     },
@@ -351,7 +362,7 @@ export function animate(
     {
       opacity: 0,
       y: -20,
-      filter: "blur(10px)",
+      ...(isMobile ? {} : { filter: "blur(10px)" }),
       duration: 2.5,
       ease: "power2.in",
     },
@@ -369,11 +380,11 @@ export function animate(
   }
   tl.fromTo(
     cinnabar,
-    { opacity: 0, y: 20, filter: "blur(10px)" },
+    { opacity: 0, y: 20, ...(isMobile ? {} : { filter: "blur(10px)" }) },
     {
       opacity: 1,
       y: 0,
-      filter: "blur(0px)",
+      ...(isMobile ? {} : { filter: "blur(0px)" }),
       duration: 2.5,
       ease: "power2.out",
     },
@@ -384,7 +395,7 @@ export function animate(
     {
       opacity: 0,
       y: -20,
-      filter: "blur(10px)",
+      ...(isMobile ? {} : { filter: "blur(10px)" }),
       duration: 2.5,
       ease: "power2.inOut",
     },
@@ -394,11 +405,11 @@ export function animate(
   // Phase 5 (Echoes)
   tl.fromTo(
     phase5,
-    { opacity: 0, y: 20, filter: "blur(10px)" },
+    { opacity: 0, y: 20, ...(isMobile ? {} : { filter: "blur(10px)" }) },
     {
       opacity: 1,
       y: 0,
-      filter: "blur(0px)",
+      ...(isMobile ? {} : { filter: "blur(0px)" }),
       duration: 2.5,
       ease: "power2.out",
     },
@@ -409,7 +420,7 @@ export function animate(
     {
       opacity: 0,
       y: -20,
-      filter: "blur(10px)",
+      ...(isMobile ? {} : { filter: "blur(10px)" }),
       duration: 2.5,
       ease: "power2.in",
     },
@@ -419,13 +430,13 @@ export function animate(
   // Closing
   tl.fromTo(
     closing,
-    { opacity: 0, y: 20, filter: "blur(10px)" },
-    { opacity: 1, y: 0, filter: "blur(0px)", duration: 3, ease: "power2.out" },
+    { opacity: 0, y: 20, ...(isMobile ? {} : { filter: "blur(10px)" }) },
+    { opacity: 1, y: 0, ...(isMobile ? {} : { filter: "blur(0px)" }), duration: 3, ease: "power2.out" },
     "+=0.5",
   );
   tl.to(
     closing,
-    { opacity: 0, filter: "blur(10px)", duration: 2, ease: "power2.in" },
+    { opacity: 0, ...(isMobile ? {} : { filter: "blur(10px)" }), duration: 2, ease: "power2.in" },
     "+=4",
   );
 

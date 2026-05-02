@@ -163,11 +163,11 @@ export function animate(
 
     .fromTo(
       title,
-      { opacity: 0, scale: 0.9, filter: "blur(20px)", y: 30 },
+      { opacity: 0, scale: 0.9, ...(isMobile ? {} : { filter: "blur(20px)" }), y: 30 },
       {
         opacity: 1,
         scale: 1,
-        filter: "blur(0px)",
+        ...(isMobile ? {} : { filter: "blur(0px)" }),
         y: 0,
         duration: 4.0,
         ease: "power3.out",
@@ -176,11 +176,11 @@ export function animate(
     )
     .fromTo(
       quote,
-      { opacity: 0, y: 20, filter: "blur(15px)" },
+      { opacity: 0, y: 20, ...(isMobile ? {} : { filter: "blur(15px)" }) },
       {
         opacity: 1,
         y: 0,
-        filter: "blur(0px)",
+        ...(isMobile ? {} : { filter: "blur(0px)" }),
         duration: 3.0,
         ease: "power2.out",
       },
@@ -190,7 +190,7 @@ export function animate(
       [title, quote],
       {
         opacity: 0,
-        filter: "blur(15px)",
+        ...(isMobile ? {} : { filter: "blur(15px)" }),
         scale: 1.05,
         duration: 3.0,
         ease: "power2.inOut",

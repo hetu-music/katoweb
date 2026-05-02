@@ -3,7 +3,8 @@ import type { ImmersiveTheme, TimelineEvent } from "../types";
 
 export const theme: ImmersiveTheme = {
   // Lighter background with much less aggressive masking
-  bg: "radial-gradient(circle at 50% 30%, rgba(24, 24, 27, 0.4) 0%, rgba(0, 0, 0, 0.6) 100%), url(/story/qjtx/32.avif) center/cover no-repeat fixed",
+  // 移除 fixed —— background-attachment:fixed 在移动端不支持且触发每帧重绘
+  bg: "radial-gradient(circle at 50% 30%, rgba(24, 24, 27, 0.4) 0%, rgba(0, 0, 0, 0.6) 100%), url(/story/qjtx/32.avif) center/cover no-repeat",
   titleColor: "#fce7f3",
   bodyColor: "#f5f3ff",
   accentColor: "#f472b6",
@@ -204,7 +205,7 @@ export function animate(
     {
       opacity: 0,
       y: -16,
-      filter: "blur(12px)",
+      ...(isMobile ? {} : { filter: "blur(12px)" }),
       duration: 3,
       ease: "power2.inOut",
     },
@@ -217,11 +218,11 @@ export function animate(
   if (isMobile) {
     tl.fromTo(
       dreamGroup1,
-      { opacity: 0, y: 16, filter: "blur(10px)" },
+      { opacity: 0, y: 16, ...(isMobile ? {} : { filter: "blur(10px)" }) },
       {
         opacity: 1,
         y: 0,
-        filter: "blur(0px)",
+        ...(isMobile ? {} : { filter: "blur(0px)" }),
         duration: 1.8,
         stagger: 0.16,
         ease: "power2.out",
@@ -233,7 +234,7 @@ export function animate(
       {
         opacity: 0,
         y: -16,
-        filter: "blur(12px)",
+        ...(isMobile ? {} : { filter: "blur(12px)" }),
         duration: 1.8,
         stagger: 0.1,
         ease: "power2.inOut",
@@ -244,11 +245,11 @@ export function animate(
     tl.set(dreamGroup2, { display: "", opacity: 0 });
     tl.fromTo(
       dreamGroup2,
-      { opacity: 0, y: 16, filter: "blur(10px)" },
+      { opacity: 0, y: 16, ...(isMobile ? {} : { filter: "blur(10px)" }) },
       {
         opacity: 1,
         y: 0,
-        filter: "blur(0px)",
+        ...(isMobile ? {} : { filter: "blur(0px)" }),
         duration: 1.8,
         stagger: 0.16,
         ease: "power2.out",
@@ -259,7 +260,7 @@ export function animate(
       {
         opacity: 0,
         y: -16,
-        filter: "blur(12px)",
+        ...(isMobile ? {} : { filter: "blur(12px)" }),
         duration: 2.1,
         stagger: 0.1,
         ease: "power2.inOut",
@@ -301,11 +302,11 @@ export function animate(
   // Dramatic, slow entrance for maximum impact in the dead center
   tl.fromTo(
     finalLine,
-    { opacity: 0, scale: 0.8, filter: "blur(20px)" },
+    { opacity: 0, scale: 0.8, ...(isMobile ? {} : { filter: "blur(20px)" }) },
     {
       opacity: 1,
       scale: 1,
-      filter: "blur(0px)",
+      ...(isMobile ? {} : { filter: "blur(0px)" }),
       duration: 4,
       ease: "power3.out",
     },
@@ -318,7 +319,7 @@ export function animate(
     {
       opacity: 0,
       scale: 1.1,
-      filter: "blur(15px)",
+      ...(isMobile ? {} : { filter: "blur(15px)" }),
       duration: 3,
       ease: "power2.in",
     },

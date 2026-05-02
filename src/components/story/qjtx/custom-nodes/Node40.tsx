@@ -160,13 +160,17 @@ export function animate(
   tl.set(closingLineTop, { scaleY: 0 });
   tl.set(closingLineBot, { scaleY: 0 });
 
+  const isMobile = window.innerWidth < 768;
+
   // Start with full color and slight brightness
   if (bgImage) {
     tl.set(bgImage, { filter: "grayscale(0%) brightness(1.2)" });
   }
 
   // Infinite slow falling dust (Cinematic projector dust)
-  dustParticles.forEach((p) => {
+  // 移动端只动画前 12 个，降低 GPU 合成层
+  const maxDust = isMobile ? 12 : dustParticles.length;
+  Array.from(dustParticles).slice(0, maxDust).forEach((p) => {
     gsap.to(p, {
       y: "+=120vh",
       x: `+=${(Math.random() - 0.5) * 50}px`,
@@ -192,14 +196,14 @@ export function animate(
   tl.set(titlePhase, { display: "flex" });
   tl.to(
     titleText,
-    { opacity: 1, filter: "blur(0px)", duration: 5, ease: "power3.out" },
+    { opacity: 1, ...(isMobile ? {} : { filter: "blur(0px)" }), duration: 5, ease: "power3.out" },
     2,
   );
   tl.to(
     titleText,
     {
       opacity: 0,
-      filter: "blur(20px)",
+      ...(isMobile ? {} : { filter: "blur(20px)" }),
       scale: 1.05,
       duration: 4,
       ease: "power2.in",
@@ -214,10 +218,10 @@ export function animate(
     bodyLines,
     {
       opacity: 1,
-      filter: "blur(0px)",
+      ...(isMobile ? {} : { filter: "blur(0px)" }),
       y: 0,
       duration: 4,
-      stagger: 2.5, // Slow, deliberate delivery
+      stagger: 2.5,
       ease: "power2.out",
     },
     "+=1",
@@ -226,7 +230,7 @@ export function animate(
     bodyLines,
     {
       opacity: 0,
-      filter: "blur(15px)",
+      ...(isMobile ? {} : { filter: "blur(15px)" }),
       y: -10,
       duration: 4,
       stagger: 0.5,
@@ -260,12 +264,12 @@ export function animate(
   );
   tl.to(
     closingText,
-    { opacity: 1, filter: "blur(0px)", duration: 4, ease: "power2.out" },
+    { opacity: 1, ...(isMobile ? {} : { filter: "blur(0px)" }), duration: 4, ease: "power2.out" },
     "-=1.5",
   );
   tl.to(
     [closingText, closingLineTop, closingLineBot],
-    { opacity: 0, filter: "blur(20px)", duration: 4, ease: "power2.in" },
+    { opacity: 0, ...(isMobile ? {} : { filter: "blur(20px)" }), duration: 4, ease: "power2.in" },
     "+=5",
   );
 

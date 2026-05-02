@@ -260,7 +260,8 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
     const lenis = new Lenis({
       autoRaf: false,
       smoothWheel: true,
-      syncTouch: true,
+      // 移动端使用原生惯性滚动，不需要Lenis接管触摸事件（避免额外JS开销）
+      syncTouch: false,
     });
 
     // 暂时禁止滚动，等待开场动画（指示线）播放完成
@@ -309,6 +310,9 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
 
   useGSAP(
     () => {
+      // 一次性检测，在 scrub 动画中保持稳定
+      const isMobile = window.innerWidth < 768;
+
       const wrappers = gsap.utils.toArray<HTMLElement>(
         ".timeline-event-wrapper",
         container.current,
@@ -381,11 +385,12 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
         // ── B. 节点入场位移动画：target = content, trigger = wrapper ──
         gsap.fromTo(
           content,
-          { opacity: 0, y: 70, filter: "blur(10px)" },
+          // 移动端去掉blur（GPU密集型），只用opacity+y
+          { opacity: 0, y: 70, ...(isMobile ? {} : { filter: "blur(10px)" }) },
           {
             opacity: 1,
             y: 0,
-            filter: "blur(0px)",
+            ...(isMobile ? {} : { filter: "blur(0px)" }),
             scrollTrigger: {
               trigger: wrapper,
               pinnedContainer: ".timeline-container",
@@ -528,11 +533,12 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
         })
         .add("hit")
         // 泪滴触底，如墨滴入水般极致晕开
+        // 移动端降低放大倍数并去掉大radius blur（极耗GPU）
         .to(
           ".falling-tear",
           {
-            scale: 45, // 巨大的放大倍数，模拟墨迹散开
-            filter: "blur(25px)",
+            scale: isMobile ? 20 : 45,
+            ...(isMobile ? {} : { filter: "blur(25px)" }),
             duration: 4,
             ease: "power2.out",
           },
@@ -551,7 +557,8 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
         // 文本从浓墨中缓缓浮现
         .fromTo(
           ".bloom-content",
-          { opacity: 0, filter: "blur(30px)", scale: 0.95 },
+          // 移动端降低blur半径
+          { opacity: 0, filter: isMobile ? "blur(8px)" : "blur(30px)", scale: 0.95 },
           {
             opacity: 1,
             filter: "blur(0px)",
@@ -559,7 +566,7 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
             duration: 4,
             ease: "power2.inOut",
           },
-          "hit+=0.5", // 在泪滴散开的过程中，文字就开始被"洗"出来
+          "hit+=0.5",
         );
 
       return () => {

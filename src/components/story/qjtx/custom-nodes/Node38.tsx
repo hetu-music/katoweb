@@ -2,7 +2,8 @@ import gsap from "gsap";
 import type { ImmersiveTheme, TimelineEvent } from "../types";
 
 export const theme: ImmersiveTheme = {
-  bg: "radial-gradient(circle at 50% 18%, rgba(253, 224, 71, 0.12) 0%, rgba(68, 64, 60, 0.42) 26%, rgba(12, 10, 9, 0.96) 100%), url(/story/qjtx/38.avif) center/cover no-repeat fixed",
+  // 移除 fixed —— background-attachment:fixed 在移动端不支持且触发每帧重绘
+  bg: "radial-gradient(circle at 50% 18%, rgba(253, 224, 71, 0.12) 0%, rgba(68, 64, 60, 0.42) 26%, rgba(12, 10, 9, 0.96) 100%), url(/story/qjtx/38.avif) center/cover no-repeat",
   titleColor: "#fef3c7",
   bodyColor: "#f5f5f4",
   accentColor: "#f59e0b",
@@ -129,6 +130,8 @@ export function animate(
   const closing = scrollyText.querySelector(`.scrolly-closing-${eventId}`);
   const sunlight = scrollyText.querySelector(`.scrolly-sunlight-${eventId}`);
 
+  const isMobile = window.innerWidth < 768;
+
   tl.set([title, quote, memorial, stele, bodyLines, closing, sunlight], {
     opacity: 0,
   });
@@ -142,11 +145,11 @@ export function animate(
     .to(sunlight, { opacity: 1, duration: 2.8 }, 0.6)
     .fromTo(
       title,
-      { opacity: 0, y: 24, filter: "blur(16px)" },
+      { opacity: 0, y: 24, ...(isMobile ? {} : { filter: "blur(16px)" }) },
       {
         opacity: 1,
         y: 0,
-        filter: "blur(0px)",
+        ...(isMobile ? {} : { filter: "blur(0px)" }),
         duration: 3.4,
         ease: "power3.out",
       },
@@ -154,11 +157,11 @@ export function animate(
     )
     .fromTo(
       quote,
-      { opacity: 0, y: 10, filter: "blur(8px)" },
+      { opacity: 0, y: 10, ...(isMobile ? {} : { filter: "blur(8px)" }) },
       {
         opacity: 1,
         y: 0,
-        filter: "blur(0px)",
+        ...(isMobile ? {} : { filter: "blur(0px)" }),
         duration: 3,
         ease: "power2.out",
       },
@@ -169,7 +172,7 @@ export function animate(
       {
         opacity: 0,
         y: -14,
-        filter: "blur(12px)",
+        ...(isMobile ? {} : { filter: "blur(12px)" }),
         duration: 3,
         ease: "power2.inOut",
       },
@@ -178,12 +181,12 @@ export function animate(
     .set(intro, { display: "none" })
     .fromTo(
       memorial,
-      { opacity: 0, y: 22, scale: 0.98, filter: "blur(10px)" },
+      { opacity: 0, y: 22, scale: 0.98, ...(isMobile ? {} : { filter: "blur(10px)" }) },
       {
         opacity: 1,
         y: 0,
         scale: 1,
-        filter: "blur(0px)",
+        ...(isMobile ? {} : { filter: "blur(0px)" }),
         duration: 2.6,
         ease: "power2.out",
       },
@@ -197,11 +200,11 @@ export function animate(
     )
     .fromTo(
       bodyLines,
-      { opacity: 0, y: 10, filter: "blur(6px)" },
+      { opacity: 0, y: 10, ...(isMobile ? {} : { filter: "blur(6px)" }) },
       {
         opacity: 1,
         y: 0,
-        filter: "blur(0px)",
+        ...(isMobile ? {} : { filter: "blur(0px)" }),
         duration: 1.7,
         stagger: 0.09,
         ease: "power2.out",
@@ -210,11 +213,11 @@ export function animate(
     )
     .fromTo(
       closing,
-      { opacity: 0, scale: 0.82, filter: "blur(6px)" },
+      { opacity: 0, scale: 0.82, ...(isMobile ? {} : { filter: "blur(6px)" }) },
       {
         opacity: 1,
         scale: 1,
-        filter: "blur(0px)",
+        ...(isMobile ? {} : { filter: "blur(0px)" }),
         duration: 1.8,
         ease: "back.out(1.7)",
       },
@@ -225,7 +228,7 @@ export function animate(
       {
         opacity: 0,
         y: -8,
-        filter: "blur(8px)",
+        ...(isMobile ? {} : { filter: "blur(8px)" }),
         duration: 3.6,
         ease: "power2.inOut",
       },
