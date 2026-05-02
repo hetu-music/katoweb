@@ -15,11 +15,12 @@ export async function POST(request: NextRequest) {
     // 重新验证音乐库页面、意象页面和 sitemap
     revalidatePath("/");
     revalidatePath("/imagery");
+    revalidatePath("/story/qjtx");
     revalidatePath("/sitemap.xml");
 
     const timestamp = new Date().toISOString();
 
-    const response = `SUCCESS: Home page and sitemap revalidated at ${timestamp}`;
+    const response = `SUCCESS: Home page, imagery, story, and sitemap revalidated at ${timestamp}`;
 
     return new NextResponse(response, {
       status: 200,
