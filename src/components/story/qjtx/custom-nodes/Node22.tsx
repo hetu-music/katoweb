@@ -29,9 +29,9 @@ export function NodeLayout({
   const detail = event.detail;
   if (!detail) return null;
 
-  // Split body into pages of 4 items each to ensure they fit on screen without overflow
+  // Split body into pages of 5 items each to ensure they fit on screen without overflow
   const bodyPages = [];
-  const chunkSize = 4;
+  const chunkSize = 5;
   if (detail.body) {
     for (let i = 0; i < detail.body.length; i += chunkSize) {
       bodyPages.push(detail.body.slice(i, i + chunkSize));
