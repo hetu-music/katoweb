@@ -1,20 +1,16 @@
 import Loading from "@/components/shared/Loading";
 import QjtxClient from "@/components/story/qjtx/QjtxClient";
-import { timelineData } from "@/components/story/qjtx/data";
+import { getQjtxTimeline } from "@/lib/service-story";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
 const STORY_TITLE = "倾尽天下 · 编年史";
 
-function buildDescription() {
-  const firstEvent = timelineData[0];
-  const lastEvent = timelineData[timelineData.length - 1];
-
-  return `以 ${timelineData.length} 个历史节点重构《倾尽天下》的故事编年史，从${firstEvent?.year ?? "乱世初起"}到${lastEvent?.year ?? "余音未绝"}，沉浸式回望白炎、朱砂与故国山河。`;
-}
-
 export async function generateMetadata(): Promise<Metadata> {
-  const description = buildDescription();
+  const events = await getQjtxTimeline();
+  const firstEvent = events[0];
+  const lastEvent = events[events.length - 1];
+  const description = `以 ${events.length} 个历史节点重构《倾尽天下》的故事编年史，从${firstEvent?.year ?? "乱世初起"}到${lastEvent?.year ?? "余音未绝"}，沉浸式回望白炎、朱砂与故国山河。`;
 
   return {
     title: STORY_TITLE,
@@ -38,7 +34,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function QingJinTianXiaPage() {
-  const description = buildDescription();
+  const events = await getQjtxTimeline();
+
+  const firstEvent = events[0];
+  const lastEvent = events[events.length - 1];
+  const description = `以 ${events.length} 个历史节点重构《倾尽天下》的故事编年史，从${firstEvent?.year ?? "乱世初起"}到${lastEvent?.year ?? "余音未绝"}，沉浸式回望白炎、朱砂与故国山河。`;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -59,7 +60,7 @@ export default async function QingJinTianXiaPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Suspense fallback={<Loading />}>
-        <QjtxClient />
+        <QjtxClient events={events} />
       </Suspense>
     </>
   );

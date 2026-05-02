@@ -50,6 +50,9 @@ export const TABLES = {
   USERS: "users",
   COLLECTIONS: "collections",
 
+  // 故事页专用表
+  STORY_QJTX: "story_qjtx",
+
   // 审计日志
   AUDIT_LOGS: "audit_logs",
 } as const;

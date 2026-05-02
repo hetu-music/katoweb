@@ -13,8 +13,7 @@ import {
   animateDefault,
   defaultTheme,
 } from "./custom-nodes";
-import { timelineData } from "./data";
-import { type ImmersiveTheme } from "./types";
+import { type ImmersiveTheme, type TimelineEvent } from "./types";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -196,7 +195,7 @@ function EventDate({
 function ImmersiveReadingPanel({
   event,
 }: {
-  event: (typeof timelineData)[number];
+  event: TimelineEvent;
 }) {
   if (!event.detail) return null;
 
@@ -252,7 +251,7 @@ function ImmersiveReadingPanel({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function QjtxClient() {
+export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
   const container = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -653,7 +652,7 @@ export default function QjtxClient() {
         </div>
 
         <div className="relative flex w-full flex-col pt-10 pb-[30vh]">
-          {timelineData.map((event, index) => {
+          {events.map((event, index) => {
             const isLeft = index % 2 === 0;
 
             return (
@@ -715,7 +714,7 @@ export default function QjtxClient() {
       </main>
 
       {/* 沉浸式阅读覆盖层，渲染顺序在 main 之后以保证 z-index 覆盖 */}
-      {timelineData.map((event) => (
+      {events.map((event) => (
         <ImmersiveReadingPanel key={`detail-${event.id}`} event={event} />
       ))}
 
