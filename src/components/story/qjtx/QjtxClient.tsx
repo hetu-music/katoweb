@@ -471,6 +471,14 @@ export default function QjtxClient() {
           pin: true,
           pinSpacing: true,
           invalidateOnRefresh: true,
+          onEnter: () => {
+            gsap.set(".tear-drop-tip", { opacity: 0 });
+            gsap.set(".falling-tear", { opacity: 1 });
+          },
+          onLeaveBack: () => {
+            gsap.set(".tear-drop-tip", { opacity: 1 });
+            gsap.set(".falling-tear", { opacity: 0 });
+          },
         },
       });
 
@@ -478,8 +486,6 @@ export default function QjtxClient() {
       gsap.set(".falling-tear", { opacity: 0, y: 0, scale: 1.2 });
 
       endTl
-        // 确保在滚动到此之前泪滴不可见，防止和红线尾端同时出现
-        .set(".falling-tear", { opacity: 1 })
         // 泪滴缓缓坠落到正中
         .to(".falling-tear", { y: "50vh", scale: 1, duration: 3, ease: "power1.in" })
         .add("hit")
@@ -615,10 +621,10 @@ export default function QjtxClient() {
         </motion.div>
       </section>
 
-      <main className="timeline-container relative z-10 mx-auto w-full max-w-7xl px-4 py-[15vh]">
+      <main className="timeline-container relative z-20 mx-auto w-full max-w-7xl px-4 py-[15vh]">
         <div className="absolute top-0 bottom-0 left-14 w-px -translate-x-1/2 rounded bg-zinc-800/40 md:left-1/2" />
         <div className="timeline-progress absolute top-0 left-14 z-10 w-px -translate-x-1/2 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2">
-          <div className="tear-drop-tip absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-0 opacity-0 w-3 h-4">
+          <div className="tear-drop-tip absolute top-full left-1/2 -translate-x-1/2 opacity-0 w-3 h-4">
             <svg
               viewBox="0 0 100 120"
               className="w-full h-full fill-red-700 drop-shadow-[0_0_8px_rgba(185,28,28,0.8)]"
