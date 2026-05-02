@@ -5,6 +5,7 @@ import { motion, type Variants } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 import {
   CUSTOM_NODE_REGISTRY,
@@ -572,7 +573,7 @@ export default function QjtxClient() {
             variants={heroTitleVariants}
             initial="hidden"
             animate="visible"
-            className="flex items-center justify-center pb-4 pl-[0.2em] text-5xl font-light text-zinc-100 drop-shadow-[0_0_30px_rgba(255,255,255,0.1)] sm:pl-[0.4em] sm:text-7xl md:text-8xl lg:text-9xl"
+            className="flex items-center justify-center pb-4 pl-[0.2em] text-5xl font-bold text-zinc-100 drop-shadow-[0_0_30px_rgba(255,255,255,0.1)] sm:pl-[0.4em] sm:text-7xl md:text-8xl lg:text-9xl"
           >
             {"倾尽天下".split("").map((char) => (
               <motion.span
@@ -593,15 +594,15 @@ export default function QjtxClient() {
           >
             <motion.p
               variants={heroSubtitleLineVariants}
-              className="pl-[0.8em] text-sm font-light tracking-[0.8em] text-red-700 drop-shadow-[0_0_15px_rgba(185,28,28,0.5)] sm:pl-[1em] sm:text-lg sm:tracking-[1em] md:text-xl"
+              className="pl-[0.8em] text-sm font-light tracking-[0.8em] text-zinc-400 sm:pl-[1em] sm:text-lg sm:tracking-[1em] md:text-xl"
             >
-              血染江山的画
+              <span className="text-red-700 drop-shadow-[0_0_15px_rgba(185,28,28,0.5)]">血</span>染江山的画
             </motion.p>
             <motion.p
               variants={heroSubtitleLineVariants}
               className="pl-[0.8em] text-sm font-light tracking-[0.8em] text-zinc-400 sm:pl-[1em] sm:text-lg sm:tracking-[1em] md:text-xl"
             >
-              怎敌你眉间一点朱砂
+              怎敌你眉间一点<span className="text-red-700 drop-shadow-[0_0_15px_rgba(185,28,28,0.5)]">朱砂</span>
             </motion.p>
           </motion.div>
         </div>
@@ -720,9 +721,12 @@ export default function QjtxClient() {
               </p>
               <div className="w-12 h-px bg-red-900/50" />
             </div>
-            <p className="text-[11px] md:text-xs font-light tracking-[0.5em] text-zinc-500 uppercase opacity-60">
-              河图作品勘鉴 · 终章
-            </p>
+            <Link
+              href="/"
+              className="text-[11px] md:text-xs font-light tracking-[0.5em] text-zinc-500 uppercase opacity-60 hover:opacity-100 hover:text-zinc-200 transition-all duration-300"
+            >
+              河图作品勘鉴
+            </Link>
           </div>
         </div>
       </footer>
