@@ -264,6 +264,19 @@ export default function QjtxClient() {
       syncTouch: true,
     });
 
+    // 暂时禁止滚动，等待开场动画（指示线）播放完成
+    lenis.stop();
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    body.style.touchAction = "none";
+
+    const unlockTimeout = setTimeout(() => {
+      lenis.start();
+      html.style.overflow = "";
+      body.style.overflow = "";
+      body.style.touchAction = "";
+    }, (1.45 + 0.4) * animationSlowdown * 1000); // 提前一点解锁（在动画完成前）
+
     const updateScrollTrigger = () => ScrollTrigger.update();
     const raf = (time: number) => {
       lenis.raf(time * 1000);
@@ -279,6 +292,10 @@ export default function QjtxClient() {
     ScrollTrigger.refresh();
 
     return () => {
+      clearTimeout(unlockTimeout);
+      html.style.overflow = "";
+      body.style.overflow = "";
+      body.style.touchAction = "";
       html.classList.remove("qjtx-story-page");
       body.classList.remove("qjtx-story-page");
       ScrollTrigger.removeEventListener("refresh", handleRefresh);
