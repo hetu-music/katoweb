@@ -23,7 +23,7 @@ export function NodeLayout({
   if (!detail) return null;
 
   const { titleColor, bodyColor, accentColor } = resolvedTheme;
-  const bodyColumns = [detail.body.slice(0, 3), detail.body.slice(3, 6), detail.body.slice(6)];
+  const bodyColumns = [detail.body.slice(0, 2), detail.body.slice(2, 6), detail.body.slice(6)];
 
   return (
     <div className={`scrolly-text-${event.id} relative z-10 h-full w-full overflow-hidden font-serif`}>
