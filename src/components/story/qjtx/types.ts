@@ -26,9 +26,9 @@ export interface TimelineDetail {
 
 export interface TimelineEvent {
   id: string;
-  year: string;
+  year?: string;
   month?: string;
-  content: string[];
+  content?: string[];
   important?: boolean;
   detail?: TimelineDetail;
 }

@@ -103,7 +103,7 @@ function EventLines({
   mobile = false,
   align = "left",
 }: {
-  content: string[];
+  content?: string[];
   important?: boolean;
   mobile?: boolean;
   align?: "left" | "right";
@@ -116,7 +116,7 @@ function EventLines({
           : `${align === "right" ? "text-right" : "text-left"} flex flex-col gap-4 max-w-sm xl:max-w-md`
       }
     >
-      {content.map((line, index) => (
+      {content?.map((line, index) => (
         <p
           key={index}
           className={`${mobile
@@ -140,7 +140,7 @@ function EventDate({
   monthFirst = false,
   mobile = false,
 }: {
-  year: string;
+  year?: string;
   month?: string;
   monthFirst?: boolean;
   mobile?: boolean;

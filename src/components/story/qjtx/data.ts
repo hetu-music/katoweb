@@ -481,4 +481,17 @@ export const timelineData: TimelineEvent[] = [
       closing: "《烟华县志・衣冠冢志》",
     },
   },
+  {
+    id: "40",
+    important: true,
+    detail: {
+      title: "天岁天岁",
+      body: [
+        "天岁者，等天之岁也。",
+        "永安长宁，不见七苦，",
+        "少年白发，如是帝都。",
+      ],
+      closing: "《天岁城志》",
+    },
+  },
 ];
