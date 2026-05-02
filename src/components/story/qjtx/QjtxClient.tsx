@@ -289,14 +289,6 @@ export default function QjtxClient() {
 
   useGSAP(
     () => {
-      gsap.to(".scroll-hint-line", {
-        scaleY: 1.5,
-        opacity: 0,
-        duration: 1.5 * animationSlowdown,
-        repeat: -1,
-        transformOrigin: "top",
-        ease: "power2.out",
-      });
 
       const wrappers = gsap.utils.toArray<HTMLElement>(
         ".timeline-event-wrapper",
@@ -618,7 +610,7 @@ export default function QjtxClient() {
             展开编年史
           </span>
           <div className="relative h-16 w-[2px] overflow-hidden bg-zinc-800/40 rounded-full">
-            <div className="scroll-hint-line absolute top-0 left-0 h-full w-full bg-linear-to-b from-red-600 to-red-900 rounded-full shadow-[0_0_8px_rgba(220,38,38,0.5)]" />
+            <div className="scroll-hint-line absolute top-0 left-0 h-full w-full bg-red-900/40 rounded-full" />
           </div>
         </motion.div>
       </section>
