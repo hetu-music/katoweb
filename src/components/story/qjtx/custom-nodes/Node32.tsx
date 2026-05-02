@@ -2,7 +2,9 @@ import gsap from "gsap";
 import type { ImmersiveTheme, TimelineEvent } from "../types";
 
 export const theme: ImmersiveTheme = {
-  bg: "radial-gradient(circle at 50% 24%, rgba(251, 207, 232, 0.14) 0%, rgba(39, 39, 42, 0.52) 26%, rgba(9, 9, 11, 0.97) 100%), url(/story/qjtx/32.avif) center/cover no-repeat fixed",
+  // Using an opaque radial gradient to ensure the timeline beneath is fully blocked, 
+  // while applying the background image directly to theme.bg so it inherits the circular expansion mask.
+  bg: "radial-gradient(circle at 50% 24%, rgba(24, 24, 27, 0.95) 0%, rgba(9, 9, 11, 0.98) 26%, rgba(0, 0, 0, 1) 100%), url(/story/qjtx/32.avif) center/cover no-repeat fixed",
   titleColor: "#fce7f3",
   bodyColor: "#f5f3ff",
   accentColor: "#f472b6",
@@ -26,69 +28,77 @@ export function NodeLayout({
   const dreamLines = detail.body.slice(0, -1);
 
   return (
-    <div className={`scrolly-text-${event.id} relative z-10 h-full w-full overflow-hidden`}>
-      <div
-        className={`scrolly-snow-${event.id} absolute inset-0 pointer-events-none opacity-0 mix-blend-screen`}
-        style={{
-          backgroundImage:
-            "radial-gradient(3px 3px at 80px 60px, rgba(255,255,255,0.95), transparent), radial-gradient(2px 2px at 180px 140px, rgba(252,231,243,0.9), transparent), radial-gradient(4px 4px at 280px 220px, rgba(255,255,255,0.72), transparent)",
-          backgroundSize: "420px 420px",
-        }}
-      />
-      <div
-        className={`scrolly-bloom-${event.id} absolute inset-0 pointer-events-none opacity-0`}
-        style={{
-          background:
-            "radial-gradient(circle at 20% 82%, rgba(244,114,182,0.16), transparent 26%), radial-gradient(circle at 80% 80%, rgba(251,207,232,0.12), transparent 28%), radial-gradient(circle at 50% 24%, rgba(255,255,255,0.08), transparent 30%)",
-        }}
-      />
+    <div className={`scrolly-text-${event.id} relative z-10 h-full w-full overflow-hidden font-serif select-none`}>
+        
+        {/* Ambient Snow / Petals (These fade in *after* the circle expands) */}
+        <div
+          className={`scrolly-snow-${event.id} absolute inset-0 pointer-events-none opacity-0 mix-blend-screen`}
+          style={{
+            backgroundImage:
+              "radial-gradient(3px 3px at 80px 60px, rgba(255,255,255,0.95), transparent), radial-gradient(2px 2px at 180px 140px, rgba(252,231,243,0.9), transparent), radial-gradient(4px 4px at 280px 220px, rgba(255,255,255,0.72), transparent)",
+            backgroundSize: "420px 420px",
+          }}
+        />
+        <div
+          className={`scrolly-bloom-${event.id} absolute inset-0 pointer-events-none opacity-0`}
+          style={{
+            background:
+              "radial-gradient(circle at 20% 82%, rgba(244,114,182,0.16), transparent 26%), radial-gradient(circle at 80% 80%, rgba(251,207,232,0.12), transparent 28%), radial-gradient(circle at 50% 24%, rgba(255,255,255,0.08), transparent 30%)",
+          }}
+        />
 
-      <div className={`scrolly-intro-${event.id} absolute inset-0 flex flex-col items-center justify-center px-6`}>
-        <div className="flex max-w-4xl flex-col items-center text-center">
-          <div
-            className={`scrolly-moon-${event.id} mb-8 h-28 w-28 rounded-full md:h-36 md:w-36`}
-            style={{
-              background:
-                "radial-gradient(circle at 35% 35%, rgba(255,255,255,0.95), rgba(252,231,243,0.5) 42%, rgba(244,114,182,0.08) 72%, transparent 100%)",
-              boxShadow: `0 0 45px ${accentColor}33`,
-            }}
-          />
-          <h2
-            className={`scrolly-title-${event.id} text-5xl font-serif font-light tracking-[0.44em] md:text-7xl md:tracking-[0.58em]`}
-            style={{ color: titleColor, paddingLeft: "0.44em" }}
-          >
-            {detail.title}
-          </h2>
-          <p
-            className={`scrolly-quote-${event.id} mt-7 text-sm font-light tracking-[0.42em] text-slate-100/80 md:mt-9 md:text-lg md:tracking-[0.58em]`}
-            style={{ color: bodyColor, paddingLeft: "0.42em" }}
-          >
-            {detail.quote}
-          </p>
-        </div>
-      </div>
-
-      <div className={`scrolly-body-container-${event.id} absolute inset-0 flex items-center justify-center px-5 py-10 md:px-10`}>
-        <div className={`scrolly-dreamstage-${event.id} relative flex w-full max-w-5xl flex-col items-center gap-4 md:gap-5`}>
-          {dreamLines.map((line, index) => (
+        {/* Stage 1: Intro */}
+        <div className={`scrolly-intro-${event.id} absolute inset-0 flex flex-col items-center justify-center px-6`}>
+          <div className="flex max-w-4xl flex-col items-center text-center">
             <div
-              key={index}
-              className={`scrolly-body-line rounded-[999px] border border-white/10 bg-black/18 px-6 py-4 text-center text-sm leading-[1.95] tracking-[0.18em] text-slate-100/88 shadow-[0_0_24px_rgba(244,114,182,0.06)] backdrop-blur-md md:px-8 md:py-4 md:text-[15px] ${index % 2 === 0 ? "-translate-x-5 md:-translate-x-14" : "translate-x-5 md:translate-x-14"
-                }`}
-              style={{ color: bodyColor, maxWidth: `${72 - index * 5}%` }}
+              className={`scrolly-moon-${event.id} mb-8 h-28 w-28 rounded-full md:h-36 md:w-36`}
+              style={{
+                background:
+                  "radial-gradient(circle at 35% 35%, rgba(255,255,255,0.95), rgba(252,231,243,0.5) 42%, rgba(244,114,182,0.08) 72%, transparent 100%)",
+                boxShadow: `0 0 45px ${accentColor}33`,
+              }}
+            />
+            <h2
+              className={`scrolly-title-${event.id} text-5xl font-serif font-light tracking-[0.44em] md:text-7xl md:tracking-[0.58em]`}
+              style={{ color: titleColor, paddingLeft: "0.44em" }}
             >
-              {line}
-            </div>
-          ))}
-
-          <div
-            className={`scrolly-final-line-${event.id} mt-5 rounded-full border border-pink-200/18 bg-linear-to-r from-transparent via-pink-300/12 to-transparent px-8 py-5 text-center text-2xl font-serif tracking-[0.3em] shadow-[0_0_40px_rgba(244,114,182,0.12)] backdrop-blur-md md:mt-8 md:px-12 md:py-6 md:text-4xl md:tracking-[0.42em]`}
-            style={{ color: titleColor, paddingLeft: "0.3em" }}
-          >
-            {lastLine}
+              {detail.title}
+            </h2>
+            <p
+              className={`scrolly-quote-${event.id} mt-7 text-sm font-light tracking-[0.42em] text-slate-100/80 md:mt-9 md:text-lg md:tracking-[0.58em]`}
+              style={{ color: bodyColor, paddingLeft: "0.42em" }}
+            >
+              {detail.quote}
+            </p>
           </div>
         </div>
-      </div>
+
+        {/* Stage 2: The Dream (Pre-Climax lines) */}
+        <div className={`scrolly-dreamstage-${event.id} absolute inset-0 flex items-center justify-center px-5 py-10 md:px-10 opacity-0`}>
+            <div className="relative flex w-full max-w-5xl flex-col items-center gap-4 md:gap-5">
+              {dreamLines.map((line, index) => (
+                <div
+                  key={index}
+                  className={`scrolly-body-line rounded-[999px] border border-white/10 bg-black/40 px-6 py-4 text-center text-sm leading-[1.95] tracking-[0.18em] text-slate-100/90 shadow-[0_0_24px_rgba(244,114,182,0.06)] backdrop-blur-md md:px-8 md:py-4 md:text-[15px] ${index % 2 === 0 ? "-translate-x-5 md:-translate-x-14" : "translate-x-5 md:translate-x-14"
+                    }`}
+                  style={{ color: bodyColor, maxWidth: `${72 - index * 5}%` }}
+                >
+                  {line}
+                </div>
+              ))}
+            </div>
+        </div>
+
+        {/* Stage 3: The Climax ("你回来了") */}
+        <div className={`scrolly-climax-${event.id} absolute inset-0 flex items-center justify-center px-6 opacity-0`}>
+            <div
+              className={`scrolly-final-line-${event.id} rounded-full border border-pink-200/30 bg-linear-to-r from-transparent via-pink-400/20 to-transparent px-8 py-5 text-center text-3xl font-serif tracking-[0.4em] shadow-[0_0_60px_rgba(244,114,182,0.3)] backdrop-blur-md md:px-16 md:py-8 md:text-5xl md:tracking-[0.5em]`}
+              style={{ color: titleColor, paddingLeft: "0.4em" }}
+            >
+              {lastLine}
+            </div>
+        </div>
+
     </div>
   );
 }
@@ -100,78 +110,77 @@ export function animate(
   scrollyText: HTMLElement,
   eventId: string,
 ) {
-  const intro = scrollyText.querySelector(`.scrolly-intro-${eventId}`);
-  const title = scrollyText.querySelector(`.scrolly-title-${eventId}`);
-  const quote = scrollyText.querySelector(`.scrolly-quote-${eventId}`);
-  const moon = scrollyText.querySelector(`.scrolly-moon-${eventId}`);
-  const bodyContainer = scrollyText.querySelector(`.scrolly-body-container-${eventId}`);
-  const bodyLines = scrollyText.querySelectorAll(`.scrolly-body-line`);
-  const finalLine = scrollyText.querySelector(`.scrolly-final-line-${eventId}`);
-  const dreamstage = scrollyText.querySelector(`.scrolly-dreamstage-${eventId}`);
-  const snow = scrollyText.querySelector(`.scrolly-snow-${eventId}`);
-  const bloom = scrollyText.querySelector(`.scrolly-bloom-${eventId}`);
+  const sel = (s: string) => scrollyText.querySelector(s);
+  const selAll = (s: string) => scrollyText.querySelectorAll(s);
 
-  tl.set([title, quote, moon, bodyLines, finalLine, dreamstage, snow, bloom], {
-    opacity: 0,
-  });
+  const intro = sel(`.scrolly-intro-${eventId}`);
+  const title = sel(`.scrolly-title-${eventId}`);
+  const quote = sel(`.scrolly-quote-${eventId}`);
+  const moon = sel(`.scrolly-moon-${eventId}`);
+  
+  const dreamstage = sel(`.scrolly-dreamstage-${eventId}`);
+  const bodyLines = selAll(`.scrolly-body-line`);
+  
+  const climaxStage = sel(`.scrolly-climax-${eventId}`);
+  const finalLine = sel(`.scrolly-final-line-${eventId}`);
+  
+  const snow = sel(`.scrolly-snow-${eventId}`);
+  const bloom = sel(`.scrolly-bloom-${eventId}`);
 
+  // Initial States
+  tl.set([dreamstage, climaxStage, snow, bloom], { opacity: 0 });
+  tl.set([title, quote, moon, bodyLines, finalLine], { opacity: 0 });
+
+  // 1. Background Mask Expansion (Restore original circular expand logic)
   tl.fromTo(
     scrollyBg,
     { "--radius": "0px" },
     { "--radius": "150vmax", duration: 6.2, ease: "power2.inOut" },
     0,
-  )
-    .to([snow, bloom], { opacity: 1, duration: 2.6 }, 0.6)
-    .fromTo(
-      moon,
-      { opacity: 0, scale: 0.7, filter: "blur(16px)" },
-      { opacity: 1, scale: 1, filter: "blur(0px)", duration: 3.4, ease: "power3.out" },
-      1.3,
-    )
-    .fromTo(
-      title,
-      { opacity: 0, y: 20, filter: "blur(16px)" },
-      { opacity: 1, y: 0, filter: "blur(0px)", duration: 3.6, ease: "power3.out" },
-      1.6,
-    )
-    .fromTo(
-      quote,
-      { opacity: 0, y: 10, filter: "blur(8px)" },
-      { opacity: 1, y: 0, filter: "blur(0px)", duration: 3, ease: "power2.out" },
-      2,
-    )
-    .to([moon, title, quote], { opacity: 0, y: -16, filter: "blur(12px)", duration: 3, ease: "power2.inOut" }, "+=2.4")
-    .set(intro, { display: "none" })
-    .fromTo(
-      dreamstage,
-      { opacity: 0, y: 20, scale: 0.98, filter: "blur(10px)" },
-      { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 2.4, ease: "power2.out" },
-      "-=0.1",
-    )
-    .fromTo(
-      bodyLines,
-      { opacity: 0, y: 16, filter: "blur(10px)" },
-      {
-        opacity: 1,
-        y: 0,
-        filter: "blur(0px)",
-        duration: 1.8,
-        stagger: 0.16,
-        ease: "power2.out",
-      },
-      "-=1.6",
-    )
-    .fromTo(
-      finalLine,
-      { opacity: 0, scale: 0.92, filter: "blur(12px)" },
-      { opacity: 1, scale: 1, filter: "blur(0px)", duration: 2.8, ease: "power3.out" },
-      "-=0.3",
-    )
-    .to([bodyLines, finalLine], { opacity: 0, y: -10, filter: "blur(10px)", duration: 3.8, ease: "power2.inOut" }, "+=4")
-    .set(bodyContainer, { display: "none" })
-    .to([snow, bloom], { opacity: 0, duration: 2.8 }, "-=2.6")
-    .to(scrollyBg, { "--radius": "0px", duration: 5.4, ease: "power2.inOut" }, "-=1.6");
+  );
+  
+  tl.to([snow, bloom], { opacity: 1, duration: 2.6 }, 0.6);
+  
+  // 2. Intro Sequence
+  tl.fromTo(moon, { opacity: 0, scale: 0.7, filter: "blur(16px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 3.4, ease: "power3.out" }, 1.3);
+  tl.fromTo(title, { opacity: 0, y: 20, filter: "blur(16px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 3.6, ease: "power3.out" }, 1.6);
+  tl.fromTo(quote, { opacity: 0, y: 10, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 3, ease: "power2.out" }, 2);
+  
+  // Exit Intro
+  tl.to([moon, title, quote], { opacity: 0, y: -16, filter: "blur(12px)", duration: 3, ease: "power2.inOut" }, "+=2.4");
+  tl.set(intro, { display: "none" });
+  
+  // 3. The Dream Sequence (Preceding Lines)
+  tl.set(dreamstage, { display: "flex", opacity: 1 });
+  tl.fromTo(bodyLines, 
+    { opacity: 0, y: 16, filter: "blur(10px)" },
+    { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.8, stagger: 0.16, ease: "power2.out" },
+    "-=0.1"
+  );
+  
+  // Exit The Dream Sequence entirely
+  tl.to(bodyLines, { opacity: 0, y: -16, filter: "blur(12px)", duration: 2.5, stagger: 0.1, ease: "power2.inOut" }, "+=3");
+  tl.set(dreamstage, { display: "none" });
 
+  // 4. The Climax ("你回来了")
+  tl.set(climaxStage, { display: "flex", opacity: 1 });
+  
+  // Dramatic, slow entrance for maximum impact in the dead center
+  tl.fromTo(finalLine, 
+    { opacity: 0, scale: 0.8, filter: "blur(20px)" },
+    { opacity: 1, scale: 1, filter: "blur(0px)", duration: 4, ease: "power3.out" },
+    "+=0.5"
+  );
+
+  // Allow the climax to linger, then fade it out
+  tl.to(finalLine, { opacity: 0, scale: 1.1, filter: "blur(15px)", duration: 3, ease: "power2.in" }, "+=3.5");
+  tl.set(climaxStage, { display: "none" });
+
+  // 5. Global Exit (Collapse Mask back to dot)
+  tl.to([snow, bloom], { opacity: 0, duration: 2.8 }, "-=2.6");
+  tl.to(scrollyBg, { "--radius": "0px", duration: 5.4, ease: "power2.inOut" }, "-=1.6");
+
+  // Continuous background animation
   if (snow) {
     gsap.to(snow, {
       backgroundPosition: "0px 560px",
