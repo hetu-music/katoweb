@@ -427,9 +427,7 @@ export async function apiUpdateUser(
   });
   if (!res.ok) {
     const d = await res.json().catch(() => ({}));
-    throw new Error(
-      (d as { error?: string }).error || "更新用户失败",
-    );
+    throw new Error((d as { error?: string }).error || "更新用户失败");
   }
   return res.json();
 }

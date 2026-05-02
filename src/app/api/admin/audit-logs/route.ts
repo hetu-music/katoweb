@@ -18,9 +18,12 @@ export const GET = withAuth(
 
     const { data, error, count } = await supabase
       .from(TABLES.AUDIT_LOGS)
-      .select("id, table_name, action_type, user_id, old_data, new_data, changed_at", {
-        count: "exact",
-      })
+      .select(
+        "id, table_name, action_type, user_id, old_data, new_data, changed_at",
+        {
+          count: "exact",
+        },
+      )
       .order("changed_at", { ascending: false })
       .range(from, to);
 

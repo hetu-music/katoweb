@@ -9,6 +9,7 @@ export const profileAccountFormSchema = z.object({
     .min(1, "用户名不能为空")
     .max(30, "用户名不能超过30个字符"),
   intro: z.string().max(200, "个人简介不能超过200个字符"),
+  display: z.boolean(),
 });
 
 export const profilePasswordFormSchema = z

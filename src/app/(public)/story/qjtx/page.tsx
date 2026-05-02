@@ -9,7 +9,8 @@ const STORY_TITLE = "倾尽天下 · 编年史";
 export async function generateMetadata(): Promise<Metadata> {
   const events = await getQjtxTimeline();
   const firstEvent = events[0];
-  const secondLastEvent = events[events.length - 2] || events[events.length - 1];
+  const secondLastEvent =
+    events[events.length - 2] || events[events.length - 1];
   const description = `以 ${events.length} 个历史节点展现《倾尽天下》的故事，从${firstEvent?.year ?? "乱世初起"}到${secondLastEvent?.year ?? "故人长绝"}，沉浸式回望白炎、朱砂与故国山河。`;
 
   return {
@@ -61,7 +62,8 @@ export default async function QingJinTianXiaPage() {
   const events = await getQjtxTimeline();
 
   const firstEvent = events[0];
-  const secondLastEvent = events[events.length - 2] || events[events.length - 1];
+  const secondLastEvent =
+    events[events.length - 2] || events[events.length - 1];
   const description = `以 ${events.length} 个历史节点展现《倾尽天下》的故事，从${firstEvent?.year ?? "乱世初起"}到${secondLastEvent?.year ?? "故人长绝"}，沉浸式回望白炎、朱砂与故国山河。`;
 
   const jsonLd = {

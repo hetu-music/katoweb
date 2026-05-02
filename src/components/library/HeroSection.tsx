@@ -122,10 +122,10 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 style={{ gap: "0.8em" }}
               >
                 {/* 顶部发光点 - 移除中心点，仅保留呼吸晕影 */}
-                <div
-                  className="relative flex items-center justify-center h-3 w-3"
-                >
-                  <div className={`absolute h-4 w-4 rounded-full ${feature.dotHaloBase} blur-[1.5px] transition-all duration-800 ease-out ${feature.dotHaloHover} group-hover:blur-sm group-hover:scale-125`} />
+                <div className="relative flex items-center justify-center h-3 w-3">
+                  <div
+                    className={`absolute h-4 w-4 rounded-full ${feature.dotHaloBase} blur-[1.5px] transition-all duration-800 ease-out ${feature.dotHaloHover} group-hover:blur-sm group-hover:scale-125`}
+                  />
                   <div
                     className={`absolute h-1.5 w-1.5 rounded-full ${feature.dotCore} animate-pulse shadow-[0_0_8px_${feature.glow}]`}
                     style={{ animationDuration: "2s" }}
@@ -133,33 +133,38 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 </div>
 
                 {/* 竖排标题 - 移除 pr-1 防止不对称 padding 导致的盒子偏移，确保文字和光点绝对中心对齐 */}
-                <div className={`[writing-mode:vertical-rl] font-calligraphy font-medium tracking-[0.85em] -mb-[0.85em] ${feature.textBase} ${feature.textHover} transition-[color,filter,text-shadow] duration-1000 group-hover:drop-shadow-[0_0_12px_${feature.glow}] select-none`}>
-                      {feature.label.split("").map((char, i) => (
-                        <motion.span
-                          key={i}
-                          initial={{ opacity: 0, scale: 0.8, filter: "blur(8px)" }}
-                          animate={(!hoveredId || hoveredId === feature.id) 
-                            ? { opacity: 1, scale: 1, filter: "blur(0px)" } 
-                            : { opacity: 0, scale: 0.6, filter: "blur(12px)" }
-                          }
-                          style={{
-                            backfaceVisibility: "hidden",
-                            WebkitFontSmoothing: "antialiased",
-                            transform: "translateZ(0)",
-                            willChange: "transform, opacity",
-                          }}
-                          transition={{
-                            delay: (!hoveredId || hoveredId === feature.id) 
-                              ? (0.45 + index * 0.15 + i * 0.15) 
-                              : (i * 0.05),
-                            duration: (!hoveredId || hoveredId === feature.id) ? 2.0 : 0.8,
-                            ease: [0.215, 0.61, 0.355, 1],
-                          }}
-                          className="inline-block"
-                        >
-                          {char}
-                        </motion.span>
-                      ))}
+                <div
+                  className={`[writing-mode:vertical-rl] font-calligraphy font-medium tracking-[0.85em] -mb-[0.85em] ${feature.textBase} ${feature.textHover} transition-[color,filter,text-shadow] duration-1000 group-hover:drop-shadow-[0_0_12px_${feature.glow}] select-none`}
+                >
+                  {feature.label.split("").map((char, i) => (
+                    <motion.span
+                      key={i}
+                      initial={{ opacity: 0, scale: 0.8, filter: "blur(8px)" }}
+                      animate={
+                        !hoveredId || hoveredId === feature.id
+                          ? { opacity: 1, scale: 1, filter: "blur(0px)" }
+                          : { opacity: 0, scale: 0.6, filter: "blur(12px)" }
+                      }
+                      style={{
+                        backfaceVisibility: "hidden",
+                        WebkitFontSmoothing: "antialiased",
+                        transform: "translateZ(0)",
+                        willChange: "transform, opacity",
+                      }}
+                      transition={{
+                        delay:
+                          !hoveredId || hoveredId === feature.id
+                            ? 0.45 + index * 0.15 + i * 0.15
+                            : i * 0.05,
+                        duration:
+                          !hoveredId || hoveredId === feature.id ? 2.0 : 0.8,
+                        ease: [0.215, 0.61, 0.355, 1],
+                      }}
+                      className="inline-block"
+                    >
+                      {char}
+                    </motion.span>
+                  ))}
                 </div>
 
                 {/* Hover 展开的说明面板 (画卷式向左侧缓慢延展展出) */}
@@ -210,21 +215,30 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
               >
                 <div className="flex items-center gap-4">
                   {/* 发光晕影 (无实心中心，弱化呼吸) */}
-                  <div
-                    className="relative flex items-center justify-center h-3 w-3"
-                  >
-                    <div className={`absolute h-4 w-4 rounded-full ${feature.dotHaloBase} blur-[1px] transition-all group-active:scale-110`} />
-                    <div className={`absolute h-1.5 w-1.5 rounded-full ${feature.dotCore} animate-pulse shadow-[0_0_6px_${feature.glow}]`} />
+                  <div className="relative flex items-center justify-center h-3 w-3">
+                    <div
+                      className={`absolute h-4 w-4 rounded-full ${feature.dotHaloBase} blur-[1px] transition-all group-active:scale-110`}
+                    />
+                    <div
+                      className={`absolute h-1.5 w-1.5 rounded-full ${feature.dotCore} animate-pulse shadow-[0_0_6px_${feature.glow}]`}
+                    />
                   </div>
                   {/* 标题 */}
-                  <div className={`flex items-center text-[16px] font-calligraphy font-medium tracking-[0.5em] ${feature.textBase} ${feature.textHover} leading-none transition-opacity duration-500`}>
+                  <div
+                    className={`flex items-center text-[16px] font-calligraphy font-medium tracking-[0.5em] ${feature.textBase} ${feature.textHover} leading-none transition-opacity duration-500`}
+                  >
                     {feature.label.split("").map((char, i) => (
                       <motion.span
                         key={i}
-                        initial={{ opacity: 0, scale: 0.8, filter: "blur(8px)" }}
-                        animate={(!hoveredId || hoveredId === feature.id) 
-                          ? { opacity: 1, scale: 1, filter: "blur(0px)" } 
-                          : { opacity: 0, scale: 0.6, filter: "blur(12px)" }
+                        initial={{
+                          opacity: 0,
+                          scale: 0.8,
+                          filter: "blur(8px)",
+                        }}
+                        animate={
+                          !hoveredId || hoveredId === feature.id
+                            ? { opacity: 1, scale: 1, filter: "blur(0px)" }
+                            : { opacity: 0, scale: 0.6, filter: "blur(12px)" }
                         }
                         style={{
                           backfaceVisibility: "hidden",
@@ -233,10 +247,12 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                           willChange: "transform, opacity",
                         }}
                         transition={{
-                          delay: (!hoveredId || hoveredId === feature.id) 
-                            ? (0.35 + index * 0.15 + i * 0.15) 
-                            : (i * 0.05),
-                          duration: (!hoveredId || hoveredId === feature.id) ? 2.0 : 0.8,
+                          delay:
+                            !hoveredId || hoveredId === feature.id
+                              ? 0.35 + index * 0.15 + i * 0.15
+                              : i * 0.05,
+                          duration:
+                            !hoveredId || hoveredId === feature.id ? 2.0 : 0.8,
                           ease: [0.215, 0.61, 0.355, 1],
                         }}
                         className="inline-block"

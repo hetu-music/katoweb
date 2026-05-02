@@ -112,9 +112,10 @@ const CREATOR_FIELD_KEYS = [
 
 type CreatorFieldKey = (typeof CREATOR_FIELD_KEYS)[number];
 
-const MISSING_FIELD_LABEL_OVERRIDES: Partial<Record<SongFormFieldKey, string>> = {
-  lyrics: "歌词",
-};
+const MISSING_FIELD_LABEL_OVERRIDES: Partial<Record<SongFormFieldKey, string>> =
+  {
+    lyrics: "歌词",
+  };
 
 function isCreatorFieldKey(value: SongFormFieldKey): value is CreatorFieldKey {
   return CREATOR_FIELD_KEYS.includes(value as CreatorFieldKey);
@@ -187,7 +188,8 @@ const AdminListRow = React.memo(
   }) => {
     const missingFields = getMissingFields(song);
     const visibleMissingFields = missingFields.slice(0, 4);
-    const hiddenMissingCount = missingFields.length - visibleMissingFields.length;
+    const hiddenMissingCount =
+      missingFields.length - visibleMissingFields.length;
 
     return (
       <div className="flex flex-col bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden transition-all hover:shadow-md hover:border-blue-200 dark:hover:border-blue-900/30">

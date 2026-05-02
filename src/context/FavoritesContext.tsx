@@ -6,6 +6,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useMemo,
   useRef,
 } from "react";
 import { useUserContext } from "@/context/UserContext";
@@ -30,15 +31,43 @@ interface FavoritesContextValue {
   isLoggedIn: boolean;
 }
 
+interface FavoritesState {
+  userId: string | null;
+  favorites: number[];
+  favoriteSongs: Song[];
+  loaded: boolean;
+}
+
 const FavoritesContext = createContext<FavoritesContextValue | null>(null);
 
 export function FavoritesProvider({ children }: { children: React.ReactNode }) {
   const { user, loaded: userLoaded } = useUserContext();
-  const [favorites, setFavorites] = useState<number[]>([]);
-  const [favoriteSongs, setFavoriteSongs] = useState<Song[]>([]);
-  const [loaded, setLoaded] = useState(false);
+  const [favoritesState, setFavoritesState] = useState<FavoritesState>({
+    userId: null,
+    favorites: [],
+    favoriteSongs: [],
+    loaded: false,
+  });
   const csrfRef = useRef<string>("");
   const prevUserIdRef = useRef<string | null>(null);
+  const currentUserId = user?.id ?? null;
+  const favorites = useMemo(
+    () =>
+      favoritesState.userId === currentUserId ? favoritesState.favorites : [],
+    [currentUserId, favoritesState.favorites, favoritesState.userId],
+  );
+  const favoriteSongs = useMemo(
+    () =>
+      favoritesState.userId === currentUserId
+        ? favoritesState.favoriteSongs
+        : [],
+    [currentUserId, favoritesState.favoriteSongs, favoritesState.userId],
+  );
+  const loaded = !userLoaded
+    ? false
+    : currentUserId === null
+      ? true
+      : favoritesState.userId === currentUserId && favoritesState.loaded;
 
   const fetchCsrf = useCallback(async () => {
     if (csrfRef.current) return csrfRef.current;
@@ -50,42 +79,78 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 
   // Reload favorites when user changes
   const fetchFavorites = useCallback(async () => {
+    if (!currentUserId) return;
+
     try {
       const res = await fetch("/api/public/collections");
       if (!res.ok) {
-        setFavorites([]);
-        setFavoriteSongs([]);
+        setFavoritesState({
+          userId: currentUserId,
+          favorites: [],
+          favoriteSongs: [],
+          loaded: true,
+        });
         return;
       }
       const data = await res.json();
-      setFavorites(data.songIds ?? []);
-      setFavoriteSongs(Array.isArray(data.songs) ? data.songs : []);
+      setFavoritesState({
+        userId: currentUserId,
+        favorites: data.songIds ?? [],
+        favoriteSongs: Array.isArray(data.songs) ? data.songs : [],
+        loaded: true,
+      });
     } catch {
-      // silently fail
-    } finally {
-      setLoaded(true);
+      setFavoritesState((prev) =>
+        prev.userId === currentUserId
+          ? { ...prev, loaded: true }
+          : {
+              userId: currentUserId,
+              favorites: [],
+              favoriteSongs: [],
+              loaded: true,
+            },
+      );
     }
-  }, []);
+  }, [currentUserId]);
 
   useEffect(() => {
     if (!userLoaded) return;
 
-    const currentId = user?.id ?? null;
-
     // Skip if user hasn't changed
-    if (currentId === prevUserIdRef.current) return;
-    prevUserIdRef.current = currentId;
+    if (currentUserId === prevUserIdRef.current) return;
+    prevUserIdRef.current = currentUserId;
 
-    if (!user) {
-      setFavorites([]);
-      setFavoriteSongs([]);
-      setLoaded(true);
-      return;
+    if (currentUserId) {
+      void fetch("/api/public/collections")
+        .then(async (res) => {
+          if (!res.ok) {
+            setFavoritesState({
+              userId: currentUserId,
+              favorites: [],
+              favoriteSongs: [],
+              loaded: true,
+            });
+            return;
+          }
+
+          const data = await res.json();
+          setFavoritesState({
+            userId: currentUserId,
+            favorites: data.songIds ?? [],
+            favoriteSongs: Array.isArray(data.songs) ? data.songs : [],
+            loaded: true,
+          });
+        })
+        .catch(() => {
+          setFavoritesState({
+            userId: currentUserId,
+            favorites: [],
+            favoriteSongs: [],
+            loaded: true,
+          });
+        });
     }
-
-    setLoaded(false);
-    fetchFavorites();
-  }, [user, userLoaded, fetchFavorites]);
+  }, [currentUserId, userLoaded]);
 
   const toggleFavorite = useCallback(
     async (id: number) => {
@@ -94,16 +159,29 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
       // Read current state via functional update pattern to avoid stale closure
       let isCurrentlyFav = false;
 
-      setFavorites((prev) => {
-        isCurrentlyFav = prev.includes(id);
-        // Optimistic update
-        return isCurrentlyFav ? prev.filter((x) => x !== id) : [...prev, id];
+      setFavoritesState((prev) => {
+        const prevFavorites =
+          prev.userId === currentUserId ? prev.favorites : [];
+        isCurrentlyFav = prevFavorites.includes(id);
+        return {
+          userId: currentUserId,
+          favorites: isCurrentlyFav
+            ? prevFavorites.filter((x) => x !== id)
+            : [...prevFavorites, id],
+          favoriteSongs:
+            prev.userId === currentUserId ? prev.favoriteSongs : [],
+          loaded: true,
+        };
       });
 
       // Also optimistically remove from favoriteSongs if unfavoriting
       // (we don't need to add song data on favorite — it'll be there on next full fetch)
       if (isCurrentlyFav) {
-        setFavoriteSongs((prev) => prev.filter((s) => s.id !== id));
+        setFavoritesState((prev) => ({
+          ...prev,
+          userId: currentUserId,
+          favoriteSongs: prev.favoriteSongs.filter((s) => s.id !== id),
+        }));
       }
 
       try {
@@ -119,28 +197,36 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 
         if (!res.ok) {
           // Rollback
-          setFavorites((prev) =>
-            isCurrentlyFav ? [...prev, id] : prev.filter((x) => x !== id),
-          );
+          setFavoritesState((prev) => ({
+            ...prev,
+            userId: currentUserId,
+            favorites: isCurrentlyFav
+              ? [...prev.favorites, id]
+              : prev.favorites.filter((x) => x !== id),
+          }));
           csrfRef.current = "";
           // Re-fetch to get consistent state
-          fetchFavorites();
+          void fetchFavorites();
           return;
         }
 
         // After a successful add, re-fetch to get the full song data
         // so that the profile page shows the correct song info
         if (!isCurrentlyFav) {
-          fetchFavorites();
+          void fetchFavorites();
         }
       } catch {
         // Rollback on network error
-        setFavorites((prev) =>
-          isCurrentlyFav ? [...prev, id] : prev.filter((x) => x !== id),
-        );
+        setFavoritesState((prev) => ({
+          ...prev,
+          userId: currentUserId,
+          favorites: isCurrentlyFav
+            ? [...prev.favorites, id]
+            : prev.favorites.filter((x) => x !== id),
+        }));
       }
     },
-    [user, fetchCsrf, fetchFavorites],
+    [currentUserId, fetchCsrf, fetchFavorites, user],
   );
 
   const isFavorite = useCallback(
@@ -152,8 +238,12 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
     if (!user || favorites.length === 0) return;
     const prevFavs = favorites;
     const prevSongs = favoriteSongs;
-    setFavorites([]);
-    setFavoriteSongs([]);
+    setFavoritesState({
+      userId: currentUserId,
+      favorites: [],
+      favoriteSongs: [],
+      loaded: true,
+    });
 
     try {
       const csrf = await fetchCsrf();
@@ -171,10 +261,14 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
       );
     } catch {
       // Rollback
-      setFavorites(prevFavs);
-      setFavoriteSongs(prevSongs);
+      setFavoritesState({
+        userId: currentUserId,
+        favorites: prevFavs,
+        favoriteSongs: prevSongs,
+        loaded: true,
+      });
     }
-  }, [user, favorites, favoriteSongs, fetchCsrf]);
+  }, [currentUserId, user, favorites, favoriteSongs, fetchCsrf]);
 
   return (
     <FavoritesContext.Provider
@@ -185,7 +279,7 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
         isFavorite,
         clearFavorites,
         refreshFavorites: fetchFavorites,
-        loaded: userLoaded && loaded,
+        loaded,
         isLoggedIn: !!user,
       }}
     >

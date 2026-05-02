@@ -75,7 +75,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [items, setItems] = useState<ImageryItem[]>([]);
-  const [itemsLoading, setItemsLoading] = useState(false);
+  const [itemsLoading, setItemsLoading] = useState(true);
   const [itemsError, setItemsError] = useState<string | null>(null);
   const [imagerySearchTerm, setImagerySearchTerm] = useState("");
   const [imageryPage, setImageryPage] = useState(1);
@@ -85,7 +85,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   const [categoryPage, setCategoryPage] = useState(1);
 
   const [meanings, setMeanings] = useState<ImageryMeaning[]>([]);
-  const [meaningsLoading, setMeaningsLoading] = useState(false);
+  const [meaningsLoading, setMeaningsLoading] = useState(true);
   const [meaningsSearchTerm, setMeaningsSearchTerm] = useState("");
   const [meaningsPage, setMeaningsPage] = useState(1);
   const [addingMeaning, setAddingMeaning] = useState(false);
@@ -93,7 +93,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   const [meaningSubmitting, setMeaningSubmitting] = useState(false);
 
   const [allSongs, setAllSongs] = useState<SongOption[]>([]);
-  const [songsLoading, setSongsLoading] = useState(false);
+  const [songsLoading, setSongsLoading] = useState(true);
   const [songSearchTerm, setSongSearchTerm] = useState("");
   const [songsPage, setSongsPage] = useState(1);
   const [expandedSongId, setExpandedSongId] = useState<number | null>(null);
@@ -113,33 +113,24 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     setTimeout(() => setToast(null), 3000);
   }, []);
 
+  const fetchImageryItems = useCallback(async () => {
+    const nextItems = await apiGetImageryItems();
+    setItems(nextItems);
+    setItemsError(null);
+    return nextItems;
+  }, []);
+
   const refreshImageryItems = useCallback(async () => {
     setItemsLoading(true);
-    setItemsError(null);
     try {
-      const nextItems = await apiGetImageryItems();
-      setItems(nextItems);
+      return await fetchImageryItems();
     } catch (error) {
       setItemsError(error instanceof Error ? error.message : "加载意象失败");
+      return [];
     } finally {
       setItemsLoading(false);
     }
-  }, []);
-
-  const loadMeanings = useCallback(async () => {
-    setMeaningsLoading(true);
-    try {
-      const nextMeanings = await apiGetMeanings();
-      setMeanings(nextMeanings);
-    } catch (error) {
-      showToast(
-        "error",
-        error instanceof Error ? error.message : "加载含义失败",
-      );
-    } finally {
-      setMeaningsLoading(false);
-    }
-  }, [showToast]);
+  }, [fetchImageryItems]);
 
   const loadOccurrencesForSong = useCallback(
     async (songId: number) => {
@@ -173,12 +164,30 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   }, []);
 
   useEffect(() => {
-    void refreshImageryItems();
-    void loadMeanings();
+    void apiGetImageryItems()
+      .then((nextItems) => {
+        setItems(nextItems);
+        setItemsError(null);
+      })
+      .catch((error: unknown) => {
+        setItemsError(error instanceof Error ? error.message : "加载意象失败");
+      })
+      .finally(() => setItemsLoading(false));
 
-    setSongsLoading(true);
-    apiGetSongs()
-      .then(setAllSongs)
+    void apiGetMeanings()
+      .then((nextMeanings) => {
+        setMeanings(nextMeanings);
+      })
+      .catch((error: unknown) => {
+        showToast(
+          "error",
+          error instanceof Error ? error.message : "加载含义失败",
+        );
+      })
+      .finally(() => setMeaningsLoading(false));
+
+    void apiGetSongs()
+      .then((songs) => setAllSongs(songs))
       .catch((error: unknown) => {
         showToast(
           "error",
@@ -186,7 +195,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
         );
       })
       .finally(() => setSongsLoading(false));
-  }, [loadMeanings, refreshImageryItems, showToast]);
+  }, [showToast]);
 
   const categoryTree = useMemo(() => buildTree(categories), [categories]);
 
@@ -225,13 +234,14 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     1,
     Math.ceil(filteredItems.length / PAGE_SIZE),
   );
+  const currentImageryPage = Math.min(imageryPage, imageryTotalPages);
   const pagedItems = useMemo(
     () =>
       filteredItems.slice(
-        (imageryPage - 1) * PAGE_SIZE,
-        imageryPage * PAGE_SIZE,
+        (currentImageryPage - 1) * PAGE_SIZE,
+        currentImageryPage * PAGE_SIZE,
       ),
-    [filteredItems, imageryPage],
+    [currentImageryPage, filteredItems],
   );
 
   const sortedCategories = useMemo(
@@ -248,13 +258,14 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     1,
     Math.ceil(sortedCategories.length / PAGE_SIZE),
   );
+  const currentCategoryPage = Math.min(categoryPage, categoryTotalPages);
   const pagedCategories = useMemo(
     () =>
       sortedCategories.slice(
-        (categoryPage - 1) * PAGE_SIZE,
-        categoryPage * PAGE_SIZE,
+        (currentCategoryPage - 1) * PAGE_SIZE,
+        currentCategoryPage * PAGE_SIZE,
       ),
-    [categoryPage, sortedCategories],
+    [currentCategoryPage, sortedCategories],
   );
 
   const filteredMeanings = useMemo(() => {
@@ -270,13 +281,14 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     1,
     Math.ceil(filteredMeanings.length / PAGE_SIZE),
   );
+  const currentMeaningsPage = Math.min(meaningsPage, meaningsTotalPages);
   const pagedMeanings = useMemo(
     () =>
       filteredMeanings.slice(
-        (meaningsPage - 1) * PAGE_SIZE,
-        meaningsPage * PAGE_SIZE,
+        (currentMeaningsPage - 1) * PAGE_SIZE,
+        currentMeaningsPage * PAGE_SIZE,
       ),
-    [filteredMeanings, meaningsPage],
+    [currentMeaningsPage, filteredMeanings],
   );
 
   const filteredSongs = useMemo(() => {
@@ -292,13 +304,14 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     1,
     Math.ceil(filteredSongs.length / SONG_PAGE_SIZE),
   );
+  const currentSongsPage = Math.min(songsPage, songsTotalPages);
   const pagedSongs = useMemo(
     () =>
       filteredSongs.slice(
-        (songsPage - 1) * SONG_PAGE_SIZE,
-        songsPage * SONG_PAGE_SIZE,
+        (currentSongsPage - 1) * SONG_PAGE_SIZE,
+        currentSongsPage * SONG_PAGE_SIZE,
       ),
-    [filteredSongs, songsPage],
+    [currentSongsPage, filteredSongs],
   );
   const editingMeaning = useMemo(
     () =>
@@ -307,19 +320,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
         : null,
     [editingMeaningId, meanings],
   );
-
-  useEffect(() => {
-    setImageryPage((current) => Math.min(current, imageryTotalPages));
-  }, [imageryTotalPages]);
-  useEffect(() => {
-    setCategoryPage((current) => Math.min(current, categoryTotalPages));
-  }, [categoryTotalPages]);
-  useEffect(() => {
-    setMeaningsPage((current) => Math.min(current, meaningsTotalPages));
-  }, [meaningsTotalPages]);
-  useEffect(() => {
-    setSongsPage((current) => Math.min(current, songsTotalPages));
-  }, [songsTotalPages]);
 
   const openAddImagery = () => {
     setModal({ type: "add-imagery" });
@@ -882,7 +882,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
               itemsError={itemsError}
               searchTerm={imagerySearchTerm}
               pagedItems={pagedItems}
-              currentPage={imageryPage}
+              currentPage={currentImageryPage}
               totalPages={imageryTotalPages}
               onPageChange={setImageryPage}
               onEdit={openEditImagery}
@@ -895,7 +895,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
               categoryTree={categoryTree}
               imageryCountByCategory={imageryCountByCategory}
               pagedCategories={pagedCategories}
-              currentPage={categoryPage}
+              currentPage={currentCategoryPage}
               totalPages={categoryTotalPages}
               getCategoryPath={(categoryId) =>
                 getCategoryPath(categoryId, categories)
@@ -915,7 +915,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
               addingMeaning={addingMeaning}
               editingMeaning={editingMeaning}
               meaningSubmitting={meaningSubmitting}
-              currentPage={meaningsPage}
+              currentPage={currentMeaningsPage}
               totalPages={meaningsTotalPages}
               onPageChange={setMeaningsPage}
               onStartEdit={startEditMeaning}
@@ -940,7 +940,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
               categories={categories}
               leafCategories={leafCategories}
               meanings={meanings}
-              currentPage={songsPage}
+              currentPage={currentSongsPage}
               totalPages={songsTotalPages}
               onPageChange={setSongsPage}
               onToggleSongPanel={toggleSongPanel}

@@ -54,9 +54,7 @@ export default function UserManagePanel({ csrfToken }: UserManagePanelProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [clearingId, setClearingId] = useState<string | null>(null);
 
-  const loadUsers = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const fetchUsers = useCallback(async () => {
     try {
       const { users: data } = await apiGetUsers();
       setUsers(data);
@@ -67,9 +65,22 @@ export default function UserManagePanel({ csrfToken }: UserManagePanelProps) {
     }
   }, []);
 
+  const loadUsers = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    await fetchUsers();
+  }, [fetchUsers]);
+
   useEffect(() => {
-    loadUsers();
-  }, [loadUsers]);
+    void apiGetUsers()
+      .then(({ users: data }) => {
+        setUsers(data);
+      })
+      .catch((e: unknown) => {
+        setError(e instanceof Error ? e.message : "加载失败");
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const startEdit = useCallback((user: UserRecord) => {
     setEditingId(user.id);

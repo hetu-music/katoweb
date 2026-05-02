@@ -29,10 +29,7 @@ export const GET = withAuth(
   async (_request: NextRequest, _user: AuthenticatedUser) => {
     const supabase = getServiceClient();
     if (!supabase) {
-      return NextResponse.json(
-        { error: "服务暂不可用" },
-        { status: 503 },
-      );
+      return NextResponse.json({ error: "服务暂不可用" }, { status: 503 });
     }
 
     const users = await fetchAll<UserRecord>(
@@ -101,7 +98,10 @@ export const PUT = withAuth(
     }
 
     if (Object.keys(updateObj).length === 0) {
-      return NextResponse.json({ error: "未提供任何更新字段" }, { status: 400 });
+      return NextResponse.json(
+        { error: "未提供任何更新字段" },
+        { status: 400 },
+      );
     }
 
     const supabase = getServiceClient();

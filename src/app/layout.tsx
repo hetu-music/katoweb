@@ -23,7 +23,6 @@ const notoSerifSC = Noto_Serif_SC({
   display: "swap",
 });
 
-
 // 正文字体 - 无衬线体
 const inter = Inter({
   variable: "--font-body",

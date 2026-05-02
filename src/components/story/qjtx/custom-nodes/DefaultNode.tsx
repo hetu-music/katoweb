@@ -59,10 +59,11 @@ export function DefaultNodeLayout({
           )}
 
           <div
-            className={`scrolly-body-${event.id} flex gap-4 text-sm md:text-base leading-[2.5] tracking-widest font-light text-justify px-8 md:px-16 ${layout === "vertical"
-              ? "flex-row-reverse flex-wrap justify-center items-center h-[55vh] [writing-mode:vertical-rl] gap-x-12 w-full max-w-full mx-auto"
-              : "flex-col w-full"
-              }`}
+            className={`scrolly-body-${event.id} flex gap-4 text-sm md:text-base leading-[2.5] tracking-widest font-light text-justify px-8 md:px-16 ${
+              layout === "vertical"
+                ? "flex-row-reverse flex-wrap justify-center items-center h-[55vh] [writing-mode:vertical-rl] gap-x-12 w-full max-w-full mx-auto"
+                : "flex-col w-full"
+            }`}
             style={{ color: bodyColor }}
           >
             {event.detail.body.map((p, i) => (
@@ -82,7 +83,9 @@ export function DefaultNodeLayout({
           </div>
 
           {event.detail.closing && (
-            <div className={`scrolly-closing-${event.id} mt-16 flex w-full flex-col items-end opacity-80 pr-8 md:pr-16`}>
+            <div
+              className={`scrolly-closing-${event.id} mt-16 flex w-full flex-col items-end opacity-80 pr-8 md:pr-16`}
+            >
               <div className="w-24 h-px bg-linear-to-r from-transparent to-zinc-600 mb-6" />
               <p
                 className="text-xs md:text-sm tracking-[0.3em] font-light"
@@ -107,14 +110,12 @@ export function animateDefault(
   scrollyText: HTMLElement,
   eventId: string,
 ) {
-  const textHeader =
-    scrollyText.querySelector<HTMLElement>(".scrolly-header");
-  const textContent =
-    scrollyText.querySelector<HTMLElement>(
-      `.scrolly-text-content-${eventId}`
-    );
+  const textHeader = scrollyText.querySelector<HTMLElement>(".scrolly-header");
+  const textContent = scrollyText.querySelector<HTMLElement>(
+    `.scrolly-text-content-${eventId}`,
+  );
   const snowLayer = scrollyBg.querySelector<HTMLElement>(
-    `.scrolly-snow-${eventId}`
+    `.scrolly-snow-${eventId}`,
   );
 
   const isRipple = detailContent.dataset.effect === "ripple";
@@ -130,9 +131,9 @@ export function animateDefault(
     {
       "--radius": "150vmax",
       duration: isRipple ? 6.0 : 5.0,
-      ease: isRipple ? "elastic.out(0.8, 1.2)" : "power2.out"
+      ease: isRipple ? "elastic.out(0.8, 1.2)" : "power2.out",
     },
-    0
+    0,
   )
     .fromTo(
       textHeader.children,
@@ -145,7 +146,7 @@ export function animateDefault(
         stagger: 0.3,
         ease: "power2.out",
       },
-      "-=4.5"
+      "-=4.5",
     )
     .fromTo(
       textContent,
@@ -157,12 +158,12 @@ export function animateDefault(
         duration: 2.0,
         ease: "power2.out",
       },
-      "-=1.5"
+      "-=1.5",
     )
     .to(textContent, {
       y: isVertical ? "-35%" : "-40%",
       duration: 10.0,
-      ease: "none"
+      ease: "none",
     })
     .to([textHeader, textContent], {
       opacity: 0,
@@ -173,8 +174,12 @@ export function animateDefault(
     })
     .to(
       scrollyBg,
-      { "--radius": "0px", duration: 4.0, ease: isRipple ? "power3.in" : "power2.inOut" },
-      "-=0.5"
+      {
+        "--radius": "0px",
+        duration: 4.0,
+        ease: isRipple ? "power3.in" : "power2.inOut",
+      },
+      "-=0.5",
     );
 
   if (snowLayer) {
@@ -182,7 +187,7 @@ export function animateDefault(
       snowLayer,
       { y: "-10%" },
       { y: "10%", duration: tl.duration(), ease: "none" },
-      0
+      0,
     );
   }
 }

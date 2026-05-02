@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Upload,
   X,
@@ -32,39 +32,36 @@ export default function ScoreUpload({
   >("idle");
   const [uploadMessage, setUploadMessage] = useState("");
   const [fileExists, setFileExists] = useState(hasExistingFile);
-  const [checkingFile, setCheckingFile] = useState(Boolean(songId));
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const checkFileExists = useCallback(
-    async (id: number) => {
-      if (!id) return false;
-      setCheckingFile(true);
-      try {
-        const result = await apiCheckFileExists(id, "score", csrfToken);
-        if (!result) return false;
-        const exists = result.exists;
-        setFileExists(exists);
-        return exists;
-      } catch (error) {
-        console.error("Check score failed:", error);
-        setFileExists(false);
-        return false;
-      } finally {
-        setCheckingFile(false);
-      }
-    },
-    [csrfToken],
+  const [checkedSongId, setCheckedSongId] = useState<number | null>(
+    songId ?? null,
   );
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const checkingFile = Boolean(songId) && checkedSongId !== songId;
 
   useEffect(() => {
-    if (songId) {
-      setCheckingFile(true);
-      void checkFileExists(songId);
-    } else {
-      setCheckingFile(false);
-      setFileExists(hasExistingFile);
-    }
-  }, [songId, hasExistingFile, checkFileExists]);
+    if (!songId || checkedSongId === songId) return;
+
+    let active = true;
+
+    void apiCheckFileExists(songId, "score", csrfToken)
+      .then((result) => {
+        if (!active) return;
+        setFileExists(result?.exists ?? false);
+      })
+      .catch((error) => {
+        console.error("Check score failed:", error);
+        if (!active) return;
+        setFileExists(false);
+      })
+      .finally(() => {
+        if (!active) return;
+        setCheckedSongId(songId);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [checkedSongId, csrfToken, songId]);
 
   const handleFileSelect = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -121,6 +118,7 @@ export default function ScoreUpload({
       setUploadStatus("success");
       setUploadMessage(result.message || "上传成功");
       setFileExists(true);
+      setCheckedSongId(songId ?? null);
       onUploadSuccess?.();
 
       setTimeout(() => {
@@ -166,7 +164,7 @@ export default function ScoreUpload({
               <span className="text-slate-400 text-xs flex items-center gap-1">
                 <Loader2 size={12} className="animate-spin" /> 检查中...
               </span>
-            ) : fileExists ? (
+            ) : (songId ? fileExists : hasExistingFile) ? (
               <span className="px-2 py-0.5 rounded-md bg-green-50 text-green-600 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900/50 text-xs flex items-center gap-1 font-medium">
                 <FileCheck size={12} /> 已上传
               </span>

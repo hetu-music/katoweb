@@ -448,7 +448,10 @@ export default function MusicLibraryClient({
                     <div className="grow">Title / Lyricist / Composer</div>
                     {isLoggedIn && (
                       <div className="ml-8 flex w-8 items-center justify-center">
-                        <Heart size={12} className="text-slate-300 dark:text-slate-600" />
+                        <Heart
+                          size={12}
+                          className="text-slate-300 dark:text-slate-600"
+                        />
                       </div>
                     )}
                     <div className="ml-8 w-24 text-center">Type</div>

@@ -417,7 +417,9 @@ export default function ImageryDetailPanel(props: DetailPanelProps) {
       if (target?.closest(".overflow-y-auto")) return;
       e.preventDefault();
     };
-    document.addEventListener("touchmove", preventTouchMove, { passive: false });
+    document.addEventListener("touchmove", preventTouchMove, {
+      passive: false,
+    });
 
     return () => {
       html.style.overflow = prev.htmlOverflow;

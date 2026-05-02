@@ -29,13 +29,12 @@ const SNOWFLAKE_MASK_PATH =
 /** 根据 SVG path 字符串构建 CSS mask-image 值 */
 function buildMaskUrl(path: string): string {
   const encoded = encodeURIComponent(
-    `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="${path}" fill="black"/></svg>`
+    `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="${path}" fill="black"/></svg>`,
   );
   return `url('data:image/svg+xml,${encoded}')`;
 }
 
 const SNOWFLAKE_MASK_URL = buildMaskUrl(SNOWFLAKE_MASK_PATH);
-
 
 // ─── Framer Motion Variants ───────────────────────────────────────────────────
 
@@ -119,13 +118,15 @@ function EventLines({
       {content?.map((line, index) => (
         <p
           key={index}
-          className={`${mobile
-            ? "text-sm tracking-widest"
-            : "text-[15px] lg:text-base tracking-widest lg:tracking-[0.2em]"
-            } font-light leading-loose ${important
+          className={`${
+            mobile
+              ? "text-sm tracking-widest"
+              : "text-[15px] lg:text-base tracking-widest lg:tracking-[0.2em]"
+          } font-light leading-loose ${
+            important
               ? "text-zinc-200 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] font-normal"
               : "text-zinc-400"
-            }`}
+          }`}
         >
           {line}
         </p>
@@ -147,8 +148,9 @@ function EventDate({
 }) {
   const monthNode = month ? (
     <div
-      className={`${verticalTextClass} ${mobile ? "text-sm" : "text-lg lg:text-xl"
-        } text-red-800/80 font-serif tracking-[0.3em]`}
+      className={`${verticalTextClass} ${
+        mobile ? "text-sm" : "text-lg lg:text-xl"
+      } text-red-800/80 font-serif tracking-[0.3em]`}
     >
       {month}
     </div>
@@ -156,8 +158,9 @@ function EventDate({
 
   const yearNode = (
     <div
-      className={`${verticalTextClass} ${mobile ? "text-xl" : "text-2xl lg:text-3xl"
-        } font-serif tracking-[0.3em] font-light text-zinc-300`}
+      className={`${verticalTextClass} ${
+        mobile ? "text-xl" : "text-2xl lg:text-3xl"
+      } font-serif tracking-[0.3em] font-light text-zinc-300`}
     >
       {year}
     </div>
@@ -165,8 +168,9 @@ function EventDate({
 
   return (
     <div
-      className={`flex flex-row items-end ${mobile ? "gap-2" : "gap-3 lg:gap-4"
-        } transition-colors`}
+      className={`flex flex-row items-end ${
+        mobile ? "gap-2" : "gap-3 lg:gap-4"
+      } transition-colors`}
     >
       {monthFirst ? (
         <>
@@ -192,11 +196,7 @@ function EventDate({
  * - 注册表中存在该 ID → 使用自定义 Theme + Layout
  * - 注册表中不存在 → 使用 DefaultNode 的 Theme + Layout
  */
-function ImmersiveReadingPanel({
-  event,
-}: {
-  event: TimelineEvent;
-}) {
+function ImmersiveReadingPanel({ event }: { event: TimelineEvent }) {
   if (!event.detail) return null;
 
   // 查找自定义节点
@@ -269,12 +269,15 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
     body.style.overflow = "hidden";
     body.style.touchAction = "none";
 
-    const unlockTimeout = setTimeout(() => {
-      lenis.start();
-      html.style.overflow = "";
-      body.style.overflow = "";
-      body.style.touchAction = "";
-    }, (1.45 + 0.4) * animationSlowdown * 1000); // 提前一点解锁（在动画完成前）
+    const unlockTimeout = setTimeout(
+      () => {
+        lenis.start();
+        html.style.overflow = "";
+        body.style.overflow = "";
+        body.style.touchAction = "";
+      },
+      (1.45 + 0.4) * animationSlowdown * 1000,
+    ); // 提前一点解锁（在动画完成前）
 
     const updateScrollTrigger = () => ScrollTrigger.update();
     const raf = (time: number) => {
@@ -306,21 +309,21 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
 
   useGSAP(
     () => {
-
       const wrappers = gsap.utils.toArray<HTMLElement>(
         ".timeline-event-wrapper",
-        container.current
+        container.current,
       );
       const dots = gsap.utils.toArray<HTMLElement>(
         ".event-dot",
-        container.current
+        container.current,
       );
 
       // ─ 在 tick 外缓存 DOM 引用 ──────────────────────────────────────────────
       // 原来的写法在 updateLinesAndDots 内部用同名变量重复查询，导致每帧
       // 都有 2 次额外 querySelector。现在查询一次，ticker 里只做计算和写值。
-      const containerEl =
-        container.current?.querySelector<HTMLElement>(".timeline-container");
+      const containerEl = container.current?.querySelector<HTMLElement>(
+        ".timeline-container",
+      );
       const progressLine =
         container.current?.querySelector<HTMLElement>(".timeline-progress");
 
@@ -370,7 +373,9 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
       updateLinesAndDots(); // 初始同步一次
 
       wrappers.forEach((wrapper) => {
-        const content = wrapper.querySelector<HTMLElement>(".timeline-event-content");
+        const content = wrapper.querySelector<HTMLElement>(
+          ".timeline-event-content",
+        );
         if (!content) return;
 
         // ── B. 节点入场位移动画：target = content, trigger = wrapper ──
@@ -388,20 +393,19 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
               end: "center 55%",
               scrub: 1.5,
             },
-          }
+          },
         );
 
         const isImportant = wrapper.dataset.important === "true";
         if (isImportant) {
-          const detailContent =
-            container.current?.querySelector<HTMLElement>(
-              `#detail-${wrapper.dataset.id}`
-            );
+          const detailContent = container.current?.querySelector<HTMLElement>(
+            `#detail-${wrapper.dataset.id}`,
+          );
           const scrollyBg = detailContent?.querySelector<HTMLElement>(
-            `.scrolly-bg-${wrapper.dataset.id}`
+            `.scrolly-bg-${wrapper.dataset.id}`,
           );
           const scrollyText = detailContent?.querySelector<HTMLElement>(
-            `.scrolly-text-${wrapper.dataset.id}`
+            `.scrolly-text-${wrapper.dataset.id}`,
           );
           const dot = content.querySelector<HTMLElement>(".event-dot");
 
@@ -454,10 +458,22 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
 
             if (customNode) {
               // ── 自定义节点：委托给注册表中的 animate 函数 ──
-              customNode.animate(tl, detailContent, scrollyBg, scrollyText, eventId);
+              customNode.animate(
+                tl,
+                detailContent,
+                scrollyBg,
+                scrollyText,
+                eventId,
+              );
             } else {
               // ── 默认节点：使用通用动效 ──
-              animateDefault(tl, detailContent, scrollyBg, scrollyText, eventId);
+              animateDefault(
+                tl,
+                detailContent,
+                scrollyBg,
+                scrollyText,
+                eventId,
+              );
             }
           }
         }
@@ -473,7 +489,7 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
         scrollTrigger: {
           trigger: ".footer-final", // 使用 footer 作为触发源，因为它被 timeline 的 pin 间距正确推后
           start: "top 100%", // Footer刚进入视口（即刚划过一小段距离）时就开始形成
-          end: "top 55%",    // Footer到达55vh（即与红线底部接触的位置）时刚好完全形成
+          end: "top 55%", // Footer到达55vh（即与红线底部接触的位置）时刚好完全形成
           scrub: true,
         },
       });
@@ -504,21 +520,34 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
 
       endTl
         // 泪滴缓缓坠落到正中
-        .to(".falling-tear", { y: "50vh", scale: 1, duration: 3, ease: "power1.in" })
+        .to(".falling-tear", {
+          y: "50vh",
+          scale: 1,
+          duration: 3,
+          ease: "power1.in",
+        })
         .add("hit")
         // 泪滴触底，如墨滴入水般极致晕开
-        .to(".falling-tear", {
-          scale: 45, // 巨大的放大倍数，模拟墨迹散开
-          filter: "blur(25px)",
-          duration: 4,
-          ease: "power2.out",
-        }, "hit")
+        .to(
+          ".falling-tear",
+          {
+            scale: 45, // 巨大的放大倍数，模拟墨迹散开
+            filter: "blur(25px)",
+            duration: 4,
+            ease: "power2.out",
+          },
+          "hit",
+        )
         // 墨迹缓慢消散
-        .to(".falling-tear", {
-          opacity: 0,
-          duration: 3,
-          ease: "power2.inOut",
-        }, "hit+=1")
+        .to(
+          ".falling-tear",
+          {
+            opacity: 0,
+            duration: 3,
+            ease: "power2.inOut",
+          },
+          "hit+=1",
+        )
         // 文本从浓墨中缓缓浮现
         .fromTo(
           ".bloom-content",
@@ -530,14 +559,14 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
             duration: 4,
             ease: "power2.inOut",
           },
-          "hit+=0.5" // 在泪滴散开的过程中，文字就开始被"洗"出来
+          "hit+=0.5", // 在泪滴散开的过程中，文字就开始被"洗"出来
         );
 
       return () => {
         window.removeEventListener("scroll", updateLinesAndDots);
       };
     },
-    { scope: container }
+    { scope: container },
   );
 
   return (
@@ -579,10 +608,6 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
         }
       `}</style>
 
-
-
-
-
       <section className="relative z-10 flex h-svh flex-col items-center justify-center">
         <div className="mt-[-10vh] flex flex-col items-center gap-12 sm:gap-16">
           <motion.h1
@@ -612,13 +637,19 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
               variants={heroSubtitleLineVariants}
               className="pl-[0.8em] text-sm font-light tracking-[0.8em] text-zinc-400 sm:pl-[1em] sm:text-lg sm:tracking-[1em] md:text-xl"
             >
-              <span className="text-red-700 drop-shadow-[0_0_15px_rgba(185,28,28,0.5)]">血</span>染江山的画
+              <span className="text-red-700 drop-shadow-[0_0_15px_rgba(185,28,28,0.5)]">
+                血
+              </span>
+              染江山的画
             </motion.p>
             <motion.p
               variants={heroSubtitleLineVariants}
               className="pl-[0.8em] text-sm font-light tracking-[0.8em] text-zinc-400 sm:pl-[1em] sm:text-lg sm:tracking-[1em] md:text-xl"
             >
-              怎敌你眉间一点<span className="text-red-700 drop-shadow-[0_0_15px_rgba(185,28,28,0.5)]">朱砂</span>
+              怎敌你眉间一点
+              <span className="text-red-700 drop-shadow-[0_0_15px_rgba(185,28,28,0.5)]">
+                朱砂
+              </span>
             </motion.p>
           </motion.div>
         </div>
@@ -677,8 +708,9 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
                   </div>
 
                   <div
-                    className={`hidden w-1/2 justify-end pr-12 md:flex lg:pr-24 ${!isLeft ? "invisible" : ""
-                      }`}
+                    className={`hidden w-1/2 justify-end pr-12 md:flex lg:pr-24 ${
+                      !isLeft ? "invisible" : ""
+                    }`}
                   >
                     <div className="flex flex-row items-center gap-8 lg:gap-12">
                       <EventLines
@@ -695,8 +727,9 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
                   </div>
 
                   <div
-                    className={`hidden w-1/2 justify-start pl-12 md:flex lg:pl-24 ${isLeft ? "invisible" : ""
-                      }`}
+                    className={`hidden w-1/2 justify-start pl-12 md:flex lg:pl-24 ${
+                      isLeft ? "invisible" : ""
+                    }`}
                   >
                     <div className="flex flex-row items-center gap-8 lg:gap-12">
                       <EventDate year={event.year} month={event.month} />
@@ -719,7 +752,6 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
       ))}
 
       <footer className="footer-final relative z-10 w-full min-h-screen bg-black flex flex-col items-center justify-center overflow-hidden">
-
         <div className="falling-tear absolute top-0 left-14 md:left-1/2 -translate-x-1/2 w-3 h-4 opacity-0 pointer-events-none">
           <svg
             viewBox="0 0 100 120"

@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { type Resolver, useForm, useWatch } from "react-hook-form";
 
 interface AuthClientProps {
@@ -34,10 +34,14 @@ interface AuthClientProps {
 export default function AuthClient({ nonce, mode }: AuthClientProps) {
   const [otpSent, setOtpSent] = useState(false);
   const [verified, setVerified] = useState(false);
-  const [nextPath, setNextPath] = useState("/");
+  const [nextPath] = useState(() => {
+    if (typeof window === "undefined") return "/";
+
+    const params = new URLSearchParams(window.location.search);
+    return params.get("next") || "/";
+  });
   const [turnstileInstanceKey, setTurnstileInstanceKey] = useState(0);
   const router = useRouter();
-  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const isLogin = mode === "login";
   const authSchema = useMemo(() => createAuthFormSchema(mode), [mode]);
@@ -58,12 +62,6 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
     name: "otp",
   });
   const verifying = otpForm.formState.isSubmitting;
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const next = params.get("next");
-    if (next) setNextPath(next);
-  }, []);
 
   const submitAuth = authForm.handleSubmit(async (values) => {
     authForm.clearErrors("root");
@@ -99,13 +97,12 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
       }
 
       if (isLogin) {
-        window.location.href = nextPath || "/admin";
+        router.replace(nextPath || "/admin");
         return;
       }
 
       setOtpSent(true);
       otpForm.reset(createOtpFormValues());
-      setTimeout(() => otpRefs.current[0]?.focus(), 100);
     } catch (err: unknown) {
       authForm.setError("root", {
         message:
@@ -148,7 +145,7 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
 
         setVerified(true);
         setTimeout(() => {
-          window.location.href = nextPath || "/";
+          router.replace(nextPath || "/");
         }, 1500);
       } catch (err: unknown) {
         otpForm.setError("root", {
@@ -157,9 +154,21 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
         });
       }
     },
-    [authForm, nextPath, otpForm],
+    [authForm, nextPath, otpForm, router],
   );
   const submitOtp = otpForm.handleSubmit(handleVerifyOtp);
+
+  useEffect(() => {
+    if (!otpSent || verified) return;
+
+    const timeoutId = window.setTimeout(() => {
+      document
+        .querySelector<HTMLInputElement>('input[data-otp-index="0"]')
+        ?.focus();
+    }, 100);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [otpSent, verified]);
 
   useEffect(() => {
     if (
@@ -173,46 +182,67 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
     }
   }, [otpSent, otpValues, submitOtp, verified, verifying]);
 
-  const handleOtpChange = (index: number, value: string) => {
-    if (value && !/^\d$/.test(value)) return;
+  const handleOtpChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const index = Number(e.currentTarget.dataset.otpIndex);
+      const value = e.currentTarget.value;
 
-    otpForm.setValue(`otp.${index}`, value, {
-      shouldDirty: true,
-      shouldTouch: true,
-      shouldValidate: value.length === 1,
-    });
+      if (value && !/^\d$/.test(value)) return;
 
-    if (value && index < 5) {
-      otpRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handleOtpKeyDown = (
-    index: number,
-    e: React.KeyboardEvent<HTMLInputElement>,
-  ) => {
-    if (
-      e.key === "Backspace" &&
-      !otpForm.getValues(`otp.${index}`) &&
-      index > 0
-    ) {
-      otpRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleOtpPaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData("text").replace(/\D/g, "");
-    if (pastedData.length === 6) {
-      const nextValues = pastedData.split("");
-      otpForm.setValue("otp", nextValues, {
+      otpForm.setValue(`otp.${index}`, value, {
         shouldDirty: true,
         shouldTouch: true,
-        shouldValidate: true,
+        shouldValidate: value.length === 1,
       });
-      otpRefs.current[5]?.focus();
-    }
-  };
+
+      if (value && index < 5) {
+        const nextInput =
+          e.currentTarget.parentElement?.querySelector<HTMLInputElement>(
+            `input[data-otp-index="${index + 1}"]`,
+          );
+        nextInput?.focus();
+      }
+    },
+    [otpForm],
+  );
+
+  const handleOtpKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      const index = Number(e.currentTarget.dataset.otpIndex);
+
+      if (
+        e.key === "Backspace" &&
+        !otpForm.getValues(`otp.${index}`) &&
+        index > 0
+      ) {
+        const prevInput =
+          e.currentTarget.parentElement?.querySelector<HTMLInputElement>(
+            `input[data-otp-index="${index - 1}"]`,
+          );
+        prevInput?.focus();
+      }
+    },
+    [otpForm],
+  );
+
+  const handleOtpPaste = useCallback(
+    (e: React.ClipboardEvent) => {
+      e.preventDefault();
+      const pastedData = e.clipboardData.getData("text").replace(/\D/g, "");
+      if (pastedData.length === 6) {
+        const nextValues = pastedData.split("");
+        otpForm.setValue("otp", nextValues, {
+          shouldDirty: true,
+          shouldTouch: true,
+          shouldValidate: true,
+        });
+        e.currentTarget
+          .querySelector<HTMLInputElement>('input[data-otp-index="5"]')
+          ?.focus();
+      }
+    },
+    [otpForm],
+  );
 
   const handleResetFlow = () => {
     setOtpSent(false);
@@ -272,15 +302,13 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
             {otpValues.map((value, index) => (
               <input
                 key={index}
-                ref={(el) => {
-                  otpRefs.current[index] = el;
-                }}
+                data-otp-index={index}
                 type="text"
                 inputMode="numeric"
                 maxLength={1}
                 value={value}
-                onChange={(e) => handleOtpChange(index, e.target.value)}
-                onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                onChange={handleOtpChange}
+                onKeyDown={handleOtpKeyDown}
                 className="h-13 w-11 rounded-xl border-2 border-slate-200 bg-slate-50 text-center text-xl font-semibold text-slate-900 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white sm:h-14 sm:w-12"
                 disabled={verifying}
               />

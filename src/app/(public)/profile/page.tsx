@@ -38,10 +38,16 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { Suspense, useCallback, useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 
 type TabType = "favorites" | "account" | "benefits" | "users" | "logs";
-const PROFILE_TABS = ["favorites", "account", "benefits", "users", "logs"] as const;
+const PROFILE_TABS = [
+  "favorites",
+  "account",
+  "benefits",
+  "users",
+  "logs",
+] as const;
 
 function ProfileContent() {
   const router = useRouter();
@@ -56,8 +62,7 @@ function ProfileContent() {
 
   const { user, loaded: userLoaded, logout, loggingOut } = useUserContext();
 
-  const isSuperAdmin =
-    userLoaded && !!user?.isAdmin && user?.sortOrder === 1;
+  const isSuperAdmin = userLoaded && !!user?.isAdmin && user?.sortOrder === 1;
 
   const hasBenefits =
     userLoaded && !!user?.navidId && !!user?.navidPw && !!user?.endpointText;
@@ -119,7 +124,6 @@ function ProfileContent() {
 
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [csrfToken, setCsrfToken] = useState("");
-  const [displayPublic, setDisplayPublic] = useState(false);
   const [navidPwVisible, setNavidPwVisible] = useState(false);
   const [copied, setCopied] = useState<"id" | "pw" | "ep" | null>(null);
 
@@ -130,6 +134,7 @@ function ProfileContent() {
     defaultValues: {
       displayName: "",
       intro: "",
+      display: false,
     },
     mode: "onBlur",
     reValidateMode: "onChange",
@@ -145,21 +150,21 @@ function ProfileContent() {
     mode: "onBlur",
     reValidateMode: "onChange",
   });
+  const displayPublic = useWatch({
+    control: accountForm.control,
+    name: "display",
+  });
 
   useEffect(() => {
     accountForm.reset({
       displayName: user?.name ?? "",
       intro: user?.intro ?? "",
+      display: user?.display ?? false,
     });
-    setDisplayPublic(user?.display ?? false);
   }, [accountForm, user]);
 
   useEffect(() => {
-    if (
-      !user ||
-      (activeTab !== "account" && activeTab !== "users")
-    )
-      return;
+    if (!user || (activeTab !== "account" && activeTab !== "users")) return;
     fetch("/api/public/csrf-token")
       .then((r) => r.json())
       .then((d) => setCsrfToken(d.csrfToken || ""));
@@ -173,7 +178,7 @@ function ProfileContent() {
   }, []);
 
   const handleSave = accountForm.handleSubmit(
-    async ({ displayName, intro }) => {
+    async ({ displayName, intro, display }) => {
       setSaveMsg(null);
       if (!csrfToken) {
         setSaveMsg("保存失败");
@@ -189,7 +194,7 @@ function ProfileContent() {
           body: JSON.stringify({
             displayName,
             intro,
-            ...(user?.isAdmin ? { display: displayPublic } : {}),
+            ...(user?.isAdmin ? { display } : {}),
           }),
         });
         if (res.ok) {
@@ -654,7 +659,16 @@ function ProfileContent() {
                                 </p>
                                 <button
                                   type="button"
-                                  onClick={() => setDisplayPublic((v) => !v)}
+                                  onClick={() =>
+                                    accountForm.setValue(
+                                      "display",
+                                      !displayPublic,
+                                      {
+                                        shouldDirty: true,
+                                        shouldTouch: true,
+                                      },
+                                    )
+                                  }
                                   className={cn(
                                     "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500/50",
                                     displayPublic
@@ -675,7 +689,8 @@ function ProfileContent() {
                                 </button>
                               </div>
                               <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed pr-10">
-                                开启后，你的用户名和个人简介将在站内 关于-维护团队 页面中展示。
+                                开启后，你的用户名和个人简介将在站内
+                                关于-维护团队 页面中展示。
                               </p>
                             </div>
                           )}
@@ -737,13 +752,13 @@ function ProfileContent() {
                               />
                               {passwordForm.formState.errors
                                 .currentPassword && (
-                                  <p className="text-xs text-rose-500 ml-1">
-                                    {
-                                      passwordForm.formState.errors
-                                        .currentPassword.message
-                                    }
-                                  </p>
-                                )}
+                                <p className="text-xs text-rose-500 ml-1">
+                                  {
+                                    passwordForm.formState.errors
+                                      .currentPassword.message
+                                  }
+                                </p>
+                              )}
                             </div>
                             <div className="space-y-1.5">
                               <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
@@ -786,13 +801,13 @@ function ProfileContent() {
                               />
                               {passwordForm.formState.errors
                                 .confirmPassword && (
-                                  <p className="text-xs text-rose-500 ml-1">
-                                    {
-                                      passwordForm.formState.errors
-                                        .confirmPassword.message
-                                    }
-                                  </p>
-                                )}
+                                <p className="text-xs text-rose-500 ml-1">
+                                  {
+                                    passwordForm.formState.errors
+                                      .confirmPassword.message
+                                  }
+                                </p>
+                              )}
                             </div>
                           </div>
                           <div className="pt-2 flex items-center gap-3">
@@ -894,16 +909,16 @@ function ProfileContent() {
                             {navidPwVisible
                               ? user?.navidPw
                               : "•".repeat(
-                                Math.min(user?.navidPw?.length ?? 8, 16),
-                              )}
+                                  Math.min(user?.navidPw?.length ?? 8, 16),
+                                )}
                           </span>
                           <div className="flex items-center gap-1.5 shrink-0">
                             <button
-                              onClick={() =>
-                                setNavidPwVisible((v) => !v)
-                              }
+                              onClick={() => setNavidPwVisible((v) => !v)}
                               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-700 transition-colors"
-                              aria-label={navidPwVisible ? "隐藏密码" : "显示密码"}
+                              aria-label={
+                                navidPwVisible ? "隐藏密码" : "显示密码"
+                              }
                             >
                               {navidPwVisible ? (
                                 <EyeOff size={14} />

@@ -43,13 +43,17 @@ function mapRowToEvent(row: StoryQjtxRow): TimelineEvent {
 export async function getQjtxTimeline(): Promise<TimelineEvent[]> {
   const supabase = getServiceClient();
   if (!supabase) {
-    console.warn("[getQjtxTimeline] Service client unavailable, returning empty data");
+    console.warn(
+      "[getQjtxTimeline] Service client unavailable, returning empty data",
+    );
     return [];
   }
 
   const { data, error } = await supabase
     .from(TABLES.STORY_QJTX)
-    .select("id, year, month, content, important, detail_title, detail_quote, detail_body, detail_closing")
+    .select(
+      "id, year, month, content, important, detail_title, detail_quote, detail_body, detail_closing",
+    )
     .order("id", { ascending: true });
 
   if (error) {

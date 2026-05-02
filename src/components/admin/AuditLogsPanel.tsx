@@ -29,7 +29,8 @@ interface AuditLogsResponse {
 }
 
 const ACTION_COLORS: Record<string, string> = {
-  INSERT: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10",
+  INSERT:
+    "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10",
   UPDATE: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10",
   DELETE: "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10",
 };
@@ -70,9 +71,7 @@ export default function AuditLogsPanel() {
   const [page, setPage] = useState(1);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const loadPage = useCallback(async (p: number) => {
-    setLoading(true);
-    setError(null);
+  const fetchPage = useCallback(async (p: number) => {
     try {
       const res = await fetch(`/api/admin/audit-logs?page=${p}`);
       if (!res.ok) {
@@ -90,9 +89,35 @@ export default function AuditLogsPanel() {
     }
   }, []);
 
+  const loadPage = useCallback(
+    async (p: number) => {
+      setLoading(true);
+      setError(null);
+      await fetchPage(p);
+    },
+    [fetchPage],
+  );
+
   useEffect(() => {
-    loadPage(1);
-  }, [loadPage]);
+    void fetch(`/api/admin/audit-logs?page=1`)
+      .then(async (res) => {
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          throw new Error((d as { error?: string }).error ?? "加载失败");
+        }
+
+        return (await res.json()) as AuditLogsResponse;
+      })
+      .then((json) => {
+        setData(json);
+        setPage(1);
+        setExpandedId(null);
+      })
+      .catch((e: unknown) => {
+        setError(e instanceof Error ? e.message : "加载失败");
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const totalPages = data ? Math.ceil(data.total / data.pageSize) : 1;
 
@@ -207,91 +232,101 @@ export default function AuditLogsPanel() {
                 </div>
 
                 {/* Expanded diff */}
-                {isExpanded && hasData && (() => {
-                  const isUpdate =
-                    log.action_type.toUpperCase() === "UPDATE" &&
-                    log.old_data !== null &&
-                    log.new_data !== null;
-                  const diffKeys = isUpdate
-                    ? getDiffKeys(log.old_data, log.new_data)
-                    : [];
+                {isExpanded &&
+                  hasData &&
+                  (() => {
+                    const isUpdate =
+                      log.action_type.toUpperCase() === "UPDATE" &&
+                      log.old_data !== null &&
+                      log.new_data !== null;
+                    const diffKeys = isUpdate
+                      ? getDiffKeys(log.old_data, log.new_data)
+                      : [];
 
-                  if (isUpdate) {
-                    return (
-                      <div className="border-t border-slate-100 dark:border-slate-800 animate-in fade-in slide-in-from-top-1 duration-150">
-                        {diffKeys.length === 0 ? (
-                          <p className="px-4 py-3 text-xs text-slate-400">
-                            无字段变更
-                          </p>
-                        ) : (
-                          <table className="w-full text-[11px]">
-                            <thead>
-                              <tr className="border-b border-slate-100 dark:border-slate-800">
-                                <th className="px-4 py-1.5 text-left font-bold text-slate-400 uppercase tracking-wide text-[10px] w-1/4">
-                                  字段
-                                </th>
-                                <th className="px-4 py-1.5 text-left font-bold text-rose-400 uppercase tracking-wide text-[10px] w-[37.5%]">
-                                  旧值
-                                </th>
-                                <th className="px-4 py-1.5 text-left font-bold text-emerald-500 uppercase tracking-wide text-[10px] w-[37.5%]">
-                                  新值
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {diffKeys.map((k) => (
-                                <tr
-                                  key={k}
-                                  className="border-b border-slate-50 dark:border-slate-800/60 last:border-0"
-                                >
-                                  <td className="px-4 py-1.5 font-mono text-slate-500 dark:text-slate-400 align-top">
-                                    {k}
-                                  </td>
-                                  <td className="px-4 py-1.5 font-mono text-rose-500 dark:text-rose-400 align-top break-all">
-                                    {log.old_data?.[k] === null
-                                      ? <span className="italic text-slate-400">null</span>
-                                      : String(log.old_data?.[k] ?? "")}
-                                  </td>
-                                  <td className="px-4 py-1.5 font-mono text-emerald-600 dark:text-emerald-400 align-top break-all">
-                                    {log.new_data?.[k] === null
-                                      ? <span className="italic text-slate-400">null</span>
-                                      : String(log.new_data?.[k] ?? "")}
-                                  </td>
+                    if (isUpdate) {
+                      return (
+                        <div className="border-t border-slate-100 dark:border-slate-800 animate-in fade-in slide-in-from-top-1 duration-150">
+                          {diffKeys.length === 0 ? (
+                            <p className="px-4 py-3 text-xs text-slate-400">
+                              无字段变更
+                            </p>
+                          ) : (
+                            <table className="w-full text-[11px]">
+                              <thead>
+                                <tr className="border-b border-slate-100 dark:border-slate-800">
+                                  <th className="px-4 py-1.5 text-left font-bold text-slate-400 uppercase tracking-wide text-[10px] w-1/4">
+                                    字段
+                                  </th>
+                                  <th className="px-4 py-1.5 text-left font-bold text-rose-400 uppercase tracking-wide text-[10px] w-[37.5%]">
+                                    旧值
+                                  </th>
+                                  <th className="px-4 py-1.5 text-left font-bold text-emerald-500 uppercase tracking-wide text-[10px] w-[37.5%]">
+                                    新值
+                                  </th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody>
+                                {diffKeys.map((k) => (
+                                  <tr
+                                    key={k}
+                                    className="border-b border-slate-50 dark:border-slate-800/60 last:border-0"
+                                  >
+                                    <td className="px-4 py-1.5 font-mono text-slate-500 dark:text-slate-400 align-top">
+                                      {k}
+                                    </td>
+                                    <td className="px-4 py-1.5 font-mono text-rose-500 dark:text-rose-400 align-top break-all">
+                                      {log.old_data?.[k] === null ? (
+                                        <span className="italic text-slate-400">
+                                          null
+                                        </span>
+                                      ) : (
+                                        String(log.old_data?.[k] ?? "")
+                                      )}
+                                    </td>
+                                    <td className="px-4 py-1.5 font-mono text-emerald-600 dark:text-emerald-400 align-top break-all">
+                                      {log.new_data?.[k] === null ? (
+                                        <span className="italic text-slate-400">
+                                          null
+                                        </span>
+                                      ) : (
+                                        String(log.new_data?.[k] ?? "")
+                                      )}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    // INSERT or DELETE — show the full data block
+                    return (
+                      <div className="border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-px bg-slate-100 dark:bg-slate-800 animate-in fade-in slide-in-from-top-1 duration-150">
+                        {log.old_data !== null && (
+                          <div className="bg-white dark:bg-slate-900 p-3 space-y-1">
+                            <p className="text-[10px] font-bold uppercase tracking-wide text-rose-500">
+                              旧数据
+                            </p>
+                            <pre className="text-[11px] text-slate-600 dark:text-slate-400 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed">
+                              {JSON.stringify(log.old_data, null, 2)}
+                            </pre>
+                          </div>
+                        )}
+                        {log.new_data !== null && (
+                          <div className="bg-white dark:bg-slate-900 p-3 space-y-1">
+                            <p className="text-[10px] font-bold uppercase tracking-wide text-emerald-500">
+                              新数据
+                            </p>
+                            <pre className="text-[11px] text-slate-600 dark:text-slate-400 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed">
+                              {JSON.stringify(log.new_data, null, 2)}
+                            </pre>
+                          </div>
                         )}
                       </div>
                     );
-                  }
-
-                  // INSERT or DELETE — show the full data block
-                  return (
-                    <div className="border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-px bg-slate-100 dark:bg-slate-800 animate-in fade-in slide-in-from-top-1 duration-150">
-                      {log.old_data !== null && (
-                        <div className="bg-white dark:bg-slate-900 p-3 space-y-1">
-                          <p className="text-[10px] font-bold uppercase tracking-wide text-rose-500">
-                            旧数据
-                          </p>
-                          <pre className="text-[11px] text-slate-600 dark:text-slate-400 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed">
-                            {JSON.stringify(log.old_data, null, 2)}
-                          </pre>
-                        </div>
-                      )}
-                      {log.new_data !== null && (
-                        <div className="bg-white dark:bg-slate-900 p-3 space-y-1">
-                          <p className="text-[10px] font-bold uppercase tracking-wide text-emerald-500">
-                            新数据
-                          </p>
-                          <pre className="text-[11px] text-slate-600 dark:text-slate-400 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed">
-                            {JSON.stringify(log.new_data, null, 2)}
-                          </pre>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
+                  })()}
               </div>
             );
           })}

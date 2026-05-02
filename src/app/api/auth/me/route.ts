@@ -8,7 +8,9 @@ export const GET = withAuth(
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
       .from(TABLES.USERS)
-      .select("name, display, intro, is_admin, sort_order, navid_id, navid_pw, endpoint")
+      .select(
+        "name, display, intro, is_admin, sort_order, navid_id, navid_pw, endpoint",
+      )
       .eq("id", user.id)
       .maybeSingle();
 

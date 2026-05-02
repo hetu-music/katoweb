@@ -25,7 +25,9 @@ export function NodeLayout({
   const lines = detail.body.filter((line) => line !== "……");
 
   return (
-    <div className={`scrolly-text-${event.id} relative z-10 h-full w-full overflow-hidden`}>
+    <div
+      className={`scrolly-text-${event.id} relative z-10 h-full w-full overflow-hidden`}
+    >
       <div
         className={`scrolly-sunlight-${event.id} absolute inset-0 pointer-events-none opacity-0`}
         style={{
@@ -34,7 +36,9 @@ export function NodeLayout({
         }}
       />
 
-      <div className={`scrolly-intro-${event.id} absolute inset-0 flex flex-col items-center justify-center px-6`}>
+      <div
+        className={`scrolly-intro-${event.id} absolute inset-0 flex flex-col items-center justify-center px-6`}
+      >
         <div className="flex max-w-4xl flex-col items-center text-center">
           <div className="mb-6 h-px w-28 bg-linear-to-r from-transparent via-amber-100/40 to-transparent md:w-40" />
           <h2
@@ -52,8 +56,12 @@ export function NodeLayout({
         </div>
       </div>
 
-      <div className={`scrolly-body-container-${event.id} absolute inset-0 flex items-center justify-center px-5 py-10 md:px-10`}>
-        <div className={`scrolly-memorial-${event.id} relative flex w-full max-w-5xl flex-col items-center`}>
+      <div
+        className={`scrolly-body-container-${event.id} absolute inset-0 flex items-center justify-center px-5 py-10 md:px-10`}
+      >
+        <div
+          className={`scrolly-memorial-${event.id} relative flex w-full max-w-5xl flex-col items-center`}
+        >
           <div
             className={`scrolly-stele-${event.id} relative w-full max-w-3xl rounded-[2.6rem_2.6rem_1.8rem_1.8rem] border border-amber-100/12 bg-stone-900/36 px-7 py-10 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-md md:px-10 md:py-12`}
           >
@@ -78,8 +86,9 @@ export function NodeLayout({
                 return (
                   <p
                     key={index}
-                    className={`scrolly-body-line text-sm leading-[2.05] tracking-[0.14em] md:text-[15px] ${emphasis ? "text-amber-50" : "text-stone-100/88"
-                      }`}
+                    className={`scrolly-body-line text-sm leading-[2.05] tracking-[0.14em] md:text-[15px] ${
+                      emphasis ? "text-amber-50" : "text-stone-100/88"
+                    }`}
                     style={{ color: emphasis ? titleColor : bodyColor }}
                   >
                     {line}
@@ -111,7 +120,9 @@ export function animate(
   const intro = scrollyText.querySelector(`.scrolly-intro-${eventId}`);
   const title = scrollyText.querySelector(`.scrolly-title-${eventId}`);
   const quote = scrollyText.querySelector(`.scrolly-quote-${eventId}`);
-  const bodyContainer = scrollyText.querySelector(`.scrolly-body-container-${eventId}`);
+  const bodyContainer = scrollyText.querySelector(
+    `.scrolly-body-container-${eventId}`,
+  );
   const memorial = scrollyText.querySelector(`.scrolly-memorial-${eventId}`);
   const stele = scrollyText.querySelector(`.scrolly-stele-${eventId}`);
   const bodyLines = scrollyText.querySelectorAll(`.scrolly-body-line`);
@@ -132,21 +143,50 @@ export function animate(
     .fromTo(
       title,
       { opacity: 0, y: 24, filter: "blur(16px)" },
-      { opacity: 1, y: 0, filter: "blur(0px)", duration: 3.4, ease: "power3.out" },
+      {
+        opacity: 1,
+        y: 0,
+        filter: "blur(0px)",
+        duration: 3.4,
+        ease: "power3.out",
+      },
       1.3,
     )
     .fromTo(
       quote,
       { opacity: 0, y: 10, filter: "blur(8px)" },
-      { opacity: 1, y: 0, filter: "blur(0px)", duration: 3, ease: "power2.out" },
+      {
+        opacity: 1,
+        y: 0,
+        filter: "blur(0px)",
+        duration: 3,
+        ease: "power2.out",
+      },
       1.8,
     )
-    .to([title, quote], { opacity: 0, y: -14, filter: "blur(12px)", duration: 3, ease: "power2.inOut" }, "+=2.4")
+    .to(
+      [title, quote],
+      {
+        opacity: 0,
+        y: -14,
+        filter: "blur(12px)",
+        duration: 3,
+        ease: "power2.inOut",
+      },
+      "+=2.4",
+    )
     .set(intro, { display: "none" })
     .fromTo(
       memorial,
       { opacity: 0, y: 22, scale: 0.98, filter: "blur(10px)" },
-      { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 2.6, ease: "power2.out" },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        filter: "blur(0px)",
+        duration: 2.6,
+        ease: "power2.out",
+      },
       "-=0.1",
     )
     .fromTo(
@@ -171,13 +211,33 @@ export function animate(
     .fromTo(
       closing,
       { opacity: 0, scale: 0.82, filter: "blur(6px)" },
-      { opacity: 1, scale: 1, filter: "blur(0px)", duration: 1.8, ease: "back.out(1.7)" },
+      {
+        opacity: 1,
+        scale: 1,
+        filter: "blur(0px)",
+        duration: 1.8,
+        ease: "back.out(1.7)",
+      },
       "-=0.4",
     )
-    .to([bodyLines, closing, memorial], { opacity: 0, y: -8, filter: "blur(8px)", duration: 3.6, ease: "power2.inOut" }, "+=4")
+    .to(
+      [bodyLines, closing, memorial],
+      {
+        opacity: 0,
+        y: -8,
+        filter: "blur(8px)",
+        duration: 3.6,
+        ease: "power2.inOut",
+      },
+      "+=4",
+    )
     .set(bodyContainer, { display: "none" })
     .to(sunlight, { opacity: 0, duration: 2.6 }, "-=2.2")
-    .to(scrollyBg, { "--radius": "0px", duration: 5, ease: "power2.inOut" }, "-=1.6");
+    .to(
+      scrollyBg,
+      { "--radius": "0px", duration: 5, ease: "power2.inOut" },
+      "-=1.6",
+    );
 
   if (sunlight) {
     gsap.to(sunlight, {
