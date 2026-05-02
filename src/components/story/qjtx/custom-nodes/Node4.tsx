@@ -46,7 +46,7 @@ export function NodeLayout({
           transform: "rotate(8deg) scale(1.2)",
         }}
       />
-      
+
       {/* Fog/Mist */}
       <div
         className={`scrolly-aura-${event.id} absolute inset-0 pointer-events-none opacity-0`}
@@ -59,17 +59,17 @@ export function NodeLayout({
       {/* --- Intro Scene --- */}
       <div className={`scrolly-intro-${event.id} absolute inset-0 flex flex-col items-center justify-center px-6`}>
         <div className="relative flex w-full max-w-4xl flex-col items-center justify-center gap-12 md:gap-16">
-          
+
           <div className="flex flex-col items-center gap-6 text-center">
             <div className="flex items-center gap-4">
-              <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-sky-300/40" />
+              <div className="h-px w-12 bg-linear-to-r from-transparent to-sky-300/40" />
               <p
                 className={`scrolly-quote-${event.id} text-[12px] font-light tracking-[0.5em] md:text-sm md:tracking-[0.8em]`}
                 style={{ color: bodyColor }}
               >
                 {detail.quote}
               </p>
-              <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-sky-300/40" />
+              <div className="h-px w-12 bg-linear-to-l from-transparent to-sky-300/40" />
             </div>
 
             <h2
@@ -77,14 +77,14 @@ export function NodeLayout({
               style={{ color: titleColor, paddingLeft: "0.35em" }}
             >
               {detail.title}
-              <div className="absolute -bottom-4 left-1/2 h-[1px] w-1/2 -translate-x-1/2 bg-gradient-to-r from-transparent via-sky-300/30 to-transparent" />
+              <div className="absolute -bottom-4 left-1/2 h-px w-1/2 -translate-x-1/2 bg-linear-to-r from-transparent via-sky-300/30 to-transparent" />
             </h2>
           </div>
 
           {/* Abstract Tower / Rain Gauge */}
-          <div className={`scrolly-tower-${event.id} relative flex h-[22rem] w-[8rem] flex-col items-center justify-center`}>
+          <div className={`scrolly-tower-${event.id} relative flex h-88 w-32 flex-col items-center justify-center`}>
             {/* Core glowing line */}
-            <div className="absolute top-0 bottom-0 left-1/2 w-[1px] -translate-x-1/2 bg-gradient-to-b from-sky-200/50 via-sky-400/20 to-transparent" />
+            <div className="absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 bg-linear-to-b from-sky-200/50 via-sky-400/20 to-transparent" />
             <div className="absolute top-[20%] left-1/2 h-24 w-[2px] -translate-x-1/2 bg-sky-300 shadow-[0_0_15px_rgba(56,189,248,0.6)]" />
 
             {/* Ripple Tiers */}
@@ -94,14 +94,14 @@ export function NodeLayout({
                   key={i}
                   className={`scrolly-tier-${event.id} relative flex h-2 items-center justify-center`}
                 >
-                  <div className="absolute h-px w-full bg-gradient-to-r from-transparent via-sky-300/30 to-transparent" style={{ width: `${80 - i * 12}px` }} />
+                  <div className="absolute h-px w-full bg-linear-to-r from-transparent via-sky-300/30 to-transparent" style={{ width: `${80 - i * 12}px` }} />
                   <div className="h-[3px] w-[3px] rounded-full bg-sky-200 shadow-[0_0_8px_rgba(125,211,252,0.6)]" />
                 </div>
               ))}
             </div>
 
             <div
-              className={`scrolly-tower-glow-${event.id} absolute top-1/2 left-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full blur-[40px]`}
+              className={`scrolly-tower-glow-${event.id} absolute top-1/2 left-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl`}
               style={{ background: `radial-gradient(circle, ${accentColor}20 0%, transparent 60%)` }}
             />
           </div>
@@ -114,16 +114,16 @@ export function NodeLayout({
           {bodyColumns.map((column, columnIndex) => (
             <div
               key={columnIndex}
-              className={`scrolly-column-${event.id} relative flex flex-col rounded-[2rem] border border-sky-100/10 bg-slate-900/30 p-8 backdrop-blur-md shadow-[0_10px_40px_rgba(0,0,0,0.5),inset_0_0_20px_rgba(14,165,233,0.05)]`}
+              className={`scrolly-column-${event.id} relative flex flex-col rounded-4xl border border-sky-100/10 bg-slate-900/30 p-8 backdrop-blur-md shadow-[0_10px_40px_rgba(0,0,0,0.5),inset_0_0_20px_rgba(14,165,233,0.05)]`}
             >
               {/* Subtle permanent static accent line on left */}
-              <div className="absolute top-0 left-0 h-full w-[2px] bg-gradient-to-b from-transparent via-sky-300/20 to-transparent" />
+              <div className="absolute top-0 left-0 h-full w-[2px] bg-linear-to-b from-transparent via-sky-300/20 to-transparent" />
 
               <div className="mb-8 flex items-center gap-4">
                 <span className="text-[11px] font-light tracking-[0.4em] text-sky-200/50">
                   {String(columnIndex + 1).padStart(2, '0')}
                 </span>
-                <div className="h-[1px] flex-1 bg-gradient-to-r from-sky-200/20 to-transparent" />
+                <div className="h-px flex-1 bg-linear-to-r from-sky-200/20 to-transparent" />
               </div>
 
               <div className="flex flex-col gap-6">
@@ -177,9 +177,9 @@ export function animate(
   const bodyContainer = scrollyText.querySelector(`.scrolly-body-container-${eventId}`);
   const columns = scrollyText.querySelectorAll(`.scrolly-column-${eventId}`);
   const bodyLines = scrollyText.querySelectorAll(`.scrolly-body-line`);
-  
+
   const closing = scrollyText.querySelector(`.scrolly-closing-${eventId}`);
-  
+
   const rainBg = scrollyText.querySelector(`.scrolly-rain-bg-${eventId}`);
   const rainFg = scrollyText.querySelector(`.scrolly-rain-fg-${eventId}`);
   const aura = scrollyText.querySelector(`.scrolly-aura-${eventId}`);
@@ -209,7 +209,7 @@ export function animate(
     0
   )
     .to([aura, rainBg, rainFg], { opacity: 1, duration: 3.5, stagger: 0.2 }, 0.5)
-    
+
     .fromTo(
       title,
       { opacity: 0, y: 35, filter: "blur(12px)" },
@@ -222,7 +222,7 @@ export function animate(
       { opacity: 1, y: 0, letterSpacing: "0.5em", filter: "blur(0px)", duration: 3.5, ease: "power2.out" },
       2.0
     )
-    
+
     .fromTo(
       tower,
       { opacity: 0, y: 40, filter: "blur(10px)" },
@@ -245,7 +245,7 @@ export function animate(
 
     .to([title, quote, tower, towerGlow], { opacity: 0, y: -25, filter: "blur(12px)", duration: 3.5, ease: "power2.inOut" }, "+=3.5")
     .set(intro, { display: "none" })
-    
+
     .fromTo(
       columns,
       { opacity: 0, y: 35, scale: 0.96, filter: "blur(8px)" },
@@ -273,10 +273,10 @@ export function animate(
       },
       "-=2"
     )
-    
+
     .to([columns, bodyLines], { opacity: 0, y: -15, filter: "blur(10px)", duration: 4, ease: "power2.inOut" }, "+=4.5")
     .set(bodyContainer, { display: "none" })
-    
+
     .fromTo(
       closing,
       { opacity: 0, y: 15, filter: "blur(8px)", scale: 0.95 },
@@ -284,7 +284,7 @@ export function animate(
       "-=1"
     )
     .to(closing, { opacity: 0, y: -10, filter: "blur(10px)", duration: 3.5, ease: "power2.inOut" }, "+=3.5")
-    
+
     .to([rainBg, rainFg, aura], { opacity: 0, duration: 3.5 }, "-=3")
     .to(scrollyBg, { "--radius": "0px", duration: 5.5, ease: "power2.inOut" }, "-=2");
 
