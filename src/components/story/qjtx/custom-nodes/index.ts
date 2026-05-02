@@ -19,6 +19,7 @@ import { theme as theme31, NodeLayout as NodeLayout31, animate as animate31 } fr
 import { theme as theme32, NodeLayout as NodeLayout32, animate as animate32 } from "./Node32";
 import { theme as theme9, NodeLayout as NodeLayout9, animate as animate9 } from "./Node9";
 import { theme as theme38, NodeLayout as NodeLayout38, animate as animate38 } from "./Node38";
+import { theme as theme40, NodeLayout as NodeLayout40, animate as animate40 } from "./Node40";
 
 // ─── Custom Node Definition ───────────────────────────────────────────────────
 
@@ -53,6 +54,7 @@ export const CUSTOM_NODE_REGISTRY: Record<string, CustomNodeDef> = {
   "9":  { theme: theme9,  Component: NodeLayout9,  animate: animate9  },
   "38": { theme: theme38, Component: NodeLayout38, animate: animate38 },
   "39": { theme: theme39, Component: NodeLayout39, animate: animate39 },
+  "40": { theme: theme40, Component: NodeLayout40, animate: animate40 },
 };
 
 // ─── Re-exports ────────────────────────────────────────────────────────────────
