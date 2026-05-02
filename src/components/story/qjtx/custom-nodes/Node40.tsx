@@ -72,8 +72,6 @@ export function NodeLayout({
           <div className="w-px h-24 md:h-32 bg-linear-to-t from-transparent to-white/30 mt-10 opacity-0 transform origin-bottom" id={`closing-line-bot-${event.id}`} />
         </div>
 
-        {/* Ultimate Black Fade (The real curtain fall) */}
-        <div className={`ultimate-curtain-${event.id} absolute inset-0 bg-black pointer-events-none opacity-0 z-50`} />
       </div>
     </div>
   );
@@ -106,17 +104,16 @@ export function animate(
   const closingText = sel(`.closing-text-${eventId}`);
   const closingLineBot = sel(`#closing-line-bot-${eventId}`);
 
-  const ultimateCurtain = sel(`.ultimate-curtain-${eventId}`);
+
 
   if (
     !wrapper || !dustContainer || !titlePhase || !titleText ||
-    !bodyPhase || !closingPhase || !ultimateCurtain ||
+    !bodyPhase || !closingPhase ||
     !closingLineTop || !closingText || !closingLineBot
   ) return;
 
   // Initial States
   tl.set(wrapper, { opacity: 0 });
-  tl.set(ultimateCurtain, { opacity: 0 });
   tl.set(dustContainer, { opacity: 0 });
   tl.set(closingLineTop, { scaleY: 0 });
   tl.set(closingLineBot, { scaleY: 0 });
@@ -183,13 +180,8 @@ export function animate(
   tl.to(closingText, { opacity: 1, filter: "blur(0px)", duration: 4, ease: "power2.out" }, "-=1.5");
   tl.to([closingText, closingLineTop, closingLineBot], { opacity: 0, filter: "blur(20px)", duration: 4, ease: "power2.in" }, "+=5");
 
-  // 5. The Ultimate Curtain Fall (Fade to absolute black before wrapper closes)
-  tl.to(ultimateCurtain, { opacity: 1, duration: 5, ease: "power3.inOut" }, "-=2");
-
-  // Fade out dust behind the curtain
-  tl.to(dustContainer, { opacity: 0, duration: 3 }, "-=3");
-
-  // 6. Global Exit (Collapse back to the node)
-  tl.to(scrollyBg, { "--radius": "0px", duration: 4, ease: "power3.inOut" }, "+=1");
+  // 5. Global Exit (Collapse back to the node) - Directly after the credits fade
+  tl.to(scrollyBg, { "--radius": "0px", duration: 4, ease: "power3.inOut" }, "+=0.5");
   tl.to(wrapper, { opacity: 0, duration: 3, ease: "power2.inOut" }, "<+0.5");
+  tl.to(dustContainer, { opacity: 0, duration: 2 }, "<");
 }
