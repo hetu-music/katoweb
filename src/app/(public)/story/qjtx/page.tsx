@@ -9,12 +9,26 @@ const STORY_TITLE = "倾尽天下 · 编年史";
 export async function generateMetadata(): Promise<Metadata> {
   const events = await getQjtxTimeline();
   const firstEvent = events[0];
-  const lastEvent = events[events.length - 1];
-  const description = `以 ${events.length} 个历史节点重构《倾尽天下》的故事编年史，从${firstEvent?.year ?? "乱世初起"}到${lastEvent?.year ?? "余音未绝"}，沉浸式回望白炎、朱砂与故国山河。`;
+  const secondLastEvent = events[events.length - 2] || events[events.length - 1];
+  const description = `以 ${events.length} 个历史节点展现《倾尽天下》的故事，从${firstEvent?.year ?? "乱世初起"}到${secondLastEvent?.year ?? "故人长绝"}，沉浸式回望白炎、朱砂与故国山河。`;
 
   return {
     title: STORY_TITLE,
     description,
+    keywords: [
+      "倾尽天下",
+      "河图",
+      "编年史",
+      "白炎",
+      "朱砂",
+      "古风音乐",
+      "音乐故事",
+      "Chronicle",
+      "Hetu",
+      "Qing Jin Tian Xia",
+    ],
+    authors: [{ url: "https://hetu-music.com" }],
+    creator: "河图作品勘鉴",
     alternates: {
       canonical: "/story/qjtx",
     },
@@ -22,13 +36,23 @@ export async function generateMetadata(): Promise<Metadata> {
       title: `${STORY_TITLE} - 河图作品勘鉴`,
       description,
       type: "article",
-      images: [{ url: "/icons/source.png" }],
+      url: "https://hetu-music.com/story/qjtx",
+      siteName: "河图作品勘鉴",
+      locale: "zh_CN",
+      images: [
+        {
+          url: "/story/qjtx/31.avif",
+          width: 1200,
+          height: 630,
+          alt: "倾尽天下 · 编年史封面",
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: `${STORY_TITLE} - 河图作品勘鉴`,
       description,
-      images: ["/icons/source.png"],
+      images: ["/story/qjtx/31.avif"],
     },
   };
 }
@@ -37,19 +61,26 @@ export default async function QingJinTianXiaPage() {
   const events = await getQjtxTimeline();
 
   const firstEvent = events[0];
-  const lastEvent = events[events.length - 1];
-  const description = `以 ${events.length} 个历史节点重构《倾尽天下》的故事编年史，从${firstEvent?.year ?? "乱世初起"}到${lastEvent?.year ?? "余音未绝"}，沉浸式回望白炎、朱砂与故国山河。`;
+  const secondLastEvent = events[events.length - 2] || events[events.length - 1];
+  const description = `以 ${events.length} 个历史节点展现《倾尽天下》的故事，从${firstEvent?.year ?? "乱世初起"}到${secondLastEvent?.year ?? "故人长绝"}，沉浸式回望白炎、朱砂与故国山河。`;
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: STORY_TITLE,
     description,
-    url: "https://hetu-music.com/story/qjtx",
-    isPartOf: {
-      "@type": "WebSite",
+    image: "https://hetu-music.com/story/qjtx/31.avif",
+    publisher: {
+      "@type": "Organization",
       name: "河图作品勘鉴",
-      url: "https://hetu-music.com",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://hetu-music.com/icons/icon-512x512.png",
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": "https://hetu-music.com/story/qjtx",
     },
   };
 
