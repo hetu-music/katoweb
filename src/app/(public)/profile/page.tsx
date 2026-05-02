@@ -121,7 +121,7 @@ function ProfileContent() {
   const [csrfToken, setCsrfToken] = useState("");
   const [displayPublic, setDisplayPublic] = useState(false);
   const [navidPwVisible, setNavidPwVisible] = useState(false);
-  const [copied, setCopied] = useState<"id" | "pw" | null>(null);
+  const [copied, setCopied] = useState<"id" | "pw" | "ep" | null>(null);
 
   const [pwdMsg, setPwdMsg] = useState<string | null>(null);
 
@@ -952,21 +952,21 @@ function ProfileContent() {
                             </a>
                             <button
                               onClick={() =>
-                                handleCopy(user?.endpointText ?? "", "id")
+                                handleCopy(user?.endpointText ?? "", "ep")
                               }
                               className={cn(
                                 "shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
-                                copied === "id"
+                                copied === "ep"
                                   ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
                                   : "bg-slate-200/60 dark:bg-slate-700 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-300/60 dark:hover:bg-slate-600",
                               )}
                             >
-                              {copied === "id" ? (
+                              {copied === "ep" ? (
                                 <Check size={12} />
                               ) : (
                                 <Copy size={12} />
                               )}
-                              {copied === "id" ? "已复制" : "复制"}
+                              {copied === "ep" ? "已复制" : "复制"}
                             </button>
                           </div>
                         </div>
