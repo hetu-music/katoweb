@@ -192,20 +192,9 @@ export function animate(
       });
   });
 
-  // --- THE TIMELINE ---
-
-  // 0. The Chaos Begins
+  // 1. The Intro sequence begins in the heat of war
   tl.to(wrapper, { opacity: 1, duration: 1.5, ease: "power2.inOut" }, 0);
-
-  // 1. The Clamor Fades (喧闹落尽) -> Transition from War to Peace
-  // The red burns out into cold slate blue, embers vanish, snow begins.
-  tl.to(warOverlay, { opacity: 0, duration: 5, ease: "power2.inOut" }, 1.5);
-  tl.to(warEmbers, { opacity: 0, filter: "blur(10px)", duration: 4, ease: "power2.in" }, 1.5);
-  tl.to(peaceOverlay, { opacity: 0.8, duration: 5, ease: "power2.inOut" }, 2);
-  tl.to(peaceSnow, { opacity: 1, duration: 4, ease: "power2.out" }, 2.5);
-
-  // 2. The Text Cools Down (Intro)
-  tl.to(intro, { opacity: 1, duration: 2, ease: "power2.out" }, 3);
+  tl.to(intro, { opacity: 1, duration: 2, ease: "power2.out" }, 1);
   
   // The Title and Quote "cool down" from glowing red to cold slate/white
   tl.to(titleText, { 
@@ -215,7 +204,7 @@ export function animate(
       filter: "blur(0px)", 
       duration: 5, 
       ease: "power3.out" 
-  }, 3);
+  }, 1);
   tl.to(quoteText, { 
       color: "#cbd5e1", 
       textShadow: "0 0 10px rgba(203,213,225,0.2)", 
@@ -223,10 +212,18 @@ export function animate(
       filter: "blur(0px)", 
       duration: 5, 
       ease: "power3.out" 
-  }, 3.5);
+  }, 1.5);
 
-  // Exit Intro
-  tl.to(intro, { opacity: 0, y: -20, filter: "blur(15px)", duration: 3, ease: "power2.inOut" }, "+=4");
+  // 2. The Clamor Fades (喧闹落尽) -> Transition from War to Peace
+  // Starts after the intro has had time to be read
+  const transitionStart = 6;
+  tl.to(warOverlay, { opacity: 0, duration: 5, ease: "power2.inOut" }, transitionStart);
+  tl.to(warEmbers, { opacity: 0, filter: "blur(10px)", duration: 4, ease: "power2.in" }, transitionStart);
+  tl.to(peaceOverlay, { opacity: 0.8, duration: 5, ease: "power2.inOut" }, transitionStart + 0.5);
+  tl.to(peaceSnow, { opacity: 1, duration: 4, ease: "power2.out" }, transitionStart + 1);
+
+  // Exit Intro as peace settles in
+  tl.to(intro, { opacity: 0, y: -20, filter: "blur(15px)", duration: 3, ease: "power2.inOut" }, transitionStart + 4);
   tl.set(intro, { display: "none" });
 
   // 3. Sequential Body Phases
