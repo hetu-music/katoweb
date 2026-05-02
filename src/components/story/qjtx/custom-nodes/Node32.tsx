@@ -2,15 +2,14 @@ import gsap from "gsap";
 import type { ImmersiveTheme, TimelineEvent } from "../types";
 
 export const theme: ImmersiveTheme = {
-  // Using an opaque radial gradient to ensure the timeline beneath is fully blocked, 
-  // while applying the background image directly to theme.bg so it inherits the circular expansion mask.
-  bg: "radial-gradient(circle at 50% 24%, rgba(24, 24, 27, 0.95) 0%, rgba(9, 9, 11, 0.98) 26%, rgba(0, 0, 0, 1) 100%), url(/story/qjtx/32.avif) center/cover no-repeat fixed",
+  // Lighter background with much less aggressive masking
+  bg: "radial-gradient(circle at 50% 30%, rgba(24, 24, 27, 0.4) 0%, rgba(0, 0, 0, 0.6) 100%), url(/story/qjtx/32.avif) center/cover no-repeat fixed",
   titleColor: "#fce7f3",
   bodyColor: "#f5f3ff",
   accentColor: "#f472b6",
   layout: "horizontal",
   specialEffect: "none",
-  maskPath: "M50,0 C62,34 100,44 62,60 C50,100 38,60 0,50 C38,40 50,0 50,0 Z",
+  maskPath: "M50 0 C68 8 82 18 92 34 C100 48 100 52 92 66 C82 82 68 92 50 100 C32 92 18 82 8 66 C0 52 0 48 8 34 C18 18 32 8 50 0 Z",
 };
 
 export function NodeLayout({
@@ -135,7 +134,7 @@ export function animate(
   tl.fromTo(
     scrollyBg,
     { "--radius": "0px" },
-    { "--radius": "150vmax", duration: 6.2, ease: "power2.inOut" },
+    { "--radius": "250vmax", duration: 6.2, ease: "power2.inOut" },
     0,
   );
   
