@@ -2,19 +2,18 @@ import gsap from "gsap";
 import type { ImmersiveTheme, TimelineEvent } from "../types";
 
 export const theme: ImmersiveTheme = {
-  bg: "radial-gradient(circle at 50% 12%, rgba(250, 204, 21, 0.09) 0%, rgba(41, 37, 36, 0.6) 28%, rgba(12, 10, 9, 0.97) 100%), url(/story/qjtx/28.avif) center/cover no-repeat fixed",
-  titleColor: "#fef3c7",
-  bodyColor: "#f5f5f4",
-  accentColor: "#d97706",
+  // A warm, aged paper aesthetic for the timeline background
+  bg: "#050505", // Handled inside for animations
+  titleColor: "#3E2723",
+  bodyColor: "#5D4037",
+  accentColor: "#8B1818",
   layout: "horizontal",
   specialEffect: "none",
-  maskPath:
-    "M50 0 C76 8 92 24 100 50 C92 76 76 92 50 100 C24 92 8 76 0 50 C8 24 24 8 50 0 Z",
+  maskPath: "M50 0 C76 8 92 24 100 50 C92 76 76 92 50 100 C24 92 8 76 0 50 C8 24 24 8 50 0 Z",
 };
 
 export function NodeLayout({
   event,
-  resolvedTheme,
 }: {
   event: TimelineEvent;
   resolvedTheme: Required<ImmersiveTheme>;
@@ -22,105 +21,73 @@ export function NodeLayout({
   const detail = event.detail;
   if (!detail) return null;
 
-  const { titleColor, bodyColor, accentColor } = resolvedTheme;
-  const splitIndex = Math.ceil(detail.body.length / 2);
-  const leftPage = detail.body.slice(0, splitIndex);
-  const rightPage = detail.body.slice(splitIndex);
-
   return (
-    <div className={`scrolly-text-${event.id} relative z-10 h-full w-full overflow-hidden`}>
-      <div
-        className={`scrolly-dust-${event.id} absolute inset-0 pointer-events-none opacity-0 mix-blend-overlay`}
-        style={{
-          backgroundImage:
-            'url("data:image/svg+xml,%3Csvg viewBox=%270 0 160 160%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.95%27 numOctaves=%272%27 stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23n)%27 opacity=%270.45%27/%3E%3C/svg%3E")',
-        }}
-      />
+    <div className={`scrolly-text-${event.id} relative z-10 h-full w-full overflow-hidden font-serif select-none`}>
+      
+      {/* Global Wrapper for Entrance/Exit Animations */}
+      <div className={`node-wrapper-${event.id} absolute inset-0 opacity-0`}>
+        
+        {/* Solid Base Background to block underlying timeline */}
+        <div className="absolute inset-0 bg-[#050505] pointer-events-none" />
 
-      <div className={`scrolly-intro-${event.id} absolute inset-0 flex flex-col items-center justify-center px-6`}>
-        <div
-          className={`scrolly-cover-${event.id} relative flex w-full max-w-2xl flex-col items-center rounded-[2rem] border border-amber-100/10 bg-stone-950/45 px-8 py-10 backdrop-blur-md md:px-12 md:py-12`}
-          style={{ boxShadow: `0 0 48px color-mix(in srgb, ${accentColor} 12%, transparent)` }}
-        >
-          <span className="mb-5 text-[10px] tracking-[0.45em] text-amber-50/45 md:text-[11px]">
-            太史院重开旧卷
-          </span>
-          <h2
-            className={`scrolly-title-${event.id} text-center text-4xl font-serif font-light tracking-[0.38em] md:text-6xl md:tracking-[0.5em]`}
-            style={{ color: titleColor, paddingLeft: "0.38em" }}
-          >
-            {detail.title}
-          </h2>
-          <p
-            className={`scrolly-quote-${event.id} mt-6 text-center text-sm font-light tracking-[0.32em] text-amber-50/75 md:mt-8 md:text-base md:tracking-[0.45em]`}
-            style={{ color: bodyColor, paddingLeft: "0.32em" }}
-          >
-            {detail.quote}
-          </p>
-        </div>
-      </div>
+        {/* Subtle Background Image Context */}
+        <div className="absolute inset-0 bg-[url('/story/qjtx/28.avif')] bg-cover bg-center opacity-30 mix-blend-luminosity scale-105 pointer-events-none" />
 
-      <div className={`scrolly-body-container-${event.id} absolute inset-0 flex items-center justify-center px-4 py-8 md:px-10 md:py-12`}>
-        <div
-          className={`scrolly-folio-${event.id} relative grid w-full max-w-6xl grid-cols-1 overflow-hidden rounded-[2rem] border border-amber-100/10 bg-[linear-gradient(180deg,rgba(255,251,235,0.92),rgba(245,238,220,0.88))] text-stone-800 shadow-[0_20px_80px_rgba(0,0,0,0.35)] md:grid-cols-[1fr_auto_1fr]`}
-        >
-          <div className="absolute inset-x-0 top-0 h-16 bg-linear-to-b from-amber-100/45 to-transparent" />
-          <div className="absolute inset-y-0 left-1/2 hidden w-px -translate-x-1/2 bg-stone-500/15 md:block" />
+        {/* Center Container for the Scroll */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-2 md:px-12">
+            
+            {/* The Scroll Container (Defines max width of paper) */}
+            <div className="relative w-full max-w-[1200px] h-[80vh] md:h-[75vh] pointer-events-auto flex items-center justify-center">
+              
+              {/* Paper - Animates clipPath to reveal from center */}
+              <div 
+                className={`paper-container-${event.id} absolute inset-0 bg-[#f4e8d1] overflow-x-auto overflow-y-hidden no-scrollbar border-y-[6px] md:border-y-[10px] border-[#d9c4a5] shadow-[0_20px_50px_rgba(0,0,0,0.5),inset_0_0_40px_rgba(139,24,24,0.05)]`}
+                style={{ clipPath: "inset(0 50% 0 50%)" }}
+              >
+                 {/* Paper Textures */}
+                 <div className="absolute inset-0 opacity-40 mix-blend-multiply pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.12'/%3E%3C/svg%3E")` }} />
+                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.5)_0%,rgba(0,0,0,0.08)_100%)] pointer-events-none" />
 
-          <section className={`scrolly-page-${event.id} relative px-6 py-8 md:px-9 md:py-10`}>
-            <div className="mb-6 flex items-center justify-between">
-              <span className="text-[10px] tracking-[0.35em] text-stone-500">上卷</span>
-              <span className="h-px w-14 bg-stone-400/25" />
-            </div>
-            <div className="flex flex-col gap-4 md:gap-5">
-              {leftPage.map((paragraph, index) => (
-                <p
-                  key={`left-${index}`}
-                  className={`scrolly-body-line text-[13px] leading-[2.1] tracking-[0.12em] md:text-[15px] ${paragraph === "……" ? "text-center tracking-[0.55em] text-stone-400/75" : ""
-                    }`}
-                >
-                  {paragraph}
-                </p>
-              ))}
-            </div>
-          </section>
+                 {/* Inner Content - Authentic Right-to-Left Vertical layout */}
+                 <div className="relative h-full w-max min-w-full flex flex-row-reverse items-center justify-center gap-12 md:gap-20 px-12 md:px-24 box-border z-10">
+                     
+                     {/* Title */}
+                     <div className={`content-item-${event.id} [writing-mode:vertical-rl] text-4xl md:text-[4.5rem] text-[#2c1e16] tracking-[0.3em] font-medium shrink-0 max-h-[85%] drop-shadow-sm`}>
+                         {detail.title}
+                     </div>
 
-          <div className="hidden items-center justify-center px-4 md:flex">
-            <div
-              className={`scrolly-marginalia-${event.id} flex min-h-[60%] items-center rounded-full border border-amber-900/10 bg-amber-50/55 px-3 py-8 shadow-inner`}
-            >
-              <span className="[writing-mode:vertical-rl] text-[11px] tracking-[0.35em] text-stone-500">
-                太史秉笔
-              </span>
+                     {/* Quote */}
+                     {detail.quote && (
+                         <div className={`content-item-${event.id} [writing-mode:vertical-rl] text-sm md:text-[15px] text-[#5d4037] tracking-[0.4em] shrink-0 max-h-[85%]`}>
+                             {detail.quote}
+                         </div>
+                     )}
+
+                     {/* Body Texts */}
+                     {detail.body.map((p, i) => (
+                         <div key={i} className={`content-item-${event.id} [writing-mode:vertical-rl] text-[14px] md:text-[16px] leading-[2.2] md:leading-[2.5] tracking-[0.25em] text-[#2c1e16] shrink-0 max-h-[75%] break-words ${p === "……" ? "opacity-50" : "font-light"}`}>
+                             {p}
+                         </div>
+                     ))}
+
+                     {/* Closing */}
+                     {detail.closing && (
+                         <div className={`content-item-${event.id} [writing-mode:vertical-rl] text-xs md:text-sm tracking-[0.5em] text-[#8B1818] font-bold border-[2px] border-[#8B1818] px-3 py-4 md:px-4 md:py-6 bg-[#8B1818]/5 shrink-0 max-h-[85%] drop-shadow-[0_0_8px_rgba(139,24,24,0.15)]`}>
+                             {detail.closing}
+                         </div>
+                     )}
+
+                 </div>
+              </div>
+
+              {/* Wooden Rollers */}
+              <div className={`left-roller-${event.id} absolute left-1/2 top-[-2%] bottom-[-2%] w-5 md:w-8 rounded-full bg-linear-to-r from-[#1a110b] via-[#4a3525] to-[#1a110b] shadow-[10px_0_20px_rgba(0,0,0,0.6)] z-20 border-x border-[#5D4037]/30`} />
+              <div className={`right-roller-${event.id} absolute left-1/2 top-[-2%] bottom-[-2%] w-5 md:w-8 rounded-full bg-linear-to-l from-[#1a110b] via-[#4a3525] to-[#1a110b] shadow-[-10px_0_20px_rgba(0,0,0,0.6)] z-20 border-x border-[#5D4037]/30`} />
+
             </div>
           </div>
-
-          <section className={`scrolly-page-${event.id} relative px-6 py-8 md:px-9 md:py-10`}>
-            <div className="mb-6 flex items-center justify-between">
-              <span className="text-[10px] tracking-[0.35em] text-stone-500">下卷</span>
-              <span className="h-px w-14 bg-stone-400/25" />
-            </div>
-            <div className="flex flex-col gap-4 md:gap-5">
-              {rightPage.map((paragraph, index) => (
-                <p
-                  key={`right-${index}`}
-                  className={`scrolly-body-line text-[13px] leading-[2.1] tracking-[0.12em] md:text-[15px] ${paragraph === "……" ? "text-center tracking-[0.55em] text-stone-400/75" : ""
-                    }`}
-                >
-                  {paragraph}
-                </p>
-              ))}
-            </div>
-          </section>
-
-          {detail.closing && (
-            <div className={`scrolly-closing-${event.id} absolute bottom-5 right-5 rounded-full border border-red-900/15 bg-red-950/10 px-4 py-2 text-[10px] tracking-[0.3em] text-red-900/60 shadow-[0_0_0_1px_rgba(127,29,29,0.06)] md:bottom-7 md:right-8 md:text-[11px]`}>
-              {detail.closing}
-            </div>
-          )}
         </div>
       </div>
-    </div>
   );
 }
 
@@ -131,97 +98,51 @@ export function animate(
   scrollyText: HTMLElement,
   eventId: string,
 ) {
-  const intro = scrollyText.querySelector(`.scrolly-intro-${eventId}`);
-  const cover = scrollyText.querySelector(`.scrolly-cover-${eventId}`);
-  const title = scrollyText.querySelector(`.scrolly-title-${eventId}`);
-  const quote = scrollyText.querySelector(`.scrolly-quote-${eventId}`);
-  const bodyContainer = scrollyText.querySelector(`.scrolly-body-container-${eventId}`);
-  const folio = scrollyText.querySelector(`.scrolly-folio-${eventId}`);
-  const pages = scrollyText.querySelectorAll(`.scrolly-page-${eventId}`);
-  const bodyLines = scrollyText.querySelectorAll(`.scrolly-body-line`);
-  const marginalia = scrollyText.querySelector(`.scrolly-marginalia-${eventId}`);
-  const closing = scrollyText.querySelector(`.scrolly-closing-${eventId}`);
-  const dust = scrollyText.querySelector(`.scrolly-dust-${eventId}`);
+  const sel = (s: string) => scrollyText.querySelector(s);
+  const selAll = (s: string) => scrollyText.querySelectorAll(s);
 
-  tl.set([cover, title, quote, folio, pages, bodyLines, marginalia, closing, dust], {
-    opacity: 0,
-  });
+  const wrapper = sel(`.node-wrapper-${eventId}`);
+  const paperContainer = sel(`.paper-container-${eventId}`);
+  const leftRoller = sel(`.left-roller-${eventId}`);
+  const rightRoller = sel(`.right-roller-${eventId}`);
+  const contentItems = selAll(`.content-item-${eventId}`);
 
-  tl.fromTo(
-    scrollyBg,
-    { "--radius": "0px" },
-    { "--radius": "150vmax", duration: 5.8, ease: "power2.inOut" },
-    0,
-  )
-    .to(dust, { opacity: 0.18, duration: 2.4 }, 0.8)
-    .fromTo(
-      cover,
-      { opacity: 0, y: 32, scale: 0.96, filter: "blur(18px)" },
-      { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 3.8, ease: "power3.out" },
-      1.2,
-    )
-    .fromTo(
-      title,
-      { opacity: 0, y: 18, filter: "blur(10px)" },
-      { opacity: 1, y: 0, filter: "blur(0px)", duration: 2.8, ease: "power2.out" },
-      1.7,
-    )
-    .fromTo(
-      quote,
-      { opacity: 0, y: 10, filter: "blur(8px)" },
-      { opacity: 1, y: 0, filter: "blur(0px)", duration: 2.6, ease: "power2.out" },
-      2,
-    )
-    .to([cover, title, quote], { opacity: 0, y: -14, filter: "blur(12px)", duration: 2.8, ease: "power2.inOut" }, "+=2")
-    .set(intro, { display: "none" })
-    .fromTo(
-      folio,
-      { opacity: 0, y: 30, scale: 0.98, rotateX: 8, filter: "blur(12px)" },
-      {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        rotateX: 0,
-        filter: "blur(0px)",
-        duration: 2.8,
-        ease: "power2.out",
-      },
-      "-=0.1",
-    )
-    .fromTo(
-      pages,
-      { opacity: 0, x: (index) => (index === 0 ? -20 : 20) },
-      { opacity: 1, x: 0, duration: 1.8, stagger: 0.18, ease: "power2.out" },
-      "-=1.8",
-    )
-    .fromTo(
-      marginalia,
-      { opacity: 0, scaleY: 0.8, filter: "blur(8px)" },
-      { opacity: 1, scaleY: 1, filter: "blur(0px)", duration: 1.9, ease: "power2.out" },
-      "-=1.2",
-    )
-    .fromTo(
-      bodyLines,
-      { opacity: 0, y: 10, filter: "blur(6px)" },
-      {
-        opacity: 1,
-        y: 0,
-        filter: "blur(0px)",
-        duration: 1.5,
-        stagger: 0.07,
-        ease: "power2.out",
-      },
-      "-=1.6",
-    )
-    .to([pages, bodyLines, marginalia], { opacity: 0, y: -10, filter: "blur(8px)", duration: 3, ease: "power2.inOut" }, "+=3.8")
-    .set(bodyContainer, { display: "none" })
-    .fromTo(
-      closing,
-      { opacity: 0, scale: 0.7, rotate: -12, filter: "blur(8px)" },
-      { opacity: 1, scale: 1, rotate: 0, filter: "blur(0px)", duration: 1.9, ease: "back.out(1.8)" },
-      "-=0.3",
-    )
-    .to(closing, { opacity: 0, scale: 0.9, filter: "blur(10px)", duration: 3.4, ease: "power2.inOut" }, "+=3")
-    .to(dust, { opacity: 0, duration: 2 }, "-=2.6")
-    .to(scrollyBg, { "--radius": "0px", duration: 5, ease: "power2.inOut" }, "-=1.6");
+  // Initial States
+  tl.set(wrapper, { opacity: 0 });
+  tl.set(paperContainer, { clipPath: "inset(0 50% 0 50%)" });
+  tl.set([leftRoller, rightRoller], { xPercent: -50, left: "50%" });
+  tl.set(contentItems, { opacity: 0, filter: "blur(10px)" });
+
+  // 1. Dark background fades in
+  tl.to(wrapper, { opacity: 1, duration: 1.5, ease: "power2.inOut" }, 0);
+
+  // 2. Unroll the scroll (reveal from center out)
+  tl.to(paperContainer, { clipPath: "inset(0 0% 0 0%)", duration: 3.5, ease: "power3.inOut" }, 1);
+  tl.to(leftRoller, { left: "0%", duration: 3.5, ease: "power3.inOut" }, 1);
+  tl.to(rightRoller, { left: "100%", duration: 3.5, ease: "power3.inOut" }, 1);
+
+  // 3. Ink fades in (staggered sequentially from right to left visually)
+  tl.to(contentItems, { 
+      opacity: 1, 
+      filter: "blur(0px)", 
+      duration: 2.5, 
+      stagger: 0.15, 
+      ease: "power2.out" 
+  }, 2.5);
+
+  // 4. Content fades out (before closing the scroll)
+  tl.to(contentItems, { 
+      opacity: 0, 
+      filter: "blur(10px)", 
+      duration: 2, 
+      stagger: 0.05, 
+      ease: "power2.in" 
+  }, "+=5");
+
+  // 5. Roll up the scroll back to the center
+  tl.to(paperContainer, { clipPath: "inset(0 50% 0 50%)", duration: 3, ease: "power3.inOut" }, "+=0.5");
+  tl.to([leftRoller, rightRoller], { left: "50%", duration: 3, ease: "power3.inOut" }, "<");
+
+  // 6. Global Exit
+  tl.to(wrapper, { opacity: 0, duration: 1.5, ease: "power2.inOut" }, "+=0.2");
 }
