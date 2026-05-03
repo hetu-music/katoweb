@@ -64,7 +64,7 @@ export function NodeLayout({
           className={`scrolly-memorial-${event.id} relative flex w-full max-w-5xl flex-col items-center`}
         >
           <div
-            className={`scrolly-stele-${event.id} relative w-full max-w-3xl rounded-[2.6rem_2.6rem_1.8rem_1.8rem] border border-amber-100/12 bg-stone-900/36 px-7 py-10 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-md md:px-10 md:py-12`}
+            className={`scrolly-stele-${event.id} relative w-full max-w-3xl rounded-[2.6rem_2.6rem_1.8rem_1.8rem] border border-amber-100/12 bg-stone-900/36 px-7 py-10 shadow-[0_24px_80px_rgba(0,0,0,0.35)] md:backdrop-blur-md md:px-10 md:py-12`}
           >
             <div className="absolute inset-x-8 top-4 h-px bg-linear-to-r from-transparent via-amber-100/28 to-transparent" />
             <div className="absolute inset-x-8 bottom-4 h-px bg-linear-to-r from-transparent via-amber-100/18 to-transparent" />

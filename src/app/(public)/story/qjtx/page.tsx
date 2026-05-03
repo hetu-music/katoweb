@@ -88,6 +88,16 @@ export default async function QingJinTianXiaPage() {
 
   return (
     <>
+      {/*
+        预加载首个沉浸节点（Node4）的背景图。
+        其余节点背景图随 display:none → flex 切换时才被浏览器下载，天然懒加载。
+      */}
+      <link
+        rel="preload"
+        as="image"
+        href="/story/qjtx/4.avif"
+        type="image/avif"
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

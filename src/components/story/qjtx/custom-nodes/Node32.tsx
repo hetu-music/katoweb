@@ -92,7 +92,7 @@ export function NodeLayout({
           {dreamLines.map((line, index) => (
             <div
               key={index}
-              className={`scrolly-body-line w-[min(92vw,40rem)] rounded-[999px] border border-white/10 bg-black/40 px-7 py-4 text-center text-sm leading-[1.95] tracking-[0.18em] text-slate-100/90 shadow-[0_0_24px_rgba(244,114,182,0.06)] backdrop-blur-md md:w-auto md:px-8 md:py-4 md:text-[15px] ${desktopBubbleWidths[index] ?? "md:max-w-[52%]"} ${
+              className={`scrolly-body-line w-[min(92vw,40rem)] rounded-[999px] border border-white/10 bg-black/40 px-7 py-4 text-center text-sm leading-[1.95] tracking-[0.18em] text-slate-100/90 shadow-[0_0_24px_rgba(244,114,182,0.06)] md:backdrop-blur-md md:w-auto md:px-8 md:py-4 md:text-[15px] ${desktopBubbleWidths[index] ?? "md:max-w-[52%]"} ${
                 index % 2 === 0
                   ? "-translate-x-4 md:-translate-x-14"
                   : "translate-x-4 md:translate-x-14"

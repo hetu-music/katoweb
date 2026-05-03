@@ -26,12 +26,19 @@ const animationSlowdown = 3;
 const SNOWFLAKE_MASK_PATH =
   "M50 0 L55 35 L80 20 L65 45 L100 50 L65 55 L80 80 L55 65 L50 100 L45 65 L20 80 L35 55 L0 50 L35 45 L20 20 L45 35 Z";
 
-/** 根据 SVG path 字符串构建 CSS mask-image 值 */
+/** 模块级 maskUrl 缓存，避免每次渲染重复 encodeURIComponent */
+const maskUrlCache = new Map<string, string>();
+
+/** 根据 SVG path 字符串构建 CSS mask-image 值（带缓存） */
 function buildMaskUrl(path: string): string {
+  const cached = maskUrlCache.get(path);
+  if (cached) return cached;
   const encoded = encodeURIComponent(
     `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="${path}" fill="black"/></svg>`,
   );
-  return `url('data:image/svg+xml,${encoded}')`;
+  const url = `url('data:image/svg+xml,${encoded}')`;
+  maskUrlCache.set(path, url);
+  return url;
 }
 
 const SNOWFLAKE_MASK_URL = buildMaskUrl(SNOWFLAKE_MASK_PATH);
@@ -48,12 +55,12 @@ const heroTitleVariants = {
   },
 } satisfies Variants;
 
+// Hero 入场变体不含 filter:blur，避免移动端首屏触发昂贵 GPU 合成
 const heroCharVariants = {
-  hidden: { opacity: 0, scale: 0.85, filter: "blur(16px)" },
+  hidden: { opacity: 0, scale: 0.85 },
   visible: {
     opacity: 1,
     scale: 1,
-    filter: "blur(0px)",
     transition: { duration: 1.6 * animationSlowdown, ease: motionEase },
   },
 } satisfies Variants;
@@ -69,11 +76,10 @@ const heroSubtitleVariants = {
 } satisfies Variants;
 
 const heroSubtitleLineVariants = {
-  hidden: { opacity: 0, y: 30, filter: "blur(5px)" },
+  hidden: { opacity: 0, y: 30 },
   visible: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
     transition: { duration: 1.2 * animationSlowdown, ease: motionEase },
   },
 } satisfies Variants;
@@ -222,6 +228,7 @@ function ImmersiveReadingPanel({ event }: { event: TimelineEvent }) {
       data-layout={layout}
       data-effect={specialEffect}
       className="fixed inset-0 w-screen h-screen m-0 p-0 z-100 pointer-events-none flex-col items-center justify-center hidden"
+      style={{ contentVisibility: "hidden" } as React.CSSProperties}
     >
       {/* 展开背景（雪花/自定义形状 mask 扩展） */}
       <div
@@ -348,8 +355,20 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
 
       dots.forEach((dot) => setDotState(dot, false));
 
+      // ─ 预缓存每个 wrapper 相对于 containerEl 的静态中心偏移量 ───────────
+      // wrapper 的 offsetTop 在 DOM 结构不变时是静态值。每次 scroll 只需
+      // 一次 containerEl.getBoundingClientRect() + O(1) 加法，而不是
+      // O(n) 次 closest() + getBoundingClientRect()，大幅减少主线程开销。
+      const buildWrapperOffsets = () =>
+        wrappers.map((w) => w.offsetTop + w.offsetHeight / 2);
+      let wrapperOffsets = buildWrapperOffsets();
+
+      // resize 时重新计算（ScrollTrigger.refresh 也会触发）
+      ScrollTrigger.addEventListener("refresh", () => {
+        wrapperOffsets = buildWrapperOffsets();
+      });
+
       const updateLinesAndDots = () => {
-        // 直接使用上方缓存的引用，无任何 DOM 查询
         if (!containerEl || !progressLine) return;
 
         const rect = containerEl.getBoundingClientRect();
@@ -359,20 +378,15 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
         lineTargetHeight = Math.max(0, Math.min(lineTargetHeight, rect.height));
         progressLine.style.height = `${lineTargetHeight}px`;
 
-        dots.forEach((dot) => {
-          const wrapper = dot.closest<HTMLElement>(".timeline-event-wrapper");
-          if (!wrapper) return;
-          const wrapperRect = wrapper.getBoundingClientRect();
-          const wrapperCenter = wrapperRect.top + wrapperRect.height / 2;
-          // 现在可以直接使用 triggerY 进行精准匹配，不再需要 +30 补偿
-          setDotState(dot, wrapperCenter <= triggerY);
+        // 利用预缓存的 offsetTop，只需 containerTop + 静态偏移 进行比较
+        const containerTop = rect.top;
+        dots.forEach((dot, i) => {
+          const wrapperCenterInViewport = containerTop + wrapperOffsets[i];
+          setDotState(dot, wrapperCenterInViewport <= triggerY);
         });
       };
 
-      // ─ 改用 scroll 事件驱动，而非 gsap.ticker ────────────────────────────
-      // gsap.ticker 每帧都触发（包括静止时），scroll 事件仅在实际滚动时触发。
-      // Lenis 在每个动画帧调用 ScrollTrigger.update()，ScrollTrigger.update()
-      // 会分发 scroll 事件，因此精度与之前完全一致，但空闲时 CPU 占用降为零。
+      // scroll 事件驱动（Lenis 每帧调用 ScrollTrigger.update() 会分发 scroll 事件）
       window.addEventListener("scroll", updateLinesAndDots, { passive: true });
       updateLinesAndDots(); // 初始同步一次
 
@@ -426,7 +440,15 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
             };
 
             const setDetailVisibility = (visible: boolean) => {
-              gsap.set(detailContent, { display: visible ? "flex" : "none" });
+              if (visible) {
+                // 先移除 content-visibility 限制，再显示
+                detailContent.style.contentVisibility = "visible";
+                gsap.set(detailContent, { display: "flex" });
+              } else {
+                gsap.set(detailContent, { display: "none" });
+                // 告知浏览器跳过该面板子树的渲染（paint/composite/style-recalc）
+                detailContent.style.contentVisibility = "hidden";
+              }
             };
 
             const syncDetailVisibility = (trigger: ScrollTrigger) => {
@@ -442,7 +464,9 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
                 pinnedContainer: ".timeline-container",
                 start: "center 55%",
                 end: "+=6000",
-                scrub: true,
+                // scrub: 1 比 scrub: true（=0）多一点追赶延迟，
+                // 减少高频 timeline 更新，同时带来更顺滑的感知
+                scrub: 1,
                 pin: ".timeline-container",
                 pinSpacing: true,
                 invalidateOnRefresh: true,
