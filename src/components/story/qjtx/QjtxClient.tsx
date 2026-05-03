@@ -230,6 +230,7 @@ function ImmersiveReadingPanel({ event }: { event: TimelineEvent }) {
       data-layout={layout}
       data-effect={specialEffect}
       className="fixed inset-0 w-screen h-screen m-0 p-0 z-100 pointer-events-none flex-col items-center justify-center hidden"
+      style={{ isolation: "isolate" } as React.CSSProperties}
     >
       {/* 展开背景（雪花/自定义形状 mask 扩展） */}
       <div
@@ -698,7 +699,7 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
         </motion.div>
       </section>
 
-      <main className="timeline-container relative z-20 mx-auto w-full max-w-7xl px-4 py-[15vh]">
+      <main className="timeline-container relative z-20 mx-auto w-full max-w-7xl px-4 py-[15vh]" style={{ contain: "layout" }}>
         <div className="absolute top-0 bottom-0 left-14 w-px -translate-x-1/2 rounded bg-zinc-800/40 md:left-1/2" />
         <div className="timeline-progress absolute top-0 left-14 z-10 w-px -translate-x-1/2 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2">
           <div className="tear-drop-tip absolute top-full left-1/2 -translate-x-1/2 opacity-0 w-3 h-4">
