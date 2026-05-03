@@ -228,7 +228,6 @@ function ImmersiveReadingPanel({ event }: { event: TimelineEvent }) {
       data-layout={layout}
       data-effect={specialEffect}
       className="fixed inset-0 w-screen h-screen m-0 p-0 z-100 pointer-events-none flex-col items-center justify-center hidden"
-      style={{ contentVisibility: "hidden" } as React.CSSProperties}
     >
       {/* 展开背景（雪花/自定义形状 mask 扩展） */}
       <div
@@ -388,7 +387,6 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
       window.addEventListener("scroll", updateLinesAndDots, { passive: true });
       updateLinesAndDots(); // 初始同步一次
 
-
       wrappers.forEach((wrapper) => {
         const content = wrapper.querySelector<HTMLElement>(
           ".timeline-event-content",
@@ -428,7 +426,6 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
           const dot = content.querySelector<HTMLElement>(".event-dot");
 
           if (detailContent && scrollyBg && scrollyText && dot) {
-            // 极致对齐性能：Y 轴直接量取绝静止的 wrapper 中心，从而彻底消除对 contentY 的手动补偿。
             const setCirclePos = () => {
               const dotRect = dot.getBoundingClientRect();
               const wrapperRect = wrapper.getBoundingClientRect();
@@ -438,16 +435,17 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
               scrollyBg.style.setProperty("--y", `${trueY}px`);
             };
 
+            // panelInfiniteTweens 在 animate() 调用后填充；
+            // setDetailVisibility 通过闭包引用该数组实现 pause/resume。
+            let panelInfiniteTweens: gsap.core.Tween[] = [];
+
             const setDetailVisibility = (visible: boolean) => {
-              if (visible) {
-                // 先移除 content-visibility 限制，再显示
-                detailContent.style.contentVisibility = "visible";
-                gsap.set(detailContent, { display: "flex" });
-              } else {
-                gsap.set(detailContent, { display: "none" });
-                // 告知浏览器跳过该面板子树的渲染（paint/composite/style-recalc）
-                detailContent.style.contentVisibility = "hidden";
-              }
+              gsap.set(detailContent, { display: visible ? "flex" : "none" });
+              // 面板隐藏时暂停所有无限循环粒子动画，避免后台持续消耗 CPU；
+              // 激活时恢复，做到真正按需运行。
+              panelInfiniteTweens.forEach((t) =>
+                visible ? t.resume() : t.pause(),
+              );
             };
 
             const syncDetailVisibility = (trigger: ScrollTrigger) => {
@@ -486,23 +484,22 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
 
             if (customNode) {
               // ── 自定义节点：委托给注册表中的 animate 函数 ──
-              customNode.animate(
-                tl,
-                detailContent,
-                scrollyBg,
-                scrollyText,
-                eventId,
-              );
+              customNode.animate(tl, detailContent, scrollyBg, scrollyText, eventId);
             } else {
               // ── 默认节点：使用通用动效 ──
-              animateDefault(
-                tl,
-                detailContent,
-                scrollyBg,
-                scrollyText,
-                eventId,
-              );
+              animateDefault(tl, detailContent, scrollyBg, scrollyText, eventId);
             }
+
+            // animate() 同步执行完毕后，收集所有 repeat:-1 的无限循环粒子 tween。
+            // 精确范围限定在 detailContent 内，避免影响其他面板的 tween。
+            panelInfiniteTweens = (
+              gsap.getTweensOf(
+                Array.from(detailContent.querySelectorAll("*")),
+              ) as gsap.core.Tween[]
+            ).filter((t) => t.vars.repeat === -1);
+
+            // 初始暂停所有粒子动画（面板此时处于 display:none 状态）
+            panelInfiniteTweens.forEach((t) => t.pause());
           }
         }
       });
