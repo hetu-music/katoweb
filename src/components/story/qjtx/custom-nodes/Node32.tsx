@@ -205,7 +205,7 @@ export function animate(
     {
       opacity: 0,
       y: -16,
-      ...(isMobile ? {} : { filter: "blur(12px)" }),
+      filter: "blur(12px)",
       duration: 3,
       ease: "power2.inOut",
     },
@@ -218,11 +218,11 @@ export function animate(
   if (isMobile) {
     tl.fromTo(
       dreamGroup1,
-      { opacity: 0, y: 16, ...(isMobile ? {} : { filter: "blur(10px)" }) },
+      { opacity: 0, y: 16, filter: "blur(10px)" },
       {
         opacity: 1,
         y: 0,
-        ...(isMobile ? {} : { filter: "blur(0px)" }),
+        filter: "blur(0px)",
         duration: 1.8,
         stagger: 0.16,
         ease: "power2.out",
@@ -234,7 +234,7 @@ export function animate(
       {
         opacity: 0,
         y: -16,
-        ...(isMobile ? {} : { filter: "blur(12px)" }),
+        filter: "blur(12px)",
         duration: 1.8,
         stagger: 0.1,
         ease: "power2.inOut",
@@ -245,11 +245,11 @@ export function animate(
     tl.set(dreamGroup2, { display: "", opacity: 0 });
     tl.fromTo(
       dreamGroup2,
-      { opacity: 0, y: 16, ...(isMobile ? {} : { filter: "blur(10px)" }) },
+      { opacity: 0, y: 16, filter: "blur(10px)" },
       {
         opacity: 1,
         y: 0,
-        ...(isMobile ? {} : { filter: "blur(0px)" }),
+        filter: "blur(0px)",
         duration: 1.8,
         stagger: 0.16,
         ease: "power2.out",
@@ -260,7 +260,7 @@ export function animate(
       {
         opacity: 0,
         y: -16,
-        ...(isMobile ? {} : { filter: "blur(12px)" }),
+        filter: "blur(12px)",
         duration: 2.1,
         stagger: 0.1,
         ease: "power2.inOut",
@@ -302,11 +302,11 @@ export function animate(
   // Dramatic, slow entrance for maximum impact in the dead center
   tl.fromTo(
     finalLine,
-    { opacity: 0, scale: 0.8, ...(isMobile ? {} : { filter: "blur(20px)" }) },
+    { opacity: 0, scale: 0.8, filter: "blur(20px)" },
     {
       opacity: 1,
       scale: 1,
-      ...(isMobile ? {} : { filter: "blur(0px)" }),
+      filter: "blur(0px)",
       duration: 4,
       ease: "power3.out",
     },
@@ -319,7 +319,7 @@ export function animate(
     {
       opacity: 0,
       scale: 1.1,
-      ...(isMobile ? {} : { filter: "blur(15px)" }),
+      filter: "blur(15px)",
       duration: 3,
       ease: "power2.in",
     },

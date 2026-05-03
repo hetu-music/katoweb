@@ -324,11 +324,11 @@ export function animate(
     if (!p) return;
     tl.fromTo(
       p,
-      { opacity: 0, y: 20, ...(isMobile ? {} : { filter: "blur(10px)" }) },
+      { opacity: 0, y: 20, filter: "blur(10px)" },
       {
         opacity: 1,
         y: 0,
-        ...(isMobile ? {} : { filter: "blur(0px)" }),
+        filter: "blur(0px)",
         duration: 2.5,
         ease: "power2.out",
       },
@@ -339,7 +339,7 @@ export function animate(
       {
         opacity: 0,
         y: -20,
-        ...(isMobile ? {} : { filter: "blur(10px)" }),
+        filter: "blur(10px)",
         duration: 2.5,
         ease: "power2.inOut",
       },
@@ -351,11 +351,11 @@ export function animate(
   tl.set(closingStage, { display: "flex", opacity: 1 });
   tl.fromTo(
     closingStage,
-    { opacity: 0, scale: 0.95, ...(isMobile ? {} : { filter: "blur(15px)" }) },
+    { opacity: 0, scale: 0.95, filter: "blur(15px)" },
     {
       opacity: 1,
       scale: 1,
-      ...(isMobile ? {} : { filter: "blur(0px)" }),
+      filter: "blur(0px)",
       duration: 4,
       ease: "power2.out",
     },
@@ -364,7 +364,7 @@ export function animate(
 
   tl.to(
     closingStage,
-    { opacity: 0, ...(isMobile ? {} : { filter: "blur(20px)" }), duration: 3, ease: "power2.in" },
+    { opacity: 0, filter: "blur(20px)", duration: 3, ease: "power2.in" },
     "+=4",
   );
 

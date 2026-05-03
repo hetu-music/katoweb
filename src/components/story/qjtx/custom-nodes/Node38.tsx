@@ -145,11 +145,11 @@ export function animate(
     .to(sunlight, { opacity: 1, duration: 2.8 }, 0.6)
     .fromTo(
       title,
-      { opacity: 0, y: 24, ...(isMobile ? {} : { filter: "blur(16px)" }) },
+      { opacity: 0, y: 24, filter: "blur(16px)" },
       {
         opacity: 1,
         y: 0,
-        ...(isMobile ? {} : { filter: "blur(0px)" }),
+        filter: "blur(0px)",
         duration: 3.4,
         ease: "power3.out",
       },
@@ -157,11 +157,11 @@ export function animate(
     )
     .fromTo(
       quote,
-      { opacity: 0, y: 10, ...(isMobile ? {} : { filter: "blur(8px)" }) },
+      { opacity: 0, y: 10, filter: "blur(8px)" },
       {
         opacity: 1,
         y: 0,
-        ...(isMobile ? {} : { filter: "blur(0px)" }),
+        filter: "blur(0px)",
         duration: 3,
         ease: "power2.out",
       },
@@ -172,7 +172,7 @@ export function animate(
       {
         opacity: 0,
         y: -14,
-        ...(isMobile ? {} : { filter: "blur(12px)" }),
+        filter: "blur(12px)",
         duration: 3,
         ease: "power2.inOut",
       },
@@ -181,12 +181,12 @@ export function animate(
     .set(intro, { display: "none" })
     .fromTo(
       memorial,
-      { opacity: 0, y: 22, scale: 0.98, ...(isMobile ? {} : { filter: "blur(10px)" }) },
+      { opacity: 0, y: 22, scale: 0.98, filter: "blur(10px)" },
       {
         opacity: 1,
         y: 0,
         scale: 1,
-        ...(isMobile ? {} : { filter: "blur(0px)" }),
+        filter: "blur(0px)",
         duration: 2.6,
         ease: "power2.out",
       },
@@ -200,11 +200,11 @@ export function animate(
     )
     .fromTo(
       bodyLines,
-      { opacity: 0, y: 10, ...(isMobile ? {} : { filter: "blur(6px)" }) },
+      { opacity: 0, y: 10, filter: "blur(6px)" },
       {
         opacity: 1,
         y: 0,
-        ...(isMobile ? {} : { filter: "blur(0px)" }),
+        filter: "blur(0px)",
         duration: 1.7,
         stagger: 0.09,
         ease: "power2.out",
@@ -213,11 +213,11 @@ export function animate(
     )
     .fromTo(
       closing,
-      { opacity: 0, scale: 0.82, ...(isMobile ? {} : { filter: "blur(6px)" }) },
+      { opacity: 0, scale: 0.82, filter: "blur(6px)" },
       {
         opacity: 1,
         scale: 1,
-        ...(isMobile ? {} : { filter: "blur(0px)" }),
+        filter: "blur(0px)",
         duration: 1.8,
         ease: "back.out(1.7)",
       },
@@ -228,7 +228,7 @@ export function animate(
       {
         opacity: 0,
         y: -8,
-        ...(isMobile ? {} : { filter: "blur(8px)" }),
+        filter: "blur(8px)",
         duration: 3.6,
         ease: "power2.inOut",
       },

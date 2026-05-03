@@ -139,11 +139,11 @@ export function animateDefault(
   )
     .fromTo(
       textHeader.children,
-      { opacity: 0, y: isVertical ? 0 : 30, ...(isMobile ? {} : { filter: "blur(12px)" }) },
+      { opacity: 0, y: isVertical ? 0 : 30, filter: "blur(12px)" },
       {
         opacity: 1,
         y: 0,
-        ...(isMobile ? {} : { filter: "blur(0px)" }),
+        filter: "blur(0px)",
         duration: 1.5,
         stagger: 0.3,
         ease: "power2.out",
@@ -152,11 +152,11 @@ export function animateDefault(
     )
     .fromTo(
       textContent,
-      { opacity: 0, y: isVertical ? 100 : 60, ...(isMobile ? {} : { filter: "blur(8px)" }) },
+      { opacity: 0, y: isVertical ? 100 : 60, filter: "blur(8px)" },
       {
         opacity: 1,
         y: 0,
-        ...(isMobile ? {} : { filter: "blur(0px)" }),
+        filter: "blur(0px)",
         duration: 2.0,
         ease: "power2.out",
       },
@@ -170,7 +170,7 @@ export function animateDefault(
     .to([textHeader, textContent], {
       opacity: 0,
       y: "-=30",
-      ...(isMobile ? {} : { filter: "blur(12px)" }),
+      filter: "blur(12px)",
       duration: 2.0,
       ease: "power2.in",
     })

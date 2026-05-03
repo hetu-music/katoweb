@@ -167,11 +167,11 @@ export function animate(
     // Title - 柔和的浮现，从下往上飘起
     .fromTo(
       title,
-      { opacity: 0, scale: 0.9, ...(isMobile ? {} : { filter: "blur(15px)" }), y: 40 },
+      { opacity: 0, scale: 0.9, filter: "blur(15px)", y: 40 },
       {
         opacity: 1,
         scale: 1,
-        ...(isMobile ? {} : { filter: "blur(0px)" }),
+        filter: "blur(0px)",
         y: 0,
         duration: 4.0,
         ease: "power3.out",
@@ -181,11 +181,11 @@ export function animate(
     // Quote - 像水波一样漾出
     .fromTo(
       quote,
-      { opacity: 0, y: 30, ...(isMobile ? {} : { filter: "blur(10px)" }) },
+      { opacity: 0, y: 30, filter: "blur(10px)" },
       {
         opacity: 1,
         y: 0,
-        ...(isMobile ? {} : { filter: "blur(0px)" }),
+        filter: "blur(0px)",
         duration: 3.5,
         ease: "power2.out",
       },
@@ -196,7 +196,7 @@ export function animate(
       [title, quote],
       {
         opacity: 0,
-        ...(isMobile ? {} : { filter: "blur(20px)" }),
+        filter: "blur(20px)",
         scale: 1.05,
         y: -30,
         duration: 3.5,
@@ -209,10 +209,10 @@ export function animate(
     // Body lines - 水平错落的诗意展现，像深海气泡或散落的记忆一样浮现
     .fromTo(
       bodyLines,
-      { opacity: 0, ...(isMobile ? {} : { filter: "blur(8px)" }), y: 25 },
+      { opacity: 0, filter: "blur(8px)", y: 25 },
       {
         opacity: 1,
-        ...(isMobile ? {} : { filter: "blur(0px)" }),
+        filter: "blur(0px)",
         y: 0,
         duration: 2.5,
         stagger: 0.4,
@@ -225,7 +225,7 @@ export function animate(
       bodyLines,
       {
         opacity: 0,
-        ...(isMobile ? {} : { filter: "blur(12px)" }),
+        filter: "blur(12px)",
         y: -20,
         duration: 3.0,
         ease: "power2.inOut",
@@ -237,11 +237,11 @@ export function animate(
     // Closing - 横向铺开，如同宽阔的海岸线
     .fromTo(
       closing,
-      { opacity: 0, scaleX: 0.8, ...(isMobile ? {} : { filter: "blur(15px)" }) },
+      { opacity: 0, scaleX: 0.8, filter: "blur(15px)" },
       {
         opacity: 1,
         scaleX: 1,
-        ...(isMobile ? {} : { filter: "blur(0px)" }),
+        filter: "blur(0px)",
         duration: 4.0,
         ease: "power2.out",
       },
@@ -253,7 +253,7 @@ export function animate(
       {
         opacity: 0,
         scale: 1.05,
-        ...(isMobile ? {} : { filter: "blur(20px)" }),
+        filter: "blur(20px)",
         duration: 5.0,
         ease: "power2.in",
       },

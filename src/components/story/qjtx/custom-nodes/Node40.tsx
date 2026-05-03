@@ -196,14 +196,14 @@ export function animate(
   tl.set(titlePhase, { display: "flex" });
   tl.to(
     titleText,
-    { opacity: 1, ...(isMobile ? {} : { filter: "blur(0px)" }), duration: 5, ease: "power3.out" },
+    { opacity: 1, filter: "blur(0px)", duration: 5, ease: "power3.out" },
     2,
   );
   tl.to(
     titleText,
     {
       opacity: 0,
-      ...(isMobile ? {} : { filter: "blur(20px)" }),
+      filter: "blur(20px)",
       scale: 1.05,
       duration: 4,
       ease: "power2.in",
@@ -218,7 +218,7 @@ export function animate(
     bodyLines,
     {
       opacity: 1,
-      ...(isMobile ? {} : { filter: "blur(0px)" }),
+      filter: "blur(0px)",
       y: 0,
       duration: 4,
       stagger: 2.5,
@@ -230,7 +230,7 @@ export function animate(
     bodyLines,
     {
       opacity: 0,
-      ...(isMobile ? {} : { filter: "blur(15px)" }),
+      filter: "blur(15px)",
       y: -10,
       duration: 4,
       stagger: 0.5,
@@ -264,12 +264,12 @@ export function animate(
   );
   tl.to(
     closingText,
-    { opacity: 1, ...(isMobile ? {} : { filter: "blur(0px)" }), duration: 4, ease: "power2.out" },
+    { opacity: 1, filter: "blur(0px)", duration: 4, ease: "power2.out" },
     "-=1.5",
   );
   tl.to(
     [closingText, closingLineTop, closingLineBot],
-    { opacity: 0, ...(isMobile ? {} : { filter: "blur(20px)" }), duration: 4, ease: "power2.in" },
+    { opacity: 0, filter: "blur(20px)", duration: 4, ease: "power2.in" },
     "+=5",
   );
 

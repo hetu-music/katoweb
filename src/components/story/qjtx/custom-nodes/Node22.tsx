@@ -296,7 +296,7 @@ export function animate(
       {
         opacity: 0,
         y: -40,
-        ...(isMobile ? {} : { filter: "blur(20px)" }),
+        filter: "blur(20px)",
         duration: 3,
         ease: "power2.inOut",
         stagger: 0.1,
@@ -358,7 +358,7 @@ export function animate(
       closingText,
       {
         opacity: 1,
-        ...(isMobile ? {} : { filter: "blur(0px)" }),
+        filter: "blur(0px)",
         scale: 1,
         duration: 3,
         ease: "power3.out",
@@ -369,7 +369,7 @@ export function animate(
     // Exit Closing Text before global wrapper collapse
     .to(
       [closingText, closingSeals],
-      { opacity: 0, ...(isMobile ? {} : { filter: "blur(20px)" }), duration: 2.5, ease: "power2.in" },
+      { opacity: 0, filter: "blur(20px)", duration: 2.5, ease: "power2.in" },
       "+=4",
     );
 

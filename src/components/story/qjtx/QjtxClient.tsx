@@ -55,12 +55,13 @@ const heroTitleVariants = {
   },
 } satisfies Variants;
 
-// Hero 入场变体不含 filter:blur，避免移动端首屏触发昂贵 GPU 合成
+// Hero 入场变体含 filter:blur
 const heroCharVariants = {
-  hidden: { opacity: 0, scale: 0.85 },
+  hidden: { opacity: 0, scale: 0.85, filter: "blur(16px)" },
   visible: {
     opacity: 1,
     scale: 1,
+    filter: "blur(0px)",
     transition: { duration: 1.6 * animationSlowdown, ease: motionEase },
   },
 } satisfies Variants;
@@ -76,10 +77,11 @@ const heroSubtitleVariants = {
 } satisfies Variants;
 
 const heroSubtitleLineVariants = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 30, filter: "blur(5px)" },
   visible: {
     opacity: 1,
     y: 0,
+    filter: "blur(0px)",
     transition: { duration: 1.2 * animationSlowdown, ease: motionEase },
   },
 } satisfies Variants;
@@ -397,11 +399,11 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
         gsap.fromTo(
           content,
           // 移动端去掉blur（GPU密集型），只用opacity+y
-          { opacity: 0, y: 70, ...(isMobile ? {} : { filter: "blur(10px)" }) },
+          { opacity: 0, y: 70, filter: "blur(10px)" },
           {
             opacity: 1,
             y: 0,
-            ...(isMobile ? {} : { filter: "blur(0px)" }),
+            filter: "blur(0px)",
             scrollTrigger: {
               trigger: wrapper,
               pinnedContainer: ".timeline-container",
@@ -558,7 +560,7 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
           ".falling-tear",
           {
             scale: isMobile ? 20 : 45,
-            ...(isMobile ? {} : { filter: "blur(25px)" }),
+            filter: "blur(25px)",
             duration: 4,
             ease: "power2.out",
           },

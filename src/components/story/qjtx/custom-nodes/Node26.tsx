@@ -257,11 +257,11 @@ export function animate(
   // 0. Global Entrance
   tl.fromTo(
     wrapper,
-    { scale: 1.05, opacity: 0, ...(isMobile ? {} : { filter: "blur(20px)" }) },
+    { scale: 1.05, opacity: 0, filter: "blur(20px)" },
     {
       scale: 1,
       opacity: 1,
-      ...(isMobile ? {} : { filter: "blur(0px)" }),
+      filter: "blur(0px)",
       duration: 2.5,
       ease: "power3.out",
     },
@@ -283,7 +283,7 @@ export function animate(
       {
         opacity: 0,
         y: -30,
-        ...(isMobile ? {} : { filter: "blur(15px)" }),
+        filter: "blur(15px)",
         duration: 3,
         ease: "power2.inOut",
         stagger: 0.1,
@@ -313,7 +313,7 @@ export function animate(
       {
         opacity: 0,
         y: 50,
-        ...(isMobile ? {} : { filter: "blur(10px)" }),
+        filter: "blur(10px)",
         duration: 3,
         stagger: 0.1,
         ease: "power2.in",
@@ -329,7 +329,7 @@ export function animate(
     [closingText, closingLine],
     {
       opacity: 1,
-      ...(isMobile ? {} : { filter: "blur(0px)" }),
+      filter: "blur(0px)",
       scale: 1,
       duration: 3,
       stagger: 0.2,
@@ -343,7 +343,7 @@ export function animate(
       [closingText, closingLine],
       {
         opacity: 0,
-        ...(isMobile ? {} : { filter: "blur(20px)" }),
+        filter: "blur(20px)",
         scale: 1.1,
         duration: 2.5,
         ease: "power2.in",
@@ -358,7 +358,7 @@ export function animate(
     {
       scale: 0.95,
       opacity: 0,
-      ...(isMobile ? {} : { filter: "blur(20px)" }),
+      filter: "blur(20px)",
       duration: 2.5,
       ease: "power2.inOut",
     },
