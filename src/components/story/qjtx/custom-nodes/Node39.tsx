@@ -108,7 +108,7 @@ export function NodeLayout({
         <div
           className={`scrolly-closing-${event.id} relative flex flex-col items-center w-full max-w-3xl`}
         >
-          <div className="relative py-6 px-8 md:px-16 w-full flex justify-center border-t border-b border-white/10 bg-linear-to-r from-transparent via-[#995355]/20 to-transparent backdrop-blur-xs shadow-[0_0_40px_rgba(153,83,85,0.1)]">
+          <div className="relative py-6 px-8 md:px-16 w-full flex justify-center border-t border-b border-white/10 bg-linear-to-r from-transparent via-[#995355]/20 to-transparent md:backdrop-blur-xs shadow-[0_0_40px_rgba(153,83,85,0.1)]">
             <p
               className="text-lg md:text-2xl tracking-[0.6em] md:tracking-[0.8em] pl-[0.6em] md:pl-[0.8em] font-serif text-center opacity-90 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
               style={{ color: "#f8f1e7" }}
@@ -152,6 +152,8 @@ export function animate(
   tl.set([title, quote, bodyLines, closing, petals, glow, glowClosing], {
     opacity: 0,
   });
+
+  const isMobile = window.innerWidth < 768;
 
   tl.fromTo(
     scrollyBg,

@@ -26,12 +26,19 @@ const animationSlowdown = 3;
 const SNOWFLAKE_MASK_PATH =
   "M50 0 L55 35 L80 20 L65 45 L100 50 L65 55 L80 80 L55 65 L50 100 L45 65 L20 80 L35 55 L0 50 L35 45 L20 20 L45 35 Z";
 
-/** 根据 SVG path 字符串构建 CSS mask-image 值 */
+/** 模块级 maskUrl 缓存，避免每次渲染重复 encodeURIComponent */
+const maskUrlCache = new Map<string, string>();
+
+/** 根据 SVG path 字符串构建 CSS mask-image 值（带缓存） */
 function buildMaskUrl(path: string): string {
+  const cached = maskUrlCache.get(path);
+  if (cached) return cached;
   const encoded = encodeURIComponent(
     `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="${path}" fill="black"/></svg>`,
   );
-  return `url('data:image/svg+xml,${encoded}')`;
+  const url = `url('data:image/svg+xml,${encoded}')`;
+  maskUrlCache.set(path, url);
+  return url;
 }
 
 const SNOWFLAKE_MASK_URL = buildMaskUrl(SNOWFLAKE_MASK_PATH);
@@ -48,6 +55,7 @@ const heroTitleVariants = {
   },
 } satisfies Variants;
 
+// Hero 入场变体含 filter:blur
 const heroCharVariants = {
   hidden: { opacity: 0, scale: 0.85, filter: "blur(16px)" },
   visible: {
@@ -222,6 +230,7 @@ function ImmersiveReadingPanel({ event }: { event: TimelineEvent }) {
       data-layout={layout}
       data-effect={specialEffect}
       className="fixed inset-0 w-screen h-screen m-0 p-0 z-100 pointer-events-none flex-col items-center justify-center hidden"
+      style={{ isolation: "isolate" } as React.CSSProperties}
     >
       {/* 展开背景（雪花/自定义形状 mask 扩展） */}
       <div
@@ -260,7 +269,8 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
     const lenis = new Lenis({
       autoRaf: false,
       smoothWheel: true,
-      syncTouch: true,
+      // 移动端使用原生惯性滚动，不需要Lenis接管触摸事件（避免额外JS开销）
+      syncTouch: false,
     });
 
     // 暂时禁止滚动，等待开场动画（指示线）播放完成
@@ -309,6 +319,9 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
 
   useGSAP(
     () => {
+      // 一次性检测，在 scrub 动画中保持稳定
+      const isMobile = window.innerWidth < 768;
+
       const wrappers = gsap.utils.toArray<HTMLElement>(
         ".timeline-event-wrapper",
         container.current,
@@ -344,8 +357,17 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
 
       dots.forEach((dot) => setDotState(dot, false));
 
+      // ─ 预缓存每个 dot 对应的 wrapper 引用 ──────────────────────────────────
+      // 原来的写法在 updateLinesAndDots 内部每次都调用 dot.closest()，
+      // 即每帧 O(n) 次 DOM 遍历。预缓存后变为 O(1) 直接引用。
+      // 位置计算仍使用 getBoundingClientRect()——它返回精确的当前视口坐标，
+      // 在 ScrollTrigger pin 期间 container 静止但 wrappers 相对视口位置
+      // 发生变化时依然正确（offsetTop 在这种情况下会失准）。
+      const dotWrappers = dots.map((dot) =>
+        dot.closest<HTMLElement>(".timeline-event-wrapper"),
+      );
+
       const updateLinesAndDots = () => {
-        // 直接使用上方缓存的引用，无任何 DOM 查询
         if (!containerEl || !progressLine) return;
 
         const rect = containerEl.getBoundingClientRect();
@@ -355,20 +377,16 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
         lineTargetHeight = Math.max(0, Math.min(lineTargetHeight, rect.height));
         progressLine.style.height = `${lineTargetHeight}px`;
 
-        dots.forEach((dot) => {
-          const wrapper = dot.closest<HTMLElement>(".timeline-event-wrapper");
+        dots.forEach((dot, i) => {
+          const wrapper = dotWrappers[i];
           if (!wrapper) return;
           const wrapperRect = wrapper.getBoundingClientRect();
           const wrapperCenter = wrapperRect.top + wrapperRect.height / 2;
-          // 现在可以直接使用 triggerY 进行精准匹配，不再需要 +30 补偿
           setDotState(dot, wrapperCenter <= triggerY);
         });
       };
 
-      // ─ 改用 scroll 事件驱动，而非 gsap.ticker ────────────────────────────
-      // gsap.ticker 每帧都触发（包括静止时），scroll 事件仅在实际滚动时触发。
-      // Lenis 在每个动画帧调用 ScrollTrigger.update()，ScrollTrigger.update()
-      // 会分发 scroll 事件，因此精度与之前完全一致，但空闲时 CPU 占用降为零。
+      // scroll 事件驱动（Lenis 每帧调用 ScrollTrigger.update() 会分发 scroll 事件）
       window.addEventListener("scroll", updateLinesAndDots, { passive: true });
       updateLinesAndDots(); // 初始同步一次
 
@@ -381,6 +399,7 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
         // ── B. 节点入场位移动画：target = content, trigger = wrapper ──
         gsap.fromTo(
           content,
+          // 移动端去掉blur（GPU密集型），只用opacity+y
           { opacity: 0, y: 70, filter: "blur(10px)" },
           {
             opacity: 1,
@@ -410,7 +429,6 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
           const dot = content.querySelector<HTMLElement>(".event-dot");
 
           if (detailContent && scrollyBg && scrollyText && dot) {
-            // 极致对齐性能：Y 轴直接量取绝静止的 wrapper 中心，从而彻底消除对 contentY 的手动补偿。
             const setCirclePos = () => {
               const dotRect = dot.getBoundingClientRect();
               const wrapperRect = wrapper.getBoundingClientRect();
@@ -420,8 +438,17 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
               scrollyBg.style.setProperty("--y", `${trueY}px`);
             };
 
+            // panelInfiniteTweens 在 animate() 调用后填充；
+            // setDetailVisibility 通过闭包引用该数组实现 pause/resume。
+            let panelInfiniteTweens: gsap.core.Tween[] = [];
+
             const setDetailVisibility = (visible: boolean) => {
               gsap.set(detailContent, { display: visible ? "flex" : "none" });
+              // 面板隐藏时暂停所有无限循环粒子动画，避免后台持续消耗 CPU；
+              // 激活时恢复，做到真正按需运行。
+              panelInfiniteTweens.forEach((t) =>
+                visible ? t.resume() : t.pause(),
+              );
             };
 
             const syncDetailVisibility = (trigger: ScrollTrigger) => {
@@ -437,7 +464,9 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
                 pinnedContainer: ".timeline-container",
                 start: "center 55%",
                 end: "+=6000",
-                scrub: true,
+                // scrub: 1 比 scrub: true（=0）多一点追赶延迟，
+                // 减少高频 timeline 更新，同时带来更顺滑的感知
+                scrub: 1,
                 pin: ".timeline-container",
                 pinSpacing: true,
                 invalidateOnRefresh: true,
@@ -458,23 +487,22 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
 
             if (customNode) {
               // ── 自定义节点：委托给注册表中的 animate 函数 ──
-              customNode.animate(
-                tl,
-                detailContent,
-                scrollyBg,
-                scrollyText,
-                eventId,
-              );
+              customNode.animate(tl, detailContent, scrollyBg, scrollyText, eventId);
             } else {
               // ── 默认节点：使用通用动效 ──
-              animateDefault(
-                tl,
-                detailContent,
-                scrollyBg,
-                scrollyText,
-                eventId,
-              );
+              animateDefault(tl, detailContent, scrollyBg, scrollyText, eventId);
             }
+
+            // animate() 同步执行完毕后，收集所有 repeat:-1 的无限循环粒子 tween。
+            // 精确范围限定在 detailContent 内，避免影响其他面板的 tween。
+            panelInfiniteTweens = (
+              gsap.getTweensOf(
+                Array.from(detailContent.querySelectorAll("*")),
+              ) as gsap.core.Tween[]
+            ).filter((t) => t.vars.repeat === -1);
+
+            // 初始暂停所有粒子动画（面板此时处于 display:none 状态）
+            panelInfiniteTweens.forEach((t) => t.pause());
           }
         }
       });
@@ -528,10 +556,11 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
         })
         .add("hit")
         // 泪滴触底，如墨滴入水般极致晕开
+        // 移动端降低放大倍数并去掉大radius blur（极耗GPU）
         .to(
           ".falling-tear",
           {
-            scale: 45, // 巨大的放大倍数，模拟墨迹散开
+            scale: isMobile ? 20 : 45,
             filter: "blur(25px)",
             duration: 4,
             ease: "power2.out",
@@ -551,7 +580,8 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
         // 文本从浓墨中缓缓浮现
         .fromTo(
           ".bloom-content",
-          { opacity: 0, filter: "blur(30px)", scale: 0.95 },
+          // 移动端降低blur半径
+          { opacity: 0, filter: isMobile ? "blur(8px)" : "blur(30px)", scale: 0.95 },
           {
             opacity: 1,
             filter: "blur(0px)",
@@ -559,7 +589,7 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
             duration: 4,
             ease: "power2.inOut",
           },
-          "hit+=0.5", // 在泪滴散开的过程中，文字就开始被"洗"出来
+          "hit+=0.5",
         );
 
       return () => {
@@ -669,7 +699,7 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
         </motion.div>
       </section>
 
-      <main className="timeline-container relative z-20 mx-auto w-full max-w-7xl px-4 py-[15vh]">
+      <main className="timeline-container relative z-20 mx-auto w-full max-w-7xl px-4 py-[15vh]" style={{ contain: "layout" }}>
         <div className="absolute top-0 bottom-0 left-14 w-px -translate-x-1/2 rounded bg-zinc-800/40 md:left-1/2" />
         <div className="timeline-progress absolute top-0 left-14 z-10 w-px -translate-x-1/2 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2">
           <div className="tear-drop-tip absolute top-full left-1/2 -translate-x-1/2 opacity-0 w-3 h-4">

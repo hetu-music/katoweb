@@ -3,7 +3,8 @@ import type { ImmersiveTheme, TimelineEvent } from "../types";
 
 export const theme: ImmersiveTheme = {
   // Lighter background with much less aggressive masking
-  bg: "radial-gradient(circle at 50% 30%, rgba(24, 24, 27, 0.4) 0%, rgba(0, 0, 0, 0.6) 100%), url(/story/qjtx/32.avif) center/cover no-repeat fixed",
+  // 移除 fixed —— background-attachment:fixed 在移动端不支持且触发每帧重绘
+  bg: "radial-gradient(circle at 50% 30%, rgba(24, 24, 27, 0.4) 0%, rgba(0, 0, 0, 0.6) 100%), url(/story/qjtx/32.avif) center/cover no-repeat",
   titleColor: "#fce7f3",
   bodyColor: "#f5f3ff",
   accentColor: "#f472b6",
@@ -91,7 +92,7 @@ export function NodeLayout({
           {dreamLines.map((line, index) => (
             <div
               key={index}
-              className={`scrolly-body-line w-[min(92vw,40rem)] rounded-[999px] border border-white/10 bg-black/40 px-7 py-4 text-center text-sm leading-[1.95] tracking-[0.18em] text-slate-100/90 shadow-[0_0_24px_rgba(244,114,182,0.06)] backdrop-blur-md md:w-auto md:px-8 md:py-4 md:text-[15px] ${desktopBubbleWidths[index] ?? "md:max-w-[52%]"} ${
+              className={`scrolly-body-line w-[min(92vw,40rem)] rounded-[999px] border border-white/10 bg-black/40 px-7 py-4 text-center text-sm leading-[1.95] tracking-[0.18em] text-slate-100/90 shadow-[0_0_24px_rgba(244,114,182,0.06)] md:backdrop-blur-md md:w-auto md:px-8 md:py-4 md:text-[15px] ${desktopBubbleWidths[index] ?? "md:max-w-[52%]"} ${
                 index % 2 === 0
                   ? "-translate-x-4 md:-translate-x-14"
                   : "translate-x-4 md:translate-x-14"

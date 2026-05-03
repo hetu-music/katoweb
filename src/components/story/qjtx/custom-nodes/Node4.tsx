@@ -2,7 +2,8 @@ import gsap from "gsap";
 import type { ImmersiveTheme, TimelineEvent } from "../types";
 
 export const theme: ImmersiveTheme = {
-  bg: "radial-gradient(circle at 50% 10%, rgba(14, 165, 233, 0.08) 0%, rgba(15, 23, 42, 0.65) 30%, rgba(2, 6, 23, 0.98) 100%), url(/story/qjtx/4.avif) center/cover no-repeat fixed",
+  // 移除 fixed —— background-attachment:fixed 在移动端不支持且触发每帧重绘
+  bg: "radial-gradient(circle at 50% 10%, rgba(14, 165, 233, 0.08) 0%, rgba(15, 23, 42, 0.65) 30%, rgba(2, 6, 23, 0.98) 100%), url(/story/qjtx/4.avif) center/cover no-repeat",
   titleColor: "#e0f2fe",
   bodyColor: "#bae6fd",
   accentColor: "#38bdf8",

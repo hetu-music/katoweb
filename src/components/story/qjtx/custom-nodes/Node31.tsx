@@ -220,8 +220,14 @@ export function animate(
     filter: "blur(8px)",
   });
 
+  const isMobile = window.innerWidth < 768;
+
+  // 移动端只动画前 N 个粒子，降低 GPU 合成层数量
+  const maxEmbers = isMobile ? 12 : emberParticles.length;
+  const maxSnow = isMobile ? 15 : snowParticles.length;
+
   // Violent Embers Animation (Fast, upward)
-  emberParticles.forEach((p) => {
+  Array.from(emberParticles).slice(0, maxEmbers).forEach((p) => {
     gsap.to(p, {
       y: "-110vh",
       x: `+=${(Math.random() - 0.5) * 200}px`,
@@ -233,7 +239,7 @@ export function animate(
   });
 
   // Silent Snow Animation (Slow, downward)
-  snowParticles.forEach((p) => {
+  Array.from(snowParticles).slice(0, maxSnow).forEach((p) => {
     gsap.to(p, {
       y: "110vh",
       x: `+=${(Math.random() - 0.5) * 60}px`,

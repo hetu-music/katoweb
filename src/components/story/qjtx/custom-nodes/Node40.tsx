@@ -160,13 +160,17 @@ export function animate(
   tl.set(closingLineTop, { scaleY: 0 });
   tl.set(closingLineBot, { scaleY: 0 });
 
+  const isMobile = window.innerWidth < 768;
+
   // Start with full color and slight brightness
   if (bgImage) {
     tl.set(bgImage, { filter: "grayscale(0%) brightness(1.2)" });
   }
 
   // Infinite slow falling dust (Cinematic projector dust)
-  dustParticles.forEach((p) => {
+  // 移动端只动画前 12 个，降低 GPU 合成层
+  const maxDust = isMobile ? 12 : dustParticles.length;
+  Array.from(dustParticles).slice(0, maxDust).forEach((p) => {
     gsap.to(p, {
       y: "+=120vh",
       x: `+=${(Math.random() - 0.5) * 50}px`,
@@ -217,7 +221,7 @@ export function animate(
       filter: "blur(0px)",
       y: 0,
       duration: 4,
-      stagger: 2.5, // Slow, deliberate delivery
+      stagger: 2.5,
       ease: "power2.out",
     },
     "+=1",

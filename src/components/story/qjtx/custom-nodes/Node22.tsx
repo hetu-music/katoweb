@@ -236,9 +236,13 @@ export function animate(
   tl.set(closingText, { opacity: 0, filter: "blur(15px)", scale: 0.9 });
   tl.set(closingSeals, { scaleY: 0, transformOrigin: "center" });
 
+  const isMobile = window.innerWidth < 768;
+
   // Continuous background particle animation
+  // 移动端只动画前 8 个粒子
   const particles = selAll(`[class^="dust-particle-${eventId}-"]`);
-  particles.forEach((p) => {
+  const maxDust = isMobile ? 8 : particles.length;
+  Array.from(particles).slice(0, maxDust).forEach((p) => {
     gsap.to(p, {
       y: `-=${80 + Math.random() * 100}px`,
       x: `+=${(Math.random() - 0.5) * 80}px`,
@@ -251,8 +255,8 @@ export function animate(
     });
   });
 
-  // Astrolabe rotation
-  if (astrolabe) {
+  // Astrolabe rotation——移动端跳过（大元素全程旋转开销太高）
+  if (astrolabe && !isMobile) {
     gsap.to(astrolabe, {
       rotation: 360,
       duration: 150,
@@ -303,7 +307,7 @@ export function animate(
 
   // 2. Astrolabe & Jade Slips (Body)
   tl.set(bodyContainer, { display: "flex", opacity: 1 });
-  tl.to(astrolabe, { opacity: 1, duration: 4, ease: "power2.inOut" }, "-=1");
+  tl.to(astrolabe, { opacity: isMobile ? 0 : 1, duration: 4, ease: "power2.inOut" }, "-=1");
 
   bodyPages.forEach((page, idx) => {
     const pageSlips = page.querySelectorAll(`.jade-slip-${eventId}`);

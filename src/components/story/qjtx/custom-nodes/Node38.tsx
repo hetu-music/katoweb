@@ -2,7 +2,8 @@ import gsap from "gsap";
 import type { ImmersiveTheme, TimelineEvent } from "../types";
 
 export const theme: ImmersiveTheme = {
-  bg: "radial-gradient(circle at 50% 18%, rgba(253, 224, 71, 0.12) 0%, rgba(68, 64, 60, 0.42) 26%, rgba(12, 10, 9, 0.96) 100%), url(/story/qjtx/38.avif) center/cover no-repeat fixed",
+  // 移除 fixed —— background-attachment:fixed 在移动端不支持且触发每帧重绘
+  bg: "radial-gradient(circle at 50% 18%, rgba(253, 224, 71, 0.12) 0%, rgba(68, 64, 60, 0.42) 26%, rgba(12, 10, 9, 0.96) 100%), url(/story/qjtx/38.avif) center/cover no-repeat",
   titleColor: "#fef3c7",
   bodyColor: "#f5f5f4",
   accentColor: "#f59e0b",
@@ -63,7 +64,7 @@ export function NodeLayout({
           className={`scrolly-memorial-${event.id} relative flex w-full max-w-5xl flex-col items-center`}
         >
           <div
-            className={`scrolly-stele-${event.id} relative w-full max-w-3xl rounded-[2.6rem_2.6rem_1.8rem_1.8rem] border border-amber-100/12 bg-stone-900/36 px-7 py-10 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-md md:px-10 md:py-12`}
+            className={`scrolly-stele-${event.id} relative w-full max-w-3xl rounded-[2.6rem_2.6rem_1.8rem_1.8rem] border border-amber-100/12 bg-stone-900/36 px-7 py-10 shadow-[0_24px_80px_rgba(0,0,0,0.35)] md:backdrop-blur-md md:px-10 md:py-12`}
           >
             <div className="absolute inset-x-8 top-4 h-px bg-linear-to-r from-transparent via-amber-100/28 to-transparent" />
             <div className="absolute inset-x-8 bottom-4 h-px bg-linear-to-r from-transparent via-amber-100/18 to-transparent" />
@@ -128,6 +129,8 @@ export function animate(
   const bodyLines = scrollyText.querySelectorAll(`.scrolly-body-line`);
   const closing = scrollyText.querySelector(`.scrolly-closing-${eventId}`);
   const sunlight = scrollyText.querySelector(`.scrolly-sunlight-${eventId}`);
+
+  const isMobile = window.innerWidth < 768;
 
   tl.set([title, quote, memorial, stele, bodyLines, closing, sunlight], {
     opacity: 0,
