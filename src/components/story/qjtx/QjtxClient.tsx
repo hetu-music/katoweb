@@ -355,18 +355,15 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
 
       dots.forEach((dot) => setDotState(dot, false));
 
-      // ─ 预缓存每个 wrapper 相对于 containerEl 的静态中心偏移量 ───────────
-      // wrapper 的 offsetTop 在 DOM 结构不变时是静态值。每次 scroll 只需
-      // 一次 containerEl.getBoundingClientRect() + O(1) 加法，而不是
-      // O(n) 次 closest() + getBoundingClientRect()，大幅减少主线程开销。
-      const buildWrapperOffsets = () =>
-        wrappers.map((w) => w.offsetTop + w.offsetHeight / 2);
-      let wrapperOffsets = buildWrapperOffsets();
-
-      // resize 时重新计算（ScrollTrigger.refresh 也会触发）
-      ScrollTrigger.addEventListener("refresh", () => {
-        wrapperOffsets = buildWrapperOffsets();
-      });
+      // ─ 预缓存每个 dot 对应的 wrapper 引用 ──────────────────────────────────
+      // 原来的写法在 updateLinesAndDots 内部每次都调用 dot.closest()，
+      // 即每帧 O(n) 次 DOM 遍历。预缓存后变为 O(1) 直接引用。
+      // 位置计算仍使用 getBoundingClientRect()——它返回精确的当前视口坐标，
+      // 在 ScrollTrigger pin 期间 container 静止但 wrappers 相对视口位置
+      // 发生变化时依然正确（offsetTop 在这种情况下会失准）。
+      const dotWrappers = dots.map((dot) =>
+        dot.closest<HTMLElement>(".timeline-event-wrapper"),
+      );
 
       const updateLinesAndDots = () => {
         if (!containerEl || !progressLine) return;
@@ -378,17 +375,19 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
         lineTargetHeight = Math.max(0, Math.min(lineTargetHeight, rect.height));
         progressLine.style.height = `${lineTargetHeight}px`;
 
-        // 利用预缓存的 offsetTop，只需 containerTop + 静态偏移 进行比较
-        const containerTop = rect.top;
         dots.forEach((dot, i) => {
-          const wrapperCenterInViewport = containerTop + wrapperOffsets[i];
-          setDotState(dot, wrapperCenterInViewport <= triggerY);
+          const wrapper = dotWrappers[i];
+          if (!wrapper) return;
+          const wrapperRect = wrapper.getBoundingClientRect();
+          const wrapperCenter = wrapperRect.top + wrapperRect.height / 2;
+          setDotState(dot, wrapperCenter <= triggerY);
         });
       };
 
       // scroll 事件驱动（Lenis 每帧调用 ScrollTrigger.update() 会分发 scroll 事件）
       window.addEventListener("scroll", updateLinesAndDots, { passive: true });
       updateLinesAndDots(); // 初始同步一次
+
 
       wrappers.forEach((wrapper) => {
         const content = wrapper.querySelector<HTMLElement>(
