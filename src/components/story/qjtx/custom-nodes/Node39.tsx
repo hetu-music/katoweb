@@ -153,8 +153,6 @@ export function animate(
     opacity: 0,
   });
 
-  const isMobile = window.innerWidth < 768;
-
   tl.fromTo(
     scrollyBg,
     { "--radius": "0px" },

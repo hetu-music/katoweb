@@ -123,8 +123,6 @@ export function animateDefault(
 
   if (!textHeader || !textContent) return;
 
-  const isMobile = window.innerWidth < 768;
-
   tl.set([textHeader.children, textContent], { opacity: 0 });
 
   tl.fromTo(

@@ -170,17 +170,19 @@ export function animate(
   // Infinite slow falling dust (Cinematic projector dust)
   // 移动端只动画前 12 个，降低 GPU 合成层
   const maxDust = isMobile ? 12 : dustParticles.length;
-  Array.from(dustParticles).slice(0, maxDust).forEach((p) => {
-    gsap.to(p, {
-      y: "+=120vh",
-      x: `+=${(Math.random() - 0.5) * 50}px`,
-      opacity: Math.random() * 0.6 + 0.1,
-      duration: 15 + Math.random() * 15,
-      repeat: -1,
-      ease: "none",
-      delay: Math.random() * -15,
+  Array.from(dustParticles)
+    .slice(0, maxDust)
+    .forEach((p) => {
+      gsap.to(p, {
+        y: "+=120vh",
+        x: `+=${(Math.random() - 0.5) * 50}px`,
+        opacity: Math.random() * 0.6 + 0.1,
+        duration: 15 + Math.random() * 15,
+        repeat: -1,
+        ease: "none",
+        delay: Math.random() * -15,
+      });
     });
-  });
 
   // 1. Enter the Scene (Expansion & Fade)
   tl.fromTo(

@@ -130,8 +130,6 @@ export function animate(
   const closing = scrollyText.querySelector(`.scrolly-closing-${eventId}`);
   const sunlight = scrollyText.querySelector(`.scrolly-sunlight-${eventId}`);
 
-  const isMobile = window.innerWidth < 768;
-
   tl.set([title, quote, memorial, stele, bodyLines, closing, sunlight], {
     opacity: 0,
   });

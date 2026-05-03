@@ -227,29 +227,33 @@ export function animate(
   const maxSnow = isMobile ? 15 : snowParticles.length;
 
   // Violent Embers Animation (Fast, upward)
-  Array.from(emberParticles).slice(0, maxEmbers).forEach((p) => {
-    gsap.to(p, {
-      y: "-110vh",
-      x: `+=${(Math.random() - 0.5) * 200}px`,
-      opacity: Math.random() * 0.8 + 0.2,
-      duration: 2 + Math.random() * 3, // Very fast
-      repeat: -1,
-      ease: "power1.in",
+  Array.from(emberParticles)
+    .slice(0, maxEmbers)
+    .forEach((p) => {
+      gsap.to(p, {
+        y: "-110vh",
+        x: `+=${(Math.random() - 0.5) * 200}px`,
+        opacity: Math.random() * 0.8 + 0.2,
+        duration: 2 + Math.random() * 3, // Very fast
+        repeat: -1,
+        ease: "power1.in",
+      });
     });
-  });
 
   // Silent Snow Animation (Slow, downward)
-  Array.from(snowParticles).slice(0, maxSnow).forEach((p) => {
-    gsap.to(p, {
-      y: "110vh",
-      x: `+=${(Math.random() - 0.5) * 60}px`,
-      opacity: Math.random() * 0.5 + 0.2,
-      duration: 12 + Math.random() * 10, // Very slow and calm
-      repeat: -1,
-      ease: "none",
-      delay: Math.random() * -10,
+  Array.from(snowParticles)
+    .slice(0, maxSnow)
+    .forEach((p) => {
+      gsap.to(p, {
+        y: "110vh",
+        x: `+=${(Math.random() - 0.5) * 60}px`,
+        opacity: Math.random() * 0.5 + 0.2,
+        duration: 12 + Math.random() * 10, // Very slow and calm
+        repeat: -1,
+        ease: "none",
+        delay: Math.random() * -10,
+      });
     });
-  });
 
   // 1. The Intro sequence begins in the heat of war
   tl.to(wrapper, { opacity: 1, duration: 1.5, ease: "power2.inOut" }, 0);

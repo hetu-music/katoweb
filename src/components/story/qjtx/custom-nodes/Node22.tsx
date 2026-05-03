@@ -242,18 +242,20 @@ export function animate(
   // 移动端只动画前 8 个粒子
   const particles = selAll(`[class^="dust-particle-${eventId}-"]`);
   const maxDust = isMobile ? 8 : particles.length;
-  Array.from(particles).slice(0, maxDust).forEach((p) => {
-    gsap.to(p, {
-      y: `-=${80 + Math.random() * 100}px`,
-      x: `+=${(Math.random() - 0.5) * 80}px`,
-      opacity: Math.random() * 0.6 + 0.2,
-      duration: 8 + Math.random() * 7,
-      repeat: -1,
-      yoyo: true,
-      ease: "sine.inOut",
-      delay: Math.random() * 5,
+  Array.from(particles)
+    .slice(0, maxDust)
+    .forEach((p) => {
+      gsap.to(p, {
+        y: `-=${80 + Math.random() * 100}px`,
+        x: `+=${(Math.random() - 0.5) * 80}px`,
+        opacity: Math.random() * 0.6 + 0.2,
+        duration: 8 + Math.random() * 7,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+        delay: Math.random() * 5,
+      });
     });
-  });
 
   // Astrolabe rotation——移动端跳过（大元素全程旋转开销太高）
   if (astrolabe && !isMobile) {
@@ -307,7 +309,11 @@ export function animate(
 
   // 2. Astrolabe & Jade Slips (Body)
   tl.set(bodyContainer, { display: "flex", opacity: 1 });
-  tl.to(astrolabe, { opacity: isMobile ? 0 : 1, duration: 4, ease: "power2.inOut" }, "-=1");
+  tl.to(
+    astrolabe,
+    { opacity: isMobile ? 0 : 1, duration: 4, ease: "power2.inOut" },
+    "-=1",
+  );
 
   bodyPages.forEach((page, idx) => {
     const pageSlips = page.querySelectorAll(`.jade-slip-${eventId}`);

@@ -487,10 +487,22 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
 
             if (customNode) {
               // ── 自定义节点：委托给注册表中的 animate 函数 ──
-              customNode.animate(tl, detailContent, scrollyBg, scrollyText, eventId);
+              customNode.animate(
+                tl,
+                detailContent,
+                scrollyBg,
+                scrollyText,
+                eventId,
+              );
             } else {
               // ── 默认节点：使用通用动效 ──
-              animateDefault(tl, detailContent, scrollyBg, scrollyText, eventId);
+              animateDefault(
+                tl,
+                detailContent,
+                scrollyBg,
+                scrollyText,
+                eventId,
+              );
             }
 
             // animate() 同步执行完毕后，收集所有 repeat:-1 的无限循环粒子 tween。
@@ -581,7 +593,11 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
         .fromTo(
           ".bloom-content",
           // 移动端降低blur半径
-          { opacity: 0, filter: isMobile ? "blur(8px)" : "blur(30px)", scale: 0.95 },
+          {
+            opacity: 0,
+            filter: isMobile ? "blur(8px)" : "blur(30px)",
+            scale: 0.95,
+          },
           {
             opacity: 1,
             filter: "blur(0px)",
@@ -699,7 +715,10 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
         </motion.div>
       </section>
 
-      <main className="timeline-container relative z-20 mx-auto w-full max-w-7xl px-4 py-[15vh]" style={{ contain: "layout" }}>
+      <main
+        className="timeline-container relative z-20 mx-auto w-full max-w-7xl px-4 py-[15vh]"
+        style={{ contain: "layout" }}
+      >
         <div className="absolute top-0 bottom-0 left-14 w-px -translate-x-1/2 rounded bg-zinc-800/40 md:left-1/2" />
         <div className="timeline-progress absolute top-0 left-14 z-10 w-px -translate-x-1/2 rounded bg-red-800/80 shadow-[0_0_10px_rgba(185,28,28,0.8)] md:left-1/2">
           <div className="tear-drop-tip absolute top-full left-1/2 -translate-x-1/2 opacity-0 w-3 h-4">

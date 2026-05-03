@@ -231,28 +231,32 @@ export function animate(
   const maxAsh = isMobile ? 10 : ashes.length;
   const maxEmb = isMobile ? 8 : embers.length;
 
-  Array.from(ashes).slice(0, maxAsh).forEach((p) => {
-    gsap.to(p, {
-      y: "110vh",
-      x: `+=${(Math.random() - 0.5) * 100}px`,
-      duration: 5 + Math.random() * 5,
-      repeat: -1,
-      ease: "none",
-      delay: Math.random() * -5,
+  Array.from(ashes)
+    .slice(0, maxAsh)
+    .forEach((p) => {
+      gsap.to(p, {
+        y: "110vh",
+        x: `+=${(Math.random() - 0.5) * 100}px`,
+        duration: 5 + Math.random() * 5,
+        repeat: -1,
+        ease: "none",
+        delay: Math.random() * -5,
+      });
     });
-  });
 
-  Array.from(embers).slice(0, maxEmb).forEach((p) => {
-    gsap.to(p, {
-      y: "-110vh",
-      x: `+=${(Math.random() - 0.5) * 150}px`,
-      opacity: Math.random() * 0.8 + 0.2,
-      duration: 4 + Math.random() * 4,
-      repeat: -1,
-      ease: "none",
-      delay: Math.random() * -4,
+  Array.from(embers)
+    .slice(0, maxEmb)
+    .forEach((p) => {
+      gsap.to(p, {
+        y: "-110vh",
+        x: `+=${(Math.random() - 0.5) * 150}px`,
+        opacity: Math.random() * 0.8 + 0.2,
+        duration: 4 + Math.random() * 4,
+        repeat: -1,
+        ease: "none",
+        delay: Math.random() * -4,
+      });
     });
-  });
 
   // 0. Global Entrance
   tl.fromTo(

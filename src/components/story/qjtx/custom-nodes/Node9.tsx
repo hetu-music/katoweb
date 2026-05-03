@@ -240,30 +240,34 @@ export function animate(
   const maxEmbers = isMobile ? 8 : emberParticles.length;
 
   // Petal movement logic
-  Array.from(petals).slice(0, maxPetals).forEach((p) => {
-    gsap.to(p, {
-      x: "120vw",
-      y: "-120vh",
-      rotation: 720,
-      duration: 8 + Math.random() * 7,
-      repeat: -1,
-      ease: "none",
-      delay: Math.random() * -15,
+  Array.from(petals)
+    .slice(0, maxPetals)
+    .forEach((p) => {
+      gsap.to(p, {
+        x: "120vw",
+        y: "-120vh",
+        rotation: 720,
+        duration: 8 + Math.random() * 7,
+        repeat: -1,
+        ease: "none",
+        delay: Math.random() * -15,
+      });
     });
-  });
 
   // 余烬动画
-  Array.from(emberParticles).slice(0, maxEmbers).forEach((p) => {
-    gsap.to(p, {
-      y: "-110vh",
-      x: `+=${(Math.random() - 0.5) * 120}px`,
-      opacity: Math.random() * 0.7 + 0.2,
-      duration: 3 + Math.random() * 4,
-      repeat: -1,
-      ease: "power1.in",
-      delay: Math.random() * -5,
+  Array.from(emberParticles)
+    .slice(0, maxEmbers)
+    .forEach((p) => {
+      gsap.to(p, {
+        y: "-110vh",
+        x: `+=${(Math.random() - 0.5) * 120}px`,
+        opacity: Math.random() * 0.7 + 0.2,
+        duration: 3 + Math.random() * 4,
+        repeat: -1,
+        ease: "power1.in",
+        delay: Math.random() * -5,
+      });
     });
-  });
 
   // 0. Entrance
   tl.to(wrapper, { opacity: 1, duration: 2, ease: "power2.inOut" }, 0);
