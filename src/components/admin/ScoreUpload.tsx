@@ -32,9 +32,7 @@ export default function ScoreUpload({
   >("idle");
   const [uploadMessage, setUploadMessage] = useState("");
   const [fileExists, setFileExists] = useState(hasExistingFile);
-  const [checkedSongId, setCheckedSongId] = useState<number | null>(
-    songId ?? null,
-  );
+  const [checkedSongId, setCheckedSongId] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const checkingFile = Boolean(songId) && checkedSongId !== songId;
 
