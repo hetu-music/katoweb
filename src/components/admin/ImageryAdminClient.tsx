@@ -326,8 +326,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   };
   const openEditImagery = (item: ImageryItem) =>
     setModal({ type: "edit-imagery", item });
-  const openDeleteImagery = (item: ImageryItem) =>
-    setModal({ type: "delete-imagery", item });
 
   const openAddCategory = (parentId?: number) =>
     setModal({ type: "add-category", parentId });
@@ -337,22 +335,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
 
   const openDeleteCategory = (category: ImageryCategory) =>
     setModal({ type: "delete-category", category });
-  const openDeleteMeaning = (meaning: ImageryMeaning) =>
-    setModal({
-      type: "delete-meaning",
-      meaningId: meaning.id,
-      label: meaning.label,
-    });
-  const openDeleteOccurrence = (
-    songId: number,
-    occurrence: OccurrenceWithSong,
-  ) =>
-    setModal({
-      type: "delete-occurrence",
-      songId,
-      occurrenceId: occurrence.id,
-      label: occurrence.imagery_name ?? `关系 #${occurrence.id}`,
-    });
 
   const closeModal = () => setModal({ type: "none" });
 
@@ -886,7 +868,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
               totalPages={imageryTotalPages}
               onPageChange={setImageryPage}
               onEdit={openEditImagery}
-              onDelete={openDeleteImagery}
             />
           )}
 
@@ -922,7 +903,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
               onReset={resetMeaningEditor}
               onCreate={handleCreateMeaning}
               onUpdate={handleUpdateMeaning}
-              onDelete={openDeleteMeaning}
             />
           )}
 
@@ -948,7 +928,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
               onStartEditRelation={startEditRelation}
               onResetRelationEditor={resetRelationEditor}
               onSaveRelation={handleSaveRelation}
-              onDeleteRelation={openDeleteOccurrence}
               getCategoryPath={getCategoryPath}
             />
           )}

@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
-import {
-  updateImagery,
-  getOccurrencesForImagery,
-} from "@/lib/service-imagery";
+import { updateImagery, getOccurrencesForImagery } from "@/lib/service-imagery";
 import { createSupabaseServerClient } from "@/lib/supabase-auth";
 import { z } from "zod";
 
@@ -74,16 +71,6 @@ export const PUT = withAuth(
         { status: 500 },
       );
     }
-  },
-  { requireCSRF: true, requireAdmin: true },
-);
-
-export const DELETE = withAuth(
-  async (request: NextRequest, _user: AuthenticatedUser) => {
-    return NextResponse.json(
-      { error: "删除操作已被禁用，避免他人误删" },
-      { status: 405 },
-    );
   },
   { requireCSRF: true, requireAdmin: true },
 );

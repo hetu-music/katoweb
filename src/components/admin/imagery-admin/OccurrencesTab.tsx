@@ -6,13 +6,7 @@ import {
 import type { OccurrenceWithSong } from "@/lib/service-imagery";
 import type { ImageryCategory, ImageryItem, ImageryMeaning } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  ChevronDown,
-  ChevronRight,
-  Edit2,
-  Layers,
-  Plus,
-} from "lucide-react";
+import { ChevronDown, ChevronRight, Edit2, Layers, Plus } from "lucide-react";
 import { useEffect } from "react";
 import { type Resolver, useForm } from "react-hook-form";
 import {
@@ -172,7 +166,6 @@ function OccurrenceRow({
   categories,
   getCategoryPath,
   onEdit,
-  onDelete,
 }: {
   songId: number;
   occurrence: OccurrenceWithSong;
@@ -182,7 +175,6 @@ function OccurrenceRow({
     categories: ImageryCategory[],
   ) => string;
   onEdit: (songId: number, occurrence: OccurrenceWithSong) => void;
-  onDelete: (songId: number, occurrence: OccurrenceWithSong) => void;
 }) {
   return (
     <div className="flex flex-col bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden transition-all hover:shadow-md hover:border-blue-200 dark:hover:border-blue-900/30 px-4 py-4 group">
@@ -255,7 +247,6 @@ export default function OccurrencesTab({
   onStartEditRelation,
   onResetRelationEditor,
   onSaveRelation,
-  onDeleteRelation,
   getCategoryPath,
 }: {
   songSearchTerm: string;
@@ -278,7 +269,6 @@ export default function OccurrencesTab({
   onStartEditRelation: (songId: number, occurrence: OccurrenceWithSong) => void;
   onResetRelationEditor: () => void;
   onSaveRelation: (values: RelationFormValues) => void | Promise<void>;
-  onDeleteRelation: (songId: number, occurrence: OccurrenceWithSong) => void;
   getCategoryPath: (
     categoryId: number,
     categories: ImageryCategory[],
@@ -405,7 +395,6 @@ export default function OccurrencesTab({
                               categories={categories}
                               getCategoryPath={getCategoryPath}
                               onEdit={onStartEditRelation}
-                              onDelete={onDeleteRelation}
                             />
                           );
                         })}

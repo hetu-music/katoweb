@@ -54,13 +54,3 @@ export const PUT = withAuth(
   },
   { requireCSRF: true, requireAdmin: true },
 );
-
-export const DELETE = withAuth(
-  async (request: NextRequest, _user: AuthenticatedUser) => {
-    return NextResponse.json(
-      { error: "删除操作已被禁用，避免他人误删" },
-      { status: 405 },
-    );
-  },
-  { requireCSRF: true, requireAdmin: true },
-);

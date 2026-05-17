@@ -116,7 +116,6 @@ export default function MeaningsTab({
   onReset,
   onCreate,
   onUpdate,
-  onDelete,
 }: {
   meaningsLoading: boolean;
   meaningsSearchTerm: string;
@@ -131,7 +130,6 @@ export default function MeaningsTab({
   onReset: () => void;
   onCreate: (values: MeaningFormValues) => void | Promise<void>;
   onUpdate: (values: MeaningFormValues) => void | Promise<void>;
-  onDelete: (meaning: ImageryMeaning) => void;
 }) {
   return (
     <div className="space-y-3">

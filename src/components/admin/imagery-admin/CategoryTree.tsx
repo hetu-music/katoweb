@@ -1,11 +1,6 @@
 import React, { useState } from "react";
 import type { ImageryCategory } from "@/lib/types";
-import {
-  ChevronDown,
-  ChevronRight,
-  Edit2,
-  FolderPlus,
-} from "lucide-react";
+import { ChevronDown, ChevronRight, Edit2, FolderPlus } from "lucide-react";
 import { cn } from "./shared";
 import type { CategoryNode } from "./types";
 

@@ -12,7 +12,6 @@ export default function ImageryTab({
   totalPages,
   onPageChange,
   onEdit,
-  onDelete,
 }: {
   categories: ImageryCategory[];
   itemsLoading: boolean;
@@ -23,7 +22,6 @@ export default function ImageryTab({
   totalPages: number;
   onPageChange: (page: number) => void;
   onEdit: (item: ImageryItem) => void;
-  onDelete: (item: ImageryItem) => void;
 }) {
   return (
     <div className="space-y-3">

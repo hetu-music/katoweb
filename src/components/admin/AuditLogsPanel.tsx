@@ -78,11 +78,16 @@ function formatDate(ts: string | null): string {
 
 function renderLogValue(val: unknown) {
   if (val === null) return <span className="italic text-slate-400">null</span>;
-  if (val === undefined) return <span className="italic text-slate-400">undefined</span>;
-  if (val === "") return <span className="italic text-slate-400">"" (空字符串)</span>;
+  if (val === undefined)
+    return <span className="italic text-slate-400">undefined</span>;
+  if (val === "")
+    return (
+      <span className="italic text-slate-400">&quot;&quot; (空字符串)</span>
+    );
   if (Array.isArray(val)) {
-    if (val.length === 0) return <span className="italic text-slate-400">[] (空数组)</span>;
-    return `[${val.map(v => typeof v === 'string' ? `"${v}"` : String(v)).join(", ")}]`;
+    if (val.length === 0)
+      return <span className="italic text-slate-400">[] (空数组)</span>;
+    return `[${val.map((v) => (typeof v === "string" ? `"${v}"` : String(v))).join(", ")}]`;
   }
   if (typeof val === "object") {
     return JSON.stringify(val);
@@ -100,7 +105,11 @@ function getEntityIdentity(
 
   switch (tableName) {
     case "temp":
-      return data.title ? `曲目：${data.title}` : (data.id ? `曲目 ID：${data.id}` : null);
+      return data.title
+        ? `曲目：${data.title}`
+        : data.id
+          ? `曲目 ID：${data.id}`
+          : null;
     case "imagery":
       return data.name ? `意象：${data.name}` : null;
     case "imagery_categories":
@@ -218,9 +227,15 @@ export default function AuditLogsPanel() {
             <option value="all">全部表</option>
             <option value="temp">temp (曲目)</option>
             <option value="imagery">imagery (意象)</option>
-            <option value="imagery_categories">imagery_categories (意象分类)</option>
-            <option value="imagery_meanings">imagery_meanings (意象释义)</option>
-            <option value="imagery_occurrences">imagery_occurrences (意象标注)</option>
+            <option value="imagery_categories">
+              imagery_categories (意象分类)
+            </option>
+            <option value="imagery_meanings">
+              imagery_meanings (意象释义)
+            </option>
+            <option value="imagery_occurrences">
+              imagery_occurrences (意象标注)
+            </option>
           </select>
         </div>
         <button
@@ -272,9 +287,19 @@ export default function AuditLogsPanel() {
                   {/* Entity Identity */}
                   <span
                     className="text-slate-500 dark:text-slate-400 truncate flex-1 min-w-0"
-                    title={getEntityIdentity(log.table_name, log.old_data, log.new_data) ?? undefined}
+                    title={
+                      getEntityIdentity(
+                        log.table_name,
+                        log.old_data,
+                        log.new_data,
+                      ) ?? undefined
+                    }
                   >
-                    {getEntityIdentity(log.table_name, log.old_data, log.new_data)}
+                    {getEntityIdentity(
+                      log.table_name,
+                      log.old_data,
+                      log.new_data,
+                    )}
                   </span>
 
                   {/* User */}
