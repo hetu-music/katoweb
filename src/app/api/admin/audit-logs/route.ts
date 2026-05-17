@@ -8,6 +8,7 @@ export const GET = withAuth(
   async (request: NextRequest, _user: AuthenticatedUser) => {
     const { searchParams } = new URL(request.url);
     const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
+    const table = searchParams.get("table");
     const from = (page - 1) * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
 
@@ -16,14 +17,20 @@ export const GET = withAuth(
       return NextResponse.json({ error: "服务暂不可用" }, { status: 503 });
     }
 
-    const { data, error, count } = await supabase
+    let query = supabase
       .from(TABLES.AUDIT_LOGS)
       .select(
         "id, table_name, action_type, user_id, old_data, new_data, changed_at",
         {
           count: "exact",
         },
-      )
+      );
+
+    if (table && table !== "all") {
+      query = query.eq("table_name", table);
+    }
+
+    const { data, error, count } = await query
       .order("changed_at", { ascending: false })
       .range(from, to);
 

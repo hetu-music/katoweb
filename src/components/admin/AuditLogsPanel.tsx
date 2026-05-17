@@ -35,6 +35,15 @@ const ACTION_COLORS: Record<string, string> = {
   DELETE: "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10",
 };
 
+function isEmpty(val: unknown): boolean {
+  return (
+    val === null ||
+    val === undefined ||
+    val === "" ||
+    (Array.isArray(val) && val.length === 0)
+  );
+}
+
 /** Returns only keys that differ between old and new (UPDATE diffs). */
 function getDiffKeys(
   oldData: Record<string, unknown> | null,
@@ -42,9 +51,12 @@ function getDiffKeys(
 ): string[] {
   if (!oldData || !newData) return [];
   const keys = new Set([...Object.keys(oldData), ...Object.keys(newData)]);
-  return [...keys].filter(
-    (k) => JSON.stringify(oldData[k]) !== JSON.stringify(newData[k]),
-  );
+  return [...keys].filter((k) => {
+    const oldVal = oldData[k];
+    const newVal = newData[k];
+    if (isEmpty(oldVal) && isEmpty(newVal)) return false;
+    return JSON.stringify(oldVal) !== JSON.stringify(newVal);
+  });
 }
 
 function shortId(id: string | null): string {
@@ -64,16 +76,55 @@ function formatDate(ts: string | null): string {
   });
 }
 
+function renderLogValue(val: unknown) {
+  if (val === null) return <span className="italic text-slate-400">null</span>;
+  if (val === undefined) return <span className="italic text-slate-400">undefined</span>;
+  if (val === "") return <span className="italic text-slate-400">"" (空字符串)</span>;
+  if (Array.isArray(val)) {
+    if (val.length === 0) return <span className="italic text-slate-400">[] (空数组)</span>;
+    return `[${val.map(v => typeof v === 'string' ? `"${v}"` : String(v)).join(", ")}]`;
+  }
+  if (typeof val === "object") {
+    return JSON.stringify(val);
+  }
+  return String(val);
+}
+
+function getEntityIdentity(
+  tableName: string,
+  oldData: Record<string, unknown> | null,
+  newData: Record<string, unknown> | null,
+): string | null {
+  const data = newData || oldData;
+  if (!data) return null;
+
+  switch (tableName) {
+    case "temp":
+      return data.title ? `曲目：${data.title}` : (data.id ? `曲目 ID：${data.id}` : null);
+    case "imagery":
+      return data.name ? `意象：${data.name}` : null;
+    case "imagery_categories":
+      return data.name ? `分类：${data.name}` : null;
+    case "imagery_meanings":
+      return data.label ? `释义：${data.label}` : null;
+    case "imagery_occurrences":
+      return `标注 (曲目 ID: ${data.song_id}, 意象 ID: ${data.imagery_id})`;
+    default:
+      return null;
+  }
+}
+
 export default function AuditLogsPanel() {
   const [data, setData] = useState<AuditLogsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [tableFilter, setTableFilter] = useState<string>("all");
 
-  const fetchPage = useCallback(async (p: number) => {
+  const fetchPage = useCallback(async (p: number, table: string = "all") => {
     try {
-      const res = await fetch(`/api/admin/audit-logs?page=${p}`);
+      const res = await fetch(`/api/admin/audit-logs?page=${p}&table=${table}`);
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
         throw new Error((d as { error?: string }).error ?? "加载失败");
@@ -90,16 +141,16 @@ export default function AuditLogsPanel() {
   }, []);
 
   const loadPage = useCallback(
-    async (p: number) => {
+    async (p: number, table: string = tableFilter) => {
       setLoading(true);
       setError(null);
-      await fetchPage(p);
+      await fetchPage(p, table);
     },
-    [fetchPage],
+    [fetchPage, tableFilter],
   );
 
   useEffect(() => {
-    void fetch(`/api/admin/audit-logs?page=1`)
+    void fetch(`/api/admin/audit-logs?page=1&table=all`)
       .then(async (res) => {
         if (!res.ok) {
           const d = await res.json().catch(() => ({}));
@@ -134,7 +185,7 @@ export default function AuditLogsPanel() {
       <div className="flex flex-col items-center gap-3 py-16 text-slate-500">
         <p className="text-sm">{error}</p>
         <button
-          onClick={() => loadPage(page)}
+          onClick={() => loadPage(page, tableFilter)}
           className="flex items-center gap-1.5 text-xs font-bold text-blue-500 hover:text-blue-600"
         >
           <RefreshCw size={13} />
@@ -150,11 +201,30 @@ export default function AuditLogsPanel() {
     <div className="space-y-3">
       {/* Toolbar */}
       <div className="flex items-center justify-between px-1">
-        <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
-          共 {data?.total ?? 0} 条记录
-        </span>
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
+            共 {data?.total ?? 0} 条记录
+          </span>
+          <select
+            value={tableFilter}
+            onChange={(e) => {
+              const val = e.target.value;
+              setTableFilter(val);
+              loadPage(1, val);
+            }}
+            disabled={loading}
+            className="text-xs px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
+          >
+            <option value="all">全部表</option>
+            <option value="temp">temp (曲目)</option>
+            <option value="imagery">imagery (意象)</option>
+            <option value="imagery_categories">imagery_categories (意象分类)</option>
+            <option value="imagery_meanings">imagery_meanings (意象释义)</option>
+            <option value="imagery_occurrences">imagery_occurrences (意象标注)</option>
+          </select>
+        </div>
         <button
-          onClick={() => loadPage(page)}
+          onClick={() => loadPage(page, tableFilter)}
           disabled={loading}
           className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
           title="刷新"
@@ -199,9 +269,17 @@ export default function AuditLogsPanel() {
                     {log.table_name}
                   </span>
 
+                  {/* Entity Identity */}
+                  <span
+                    className="text-slate-500 dark:text-slate-400 truncate flex-1 min-w-0"
+                    title={getEntityIdentity(log.table_name, log.old_data, log.new_data) ?? undefined}
+                  >
+                    {getEntityIdentity(log.table_name, log.old_data, log.new_data)}
+                  </span>
+
                   {/* User */}
                   <span
-                    className="text-slate-400 font-mono truncate"
+                    className="text-slate-400 font-mono shrink-0 max-w-[80px] truncate"
                     title={log.user_id ?? undefined}
                   >
                     {shortId(log.user_id)}
@@ -275,22 +353,10 @@ export default function AuditLogsPanel() {
                                       {k}
                                     </td>
                                     <td className="px-4 py-1.5 font-mono text-rose-500 dark:text-rose-400 align-top break-all">
-                                      {log.old_data?.[k] === null ? (
-                                        <span className="italic text-slate-400">
-                                          null
-                                        </span>
-                                      ) : (
-                                        String(log.old_data?.[k] ?? "")
-                                      )}
+                                      {renderLogValue(log.old_data?.[k])}
                                     </td>
                                     <td className="px-4 py-1.5 font-mono text-emerald-600 dark:text-emerald-400 align-top break-all">
-                                      {log.new_data?.[k] === null ? (
-                                        <span className="italic text-slate-400">
-                                          null
-                                        </span>
-                                      ) : (
-                                        String(log.new_data?.[k] ?? "")
-                                      )}
+                                      {renderLogValue(log.new_data?.[k])}
                                     </td>
                                   </tr>
                                 ))}
