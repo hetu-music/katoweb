@@ -5,7 +5,7 @@ import {
 } from "@/lib/imagery-form";
 import type { ImageryMeaning } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BookOpen, Edit2, Trash2 } from "lucide-react";
+import { BookOpen, Edit2 } from "lucide-react";
 import { useEffect } from "react";
 import { type Resolver, useForm } from "react-hook-form";
 import {
@@ -201,14 +201,6 @@ export default function MeaningsTab({
                         className="rounded-xl p-2 text-emerald-600 transition-colors hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20"
                       >
                         <Edit2 size={13} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onDelete(meaning)}
-                        disabled={meaningSubmitting}
-                        className="rounded-xl p-2 text-red-500 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
-                      >
-                        <Trash2 size={13} />
                       </button>
                     </div>
                   </div>

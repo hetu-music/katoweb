@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
 import {
   updateImagery,
-  deleteImagery,
   getOccurrencesForImagery,
 } from "@/lib/service-imagery";
 import { createSupabaseServerClient } from "@/lib/supabase-auth";
@@ -81,28 +80,10 @@ export const PUT = withAuth(
 
 export const DELETE = withAuth(
   async (request: NextRequest, _user: AuthenticatedUser) => {
-    const imageryId = getIdFromUrl(request);
-    if (!imageryId) {
-      return NextResponse.json({ error: "Invalid id" }, { status: 400 });
-    }
-    try {
-      const supabase = await createSupabaseServerClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
-
-      await deleteImagery(imageryId, session.access_token);
-      return NextResponse.json({ success: true });
-    } catch (e) {
-      console.error("[DELETE /api/admin/imagery/[id]]", e);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
-    }
+    return NextResponse.json(
+      { error: "删除操作已被禁用，避免他人误删" },
+      { status: 405 },
+    );
   },
   { requireCSRF: true, requireAdmin: true },
 );

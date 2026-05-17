@@ -1,5 +1,5 @@
 import type { ImageryCategory, ImageryItem } from "@/lib/types";
-import { Edit2, Tag, Trash2 } from "lucide-react";
+import { Edit2, Tag } from "lucide-react";
 import { EmptyState, LoadingState, PaginationControls } from "./shared";
 
 export default function ImageryTab({
@@ -105,13 +105,6 @@ export default function ImageryTab({
                       title="编辑"
                     >
                       <Edit2 size={14} />
-                    </button>
-                    <button
-                      onClick={() => onDelete(item)}
-                      className="rounded-xl p-2 text-red-500 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
-                      title="删除"
-                    >
-                      <Trash2 size={14} />
                     </button>
                   </div>
                 </div>
