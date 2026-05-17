@@ -12,7 +12,6 @@ import {
   Edit2,
   Layers,
   Plus,
-  Trash2,
 } from "lucide-react";
 import { useEffect } from "react";
 import { type Resolver, useForm } from "react-hook-form";
@@ -228,13 +227,6 @@ function OccurrenceRow({
             className="rounded-xl p-2 text-emerald-600 transition-colors hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20"
           >
             <Edit2 size={13} />
-          </button>
-          <button
-            type="button"
-            onClick={() => onDelete(songId, occurrence)}
-            className="rounded-xl p-2 text-red-500 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
-          >
-            <Trash2 size={13} />
           </button>
         </div>
       </div>

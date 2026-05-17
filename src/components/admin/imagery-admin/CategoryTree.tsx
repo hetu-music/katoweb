@@ -5,7 +5,6 @@ import {
   ChevronRight,
   Edit2,
   FolderPlus,
-  Trash2,
 } from "lucide-react";
 import { cn } from "./shared";
 import type { CategoryNode } from "./types";
@@ -81,14 +80,6 @@ export const CategoryTreeNode = React.memo(function CategoryTreeNode({
             title="编辑分类"
           >
             <Edit2 size={12} />
-          </button>
-          <button
-            type="button"
-            onClick={() => onDelete(node)}
-            className="rounded-lg p-1 text-red-500 transition-colors hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/30"
-            title="删除分类"
-          >
-            <Trash2 size={12} />
           </button>
         </div>
       </div>

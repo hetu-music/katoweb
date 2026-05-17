@@ -100,12 +100,6 @@ export default function CategoriesTab({
                 >
                   编辑
                 </button>
-                <button
-                  onClick={() => onDeleteCategory(category)}
-                  className="rounded-xl px-2 py-2 text-xs text-red-500 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
-                >
-                  删除
-                </button>
               </div>
             </div>
           </div>
