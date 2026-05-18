@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 /**
  * Standalone Serwist Service Worker Build Script (Turbopack Compatible)
- * 
+ *
  * We compile src/sw.ts using esbuild to resolve all ESM imports and types,
  * then we use injectManifest from @serwist/build to inject pre-cache assets.
  */
@@ -36,12 +36,14 @@ async function buildServiceWorker(): Promise<void> {
       format: "iife", // 使用立即执行函数 (IIFE) 格式以实现最大兼容性
       target: "es2020",
       define: {
-        "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV || "production"),
+        "process.env.NODE_ENV": JSON.stringify(
+          process.env.NODE_ENV || "production",
+        ),
       },
     });
 
     const additionalManifestEntries: ManifestEntry[] = [];
-    
+
     // 可选: manifest.json（静态文件，适合预缓存）
     const manifestPath = path.join(publicDir, "manifest.json");
     if (fs.existsSync(manifestPath)) {
