@@ -15,11 +15,9 @@ COPY . .
 
 RUN pnpm build
 
-FROM node:20-alpine AS runner
+FROM node:24-alpine AS runner
 
 WORKDIR /app
-
-RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # 只复制独立构建所需的文件
 COPY --from=builder /app/.next/standalone ./
