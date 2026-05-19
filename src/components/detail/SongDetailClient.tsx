@@ -611,6 +611,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                         width={800}
                         height={600}
                         className="w-full h-auto"
+                        loading="eager"
                         onError={handleScoreImageError}
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
