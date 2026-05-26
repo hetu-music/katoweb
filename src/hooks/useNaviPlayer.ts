@@ -29,6 +29,10 @@ export function useNaviPlayer(
   React.RefObject<HTMLAudioElement | null>,
 ] {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  // 错误重试计数：每首歌最多自动重试一次（应对 token 过期场景）
+  const retryCountRef = useRef(0);
+  // 追踪当前 songNavId，供 onError 闭包读取
+  const songNavIdRef = useRef<string | null>(null);
   const [state, setState] = useState<NaviPlayerState>({
     isPlaying: false,
     isLoading: false,
@@ -38,6 +42,47 @@ export function useNaviPlayer(
     isMuted: false,
     error: null,
   });
+
+  // 向服务端获取 stream URL 并赋给 audio.src
+  // isRetry=true 时跳过重置 retryCount，避免递归
+  const fetchAndSetSrc = useCallback(
+    (id: string, isRetry = false) => {
+      const audio = audioRef.current;
+      if (!audio) return;
+
+      if (!isRetry) retryCountRef.current = 0;
+
+      setState((s) => ({ ...s, isLoading: true, error: null }));
+
+      fetch(`/api/navidrome/stream-url?songId=${encodeURIComponent(id)}`)
+        .then((r) => {
+          if (!r.ok) throw new Error(`stream-url API error: ${r.status}`);
+          return r.json() as Promise<{ url?: string; error?: string }>;
+        })
+        .then(({ url, error }) => {
+          if (!url) throw new Error(error ?? "未获取到播放地址");
+          audio.pause();
+          audio.src = url;
+          audio.load();
+          setState((s) => ({
+            ...s,
+            isLoading: false,
+            isPlaying: false,
+            currentTime: 0,
+            duration: 0,
+            error: null,
+          }));
+        })
+        .catch((err: unknown) => {
+          const msg =
+            err instanceof Error
+              ? err.message
+              : "获取播放地址失败，请稍后重试";
+          setState((s) => ({ ...s, isLoading: false, error: msg }));
+        });
+    },
+    [],
+  );
 
   // 初始化 audio 元素，绑定所有事件
   useEffect(() => {
@@ -67,6 +112,21 @@ export function useNaviPlayer(
       setState((s) => ({ ...s, volume: audio.volume, isMuted: audio.muted }));
     const onError = () => {
       const err = audio.error;
+
+      // MEDIA_ERR_NETWORK 或 SRC_NOT_SUPPORTED 可能是 token 过期，尝试重新获取 URL
+      const isTokenError =
+        err?.code === MediaError.MEDIA_ERR_NETWORK ||
+        err?.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED;
+
+      if (isTokenError && retryCountRef.current < 1) {
+        retryCountRef.current += 1;
+        const currentId = songNavIdRef.current;
+        if (currentId) {
+          fetchAndSetSrc(currentId, true);
+          return;
+        }
+      }
+
       let msg = "播放失败，请稍后重试";
       if (err?.code === MediaError.MEDIA_ERR_NETWORK)
         msg = "网络错误，无法加载音频";
@@ -108,36 +168,10 @@ export function useNaviPlayer(
 
   // 当 songNavId 变化时，向服务端请求 stream URL，再赋给 audio.src
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio || !songNavId) return;
-
-    setState((s) => ({ ...s, isLoading: true, error: null }));
-
-    fetch(`/api/navidrome/stream-url?songId=${encodeURIComponent(songNavId)}`)
-      .then((r) => {
-        if (!r.ok) throw new Error(`stream-url API error: ${r.status}`);
-        return r.json() as Promise<{ url?: string; error?: string }>;
-      })
-      .then(({ url, error }) => {
-        if (!url) throw new Error(error ?? "未获取到播放地址");
-        audio.pause();
-        audio.src = url;
-        audio.load();
-        setState((s) => ({
-          ...s,
-          isLoading: false,
-          isPlaying: false,
-          currentTime: 0,
-          duration: 0,
-          error: null,
-        }));
-      })
-      .catch((err: unknown) => {
-        const msg =
-          err instanceof Error ? err.message : "获取播放地址失败，请稍后重试";
-        setState((s) => ({ ...s, isLoading: false, error: msg }));
-      });
-  }, [songNavId]); // eslint-disable-line react-hooks/exhaustive-deps
+    songNavIdRef.current = songNavId;
+    if (!songNavId) return;
+    fetchAndSetSrc(songNavId);
+  }, [songNavId, fetchAndSetSrc]);
 
   const play = useCallback(() => {
     audioRef.current?.play().catch(() => {
