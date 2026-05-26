@@ -26,9 +26,8 @@ export const GET = withAuth(
       intro: data?.intro ?? null,
       isAdmin: data?.is_admin ?? false,
       sortOrder: data?.sort_order ?? null,
-      navidId: data?.navid_id ?? null,
-      navidPw: data?.navid_pw ?? null,
-      endpointText: data?.endpoint ?? null,
+      hasBenefits:
+        !!data?.navid_id && !!data?.navid_pw && !!data?.endpoint,
     });
   },
 );

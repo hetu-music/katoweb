@@ -33,9 +33,8 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const router = useRouter();
   const { user, loaded: userLoaded } = useUserContext();
 
-  // 是否拥有 Navidrome 试听权益
-  const hasBenefits =
-    userLoaded && !!user?.navidId && !!user?.navidPw && !!user?.endpointText;
+  // 是否拥有 Navidrome 试听权益（由服务端 /api/auth/me 判断）
+  const hasBenefits = userLoaded && !!user?.hasBenefits;
 
   // Navidrome 歌曲 ID（阶段一采用动态搜索方案时由此字段驱动；
   // 当前先用歌曲标题作为搜索 key，实际 ID 通过 API 懒加载）

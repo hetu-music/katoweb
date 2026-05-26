@@ -19,9 +19,6 @@ import {
   Check,
   ChevronRight,
   ClipboardList,
-  Copy,
-  Eye,
-  EyeOff,
   Heart,
   Home,
   Loader2,
@@ -64,8 +61,7 @@ function ProfileContent() {
 
   const isSuperAdmin = userLoaded && !!user?.isAdmin && user?.sortOrder === 1;
 
-  const hasBenefits =
-    userLoaded && !!user?.navidId && !!user?.navidPw && !!user?.endpointText;
+  const hasBenefits = userLoaded && !!user?.hasBenefits;
 
   // Gate: fall back to favorites if accessing a restricted tab without permission
   useEffect(() => {
@@ -124,8 +120,6 @@ function ProfileContent() {
 
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [csrfToken, setCsrfToken] = useState("");
-  const [navidPwVisible, setNavidPwVisible] = useState(false);
-  const [copied, setCopied] = useState<"id" | "pw" | "ep" | null>(null);
 
   const [pwdMsg, setPwdMsg] = useState<string | null>(null);
 
@@ -169,13 +163,6 @@ function ProfileContent() {
       .then((r) => r.json())
       .then((d) => setCsrfToken(d.csrfToken || ""));
   }, [activeTab, user]);
-
-  const handleCopy = useCallback((text: string, type: "id" | "pw" | "ep") => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopied(type);
-      setTimeout(() => setCopied(null), 2000);
-    });
-  }, []);
 
   const handleSave = accountForm.handleSubmit(
     async ({ displayName, intro, display }) => {
@@ -853,139 +840,17 @@ function ProfileContent() {
               {/* Benefits Tab — shown when navid_id, navid_pw or endpoint is set */}
               {activeTab === "benefits" && hasBenefits && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
-                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-6 flex-1">
-                    <div className="space-y-1 mb-6">
-                      <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <Sparkles size={18} className="text-blue-500" />
-                        权益信息
-                      </h3>
-                      <p className="text-xs text-slate-400">
-                        以下凭证仅对您本人可见，请妥善保管
-                      </p>
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-8 flex-1 flex flex-col items-center justify-center gap-4 text-center">
+                    <div className="w-14 h-14 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center">
+                      <Sparkles size={24} className="text-blue-500" />
                     </div>
-
-                    <div className="space-y-4">
-                      {/* Navid ID */}
-                      <div className="rounded-xl border border-slate-200/60 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-800/50 overflow-hidden">
-                        <div className="px-4 py-2.5 border-b border-slate-200/60 dark:border-slate-800/60">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                            Navid ID
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3 px-4 py-3">
-                          <span className="flex-1 text-sm font-mono text-slate-800 dark:text-slate-100 break-all select-all">
-                            {user?.navidId}
-                          </span>
-                          <button
-                            onClick={() =>
-                              handleCopy(user?.navidId ?? "", "id")
-                            }
-                            className={cn(
-                              "shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
-                              copied === "id"
-                                ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
-                                : "bg-slate-200/60 dark:bg-slate-700 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-300/60 dark:hover:bg-slate-600",
-                            )}
-                          >
-                            {copied === "id" ? (
-                              <Check size={12} />
-                            ) : (
-                              <Copy size={12} />
-                            )}
-                            {copied === "id" ? "已复制" : "复制"}
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Navid PW */}
-                      <div className="rounded-xl border border-slate-200/60 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-800/50 overflow-hidden">
-                        <div className="px-4 py-2.5 border-b border-slate-200/60 dark:border-slate-800/60">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                            Navid 密码
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3 px-4 py-3">
-                          <span className="flex-1 text-sm font-mono text-slate-800 dark:text-slate-100 break-all select-all">
-                            {navidPwVisible
-                              ? user?.navidPw
-                              : "•".repeat(
-                                  Math.min(user?.navidPw?.length ?? 8, 16),
-                                )}
-                          </span>
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            <button
-                              onClick={() => setNavidPwVisible((v) => !v)}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-700 transition-colors"
-                              aria-label={
-                                navidPwVisible ? "隐藏密码" : "显示密码"
-                              }
-                            >
-                              {navidPwVisible ? (
-                                <EyeOff size={14} />
-                              ) : (
-                                <Eye size={14} />
-                              )}
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleCopy(user?.navidPw ?? "", "pw")
-                              }
-                              className={cn(
-                                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
-                                copied === "pw"
-                                  ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
-                                  : "bg-slate-200/60 dark:bg-slate-700 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-300/60 dark:hover:bg-slate-600",
-                              )}
-                            >
-                              {copied === "pw" ? (
-                                <Check size={12} />
-                              ) : (
-                                <Copy size={12} />
-                              )}
-                              {copied === "pw" ? "已复制" : "复制"}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Endpoint — 登录网址 */}
-                      {user?.endpointText && (
-                        <div className="rounded-xl border border-slate-200/60 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-800/50 overflow-hidden">
-                          <div className="px-4 py-2.5 border-b border-slate-200/60 dark:border-slate-800/60">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                              登录网址
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-3 px-4 py-3">
-                            <a
-                              href={user.endpointText}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex-1 text-sm font-mono text-blue-600 dark:text-blue-400 break-all hover:underline"
-                            >
-                              {user.endpointText}
-                            </a>
-                            <button
-                              onClick={() =>
-                                handleCopy(user?.endpointText ?? "", "ep")
-                              }
-                              className={cn(
-                                "shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
-                                copied === "ep"
-                                  ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
-                                  : "bg-slate-200/60 dark:bg-slate-700 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-300/60 dark:hover:bg-slate-600",
-                              )}
-                            >
-                              {copied === "ep" ? (
-                                <Check size={12} />
-                              ) : (
-                                <Copy size={12} />
-                              )}
-                              {copied === "ep" ? "已复制" : "复制"}
-                            </button>
-                          </div>
-                        </div>
-                      )}
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                        在线试听已开通
+                      </h3>
+                      <p className="text-sm text-slate-400 mt-1.5 leading-relaxed max-w-xs">
+                        您已获得在线试听权益，可在每首歌曲的详情页直接播放高品质音频。
+                      </p>
                     </div>
                   </div>
                 </div>
