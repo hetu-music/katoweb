@@ -8,7 +8,6 @@ import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import ImageModal from "@/components/shared/ImageModal";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import { useUserContext } from "@/context/UserContext";
-import { usePlayer } from "@/context/PlayerContext";
 import { getGenreTagStyle, getTypeTagStyle } from "@/lib/constants";
 import { SongDetailClientProps } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -32,23 +31,9 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const router = useRouter();
   const { user, loaded: userLoaded } = useUserContext();
-  const { setLyricsMap } = usePlayer();
 
   // 是否拥有 Navidrome 试听权益（由服务端 /api/auth/me 判断）
   const hasBenefits = userLoaded && !!user?.hasBenefits;
-
-  // 把当前歌曲的歌词注入到 PlayerContext，供播放条显示歌词用
-  // 用函数式更新合并，不覆盖主页面已注入的其他歌曲歌词
-  useEffect(() => {
-    if (song.lyrics) {
-      setLyricsMap((prev) => {
-        if (prev.get(song.id) === song.lyrics) return prev;
-        const next = new Map(prev);
-        next.set(song.id, song.lyrics!);
-        return next;
-      });
-    }
-  }, [song.id, song.lyrics, setLyricsMap]);
 
   const openUserPanel = (tab: "account" | "favorites" = "favorites") => {
     if (!user) {

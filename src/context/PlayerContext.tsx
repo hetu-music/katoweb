@@ -52,9 +52,8 @@ interface PlayerContextValue {
   /** 底部播放条是否展开可见 */
   playerVisible: boolean;
   setPlayerVisible: (v: boolean) => void;
-  /** 歌词 map，由 MusicLibraryClient 在歌词加载完后注入 */
+  /** 歌词 map，由 PlayerContext 内部按需 fetch，外部只读 */
   lyricsMap: Map<number, string>;
-  setLyricsMap: (map: Map<number, string> | ((prev: Map<number, string>) => Map<number, string>)) => void;
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -72,6 +71,28 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   const [playerVisible, setPlayerVisible] = useState(false);
   const [lyricsMap, setLyricsMap] = useState<Map<number, string>>(new Map());
+
+  // ── 按需 fetch 当前曲目歌词 ───────────────────────────────────────────────
+  useEffect(() => {
+    const songId = state.currentTrack?.songId;
+    if (!songId) return;
+    // 已有缓存则跳过
+    if (lyricsMap.has(songId)) return;
+
+    fetch(`/api/public/songs/${songId}/lyrics`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { lyrics: string | null } | null) => {
+        if (!data?.lyrics) return;
+        setLyricsMap((prev) => {
+          if (prev.has(songId)) return prev;
+          const next = new Map(prev);
+          next.set(songId, data.lyrics!);
+          return next;
+        });
+      })
+      .catch(() => {/* 歌词加载失败不影响播放 */});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.currentTrack?.songId]);
 
   const [state, setState] = useState<PlayerState>({
     currentTrack: null,
@@ -346,7 +367,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <PlayerContext.Provider value={{ state, controls, playerVisible, setPlayerVisible, lyricsMap, setLyricsMap }}>
+    <PlayerContext.Provider value={{ state, controls, playerVisible, setPlayerVisible, lyricsMap }}>
       {children}
     </PlayerContext.Provider>
   );
