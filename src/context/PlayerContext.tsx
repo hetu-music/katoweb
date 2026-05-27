@@ -18,6 +18,8 @@ export interface PlayerTrack {
   artist?: string | null;
   /** Navidrome 歌曲 ID */
   navId: string;
+  /** LRC 格式歌词（可选） */
+  lrcLyrics?: string | null;
 }
 
 export interface PlayerState {

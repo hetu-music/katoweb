@@ -323,6 +323,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 title={song.title}
                 artist={song.artist?.join(" / ")}
                 songNavId={navidSongId}
+                lrcLyrics={song.lyrics}
               />
             )}
 

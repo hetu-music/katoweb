@@ -22,6 +22,8 @@ interface NaviPlayerProps {
   artist?: string | null;
   /** Navidrome 歌曲 ID，为 null 时不可播放 */
   songNavId: string | null;
+  /** LRC 格式歌词 */
+  lrcLyrics?: string | null;
   className?: string;
 }
 
@@ -30,6 +32,7 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
   title,
   artist,
   songNavId,
+  lrcLyrics,
   className,
 }) => {
   const { state, controls } = usePlayer();
@@ -42,7 +45,7 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
   const isThisLoading = isCurrentSong && isLoading;
 
   const track: PlayerTrack | null = songNavId
-    ? { songId, title, artist, navId: songNavId }
+    ? { songId, title, artist, navId: songNavId, lrcLyrics }
     : null;
 
   const handleToggle = () => {

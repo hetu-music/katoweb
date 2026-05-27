@@ -1,10 +1,14 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   AlertCircle,
-  ChevronDown,
-  ChevronUp,
   ListMusic,
   Loader2,
   Music,
@@ -21,7 +25,47 @@ import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { formatPlayerTime, usePlayer } from "@/context/PlayerContext";
 
-export default function GlobalPlayer() {
+// ─── LRC 解析 ────────────────────────────────────────────────────────────────
+
+interface LrcLine {
+  time: number; // 秒
+  text: string;
+}
+
+function parseLrc(lrc: string): LrcLine[] {
+  const lines: LrcLine[] = [];
+  const re = /\[(\d{2}):(\d{2})\.(\d{2,3})\](.*)/;
+  for (const raw of lrc.split("\n")) {
+    const m = raw.match(re);
+    if (!m) continue;
+    const time =
+      parseInt(m[1]) * 60 +
+      parseInt(m[2]) +
+      parseInt(m[3]) / (m[3].length === 3 ? 1000 : 100);
+    const text = m[4].trim();
+    if (text) lines.push({ time, text });
+  }
+  return lines.sort((a, b) => a.time - b.time);
+}
+
+function getCurrentLrcIndex(lines: LrcLine[], currentTime: number): number {
+  if (!lines.length) return -1;
+  let idx = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].time <= currentTime) idx = i;
+    else break;
+  }
+  return idx;
+}
+
+// ─── 组件 ─────────────────────────────────────────────────────────────────────
+
+interface GlobalPlayerProps {
+  /** 由 FloatingActionButtons 传入，用于定位播放列表面板 */
+  fabRef?: React.RefObject<HTMLDivElement | null>;
+}
+
+export default function GlobalPlayer({ fabRef }: GlobalPlayerProps) {
   const { state, controls } = usePlayer();
   const {
     currentTrack,
@@ -36,14 +80,25 @@ export default function GlobalPlayer() {
     error,
   } = state;
 
+  // ── 进度条：用 ref 直接操作 DOM，避免 React re-render 造成的卡顿 ──────────
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  const isDraggingRef = useRef(false);
   const [seekPreview, setSeekPreview] = useState<number | null>(null);
   const displayTime = seekPreview !== null ? seekPreview : currentTime;
 
-  const [showQueue, setShowQueue] = useState(false);
+  // 每帧直接更新进度条宽度（不走 React state）
+  useEffect(() => {
+    if (isDraggingRef.current) return;
+    const bar = progressBarRef.current;
+    if (!bar) return;
+    const pct = duration > 0 ? (currentTime / duration) * 100 : 0;
+    bar.style.width = `${pct}%`;
+  }, [currentTime, duration]);
+
+  // ── 音量面板 ──────────────────────────────────────────────────────────────
   const [showVolume, setShowVolume] = useState(false);
   const volumeRef = useRef<HTMLDivElement>(null);
 
-  // 点击外部关闭音量面板
   useEffect(() => {
     if (!showVolume) return;
     const handler = (e: MouseEvent) => {
@@ -55,19 +110,77 @@ export default function GlobalPlayer() {
     return () => document.removeEventListener("mousedown", handler);
   }, [showVolume]);
 
-  const handleSeekCommit = useCallback(
-    (value: number[]) => {
-      controls.seek(value[0]);
-      setSeekPreview(null);
-    },
-    [controls],
+  // ── 播放列表面板 ──────────────────────────────────────────────────────────
+  const [showQueue, setShowQueue] = useState(false);
+
+  // ── LRC 歌词 ──────────────────────────────────────────────────────────────
+  const lrcLines = useMemo(() => {
+    const lrc = currentTrack?.lrcLyrics;
+    if (!lrc) return [];
+    return parseLrc(lrc);
+  }, [currentTrack?.lrcLyrics]);
+
+  const currentLrcIndex = useMemo(
+    () => getCurrentLrcIndex(lrcLines, currentTime),
+    [lrcLines, currentTime],
   );
 
-  const handleSeekPreview = useCallback((value: number[]) => {
-    setSeekPreview(value[0]);
-  }, []);
+  const currentLrcText =
+    currentLrcIndex >= 0 ? lrcLines[currentLrcIndex]?.text : null;
 
-  // 没有曲目时不渲染
+  // ── 进度条拖拽（原生 pointer events，不依赖 Slider 组件） ─────────────────
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  const getTimeFromPointer = useCallback(
+    (clientX: number) => {
+      const track = trackRef.current;
+      if (!track || !duration) return null;
+      const rect = track.getBoundingClientRect();
+      const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      return ratio * duration;
+    },
+    [duration],
+  );
+
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (!duration) return;
+      isDraggingRef.current = true;
+      const t = getTimeFromPointer(e.clientX);
+      if (t !== null) {
+        setSeekPreview(t);
+        const bar = progressBarRef.current;
+        if (bar) bar.style.width = `${(t / duration) * 100}%`;
+      }
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    },
+    [duration, getTimeFromPointer],
+  );
+
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (!isDraggingRef.current || !duration) return;
+      const t = getTimeFromPointer(e.clientX);
+      if (t !== null) {
+        setSeekPreview(t);
+        const bar = progressBarRef.current;
+        if (bar) bar.style.width = `${(t / duration) * 100}%`;
+      }
+    },
+    [duration, getTimeFromPointer],
+  );
+
+  const handlePointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      if (!isDraggingRef.current) return;
+      isDraggingRef.current = false;
+      const t = getTimeFromPointer(e.clientX);
+      if (t !== null) controls.seek(t);
+      setSeekPreview(null);
+    },
+    [controls, getTimeFromPointer],
+  );
+
   if (!currentTrack) return null;
 
   const hasPrev = currentIndex > 0;
@@ -75,12 +188,12 @@ export default function GlobalPlayer() {
 
   return (
     <>
-      {/* 播放列表面板（从底部弹出） */}
+      {/* 播放列表面板：定位在 FAB 左侧，或回退到右下角 */}
       {showQueue && (
         <div
           className={cn(
-            "fixed bottom-[72px] left-0 right-0 z-40",
-            "mx-auto max-w-2xl px-4",
+            "fixed z-[60] w-72",
+            "bottom-[88px] right-8",
           )}
         >
           <div
@@ -89,7 +202,7 @@ export default function GlobalPlayer() {
               "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl",
               "border border-slate-200/60 dark:border-slate-700/50",
               "shadow-2xl shadow-slate-300/30 dark:shadow-black/50",
-              "animate-in slide-in-from-bottom-4 duration-200",
+              "animate-in slide-in-from-bottom-4 fade-in duration-200",
             )}
           >
             {/* 面板头部 */}
@@ -103,17 +216,25 @@ export default function GlobalPlayer() {
                   {queue.length} 首
                 </span>
               </div>
-              <button
-                onClick={() => controls.clearQueue()}
-                className="flex items-center gap-1 text-xs text-slate-400 hover:text-rose-500 transition-colors px-2 py-1 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10"
-              >
-                <Trash2 size={12} />
-                清空
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => controls.clearQueue()}
+                  className="flex items-center gap-1 text-xs text-slate-400 hover:text-rose-500 transition-colors px-2 py-1 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10"
+                >
+                  <Trash2 size={12} />
+                  清空
+                </button>
+                <button
+                  onClick={() => setShowQueue(false)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  <X size={14} />
+                </button>
+              </div>
             </div>
 
             {/* 曲目列表 */}
-            <div className="max-h-64 overflow-y-auto overscroll-contain">
+            <div className="max-h-72 overflow-y-auto overscroll-contain">
               {queue.map((track, i) => (
                 <div
                   key={`${track.songId}-${i}`}
@@ -130,23 +251,43 @@ export default function GlobalPlayer() {
                     {i === currentIndex ? (
                       isPlaying ? (
                         <span className="flex gap-0.5 items-end h-3">
-                          <span className="w-0.5 bg-blue-500 rounded-full animate-[bounce_0.8s_ease-in-out_infinite]" style={{ height: "60%" }} />
-                          <span className="w-0.5 bg-blue-500 rounded-full animate-[bounce_0.8s_ease-in-out_0.2s_infinite]" style={{ height: "100%" }} />
-                          <span className="w-0.5 bg-blue-500 rounded-full animate-[bounce_0.8s_ease-in-out_0.4s_infinite]" style={{ height: "40%" }} />
+                          <span
+                            className="w-0.5 bg-blue-500 rounded-full"
+                            style={{
+                              height: "60%",
+                              animation: "lrcBounce 0.8s ease-in-out infinite",
+                            }}
+                          />
+                          <span
+                            className="w-0.5 bg-blue-500 rounded-full"
+                            style={{
+                              height: "100%",
+                              animation:
+                                "lrcBounce 0.8s ease-in-out 0.2s infinite",
+                            }}
+                          />
+                          <span
+                            className="w-0.5 bg-blue-500 rounded-full"
+                            style={{
+                              height: "40%",
+                              animation:
+                                "lrcBounce 0.8s ease-in-out 0.4s infinite",
+                            }}
+                          />
                         </span>
                       ) : (
                         <Music size={12} className="text-blue-500" />
                       )
                     ) : (
-                      <span className="text-[11px] text-slate-400 group-hover:hidden">
-                        {i + 1}
-                      </span>
-                    )}
-                    {i !== currentIndex && (
-                      <Play
-                        size={11}
-                        className="text-slate-400 hidden group-hover:block fill-current"
-                      />
+                      <>
+                        <span className="text-[11px] text-slate-400 group-hover:hidden">
+                          {i + 1}
+                        </span>
+                        <Play
+                          size={11}
+                          className="text-slate-400 hidden group-hover:block fill-current"
+                        />
+                      </>
                     )}
                   </div>
 
@@ -195,26 +336,34 @@ export default function GlobalPlayer() {
           "shadow-[0_-4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.3)]",
         )}
       >
-        {/* 进度条（贴顶） */}
-        <div className="px-0">
-          <Slider
-            min={0}
-            max={duration || 100}
-            step={0.5}
-            value={[displayTime]}
-            onValueChange={handleSeekPreview}
-            onValueCommit={handleSeekCommit}
-            disabled={duration === 0}
-            aria-label="播放进度"
-            className={cn(
-              "w-full rounded-none [&_.relative]:rounded-none [&_.relative]:h-1",
-              duration === 0 && "opacity-40 pointer-events-none",
-            )}
+        {/* 进度条（原生实现，丝滑无卡顿） */}
+        <div
+          ref={trackRef}
+          className={cn(
+            "relative h-1 w-full cursor-pointer group/progress",
+            "bg-slate-200 dark:bg-slate-700/50",
+            !duration && "pointer-events-none opacity-40",
+          )}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+        >
+          {/* 填充条：播放中用 transition-none，拖拽时也直接操作 DOM */}
+          <div
+            ref={progressBarRef}
+            className="absolute left-0 top-0 h-full bg-blue-500 rounded-r-full"
+            style={{
+              width: duration > 0 ? `${(currentTime / duration) * 100}%` : "0%",
+              transition: isDraggingRef.current ? "none" : "width 0.25s linear",
+            }}
           />
+          {/* hover 时放大点击区域 */}
+          <div className="absolute inset-x-0 -top-1 -bottom-1 group-hover/progress:bg-transparent" />
         </div>
 
-        <div className="mx-auto max-w-2xl px-4 h-[60px] flex items-center gap-3">
-          {/* 曲目信息 */}
+        <div className="mx-auto max-w-3xl px-4 h-[60px] flex items-center gap-3">
+          {/* 曲目信息 + 歌词 */}
           <div className="flex-1 min-w-0 flex items-center gap-2.5">
             <div className="shrink-0 w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
               {isLoading ? (
@@ -223,22 +372,29 @@ export default function GlobalPlayer() {
                 <Music size={14} className="text-slate-400" />
               )}
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate leading-tight">
                 {currentTrack.title}
               </p>
-              <div className="flex items-center gap-1.5">
-                {currentTrack.artist && (
-                  <p className="text-[11px] text-slate-400 truncate">
-                    {currentTrack.artist}
-                  </p>
-                )}
-                {error && (
+              {/* 歌词行 / 演唱者 / 错误 */}
+              <div className="h-4 overflow-hidden">
+                {error ? (
                   <div className="flex items-center gap-1">
                     <AlertCircle size={10} className="text-rose-500 shrink-0" />
                     <p className="text-[10px] text-rose-500 truncate">{error}</p>
                   </div>
-                )}
+                ) : currentLrcText ? (
+                  <p
+                    key={currentLrcIndex}
+                    className="text-[11px] text-blue-500 dark:text-blue-400 truncate animate-in fade-in slide-in-from-bottom-1 duration-300"
+                  >
+                    {currentLrcText}
+                  </p>
+                ) : currentTrack.artist ? (
+                  <p className="text-[11px] text-slate-400 truncate">
+                    {currentTrack.artist}
+                  </p>
+                ) : null}
               </div>
             </div>
           </div>
@@ -252,7 +408,6 @@ export default function GlobalPlayer() {
 
           {/* 播放控制 */}
           <div className="flex items-center gap-1 shrink-0">
-            {/* 上一首 */}
             <button
               onClick={controls.prev}
               disabled={!hasPrev}
@@ -267,7 +422,6 @@ export default function GlobalPlayer() {
               <SkipBack size={16} className="fill-current" />
             </button>
 
-            {/* 播放/暂停 */}
             <button
               onClick={controls.toggle}
               disabled={isLoading}
@@ -291,7 +445,6 @@ export default function GlobalPlayer() {
               )}
             </button>
 
-            {/* 下一首 */}
             <button
               onClick={controls.next}
               disabled={!hasNext}
@@ -367,13 +520,21 @@ export default function GlobalPlayer() {
               "p-2 rounded-full transition-colors shrink-0",
               "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
               "hover:bg-slate-100 dark:hover:bg-slate-800",
-              showQueue && "bg-slate-100 dark:bg-slate-800 text-blue-500",
+              showQueue && "bg-blue-50 dark:bg-blue-500/10 text-blue-500",
             )}
           >
-            {showQueue ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+            <ListMusic size={16} />
           </button>
         </div>
       </div>
+
+      {/* 弹跳动画 keyframes */}
+      <style>{`
+        @keyframes lrcBounce {
+          0%, 100% { transform: scaleY(0.4); }
+          50% { transform: scaleY(1); }
+        }
+      `}</style>
     </>
   );
 }
