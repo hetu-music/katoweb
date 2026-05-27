@@ -18,6 +18,7 @@ interface NaviPlayerProps {
   title: string;
   artist?: string | null;
   lrcLyrics?: string | null;
+  coverUrl?: string | null;
   hasAudio?: boolean;
   className?: string;
 }
@@ -27,6 +28,7 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
   title,
   artist,
   lrcLyrics,
+  coverUrl,
   hasAudio = true,
   className,
 }) => {
@@ -40,7 +42,7 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
   const isThisPlaying = isCurrentSong && isPlaying;
   const isThisLoading = isCurrentSong && isLoading;
 
-  const track: PlayerTrack = { songId, title, artist, lrcLyrics };
+  const track: PlayerTrack = { songId, title, artist, lrcLyrics, coverUrl };
 
   const handleToggle = () => {
     if (isCurrentSong) {
@@ -76,23 +78,30 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
     >
       <div className="relative z-10 p-4">
         <div className="flex items-center gap-3">
-          <div
-            className={cn(
-              "shrink-0 w-9 h-9 rounded-xl flex items-center justify-center",
-              "bg-slate-100 dark:bg-slate-800",
-              isThisPlaying && "bg-blue-50 dark:bg-blue-500/10",
-            )}
-          >
-            {isThisLoading ? (
-              <Loader2 size={16} className="animate-spin text-blue-500" />
-            ) : (
-              <Music
-                size={16}
+          {/* 封面 */}
+          <div className={cn(
+            "shrink-0 w-10 h-10 rounded-xl overflow-hidden",
+            "bg-slate-100 dark:bg-slate-800",
+            "ring-1 ring-slate-900/5 dark:ring-white/10",
+          )}>
+            {coverUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={coverUrl}
+                alt={title}
                 className={cn(
-                  "text-slate-400",
-                  isThisPlaying && "text-blue-500",
+                  "w-full h-full object-cover transition-transform duration-700",
+                  isThisPlaying && "scale-110",
                 )}
               />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                {isThisLoading ? (
+                  <Loader2 size={16} className="animate-spin text-blue-500" />
+                ) : (
+                  <Music size={16} className={cn("text-slate-400", isThisPlaying && "text-blue-500")} />
+                )}
+              </div>
             )}
           </div>
 

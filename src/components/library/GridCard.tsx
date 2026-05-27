@@ -4,10 +4,12 @@ import { useFavorites } from "@/context/FavoritesContext";
 import { FILTER_OPTION_UNKNOWN, getTypeTagStyle } from "@/lib/constants";
 import type { Song } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { getCoverUrl } from "@/lib/utils-song";
 import { Heart } from "lucide-react";
 import type React from "react";
 import CoverArt from "./CoverArt";
 import EnqueueButton from "@/components/shared/EnqueueButton";
+import PlayButton from "@/components/shared/PlayButton";
 
 interface GridCardProps {
   song: Song;
@@ -72,14 +74,46 @@ export default function GridCard({
             <Heart size={16} className={active ? "fill-current" : ""} />
           </button>
         )}
-        <EnqueueButton
-          songId={song.id}
-          title={song.title}
-          artist={song.artist?.join(" / ")}
-          hasAudio={song.has_audio}
-          className="absolute left-2 top-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
-          size={14}
-        />
+        {/* 右上角按钮组：收藏 + 加队列 + 播放 */}
+        <div className={cn(
+          "absolute right-2 top-2 flex items-center gap-1",
+          "opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200",
+        )}>
+          <PlayButton
+            songId={song.id}
+            title={song.title}
+            artist={song.artist?.join(" / ")}
+            coverUrl={getCoverUrl(song)}
+            hasAudio={song.has_audio}
+            className="rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm p-1.5"
+            size={14}
+          />
+          <EnqueueButton
+            songId={song.id}
+            title={song.title}
+            artist={song.artist?.join(" / ")}
+            coverUrl={getCoverUrl(song)}
+            hasAudio={song.has_audio}
+            className="rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm p-1.5"
+            size={14}
+          />
+          {isLoggedIn && (
+            <button
+              onClick={(event) => {
+                event.stopPropagation();
+                toggleFavorite(song.id);
+              }}
+              aria-label={active ? "取消收藏" : "收藏"}
+              title={active ? "取消收藏" : "收藏"}
+              className={cn(
+                "rounded-full bg-white/80 p-1.5 text-slate-500 backdrop-blur-sm transition-all duration-200 hover:text-rose-500 dark:bg-slate-900/80 dark:text-slate-400",
+                active && "text-rose-500",
+              )}
+            >
+              <Heart size={14} className={active ? "fill-current" : ""} />
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="space-y-1">

@@ -306,6 +306,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 title={song.title}
                 artist={song.artist?.join(" / ")}
                 lrcLyrics={song.lyrics}
+                coverUrl={getCoverUrl(song)}
                 hasAudio={song.has_audio}
               />
             )}

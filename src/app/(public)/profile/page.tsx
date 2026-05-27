@@ -4,6 +4,7 @@ import AuditLogsPanel from "@/components/admin/AuditLogsPanel";
 import UserManagePanel from "@/components/admin/UserManagePanel";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import EnqueueButton from "@/components/shared/EnqueueButton";
+import PlayButton from "@/components/shared/PlayButton";
 import { useFavorites } from "@/context/FavoritesContext";
 import { useUserContext } from "@/context/UserContext";
 import {
@@ -515,10 +516,18 @@ function ProfileContent() {
                                       : "查看评论"}
                                   </button>
                                 )}
+                                <PlayButton
+                                  songId={song.id}
+                                  title={song.title}
+                                  artist={song.artist?.join(" / ")}
+                                  coverUrl={getCoverUrl(song)}
+                                  hasAudio={song.has_audio}
+                                />
                                 <EnqueueButton
                                   songId={song.id}
                                   title={song.title}
                                   artist={song.artist?.join(" / ")}
+                                  coverUrl={getCoverUrl(song)}
                                   hasAudio={song.has_audio}
                                 />
                                 <button

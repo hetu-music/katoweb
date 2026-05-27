@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
-import { Check, ListPlus } from "lucide-react";
+import React from "react";
+import { Pause, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePlayer } from "@/context/PlayerContext";
 import { useUserContext } from "@/context/UserContext";
 
-interface EnqueueButtonProps {
+interface PlayButtonProps {
   songId: number;
   title: string;
   artist?: string | null;
@@ -17,7 +17,7 @@ interface EnqueueButtonProps {
   size?: number;
 }
 
-export default function EnqueueButton({
+export default function PlayButton({
   songId,
   title,
   artist,
@@ -26,41 +26,42 @@ export default function EnqueueButton({
   hasAudio = true,
   className,
   size = 15,
-}: EnqueueButtonProps) {
+}: PlayButtonProps) {
   const { user, loaded } = useUserContext();
   const { controls, state } = usePlayer();
-  const [justAdded, setJustAdded] = useState(false);
 
   const hasBenefits = loaded && !!user?.hasBenefits;
   if (!hasBenefits || !hasAudio) return null;
 
-  const alreadyInQueue = state.queue.some((t) => t.songId === songId);
+  const isCurrentSong = state.currentTrack?.songId === songId;
+  const isThisPlaying = isCurrentSong && state.isPlaying;
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (alreadyInQueue) return;
-    controls.enqueue({ songId, title, artist, lrcLyrics, coverUrl });
-    setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 1500);
+    if (isCurrentSong) {
+      controls.toggle();
+    } else {
+      controls.play({ songId, title, artist, lrcLyrics, coverUrl });
+    }
   };
 
   return (
     <button
       onClick={handleClick}
-      aria-label={alreadyInQueue ? "已在播放列表" : "加入播放列表"}
-      title={alreadyInQueue ? "已在播放列表" : "加入播放列表"}
+      aria-label={isThisPlaying ? "暂停" : "播放"}
+      title={isThisPlaying ? "暂停" : "播放"}
       className={cn(
         "rounded-lg p-2 transition-all duration-200",
-        alreadyInQueue || justAdded
-          ? "text-emerald-500 cursor-default"
+        isThisPlaying
+          ? "text-blue-500 bg-blue-50 dark:bg-blue-500/10"
           : "text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10",
         className,
       )}
     >
-      {justAdded || alreadyInQueue ? (
-        <Check size={size} />
+      {isThisPlaying ? (
+        <Pause size={size} className="fill-current" />
       ) : (
-        <ListPlus size={size} />
+        <Play size={size} className="fill-current translate-x-px" />
       )}
     </button>
   );

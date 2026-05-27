@@ -16,6 +16,8 @@ export interface PlayerTrack {
   title: string;
   artist?: string | null;
   lrcLyrics?: string | null;
+  /** 封面图 URL */
+  coverUrl?: string | null;
 }
 
 export interface PlayerState {

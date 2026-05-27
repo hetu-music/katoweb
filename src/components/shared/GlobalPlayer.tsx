@@ -225,34 +225,36 @@ export default function GlobalPlayer() {
                       : "hover:bg-slate-50 dark:hover:bg-slate-800/50",
                   )}
                 >
-                  <div className="w-5 shrink-0 flex items-center justify-center">
-                    {i === currentIndex ? (
-                      isPlaying ? (
-                        <span className="flex gap-0.5 items-end h-3">
-                          {[60, 100, 40].map((h, j) => (
-                            <span
-                              key={j}
-                              className="w-0.5 bg-blue-500 rounded-full"
-                              style={{
-                                height: `${h}%`,
-                                animation: `gpBounce 0.8s ease-in-out ${j * 0.2}s infinite`,
-                              }}
-                            />
-                          ))}
-                        </span>
-                      ) : (
-                        <Music size={12} className="text-blue-500" />
-                      )
+                  {/* 封面缩略图 */}
+                  <div className="shrink-0 w-8 h-8 rounded-md overflow-hidden bg-slate-100 dark:bg-slate-800 relative">
+                    {track.coverUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={track.coverUrl} alt={track.title} className="w-full h-full object-cover" />
                     ) : (
-                      <>
-                        <span className="text-[11px] text-slate-400 group-hover:hidden">
-                          {i + 1}
-                        </span>
-                        <Play
-                          size={11}
-                          className="text-slate-400 hidden group-hover:block fill-current"
-                        />
-                      </>
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Music size={12} className="text-slate-400" />
+                      </div>
+                    )}
+                    {/* 当前播放指示覆盖层 */}
+                    {i === currentIndex && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        {isPlaying ? (
+                          <span className="flex gap-0.5 items-end h-3">
+                            {[60, 100, 40].map((h, j) => (
+                              <span
+                                key={j}
+                                className="w-0.5 bg-white rounded-full"
+                                style={{
+                                  height: `${h}%`,
+                                  animation: `gpBounce 0.8s ease-in-out ${j * 0.2}s infinite`,
+                                }}
+                              />
+                            ))}
+                          </span>
+                        ) : (
+                          <Music size={10} className="text-white" />
+                        )}
+                      </div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -325,11 +327,26 @@ export default function GlobalPlayer() {
         <div className="mx-auto max-w-3xl px-3 h-[60px] flex items-center gap-2">
           {/* 曲目信息 */}
           <div className="flex-1 min-w-0 flex items-center gap-2">
-            <div className="shrink-0 w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-              {isLoading ? (
-                <Loader2 size={14} className="animate-spin text-blue-500" />
+            {/* 封面 */}
+            <div className="shrink-0 w-9 h-9 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10">
+              {currentTrack.coverUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={currentTrack.coverUrl}
+                  alt={currentTrack.title}
+                  className={cn(
+                    "w-full h-full object-cover transition-transform duration-700",
+                    isPlaying && "scale-110",
+                  )}
+                />
+              ) : isLoading ? (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Loader2 size={14} className="animate-spin text-blue-500" />
+                </div>
               ) : (
-                <Music size={14} className="text-slate-400" />
+                <div className="w-full h-full flex items-center justify-center">
+                  <Music size={14} className="text-slate-400" />
+                </div>
               )}
             </div>
             <div className="min-w-0 flex-1">
