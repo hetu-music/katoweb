@@ -60,6 +60,19 @@ export default function GlobalPlayer() {
   // ── 播放列表面板 ──────────────────────────────────────────────────────────
   const [showQueue, setShowQueue] = useState(false);
 
+  // ── 音量面板 ──────────────────────────────────────────────────────────────
+  const [showVolume, setShowVolume] = useState(false);
+  const volumeRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!showVolume) return;
+    const handler = (e: MouseEvent) => {
+      if (volumeRef.current && !volumeRef.current.contains(e.target as Node))
+        setShowVolume(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showVolume]);
+
   // ── LRC 歌词 ──────────────────────────────────────────────────────────────
   const lrcLines = useMemo(() => {
     const lrc = currentTrack?.lrcLyrics;
@@ -419,17 +432,7 @@ export default function GlobalPlayer() {
               showQueue && "bg-blue-50 dark:bg-blue-500/10 text-blue-500",
             )}
           >
-            {/* list-music icon */}
-            <svg
-              width="15"
-              height="15"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="8" y1="6" x2="21" y2="6" />
               <line x1="8" y1="12" x2="21" y2="12" />
               <line x1="8" y1="18" x2="21" y2="18" />
@@ -439,35 +442,63 @@ export default function GlobalPlayer() {
             </svg>
           </button>
 
-          {/* 音量：内联滑条 */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            {/* 静音切换按钮 */}
-            <button
-              onClick={controls.toggleMute}
-              aria-label={isMuted ? "取消静音" : "静音"}
-              className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            >
-              {effectiveVolume === 0 ? (
-                <VolumeX size={15} />
-              ) : (
-                <Volume2 size={15} />
-              )}
-            </button>
-
-            {/* 内联音量滑条 */}
-            <div
-              ref={volTrackRef}
-              className="relative h-1 w-16 rounded-full bg-slate-200 dark:bg-slate-700/50 cursor-pointer group/vol hover:h-1.5 transition-all duration-150"
-              onPointerDown={handleVolPointerDown}
-              onPointerMove={handleVolPointerMove}
-              onPointerUp={handleVolPointerUp}
-              onPointerCancel={handleVolPointerUp}
-            >
-              <div
-                className="absolute left-0 top-0 h-full bg-slate-400 dark:bg-slate-500 rounded-full group-hover/vol:bg-blue-500 transition-colors"
-                style={{ width: `${effectiveVolume * 100}%` }}
-              />
+          {/* 音量：弹出面板，内含内联滑条设计 */}
+          <div className="relative shrink-0" ref={volumeRef}>
+            {/* 弹出面板 */}
+            <div className={cn(
+              "absolute bottom-full right-0 mb-2 p-3 rounded-2xl w-36",
+              "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl",
+              "border border-slate-200/60 dark:border-slate-700/50",
+              "shadow-xl shadow-slate-200/40 dark:shadow-black/40",
+              "transition-all duration-200 origin-bottom-right",
+              showVolume ? "opacity-100 scale-100 pointer-events-auto translate-y-0" : "opacity-0 scale-90 pointer-events-none translate-y-1",
+            )}>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={controls.toggleMute}
+                  aria-label={isMuted ? "取消静音" : "静音"}
+                  className="shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                >
+                  {effectiveVolume === 0 ? <VolumeX size={13} /> : <Volume2 size={13} />}
+                </button>
+                {/* 内联滑条 */}
+                <div
+                  ref={volTrackRef}
+                  className="relative flex-1 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700/50 cursor-pointer group/vol"
+                  onPointerDown={handleVolPointerDown}
+                  onPointerMove={handleVolPointerMove}
+                  onPointerUp={handleVolPointerUp}
+                  onPointerCancel={handleVolPointerUp}
+                >
+                  <div
+                    className="absolute left-0 top-0 h-full bg-blue-500 rounded-full"
+                    style={{ width: `${effectiveVolume * 100}%` }}
+                  />
+                  {/* 拖拽点 */}
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white border border-slate-200 shadow-sm -translate-x-1/2 pointer-events-none"
+                    style={{ left: `${effectiveVolume * 100}%` }}
+                  />
+                </div>
+                <span className="shrink-0 text-[10px] font-mono text-slate-400 w-5 text-right">
+                  {Math.round(effectiveVolume * 100)}
+                </span>
+              </div>
             </div>
+
+            {/* 触发按钮 */}
+            <button
+              onClick={() => setShowVolume((v) => !v)}
+              aria-label={isMuted ? "取消静音" : "音量"}
+              className={cn(
+                "p-2 rounded-full transition-colors",
+                "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
+                "hover:bg-slate-100 dark:hover:bg-slate-800",
+                showVolume && "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300",
+              )}
+            >
+              {effectiveVolume === 0 ? <VolumeX size={15} /> : <Volume2 size={15} />}
+            </button>
           </div>
         </div>
       </div>

@@ -8,6 +8,7 @@ import { Calendar, Clock, Heart } from "lucide-react";
 import type React from "react";
 import CoverArt from "./CoverArt";
 import MultiTagDisplay from "./MultiTagDisplay";
+import EnqueueButton from "@/components/shared/EnqueueButton";
 
 interface ListRowProps {
   song: Song;
@@ -101,10 +102,21 @@ export default function ListRow({
           <Clock size={14} />
           {formatTime(song.length)}
         </div>
+        <EnqueueButton
+          songId={song.id}
+          title={song.title}
+          artist={song.artist?.join(" / ")}
+          className="opacity-0 group-hover:opacity-100"
+        />
       </div>
 
       {isLoggedIn && (
-        <div className="ml-2 flex shrink-0 items-center md:hidden">
+        <div className="ml-2 flex shrink-0 items-center gap-1 md:hidden">
+          <EnqueueButton
+            songId={song.id}
+            title={song.title}
+            artist={song.artist?.join(" / ")}
+          />
           <button
             onClick={(event) => {
               event.stopPropagation();

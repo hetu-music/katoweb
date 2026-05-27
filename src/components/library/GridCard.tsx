@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Heart } from "lucide-react";
 import type React from "react";
 import CoverArt from "./CoverArt";
+import EnqueueButton from "@/components/shared/EnqueueButton";
 
 interface GridCardProps {
   song: Song;
@@ -71,6 +72,13 @@ export default function GridCard({
             <Heart size={16} className={active ? "fill-current" : ""} />
           </button>
         )}
+        <EnqueueButton
+          songId={song.id}
+          title={song.title}
+          artist={song.artist?.join(" / ")}
+          className="absolute left-2 top-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
+          size={14}
+        />
       </div>
 
       <div className="space-y-1">
