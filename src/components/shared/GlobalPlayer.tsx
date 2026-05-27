@@ -19,7 +19,8 @@ import {
   Volume2,
   VolumeX,
   X,
-} from "lucide-react";import { Slider } from "@/components/ui/slider";
+} from "lucide-react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import {
   formatPlayerTime,
@@ -29,7 +30,7 @@ import {
 } from "@/context/PlayerContext";
 
 export default function GlobalPlayer() {
-  const { state, controls, playerVisible, setPlayerVisible } = usePlayer();
+  const { state, controls, playerVisible } = usePlayer();
   const {
     currentTrack,
     queue,
@@ -43,7 +44,7 @@ export default function GlobalPlayer() {
     error,
   } = state;
 
-  // ── 进度条：直接操作 DOM，绕开 React re-render ────────────────────────────
+  // ── 进度条：直接操作 DOM ──────────────────────────────────────────────────
   const progressBarRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const [seekPreview, setSeekPreview] = useState<number | null>(null);
@@ -55,19 +56,6 @@ export default function GlobalPlayer() {
     if (!bar) return;
     bar.style.width = duration > 0 ? `${(currentTime / duration) * 100}%` : "0%";
   }, [currentTime, duration]);
-
-  // ── 音量面板 ──────────────────────────────────────────────────────────────
-  const [showVolume, setShowVolume] = useState(false);
-  const volumeRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!showVolume) return;
-    const handler = (e: MouseEvent) => {
-      if (volumeRef.current && !volumeRef.current.contains(e.target as Node))
-        setShowVolume(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [showVolume]);
 
   // ── 播放列表面板 ──────────────────────────────────────────────────────────
   const [showQueue, setShowQueue] = useState(false);
@@ -92,7 +80,9 @@ export default function GlobalPlayer() {
       const el = trackRef.current;
       if (!el || !duration) return null;
       const rect = el.getBoundingClientRect();
-      return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)) * duration;
+      return (
+        Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)) * duration
+      );
     },
     [duration],
   );
@@ -133,11 +123,48 @@ export default function GlobalPlayer() {
     [controls, getTimeFromPointer],
   );
 
-  // 没有曲目时不渲染任何东西
+  // ── 音量拖拽（内联滑条，原生实现） ───────────────────────────────────────
+  const volTrackRef = useRef<HTMLDivElement>(null);
+  const isVolDraggingRef = useRef(false);
+
+  const getVolFromPointer = useCallback((clientX: number) => {
+    const el = volTrackRef.current;
+    if (!el) return null;
+    const rect = el.getBoundingClientRect();
+    return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  }, []);
+
+  const handleVolPointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      isVolDraggingRef.current = true;
+      const v = getVolFromPointer(e.clientX);
+      if (v !== null) controls.setVolume(v);
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    },
+    [controls, getVolFromPointer],
+  );
+  const handleVolPointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (!isVolDraggingRef.current) return;
+      const v = getVolFromPointer(e.clientX);
+      if (v !== null) controls.setVolume(v);
+    },
+    [controls, getVolFromPointer],
+  );
+  const handleVolPointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      isVolDraggingRef.current = false;
+      const v = getVolFromPointer(e.clientX);
+      if (v !== null) controls.setVolume(v);
+    },
+    [controls, getVolFromPointer],
+  );
+
   if (!currentTrack) return null;
 
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex < queue.length - 1;
+  const effectiveVolume = isMuted ? 0 : volume;
 
   return (
     <>
@@ -185,7 +212,6 @@ export default function GlobalPlayer() {
                       : "hover:bg-slate-50 dark:hover:bg-slate-800/50",
                   )}
                 >
-                  {/* 序号 / 播放指示 */}
                   <div className="w-5 shrink-0 flex items-center justify-center">
                     {i === currentIndex ? (
                       isPlaying ? (
@@ -206,26 +232,38 @@ export default function GlobalPlayer() {
                       )
                     ) : (
                       <>
-                        <span className="text-[11px] text-slate-400 group-hover:hidden">{i + 1}</span>
-                        <Play size={11} className="text-slate-400 hidden group-hover:block fill-current" />
+                        <span className="text-[11px] text-slate-400 group-hover:hidden">
+                          {i + 1}
+                        </span>
+                        <Play
+                          size={11}
+                          className="text-slate-400 hidden group-hover:block fill-current"
+                        />
                       </>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={cn(
-                      "text-sm truncate",
-                      i === currentIndex
-                        ? "font-bold text-blue-600 dark:text-blue-400"
-                        : "font-medium text-slate-700 dark:text-slate-200",
-                    )}>
+                    <p
+                      className={cn(
+                        "text-sm truncate",
+                        i === currentIndex
+                          ? "font-bold text-blue-600 dark:text-blue-400"
+                          : "font-medium text-slate-700 dark:text-slate-200",
+                      )}
+                    >
                       {track.title}
                     </p>
                     {track.artist && (
-                      <p className="text-[11px] text-slate-400 truncate mt-0.5">{track.artist}</p>
+                      <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                        {track.artist}
+                      </p>
                     )}
                   </div>
                   <button
-                    onClick={(e) => { e.stopPropagation(); controls.removeFromQueue(i); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      controls.removeFromQueue(i);
+                    }}
                     className="shrink-0 p-1 rounded-md text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors opacity-0 group-hover:opacity-100"
                   >
                     <X size={13} />
@@ -237,7 +275,7 @@ export default function GlobalPlayer() {
         </div>
       )}
 
-      {/* 底部播放条：用 translate 做滑入滑出，始终在 DOM 里 */}
+      {/* 底部播放条 */}
       <div
         className={cn(
           "fixed bottom-0 left-0 right-0 z-50",
@@ -253,6 +291,7 @@ export default function GlobalPlayer() {
           ref={trackRef}
           className={cn(
             "relative h-1 w-full cursor-pointer bg-slate-200 dark:bg-slate-700/50",
+            "group/prog hover:h-1.5 transition-all duration-150",
             !duration && "pointer-events-none opacity-40",
           )}
           onPointerDown={handlePointerDown}
@@ -270,19 +309,24 @@ export default function GlobalPlayer() {
           />
         </div>
 
-        <div className="mx-auto max-w-3xl px-4 h-[60px] flex items-center gap-3">
-          {/* 曲目信息 + 歌词 */}
-          <div className="flex-1 min-w-0 flex items-center gap-2.5">
+        <div className="mx-auto max-w-3xl px-3 h-[60px] flex items-center gap-2">
+          {/* 曲目信息 */}
+          <div className="flex-1 min-w-0 flex items-center gap-2">
             <div className="shrink-0 w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-              {isLoading
-                ? <Loader2 size={14} className="animate-spin text-blue-500" />
-                : <Music size={14} className="text-slate-400" />
-              }
+              {isLoading ? (
+                <Loader2 size={14} className="animate-spin text-blue-500" />
+              ) : (
+                <Music size={14} className="text-slate-400" />
+              )}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate leading-tight">
+              {/* 歌曲名：点击跳转详情页 */}
+              <Link
+                href={`/song/${currentTrack.songId}`}
+                className="block text-sm font-bold text-slate-800 dark:text-slate-100 truncate leading-tight hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              >
                 {currentTrack.title}
-              </p>
+              </Link>
               <div className="h-4 overflow-hidden">
                 {error ? (
                   <div className="flex items-center gap-1">
@@ -297,7 +341,9 @@ export default function GlobalPlayer() {
                     {currentLrcText}
                   </p>
                 ) : currentTrack.artist ? (
-                  <p className="text-[11px] text-slate-400 truncate">{currentTrack.artist}</p>
+                  <p className="text-[11px] text-slate-400 truncate">
+                    {currentTrack.artist}
+                  </p>
                 ) : null}
               </div>
             </div>
@@ -306,13 +352,12 @@ export default function GlobalPlayer() {
           {/* 时间：sm 以上显示 */}
           <div className="hidden sm:flex items-center gap-1 text-[10px] font-mono text-slate-400 shrink-0">
             <span>{formatPlayerTime(displayTime)}</span>
-            <span>/</span>
+            <span className="opacity-50">/</span>
             <span>{formatPlayerTime(duration)}</span>
           </div>
 
           {/* 播放控制 */}
-          <div className="flex items-center gap-1 shrink-0">
-            {/* 上一首：移动端隐藏 */}
+          <div className="flex items-center gap-0.5 shrink-0">
             <button
               onClick={controls.prev}
               disabled={!hasPrev}
@@ -324,7 +369,7 @@ export default function GlobalPlayer() {
                   : "text-slate-300 dark:text-slate-700 cursor-not-allowed",
               )}
             >
-              <SkipBack size={16} className="fill-current" />
+              <SkipBack size={15} className="fill-current" />
             </button>
             <button
               onClick={controls.toggle}
@@ -340,14 +385,14 @@ export default function GlobalPlayer() {
                     : "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md hover:bg-slate-700 dark:hover:bg-slate-100 active:scale-95",
               )}
             >
-              {isLoading
-                ? <Loader2 size={15} className="animate-spin" />
-                : isPlaying
-                  ? <Pause size={15} className="fill-current" />
-                  : <Play size={15} className="fill-current translate-x-0.5" />
-              }
+              {isLoading ? (
+                <Loader2 size={15} className="animate-spin" />
+              ) : isPlaying ? (
+                <Pause size={15} className="fill-current" />
+              ) : (
+                <Play size={15} className="fill-current translate-x-0.5" />
+              )}
             </button>
-            {/* 下一首：移动端隐藏 */}
             <button
               onClick={controls.next}
               disabled={!hasNext}
@@ -359,22 +404,32 @@ export default function GlobalPlayer() {
                   : "text-slate-300 dark:text-slate-700 cursor-not-allowed",
               )}
             >
-              <SkipForward size={16} className="fill-current" />
+              <SkipForward size={15} className="fill-current" />
             </button>
           </div>
 
-          {/* 播放列表：移动端隐藏 */}
+          {/* 播放列表按钮 */}
           <button
             onClick={() => setShowQueue((v) => !v)}
             aria-label="播放列表"
             className={cn(
-              "hidden sm:flex p-2 rounded-full transition-colors shrink-0",
+              "p-2 rounded-full transition-colors shrink-0",
               "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
               "hover:bg-slate-100 dark:hover:bg-slate-800",
               showQueue && "bg-blue-50 dark:bg-blue-500/10 text-blue-500",
             )}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {/* list-music icon */}
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <line x1="8" y1="6" x2="21" y2="6" />
               <line x1="8" y1="12" x2="21" y2="12" />
               <line x1="8" y1="18" x2="21" y2="18" />
@@ -384,44 +439,35 @@ export default function GlobalPlayer() {
             </svg>
           </button>
 
-          {/* 音量：移动端隐藏 */}
-          <div className="relative shrink-0 hidden sm:block" ref={volumeRef}>
-            <div className={cn(
-              "absolute bottom-full right-0 mb-2 px-3 py-2 rounded-xl",
-              "bg-white/95 dark:bg-slate-800/95 backdrop-blur-md",
-              "border border-slate-200/60 dark:border-slate-700/50 shadow-lg",
-              "transition-all duration-200 origin-bottom-right",
-              showVolume ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-90 pointer-events-none",
-            )}>
-              <div className="flex items-center gap-3 w-28">
-                {isMuted || volume === 0
-                  ? <VolumeX size={13} className="text-slate-400 shrink-0" />
-                  : <Volume2 size={13} className="text-slate-400 shrink-0" />
-                }
-                <Slider
-                  min={0} max={1} step={0.01}
-                  value={[isMuted ? 0 : volume]}
-                  onValueChange={(v) => controls.setVolume(v[0])}
-                  aria-label="音量"
-                  className="flex-1"
-                />
-                <span className="text-[10px] font-mono text-slate-400 w-6 text-right shrink-0">
-                  {Math.round((isMuted ? 0 : volume) * 100)}
-                </span>
-              </div>
-            </div>
+          {/* 音量：内联滑条 */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {/* 静音切换按钮 */}
             <button
-              onClick={() => setShowVolume((v) => !v)}
-              aria-label={isMuted ? "取消静音" : "音量"}
-              className={cn(
-                "p-2 rounded-full transition-colors",
-                "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
-                "hover:bg-slate-100 dark:hover:bg-slate-800",
-                showVolume && "bg-slate-100 dark:bg-slate-800",
-              )}
+              onClick={controls.toggleMute}
+              aria-label={isMuted ? "取消静音" : "静音"}
+              className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
-              {isMuted || volume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
+              {effectiveVolume === 0 ? (
+                <VolumeX size={15} />
+              ) : (
+                <Volume2 size={15} />
+              )}
             </button>
+
+            {/* 内联音量滑条 */}
+            <div
+              ref={volTrackRef}
+              className="relative h-1 w-16 rounded-full bg-slate-200 dark:bg-slate-700/50 cursor-pointer group/vol hover:h-1.5 transition-all duration-150"
+              onPointerDown={handleVolPointerDown}
+              onPointerMove={handleVolPointerMove}
+              onPointerUp={handleVolPointerUp}
+              onPointerCancel={handleVolPointerUp}
+            >
+              <div
+                className="absolute left-0 top-0 h-full bg-slate-400 dark:bg-slate-500 rounded-full group-hover/vol:bg-blue-500 transition-colors"
+                style={{ width: `${effectiveVolume * 100}%` }}
+              />
+            </div>
           </div>
         </div>
       </div>
