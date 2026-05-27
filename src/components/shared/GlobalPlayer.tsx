@@ -1,12 +1,13 @@
 "use client";
 
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import {
+  formatPlayerTime,
+  getCurrentLrcIndex,
+  parseLrc,
+  usePlayer,
+  usePlayerTime,
+} from "@/context/PlayerContext";
+import { cn } from "@/lib/utils";
 import {
   AlertCircle,
   Loader2,
@@ -21,14 +22,13 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
-import {
-  formatPlayerTime,
-  getCurrentLrcIndex,
-  parseLrc,
-  usePlayer,
-  usePlayerTime,
-} from "@/context/PlayerContext";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 export default function GlobalPlayer() {
   const { state, controls, playerVisible, lyricsMap, audioRef } = usePlayer();
@@ -137,12 +137,17 @@ export default function GlobalPlayer() {
   );
 
   // seeked 事件触发后清除 preview（防止 seek 完成前进度条闪回旧位置）
+  // 【修复】加入 50ms 的延迟：seeked 触发时 audio.currentTime 就已终止位置，
+  // 但 rAF 循环可能还有一帧慨湐读取的时间尚未刷新。
+  // 延迟后再释放 preview 可以确保 slider 源滑透明、不闪烁。
   useEffect(() => {
-    const audio = audioRef.current;
     const onSeeked = () => {
       if (isSeekingRef.current) {
-        isSeekingRef.current = false;
-        setSeekPreview(null);
+        // RAF 周期约 16ms，50ms 足够确保至少两帧已用新时间渲染
+        setTimeout(() => {
+          isSeekingRef.current = false;
+          setSeekPreview(null);
+        }, 50);
       }
     };
     const bind = () => {
@@ -151,8 +156,11 @@ export default function GlobalPlayer() {
       a.addEventListener("seeked", onSeeked);
     };
     bind();
-    return () => { audio?.removeEventListener("seeked", onSeeked); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      const a = audioRef.current;
+      a?.removeEventListener("seeked", onSeeked);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── 音量拖拽 ──────────────────────────────────────────────────────────────
@@ -204,7 +212,7 @@ export default function GlobalPlayer() {
       {showQueue && (
         <div
           className={cn(
-            "fixed z-[55] bottom-[72px] left-1/2 -translate-x-1/2 w-full max-w-lg px-4",
+            "fixed z-55 bottom-[72px] left-1/2 -translate-x-1/2 w-full max-w-lg px-4",
             "animate-in slide-in-from-bottom-4 fade-in duration-200",
           )}
         >

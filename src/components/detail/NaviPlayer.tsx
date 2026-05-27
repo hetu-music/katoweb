@@ -10,7 +10,7 @@ import {
   Play,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatPlayerTime, usePlayer } from "@/context/PlayerContext";
+import { formatPlayerTime, usePlayer, usePlayerTime } from "@/context/PlayerContext";
 import type { PlayerTrack } from "@/context/PlayerContext";
 
 interface NaviPlayerProps {
@@ -31,8 +31,9 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
   className,
 }) => {
   const { state, controls } = usePlayer();
-  const { currentTrack, isPlaying, isLoading, currentTime, duration, error } =
-    state;
+  const { currentTrack, isPlaying, isLoading, error } = state;
+  // currentTime / duration 由 usePlayerTime 直读 audio 元素，不经过全局 state
+  const { currentTime, duration } = usePlayerTime();
 
   if (!hasAudio) return null;
 
