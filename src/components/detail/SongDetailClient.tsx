@@ -22,7 +22,6 @@ import {
   LayoutTemplate,
   Mic2,
   PenTool,
-  Sparkles,
   User,
 } from "lucide-react";
 import Image from "next/image";
@@ -39,22 +38,18 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   // Navidrome 歌曲 ID（阶段一采用动态搜索方案时由此字段驱动；
   // 当前先用歌曲标题作为搜索 key，实际 ID 通过 API 懒加载）
   const [navidSongId, setNavidSongId] = useState<string | null>(null);
-  const [navidSearching, setNavidSearching] = useState(false);
 
   // 当用户拥有权益时，通过 Subsonic search3 接口按标题查找歌曲 ID
   useEffect(() => {
     if (!hasBenefits || !user) return;
     if (navidSongId !== null) return; // 已有结果，不重复查询
 
-    setNavidSearching(true);
-
     fetch(`/api/navidrome/search?title=${encodeURIComponent(song.title)}`)
       .then((r) => r.json())
       .then((data: { id?: string | null }) => {
         setNavidSongId(data.id ?? "");
       })
-      .catch(() => setNavidSongId(""))
-      .finally(() => setNavidSearching(false));
+      .catch(() => setNavidSongId(""));
   }, [hasBenefits, user, navidSongId, song.title]);
 
   const openUserPanel = (tab: "account" | "favorites" = "favorites") => {
@@ -244,7 +239,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         </div>
       </nav>
 
-      <main className="pt-32 pb-20 max-w-7xl mx-auto px-6">
+      <main className="pt-32 pb-28 max-w-7xl mx-auto px-6">
         {/* 主要内容网格 */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           {/* 左侧：封面与元信息 (Col-4) */}
@@ -322,54 +317,13 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
             </div>
 
             {/* ── 播放器区域 ─────────────────────────────────────────────── */}
-            {userLoaded && (
-              <>
-                {hasBenefits ? (
-                  /* 有权益：显示内嵌播放器 */
-                  <NaviPlayer
-                    title={song.title}
-                    artist={song.artist?.join(" / ")}
-                    coverUrl={getCoverUrl(song)}
-                    songNavId={navidSongId}
-                  />
-                ) : user ? (
-                  /* 已登录但无权益：展示权益申请引导 */
-                  <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-700/60 bg-slate-50/50 dark:bg-slate-800/20 p-5 flex flex-col items-center gap-3 text-center">
-                    <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center">
-                      <Sparkles size={18} className="text-blue-500" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
-                        解锁在线试听
-                      </p>
-                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 leading-relaxed">
-                        联系管理员开通试听权益，即可在本站直接播放高品质音频
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  /* 未登录：引导登录 */
-                  <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-700/60 bg-slate-50/50 dark:bg-slate-800/20 p-5 flex flex-col items-center gap-3 text-center">
-                    <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                      <User size={18} className="text-slate-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
-                        登录后试听
-                      </p>
-                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 leading-relaxed">
-                        登录账号并开通权益后，可在本站直接播放
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => openUserPanel("account")}
-                      className="text-xs font-bold text-blue-500 hover:text-blue-600 transition-colors"
-                    >
-                      立即登录 →
-                    </button>
-                  </div>
-                )}
-              </>
+            {userLoaded && hasBenefits && (
+              <NaviPlayer
+                songId={song.id}
+                title={song.title}
+                artist={song.artist?.join(" / ")}
+                songNavId={navidSongId}
+              />
             )}
 
             {/* 外部链接 */}
