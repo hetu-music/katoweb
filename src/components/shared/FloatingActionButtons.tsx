@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ArrowUp, Download, Music, Pause, Play, Plus, Share2 } from "lucide-react";
+import { ArrowUp, Disc3, Download, Plus, Share2 } from "lucide-react";
 import { usePWAInstall } from "@/components/pwa/PWARegistration";
 import IOSInstallPrompt from "@/components/pwa/IOSInstallPrompt";
 import { cn } from "@/lib/utils";
@@ -127,11 +127,13 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
             title={playerVisible ? "收起播放器" : "展开播放器"}
             aria-label={playerVisible ? "收起播放器" : "展开播放器"}
           >
-            {isPlaying ? (
-              <Pause size={20} className="fill-current" />
-            ) : (
-              <Music size={20} />
-            )}
+            <Disc3
+              size={20}
+              className={cn(
+                "transition-transform",
+                isPlaying && "animate-spin [animation-duration:3s]",
+              )}
+            />
           </button>
         )}
 

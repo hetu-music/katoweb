@@ -363,16 +363,29 @@ export function formatPlayerTime(seconds: number): string {
 
 export function parseLrc(lrc: string): Array<{ time: number; text: string }> {
   const lines: Array<{ time: number; text: string }> = [];
-  const re = /\[(\d{2}):(\d{2})\.(\d{2,3})\](.*)/;
+  // 支持同一行多个时间标签：[mm:ss.xx][mm:ss.xx]歌词文本
+  const tagRe = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/g;
   for (const raw of lrc.split("\n")) {
-    const m = raw.match(re);
-    if (!m) continue;
-    const time =
-      parseInt(m[1]) * 60 +
-      parseInt(m[2]) +
-      parseInt(m[3]) / (m[3].length === 3 ? 1000 : 100);
-    const text = m[4].trim();
-    if (text) lines.push({ time, text });
+    const trimmed = raw.trim();
+    if (!trimmed) continue;
+    // 收集所有时间标签
+    const times: number[] = [];
+    let match: RegExpExecArray | null;
+    tagRe.lastIndex = 0;
+    while ((match = tagRe.exec(trimmed)) !== null) {
+      const time =
+        parseInt(match[1]) * 60 +
+        parseInt(match[2]) +
+        parseInt(match[3]) / (match[3].length === 3 ? 1000 : 100);
+      times.push(time);
+    }
+    if (times.length === 0) continue;
+    // 去掉所有时间标签，剩余部分为歌词文本
+    const text = trimmed.replace(/\[\d{2}:\d{2}\.\d{2,3}\]/g, "").trim();
+    if (!text) continue;
+    for (const time of times) {
+      lines.push({ time, text });
+    }
   }
   return lines.sort((a, b) => a.time - b.time);
 }

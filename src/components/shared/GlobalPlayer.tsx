@@ -19,8 +19,7 @@ import {
   Volume2,
   VolumeX,
   X,
-} from "lucide-react";
-import { Slider } from "@/components/ui/slider";
+} from "lucide-react";import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import {
   formatPlayerTime,
@@ -304,7 +303,7 @@ export default function GlobalPlayer() {
             </div>
           </div>
 
-          {/* 时间 */}
+          {/* 时间：sm 以上显示 */}
           <div className="hidden sm:flex items-center gap-1 text-[10px] font-mono text-slate-400 shrink-0">
             <span>{formatPlayerTime(displayTime)}</span>
             <span>/</span>
@@ -313,12 +312,13 @@ export default function GlobalPlayer() {
 
           {/* 播放控制 */}
           <div className="flex items-center gap-1 shrink-0">
+            {/* 上一首：移动端隐藏 */}
             <button
               onClick={controls.prev}
               disabled={!hasPrev}
               aria-label="上一首"
               className={cn(
-                "p-2 rounded-full transition-colors",
+                "hidden sm:flex p-2 rounded-full transition-colors",
                 hasPrev
                   ? "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                   : "text-slate-300 dark:text-slate-700 cursor-not-allowed",
@@ -347,12 +347,13 @@ export default function GlobalPlayer() {
                   : <Play size={15} className="fill-current translate-x-0.5" />
               }
             </button>
+            {/* 下一首：移动端隐藏 */}
             <button
               onClick={controls.next}
               disabled={!hasNext}
               aria-label="下一首"
               className={cn(
-                "p-2 rounded-full transition-colors",
+                "hidden sm:flex p-2 rounded-full transition-colors",
                 hasNext
                   ? "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                   : "text-slate-300 dark:text-slate-700 cursor-not-allowed",
@@ -362,12 +363,12 @@ export default function GlobalPlayer() {
             </button>
           </div>
 
-          {/* 播放列表 */}
+          {/* 播放列表：移动端隐藏 */}
           <button
             onClick={() => setShowQueue((v) => !v)}
             aria-label="播放列表"
             className={cn(
-              "p-2 rounded-full transition-colors shrink-0",
+              "hidden sm:flex p-2 rounded-full transition-colors shrink-0",
               "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
               "hover:bg-slate-100 dark:hover:bg-slate-800",
               showQueue && "bg-blue-50 dark:bg-blue-500/10 text-blue-500",
@@ -383,8 +384,8 @@ export default function GlobalPlayer() {
             </svg>
           </button>
 
-          {/* 音量 */}
-          <div className="relative shrink-0" ref={volumeRef}>
+          {/* 音量：移动端隐藏 */}
+          <div className="relative shrink-0 hidden sm:block" ref={volumeRef}>
             <div className={cn(
               "absolute bottom-full right-0 mb-2 px-3 py-2 rounded-xl",
               "bg-white/95 dark:bg-slate-800/95 backdrop-blur-md",
@@ -422,15 +423,6 @@ export default function GlobalPlayer() {
               {isMuted || volume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
             </button>
           </div>
-
-          {/* 收起按钮 */}
-          <button
-            onClick={() => setPlayerVisible(false)}
-            aria-label="收起播放条"
-            className="p-2 rounded-full transition-colors shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-          >
-            <X size={15} />
-          </button>
         </div>
       </div>
 
