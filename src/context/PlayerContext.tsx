@@ -9,25 +9,19 @@ import React, {
   useState,
 } from "react";
 
+// ─── 类型 ─────────────────────────────────────────────────────────────────────
+
 export interface PlayerTrack {
-  /** 本站歌曲 ID（数据库 ID，用于去重和标识） */
   songId: number;
-  /** 歌曲标题 */
   title: string;
-  /** 演唱者 */
   artist?: string | null;
-  /** Navidrome 歌曲 ID */
   navId: string;
-  /** LRC 格式歌词（可选） */
   lrcLyrics?: string | null;
 }
 
 export interface PlayerState {
-  /** 当前播放曲目 */
   currentTrack: PlayerTrack | null;
-  /** 播放队列 */
   queue: PlayerTrack[];
-  /** 当前队列索引 */
   currentIndex: number;
   isPlaying: boolean;
   isLoading: boolean;
@@ -39,23 +33,14 @@ export interface PlayerState {
 }
 
 export interface PlayerControls {
-  /** 播放指定曲目（如果已在队列中则跳转，否则替换队列） */
   play: (track: PlayerTrack) => void;
-  /** 将曲目加入队列末尾（如果已存在则不重复添加） */
   enqueue: (track: PlayerTrack) => void;
-  /** 播放/暂停切换 */
   toggle: () => void;
-  /** 暂停 */
   pause: () => void;
-  /** 跳转到队列中指定索引 */
   jumpTo: (index: number) => void;
-  /** 上一首 */
   prev: () => void;
-  /** 下一首 */
   next: () => void;
-  /** 从队列中移除指定索引 */
   removeFromQueue: (index: number) => void;
-  /** 清空队列 */
   clearQueue: () => void;
   seek: (time: number) => void;
   setVolume: (vol: number) => void;
@@ -65,14 +50,25 @@ export interface PlayerControls {
 interface PlayerContextValue {
   state: PlayerState;
   controls: PlayerControls;
+  /** 底部播放条是否展开可见 */
+  playerVisible: boolean;
+  setPlayerVisible: (v: boolean) => void;
 }
 
+// ─── Context ──────────────────────────────────────────────────────────────────
+
 const PlayerContext = createContext<PlayerContextValue | null>(null);
+
+// ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const retryCountRef = useRef(0);
   const currentNavIdRef = useRef<string | null>(null);
+  const prevNavIdRef = useRef<string | null>(null);
+  const wasLoadingRef = useRef(false);
+
+  const [playerVisible, setPlayerVisible] = useState(false);
 
   const [state, setState] = useState<PlayerState>({
     currentTrack: null,
@@ -87,18 +83,17 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     error: null,
   });
 
-  // 获取 stream URL 并赋给 audio
+  // ── 获取 stream URL ──────────────────────────────────────────────────────
   const fetchAndSetSrc = useCallback((navId: string, isRetry = false) => {
     const audio = audioRef.current;
     if (!audio) return;
-
     if (!isRetry) retryCountRef.current = 0;
 
     setState((s) => ({ ...s, isLoading: true, error: null }));
 
     fetch(`/api/navidrome/stream-url?songId=${encodeURIComponent(navId)}`)
       .then((r) => {
-        if (!r.ok) throw new Error(`stream-url API error: ${r.status}`);
+        if (!r.ok) throw new Error(`stream-url error: ${r.status}`);
         return r.json() as Promise<{ url?: string; error?: string }>;
       })
       .then(({ url, error }) => {
@@ -122,7 +117,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       });
   }, []);
 
-  // 初始化 Audio 元素，绑定事件（只执行一次）
+  // ── 初始化 Audio，绑定事件（只执行一次） ─────────────────────────────────
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!audioRef.current) {
@@ -134,20 +129,13 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
     const onLoadStart = () =>
       setState((s) => ({ ...s, isLoading: true, error: null }));
-    const onCanPlay = () => setState((s) => ({ ...s, isLoading: false }));
-    const onPlay = () => setState((s) => ({ ...s, isPlaying: true }));
-    const onPause = () => setState((s) => ({ ...s, isPlaying: false }));
+    const onCanPlay = () =>
+      setState((s) => ({ ...s, isLoading: false }));
+    const onPlay = () =>
+      setState((s) => ({ ...s, isPlaying: true }));
+    const onPause = () =>
+      setState((s) => ({ ...s, isPlaying: false }));
     const onEnded = () => {
-      setState((s) => {
-        // 自动播放下一首
-        const nextIndex = s.currentIndex + 1;
-        if (nextIndex < s.queue.length) {
-          return { ...s, isPlaying: false, currentTime: 0 };
-          // 实际跳转在 effect 里处理
-        }
-        return { ...s, isPlaying: false, currentTime: 0 };
-      });
-      // 自动下一首
       setState((s) => {
         const nextIndex = s.currentIndex + 1;
         if (nextIndex < s.queue.length) {
@@ -161,7 +149,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
             currentTime: 0,
           };
         }
-        return s;
+        return { ...s, isPlaying: false, currentTime: 0 };
       });
     };
     const onTimeUpdate = () =>
@@ -178,28 +166,16 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       const isTokenError =
         err?.code === MediaError.MEDIA_ERR_NETWORK ||
         err?.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED;
-
       if (isTokenError && retryCountRef.current < 1) {
         retryCountRef.current += 1;
-        const currentId = currentNavIdRef.current;
-        if (currentId) {
-          fetchAndSetSrc(currentId, true);
-          return;
-        }
+        const id = currentNavIdRef.current;
+        if (id) { fetchAndSetSrc(id, true); return; }
       }
-
       let msg = "播放失败，请稍后重试";
-      if (err?.code === MediaError.MEDIA_ERR_NETWORK)
-        msg = "网络错误，无法加载音频";
+      if (err?.code === MediaError.MEDIA_ERR_NETWORK) msg = "网络错误，无法加载音频";
       if (err?.code === MediaError.MEDIA_ERR_DECODE) msg = "音频解码失败";
-      if (err?.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED)
-        msg = "不支持的音频格式或无权限";
-      setState((s) => ({
-        ...s,
-        isLoading: false,
-        isPlaying: false,
-        error: msg,
-      }));
+      if (err?.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED) msg = "不支持的音频格式或无权限";
+      setState((s) => ({ ...s, isLoading: false, isPlaying: false, error: msg }));
     };
 
     audio.addEventListener("loadstart", onLoadStart);
@@ -225,8 +201,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     };
   }, [fetchAndSetSrc]);
 
-  // 当 currentTrack 变化时，加载新的 stream URL 并自动播放
-  const prevNavIdRef = useRef<string | null>(null);
+  // ── currentTrack 变化时加载新 URL ────────────────────────────────────────
   useEffect(() => {
     const navId = state.currentTrack?.navId ?? null;
     if (!navId || navId === prevNavIdRef.current) return;
@@ -235,8 +210,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     fetchAndSetSrc(navId);
   }, [state.currentTrack?.navId, fetchAndSetSrc]);
 
-  // 加载完成后自动播放（isLoading 从 true 变 false 且有 currentTrack）
-  const wasLoadingRef = useRef(false);
+  // ── 加载完成后自动播放 ────────────────────────────────────────────────────
   useEffect(() => {
     if (wasLoadingRef.current && !state.isLoading && state.currentTrack) {
       audioRef.current?.play().catch(() => {});
@@ -244,34 +218,29 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     wasLoadingRef.current = state.isLoading;
   }, [state.isLoading, state.currentTrack]);
 
-  // Controls
+  // ── Controls ──────────────────────────────────────────────────────────────
+
   const play = useCallback((track: PlayerTrack) => {
+    // 首次播放时自动展开播放条
+    setPlayerVisible(true);
     setState((s) => {
       const existingIndex = s.queue.findIndex((t) => t.songId === track.songId);
       if (existingIndex !== -1) {
-        // 已在队列中，直接跳转
         return {
           ...s,
           currentIndex: existingIndex,
           currentTrack: s.queue[existingIndex],
         };
       }
-      // 不在队列中：加入队列末尾并跳转
       const newQueue = [...s.queue, track];
       const newIndex = newQueue.length - 1;
-      return {
-        ...s,
-        queue: newQueue,
-        currentIndex: newIndex,
-        currentTrack: track,
-      };
+      return { ...s, queue: newQueue, currentIndex: newIndex, currentTrack: track };
     });
   }, []);
 
   const enqueue = useCallback((track: PlayerTrack) => {
     setState((s) => {
-      const exists = s.queue.some((t) => t.songId === track.songId);
-      if (exists) return s;
+      if (s.queue.some((t) => t.songId === track.songId)) return s;
       return { ...s, queue: [...s.queue, track] };
     });
   }, []);
@@ -280,90 +249,58 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     const audio = audioRef.current;
     if (!audio) return;
     if (audio.paused) {
-      audio.play().catch(() => {
-        setState((s) => ({ ...s, error: "播放被浏览器阻止，请手动点击播放" }));
-      });
+      audio.play().catch(() =>
+        setState((s) => ({ ...s, error: "播放被浏览器阻止，请手动点击播放" })),
+      );
     } else {
       audio.pause();
     }
   }, []);
 
-  const pause = useCallback(() => {
-    audioRef.current?.pause();
-  }, []);
+  const pause = useCallback(() => { audioRef.current?.pause(); }, []);
 
   const jumpTo = useCallback((index: number) => {
     setState((s) => {
       if (index < 0 || index >= s.queue.length) return s;
-      return {
-        ...s,
-        currentIndex: index,
-        currentTrack: s.queue[index],
-      };
+      return { ...s, currentIndex: index, currentTrack: s.queue[index] };
     });
   }, []);
 
   const prev = useCallback(() => {
     setState((s) => {
-      const prevIndex = s.currentIndex - 1;
-      if (prevIndex < 0) return s;
-      return {
-        ...s,
-        currentIndex: prevIndex,
-        currentTrack: s.queue[prevIndex],
-      };
+      const i = s.currentIndex - 1;
+      if (i < 0) return s;
+      return { ...s, currentIndex: i, currentTrack: s.queue[i] };
     });
   }, []);
 
   const next = useCallback(() => {
     setState((s) => {
-      const nextIndex = s.currentIndex + 1;
-      if (nextIndex >= s.queue.length) return s;
-      return {
-        ...s,
-        currentIndex: nextIndex,
-        currentTrack: s.queue[nextIndex],
-      };
+      const i = s.currentIndex + 1;
+      if (i >= s.queue.length) return s;
+      return { ...s, currentIndex: i, currentTrack: s.queue[i] };
     });
   }, []);
 
   const removeFromQueue = useCallback((index: number) => {
     setState((s) => {
       const newQueue = s.queue.filter((_, i) => i !== index);
-      let newIndex = s.currentIndex;
-      let newTrack = s.currentTrack;
-
       if (index === s.currentIndex) {
-        // 删除当前播放的曲目
         audioRef.current?.pause();
         if (newQueue.length === 0) {
-          return {
-            ...s,
-            queue: [],
-            currentIndex: -1,
-            currentTrack: null,
-            isPlaying: false,
-            currentTime: 0,
-            duration: 0,
-          };
+          return { ...s, queue: [], currentIndex: -1, currentTrack: null, isPlaying: false, currentTime: 0, duration: 0 };
         }
-        newIndex = Math.min(index, newQueue.length - 1);
-        newTrack = newQueue[newIndex];
-      } else if (index < s.currentIndex) {
-        newIndex = s.currentIndex - 1;
+        const newIndex = Math.min(index, newQueue.length - 1);
+        return { ...s, queue: newQueue, currentIndex: newIndex, currentTrack: newQueue[newIndex] };
       }
-
-      return {
-        ...s,
-        queue: newQueue,
-        currentIndex: newIndex,
-        currentTrack: newTrack,
-      };
+      const newIndex = index < s.currentIndex ? s.currentIndex - 1 : s.currentIndex;
+      return { ...s, queue: newQueue, currentIndex: newIndex };
     });
   }, []);
 
   const clearQueue = useCallback(() => {
     audioRef.current?.pause();
+    prevNavIdRef.current = null;
     setState((s) => ({
       ...s,
       queue: [],
@@ -374,7 +311,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       duration: 0,
       error: null,
     }));
-    prevNavIdRef.current = null;
   }, []);
 
   const seek = useCallback((time: number) => {
@@ -397,26 +333,18 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const controls: PlayerControls = {
-    play,
-    enqueue,
-    toggle,
-    pause,
-    jumpTo,
-    prev,
-    next,
-    removeFromQueue,
-    clearQueue,
-    seek,
-    setVolume,
-    toggleMute,
+    play, enqueue, toggle, pause, jumpTo, prev, next,
+    removeFromQueue, clearQueue, seek, setVolume, toggleMute,
   };
 
   return (
-    <PlayerContext.Provider value={{ state, controls }}>
+    <PlayerContext.Provider value={{ state, controls, playerVisible, setPlayerVisible }}>
       {children}
     </PlayerContext.Provider>
   );
 }
+
+// ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function usePlayer(): PlayerContextValue {
   const ctx = useContext(PlayerContext);
@@ -424,9 +352,40 @@ export function usePlayer(): PlayerContextValue {
   return ctx;
 }
 
+// ─── 工具函数 ─────────────────────────────────────────────────────────────────
+
 export function formatPlayerTime(seconds: number): string {
   if (!isFinite(seconds) || seconds < 0) return "0:00";
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
   return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
+export function parseLrc(lrc: string): Array<{ time: number; text: string }> {
+  const lines: Array<{ time: number; text: string }> = [];
+  const re = /\[(\d{2}):(\d{2})\.(\d{2,3})\](.*)/;
+  for (const raw of lrc.split("\n")) {
+    const m = raw.match(re);
+    if (!m) continue;
+    const time =
+      parseInt(m[1]) * 60 +
+      parseInt(m[2]) +
+      parseInt(m[3]) / (m[3].length === 3 ? 1000 : 100);
+    const text = m[4].trim();
+    if (text) lines.push({ time, text });
+  }
+  return lines.sort((a, b) => a.time - b.time);
+}
+
+export function getCurrentLrcIndex(
+  lines: Array<{ time: number; text: string }>,
+  currentTime: number,
+): number {
+  if (!lines.length) return -1;
+  let idx = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].time <= currentTime) idx = i;
+    else break;
+  }
+  return idx;
 }
