@@ -15,8 +15,6 @@ export interface PlayerTrack {
   songId: number;
   title: string;
   artist?: string | null;
-  lrcLyrics?: string | null;
-  /** 封面图 URL */
   coverUrl?: string | null;
 }
 
@@ -54,6 +52,9 @@ interface PlayerContextValue {
   /** 底部播放条是否展开可见 */
   playerVisible: boolean;
   setPlayerVisible: (v: boolean) => void;
+  /** 歌词 map，由 MusicLibraryClient 在歌词加载完后注入 */
+  lyricsMap: Map<number, string>;
+  setLyricsMap: (map: Map<number, string> | ((prev: Map<number, string>) => Map<number, string>)) => void;
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -70,6 +71,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const wasLoadingRef = useRef(false);
 
   const [playerVisible, setPlayerVisible] = useState(false);
+  const [lyricsMap, setLyricsMap] = useState<Map<number, string>>(new Map());
 
   const [state, setState] = useState<PlayerState>({
     currentTrack: null,
@@ -344,7 +346,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <PlayerContext.Provider value={{ state, controls, playerVisible, setPlayerVisible }}>
+    <PlayerContext.Provider value={{ state, controls, playerVisible, setPlayerVisible, lyricsMap, setLyricsMap }}>
       {children}
     </PlayerContext.Provider>
   );

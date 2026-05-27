@@ -30,7 +30,7 @@ import {
 } from "@/context/PlayerContext";
 
 export default function GlobalPlayer() {
-  const { state, controls, playerVisible } = usePlayer();
+  const { state, controls, playerVisible, lyricsMap } = usePlayer();
   const {
     currentTrack,
     queue,
@@ -73,11 +73,12 @@ export default function GlobalPlayer() {
     return () => document.removeEventListener("mousedown", handler);
   }, [showVolume]);
 
-  // ── LRC 歌词 ──────────────────────────────────────────────────────────────
+  // ── LRC 歌词：从 PlayerContext 的 lyricsMap 里取 ─────────────────────────
   const lrcLines = useMemo(() => {
-    const lrc = currentTrack?.lrcLyrics;
+    if (!currentTrack) return [];
+    const lrc = lyricsMap.get(currentTrack.songId);
     return lrc ? parseLrc(lrc) : [];
-  }, [currentTrack?.lrcLyrics]);
+  }, [currentTrack, lyricsMap]);
 
   const currentLrcIndex = useMemo(
     () => getCurrentLrcIndex(lrcLines, currentTime),

@@ -10,7 +10,6 @@ interface EnqueueButtonProps {
   songId: number;
   title: string;
   artist?: string | null;
-  lrcLyrics?: string | null;
   coverUrl?: string | null;
   hasAudio?: boolean;
   className?: string;
@@ -21,7 +20,6 @@ export default function EnqueueButton({
   songId,
   title,
   artist,
-  lrcLyrics,
   coverUrl,
   hasAudio = true,
   className,
@@ -39,7 +37,7 @@ export default function EnqueueButton({
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (alreadyInQueue) return;
-    controls.enqueue({ songId, title, artist, lrcLyrics, coverUrl });
+    controls.enqueue({ songId, title, artist, coverUrl });
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1500);
   };

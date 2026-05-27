@@ -10,7 +10,6 @@ interface PlayButtonProps {
   songId: number;
   title: string;
   artist?: string | null;
-  lrcLyrics?: string | null;
   coverUrl?: string | null;
   hasAudio?: boolean;
   className?: string;
@@ -21,7 +20,6 @@ export default function PlayButton({
   songId,
   title,
   artist,
-  lrcLyrics,
   coverUrl,
   hasAudio = true,
   className,
@@ -41,7 +39,7 @@ export default function PlayButton({
     if (isCurrentSong) {
       controls.toggle();
     } else {
-      controls.play({ songId, title, artist, lrcLyrics, coverUrl });
+      controls.play({ songId, title, artist, coverUrl });
     }
   };
 

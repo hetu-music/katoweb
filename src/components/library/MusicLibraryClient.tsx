@@ -4,6 +4,7 @@ import AppNavbar from "@/components/shared/AppNavbar";
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import Pagination from "@/components/shared/Pagination";
 import { useFavorites } from "@/context/FavoritesContext";
+import { usePlayer } from "@/context/PlayerContext";
 import { useFilteredSongs } from "@/hooks/useFilteredSongs";
 import { useMouseDragScroll } from "@/hooks/useMouseDragScroll";
 import { useMusicLibraryState } from "@/hooks/useMusicLibraryState";
@@ -73,6 +74,7 @@ export default function MusicLibraryClient({
 }: MusicLibraryClientProps) {
   const router = useRouter();
   const { isLoggedIn } = useFavorites();
+  const { setLyricsMap } = usePlayer();
   const [mounted, setMounted] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [activeSongId, setActiveSongId] = useState<number | null>(null);
@@ -167,6 +169,13 @@ export default function MusicLibraryClient({
     const timer = setTimeout(notifyDataReady, 0);
     return () => clearTimeout(timer);
   }, [mounted, filteredSongs, mountKey, notifyDataReady, viewMode]);
+
+  // 歌词加载完成后注入到 PlayerContext，供播放器显示歌词用
+  useEffect(() => {
+    if (lyricsState === "ready" && lyricsMap.size > 0) {
+      setLyricsMap(lyricsMap);
+    }
+  }, [lyricsState, lyricsMap, setLyricsMap]);
 
   const totalPages = useMemo(
     () => Math.max(1, Math.ceil(filteredSongs.length / itemsPerPage)),

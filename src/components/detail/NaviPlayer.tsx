@@ -17,7 +17,6 @@ interface NaviPlayerProps {
   songId: number;
   title: string;
   artist?: string | null;
-  lrcLyrics?: string | null;
   coverUrl?: string | null;
   hasAudio?: boolean;
   className?: string;
@@ -27,7 +26,6 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
   songId,
   title,
   artist,
-  lrcLyrics,
   coverUrl,
   hasAudio = true,
   className,
@@ -42,7 +40,7 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
   const isThisPlaying = isCurrentSong && isPlaying;
   const isThisLoading = isCurrentSong && isLoading;
 
-  const track: PlayerTrack = { songId, title, artist, lrcLyrics, coverUrl };
+  const track: PlayerTrack = { songId, title, artist, coverUrl };
 
   const handleToggle = () => {
     if (isCurrentSong) {
