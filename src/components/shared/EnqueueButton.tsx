@@ -11,6 +11,7 @@ interface EnqueueButtonProps {
   title: string;
   artist?: string | null;
   lrcLyrics?: string | null;
+  hasAudio?: boolean;
   className?: string;
   size?: number;
 }
@@ -20,6 +21,7 @@ export default function EnqueueButton({
   title,
   artist,
   lrcLyrics,
+  hasAudio = true,
   className,
   size = 15,
 }: EnqueueButtonProps) {
@@ -28,7 +30,7 @@ export default function EnqueueButton({
   const [justAdded, setJustAdded] = useState(false);
 
   const hasBenefits = loaded && !!user?.hasBenefits;
-  if (!hasBenefits) return null;
+  if (!hasBenefits || !hasAudio) return null;
 
   const alreadyInQueue = state.queue.some((t) => t.songId === songId);
 

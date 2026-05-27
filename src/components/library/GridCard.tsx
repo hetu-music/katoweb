@@ -76,6 +76,7 @@ export default function GridCard({
           songId={song.id}
           title={song.title}
           artist={song.artist?.join(" / ")}
+          hasAudio={song.has_audio}
           className="absolute left-2 top-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
           size={14}
         />

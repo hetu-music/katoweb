@@ -106,6 +106,7 @@ export default function ListRow({
           songId={song.id}
           title={song.title}
           artist={song.artist?.join(" / ")}
+          hasAudio={song.has_audio}
           className="opacity-0 group-hover:opacity-100"
         />
       </div>
@@ -116,6 +117,7 @@ export default function ListRow({
             songId={song.id}
             title={song.title}
             artist={song.artist?.join(" / ")}
+            hasAudio={song.has_audio}
           />
           <button
             onClick={(event) => {

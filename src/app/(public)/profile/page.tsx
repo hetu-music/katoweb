@@ -519,6 +519,7 @@ function ProfileContent() {
                                   songId={song.id}
                                   title={song.title}
                                   artist={song.artist?.join(" / ")}
+                                  hasAudio={song.has_audio}
                                 />
                                 <button
                                   onClick={(e) => {
