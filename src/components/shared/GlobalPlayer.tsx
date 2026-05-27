@@ -27,6 +27,7 @@ import {
   getCurrentLrcIndex,
   parseLrc,
   usePlayer,
+  usePlayerTime,
 } from "@/context/PlayerContext";
 
 export default function GlobalPlayer() {
@@ -37,25 +38,19 @@ export default function GlobalPlayer() {
     currentIndex,
     isPlaying,
     isLoading,
-    currentTime,
-    duration,
     volume,
     isMuted,
     error,
   } = state;
 
-  // ── 进度条：直接操作 DOM ──────────────────────────────────────────────────
-  const progressBarRef = useRef<HTMLDivElement>(null);
+  // ── 进度时间：通过 rAF 直读 audio 元素，不经过全局 state ─────────────────
+  const { currentTime, duration } = usePlayerTime();
+
+  // ── 进度条拖拽预览 ────────────────────────────────────────────────────────
   const isDraggingRef = useRef(false);
   const [seekPreview, setSeekPreview] = useState<number | null>(null);
   const displayTime = seekPreview !== null ? seekPreview : currentTime;
-
-  useEffect(() => {
-    if (isDraggingRef.current) return;
-    const bar = progressBarRef.current;
-    if (!bar) return;
-    bar.style.width = duration > 0 ? `${(currentTime / duration) * 100}%` : "0%";
-  }, [currentTime, duration]);
+  // 进度条宽度直接由 JSX style 驱动（usePlayerTime rAF 触发重渲染），无需额外 effect
 
   // ── 播放列表面板 ──────────────────────────────────────────────────────────
   const [showQueue, setShowQueue] = useState(false);
@@ -73,7 +68,7 @@ export default function GlobalPlayer() {
     return () => document.removeEventListener("mousedown", handler);
   }, [showVolume]);
 
-  // ── LRC 歌词：从 PlayerContext 的 lyricsMap 里取 ─────────────────────────
+  // ── LRC 歌词 ──────────────────────────────────────────────────────────────
   const lrcLines = useMemo(() => {
     if (!currentTrack) return [];
     const lrc = lyricsMap.get(currentTrack.songId);
@@ -107,8 +102,6 @@ export default function GlobalPlayer() {
       const t = getTimeFromPointer(e.clientX);
       if (t !== null) {
         setSeekPreview(t);
-        const bar = progressBarRef.current;
-        if (bar) bar.style.width = `${(t / duration) * 100}%`;
       }
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     },
@@ -120,8 +113,6 @@ export default function GlobalPlayer() {
       const t = getTimeFromPointer(e.clientX);
       if (t !== null) {
         setSeekPreview(t);
-        const bar = progressBarRef.current;
-        if (bar) bar.style.width = `${(t / duration) * 100}%`;
       }
     },
     [duration, getTimeFromPointer],
@@ -137,7 +128,7 @@ export default function GlobalPlayer() {
     [controls, getTimeFromPointer],
   );
 
-  // ── 音量拖拽（内联滑条，原生实现） ───────────────────────────────────────
+  // ── 音量拖拽 ──────────────────────────────────────────────────────────────
   const volTrackRef = useRef<HTMLDivElement>(null);
   const isVolDraggingRef = useRef(false);
 
@@ -226,7 +217,6 @@ export default function GlobalPlayer() {
                       : "hover:bg-slate-50 dark:hover:bg-slate-800/50",
                   )}
                 >
-                  {/* 封面缩略图 */}
                   <div className="shrink-0 w-8 h-8 rounded-md overflow-hidden bg-slate-100 dark:bg-slate-800 relative">
                     {track.coverUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -236,7 +226,6 @@ export default function GlobalPlayer() {
                         <Music size={12} className="text-slate-400" />
                       </div>
                     )}
-                    {/* 当前播放指示覆盖层 */}
                     {i === currentIndex && (
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                         {isPlaying ? (
@@ -316,11 +305,10 @@ export default function GlobalPlayer() {
           onPointerCancel={handlePointerUp}
         >
           <div
-            ref={progressBarRef}
             className="absolute left-0 top-0 h-full bg-blue-500 rounded-r-full"
             style={{
-              width: duration > 0 ? `${(currentTime / duration) * 100}%` : "0%",
-              transition: isDraggingRef.current ? "none" : "width 0.25s linear",
+              width: duration > 0 ? `${(displayTime / duration) * 100}%` : "0%",
+              transition: isDraggingRef.current ? "none" : "width 0.1s linear",
             }}
           />
         </div>
@@ -351,7 +339,6 @@ export default function GlobalPlayer() {
               )}
             </div>
             <div className="min-w-0 flex-1">
-              {/* 歌曲名：点击跳转详情页 */}
               <Link
                 href={`/song/${currentTrack.songId}`}
                 className="block text-sm font-bold text-slate-800 dark:text-slate-100 truncate leading-tight hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
@@ -380,7 +367,7 @@ export default function GlobalPlayer() {
             </div>
           </div>
 
-          {/* 时间：sm 以上显示 */}
+          {/* 时间 */}
           <div className="hidden sm:flex items-center gap-1 text-[10px] font-mono text-slate-400 shrink-0">
             <span>{formatPlayerTime(displayTime)}</span>
             <span className="opacity-50">/</span>
@@ -460,9 +447,8 @@ export default function GlobalPlayer() {
             </svg>
           </button>
 
-          {/* 音量：弹出面板，内含内联滑条设计 */}
+          {/* 音量面板 */}
           <div className="relative shrink-0" ref={volumeRef}>
-            {/* 弹出面板 */}
             <div className={cn(
               "absolute bottom-full right-0 mb-2 p-3 rounded-2xl w-36",
               "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl",
@@ -479,7 +465,6 @@ export default function GlobalPlayer() {
                 >
                   {effectiveVolume === 0 ? <VolumeX size={13} /> : <Volume2 size={13} />}
                 </button>
-                {/* 内联滑条 */}
                 <div
                   ref={volTrackRef}
                   className="relative flex-1 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700/50 cursor-pointer group/vol"
@@ -492,7 +477,6 @@ export default function GlobalPlayer() {
                     className="absolute left-0 top-0 h-full bg-blue-500 rounded-full"
                     style={{ width: `${effectiveVolume * 100}%` }}
                   />
-                  {/* 拖拽点 */}
                   <div
                     className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white border border-slate-200 shadow-sm -translate-x-1/2 pointer-events-none"
                     style={{ left: `${effectiveVolume * 100}%` }}
@@ -504,7 +488,6 @@ export default function GlobalPlayer() {
               </div>
             </div>
 
-            {/* 触发按钮 */}
             <button
               onClick={() => setShowVolume((v) => !v)}
               aria-label={isMuted ? "取消静音" : "音量"}

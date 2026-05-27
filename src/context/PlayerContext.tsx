@@ -18,14 +18,16 @@ export interface PlayerTrack {
   coverUrl?: string | null;
 }
 
+/**
+ * 播放器核心状态 — 不含高频更新的 currentTime / duration。
+ * 时间数据通过 usePlayerTime() hook 单独订阅，避免每秒多次的全局重渲染。
+ */
 export interface PlayerState {
   currentTrack: PlayerTrack | null;
   queue: PlayerTrack[];
   currentIndex: number;
   isPlaying: boolean;
   isLoading: boolean;
-  currentTime: number;
-  duration: number;
   volume: number;
   isMuted: boolean;
   error: string | null;
@@ -49,6 +51,8 @@ export interface PlayerControls {
 interface PlayerContextValue {
   state: PlayerState;
   controls: PlayerControls;
+  /** 直接读取音频元素的时间，不经过 React state，供 usePlayerTime 使用 */
+  audioRef: React.RefObject<HTMLAudioElement | null>;
   /** 底部播放条是否展开可见 */
   playerVisible: boolean;
   setPlayerVisible: (v: boolean) => void;
@@ -78,8 +82,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     currentIndex: -1,
     isPlaying: false,
     isLoading: false,
-    currentTime: 0,
-    duration: 0,
     volume: 0.8,
     isMuted: false,
     error: null,
@@ -107,8 +109,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
           ...s,
           isLoading: false,
           isPlaying: false,
-          currentTime: 0,
-          duration: 0,
           error: null,
         }));
       })
@@ -143,24 +143,12 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         if (nextIndex < s.queue.length) {
           const nextTrack = s.queue[nextIndex];
           currentSongIdRef.current = nextTrack.songId;
-          return {
-            ...s,
-            currentIndex: nextIndex,
-            currentTrack: nextTrack,
-            isPlaying: false,
-            currentTime: 0,
-          };
+          return { ...s, currentIndex: nextIndex, currentTrack: nextTrack, isPlaying: false };
         }
-        return { ...s, isPlaying: false, currentTime: 0 };
+        return { ...s, isPlaying: false };
       });
     };
-    const onTimeUpdate = () =>
-      setState((s) => ({ ...s, currentTime: audio.currentTime }));
-    const onDurationChange = () =>
-      setState((s) => ({
-        ...s,
-        duration: isFinite(audio.duration) ? audio.duration : 0,
-      }));
+    // timeupdate / durationchange 不再写入 React state，由 usePlayerTime 直接读 audio 元素
     const onVolumeChange = () =>
       setState((s) => ({ ...s, volume: audio.volume, isMuted: audio.muted }));
     const onError = () => {
@@ -185,8 +173,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     audio.addEventListener("play", onPlay);
     audio.addEventListener("pause", onPause);
     audio.addEventListener("ended", onEnded);
-    audio.addEventListener("timeupdate", onTimeUpdate);
-    audio.addEventListener("durationchange", onDurationChange);
     audio.addEventListener("volumechange", onVolumeChange);
     audio.addEventListener("error", onError);
 
@@ -196,8 +182,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       audio.removeEventListener("play", onPlay);
       audio.removeEventListener("pause", onPause);
       audio.removeEventListener("ended", onEnded);
-      audio.removeEventListener("timeupdate", onTimeUpdate);
-      audio.removeEventListener("durationchange", onDurationChange);
       audio.removeEventListener("volumechange", onVolumeChange);
       audio.removeEventListener("error", onError);
     };
@@ -247,6 +231,20 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         : undefined,
     });
 
+    const doSeek = (time: number) => {
+      const audio = audioRef.current;
+      if (!audio) return;
+      audio.currentTime = Math.max(0, Math.min(time, audio.duration || 0));
+      // seek 后立即同步一次 positionState，让系统进度条即时响应
+      try {
+        navigator.mediaSession.setPositionState({
+          duration: audio.duration || 0,
+          playbackRate: audio.playbackRate,
+          position: audio.currentTime,
+        });
+      } catch { /* ignore */ }
+    };
+
     navigator.mediaSession.setActionHandler("play", () => {
       audioRef.current?.play().catch(() => {});
     });
@@ -267,20 +265,18 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         return { ...s, currentIndex: i, currentTrack: s.queue[i] };
       });
     } : null);
-    navigator.mediaSession.setActionHandler("seekbackward", (details) => {
+    navigator.mediaSession.setActionHandler("seekbackward", (d) => {
       const audio = audioRef.current;
       if (!audio) return;
-      audio.currentTime = Math.max(0, audio.currentTime - (details.seekOffset ?? 10));
+      doSeek(audio.currentTime - (d.seekOffset ?? 10));
     });
-    navigator.mediaSession.setActionHandler("seekforward", (details) => {
+    navigator.mediaSession.setActionHandler("seekforward", (d) => {
       const audio = audioRef.current;
       if (!audio) return;
-      audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + (details.seekOffset ?? 10));
+      doSeek(audio.currentTime + (d.seekOffset ?? 10));
     });
-    navigator.mediaSession.setActionHandler("seekto", (details) => {
-      const audio = audioRef.current;
-      if (!audio || details.seekTime == null) return;
-      audio.currentTime = Math.max(0, Math.min(details.seekTime, audio.duration || 0));
+    navigator.mediaSession.setActionHandler("seekto", (d) => {
+      if (d.seekTime != null) doSeek(d.seekTime);
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.currentTrack, state.currentIndex, state.queue.length]);
@@ -291,20 +287,34 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     navigator.mediaSession.playbackState = state.isPlaying ? "playing" : "paused";
   }, [state.isPlaying]);
 
-  // ── MediaSession：同步进度条 ──────────────────────────────────────────────
+  // ── MediaSession：用 rAF 持续同步进度条（不依赖 React state）────────────
   useEffect(() => {
     if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
-    if (!state.duration) return;
-    try {
-      navigator.mediaSession.setPositionState({
-        duration: state.duration,
-        playbackRate: audioRef.current?.playbackRate ?? 1,
-        position: Math.min(state.currentTime, state.duration),
-      });
-    } catch {
-      // 部分浏览器在 duration 尚未稳定时会抛异常，忽略即可
-    }
-  }, [state.currentTime, state.duration]);
+    let rafId: number;
+    let lastPosition = -1;
+
+    const sync = () => {
+      const audio = audioRef.current;
+      if (audio && audio.duration > 0 && !audio.paused) {
+        const pos = audio.currentTime;
+        // 每秒最多更新一次，避免频繁调用
+        if (Math.abs(pos - lastPosition) >= 1) {
+          lastPosition = pos;
+          try {
+            navigator.mediaSession.setPositionState({
+              duration: audio.duration,
+              playbackRate: audio.playbackRate,
+              position: Math.min(pos, audio.duration),
+            });
+          } catch { /* ignore */ }
+        }
+      }
+      rafId = requestAnimationFrame(sync);
+    };
+
+    rafId = requestAnimationFrame(sync);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
 
   // ── 加载完成后自动播放 ────────────────────────────────────────────────────
   useEffect(() => {
@@ -317,16 +327,11 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   // ── Controls ──────────────────────────────────────────────────────────────
 
   const play = useCallback((track: PlayerTrack) => {
-    // 首次播放时自动展开播放条
     setPlayerVisible(true);
     setState((s) => {
       const existingIndex = s.queue.findIndex((t) => t.songId === track.songId);
       if (existingIndex !== -1) {
-        return {
-          ...s,
-          currentIndex: existingIndex,
-          currentTrack: s.queue[existingIndex],
-        };
+        return { ...s, currentIndex: existingIndex, currentTrack: s.queue[existingIndex] };
       }
       const newQueue = [...s.queue, track];
       const newIndex = newQueue.length - 1;
@@ -386,13 +391,11 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         if (newQueue.length === 0) {
           prevSongIdRef.current = null;
           currentSongIdRef.current = null;
-          return { ...s, queue: [], currentIndex: -1, currentTrack: null, isPlaying: false, currentTime: 0, duration: 0 };
+          return { ...s, queue: [], currentIndex: -1, currentTrack: null, isPlaying: false };
         }
         const newIndex = Math.min(index, newQueue.length - 1);
-        const newTrack = newQueue[newIndex];
-        // 重置 prevSongIdRef，确保 currentTrack 变化的 effect 能触发 fetchAndSetSrc
         prevSongIdRef.current = null;
-        return { ...s, queue: newQueue, currentIndex: newIndex, currentTrack: newTrack };
+        return { ...s, queue: newQueue, currentIndex: newIndex, currentTrack: newQueue[newIndex] };
       }
       const newIndex = index < s.currentIndex ? s.currentIndex - 1 : s.currentIndex;
       return { ...s, queue: newQueue, currentIndex: newIndex };
@@ -408,8 +411,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       currentIndex: -1,
       currentTrack: null,
       isPlaying: false,
-      currentTime: 0,
-      duration: 0,
       error: null,
     }));
   }, []);
@@ -439,7 +440,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <PlayerContext.Provider value={{ state, controls, playerVisible, setPlayerVisible, lyricsMap }}>
+    <PlayerContext.Provider value={{ state, controls, audioRef, playerVisible, setPlayerVisible, lyricsMap }}>
       {children}
     </PlayerContext.Provider>
   );
@@ -453,6 +454,40 @@ export function usePlayer(): PlayerContextValue {
   return ctx;
 }
 
+/**
+ * 订阅播放进度的专用 hook。
+ *
+ * 用 requestAnimationFrame 直接读取 audio 元素，不经过 React state，
+ * 因此不会触发 PlayerProvider 或其他消费者的重渲染。
+ * 只有调用此 hook 的组件（GlobalPlayer）会按帧更新。
+ */
+export function usePlayerTime(): { currentTime: number; duration: number } {
+  const { audioRef } = usePlayer();
+  const [time, setTime] = useState({ currentTime: 0, duration: 0 });
+  const rafRef = useRef<number>(0);
+
+  useEffect(() => {
+    const tick = () => {
+      const audio = audioRef.current;
+      if (audio) {
+        const ct = audio.currentTime;
+        const dur = isFinite(audio.duration) ? audio.duration : 0;
+        setTime((prev) =>
+          // 只在值真正变化时才触发重渲染（duration 变化较少，currentTime 按帧比较）
+          prev.currentTime === ct && prev.duration === dur
+            ? prev
+            : { currentTime: ct, duration: dur },
+        );
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [audioRef]);
+
+  return time;
+}
+
 // ─── 工具函数 ─────────────────────────────────────────────────────────────────
 
 export function formatPlayerTime(seconds: number): string {
@@ -464,12 +499,10 @@ export function formatPlayerTime(seconds: number): string {
 
 export function parseLrc(lrc: string): Array<{ time: number; text: string }> {
   const lines: Array<{ time: number; text: string }> = [];
-  // 支持同一行多个时间标签：[mm:ss.xx][mm:ss.xx]歌词文本
   const tagRe = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/g;
   for (const raw of lrc.split("\n")) {
     const trimmed = raw.trim();
     if (!trimmed) continue;
-    // 收集所有时间标签
     const times: number[] = [];
     let match: RegExpExecArray | null;
     tagRe.lastIndex = 0;
@@ -481,7 +514,6 @@ export function parseLrc(lrc: string): Array<{ time: number; text: string }> {
       times.push(time);
     }
     if (times.length === 0) continue;
-    // 去掉所有时间标签，剩余部分为歌词文本
     const text = trimmed.replace(/\[\d{2}:\d{2}\.\d{2,3}\]/g, "").trim();
     if (!text) continue;
     for (const time of times) {
