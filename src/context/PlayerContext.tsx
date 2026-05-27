@@ -72,28 +72,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [playerVisible, setPlayerVisible] = useState(false);
   const [lyricsMap, setLyricsMap] = useState<Map<number, string>>(new Map());
 
-  // ── 按需 fetch 当前曲目歌词 ───────────────────────────────────────────────
-  useEffect(() => {
-    const songId = state.currentTrack?.songId;
-    if (!songId) return;
-    // 已有缓存则跳过
-    if (lyricsMap.has(songId)) return;
-
-    fetch(`/api/public/songs/${songId}/lyrics`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data: { lyrics: string | null } | null) => {
-        if (!data?.lyrics) return;
-        setLyricsMap((prev) => {
-          if (prev.has(songId)) return prev;
-          const next = new Map(prev);
-          next.set(songId, data.lyrics!);
-          return next;
-        });
-      })
-      .catch(() => {/* 歌词加载失败不影响播放 */});
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.currentTrack?.songId]);
-
   const [state, setState] = useState<PlayerState>({
     currentTrack: null,
     queue: [],
@@ -233,6 +211,100 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     currentSongIdRef.current = songId;
     fetchAndSetSrc(songId);
   }, [state.currentTrack?.songId, fetchAndSetSrc]);
+
+  // ── 按需 fetch 当前曲目歌词 ───────────────────────────────────────────────
+  useEffect(() => {
+    const songId = state.currentTrack?.songId;
+    if (!songId) return;
+    if (lyricsMap.has(songId)) return;
+
+    fetch(`/api/public/songs/${songId}/lyrics`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { lyrics: string | null } | null) => {
+        if (!data?.lyrics) return;
+        setLyricsMap((prev) => {
+          if (prev.has(songId)) return prev;
+          const next = new Map(prev);
+          next.set(songId, data.lyrics!);
+          return next;
+        });
+      })
+      .catch(() => {/* 歌词加载失败不影响播放 */});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.currentTrack?.songId]);
+
+  // ── MediaSession：系统级媒体控制（锁屏、通知栏、蓝牙耳机等）────────────
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
+    const { currentTrack, queue, currentIndex } = state;
+    if (!currentTrack) return;
+
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: currentTrack.title,
+      artist: currentTrack.artist ?? undefined,
+      artwork: currentTrack.coverUrl
+        ? [{ src: currentTrack.coverUrl, sizes: "512x512", type: "image/jpeg" }]
+        : undefined,
+    });
+
+    navigator.mediaSession.setActionHandler("play", () => {
+      audioRef.current?.play().catch(() => {});
+    });
+    navigator.mediaSession.setActionHandler("pause", () => {
+      audioRef.current?.pause();
+    });
+    navigator.mediaSession.setActionHandler("previoustrack", currentIndex > 0 ? () => {
+      setState((s) => {
+        const i = s.currentIndex - 1;
+        if (i < 0) return s;
+        return { ...s, currentIndex: i, currentTrack: s.queue[i] };
+      });
+    } : null);
+    navigator.mediaSession.setActionHandler("nexttrack", currentIndex < queue.length - 1 ? () => {
+      setState((s) => {
+        const i = s.currentIndex + 1;
+        if (i >= s.queue.length) return s;
+        return { ...s, currentIndex: i, currentTrack: s.queue[i] };
+      });
+    } : null);
+    navigator.mediaSession.setActionHandler("seekbackward", (details) => {
+      const audio = audioRef.current;
+      if (!audio) return;
+      audio.currentTime = Math.max(0, audio.currentTime - (details.seekOffset ?? 10));
+    });
+    navigator.mediaSession.setActionHandler("seekforward", (details) => {
+      const audio = audioRef.current;
+      if (!audio) return;
+      audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + (details.seekOffset ?? 10));
+    });
+    navigator.mediaSession.setActionHandler("seekto", (details) => {
+      const audio = audioRef.current;
+      if (!audio || details.seekTime == null) return;
+      audio.currentTime = Math.max(0, Math.min(details.seekTime, audio.duration || 0));
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.currentTrack, state.currentIndex, state.queue.length]);
+
+  // ── MediaSession：同步播放状态 ────────────────────────────────────────────
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
+    navigator.mediaSession.playbackState = state.isPlaying ? "playing" : "paused";
+  }, [state.isPlaying]);
+
+  // ── MediaSession：同步进度条 ──────────────────────────────────────────────
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
+    if (!state.duration) return;
+    try {
+      navigator.mediaSession.setPositionState({
+        duration: state.duration,
+        playbackRate: audioRef.current?.playbackRate ?? 1,
+        position: Math.min(state.currentTime, state.duration),
+      });
+    } catch {
+      // 部分浏览器在 duration 尚未稳定时会抛异常，忽略即可
+    }
+  }, [state.currentTime, state.duration]);
 
   // ── 加载完成后自动播放 ────────────────────────────────────────────────────
   useEffect(() => {
