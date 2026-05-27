@@ -462,51 +462,91 @@ export function usePlayer(): PlayerContextValue {
 /**
  * 订阅播放进度的专用 hook。
  *
- * 用 timeupdate 事件驱动更新（浏览器约每 250ms 触发一次），
+ * 用 requestAnimationFrame 循环直读 audio.currentTime，实现约 60fps 的平滑更新。
+ * 暂停时自动降级为 timeupdate 事件驱动，避免空转消耗 CPU。
  * 不经过 PlayerProvider 的 state，只有 GlobalPlayer 会重渲染。
- * 拖动 seek 时由 seekPreview state 覆盖显示，无需更高频率。
  */
 export function usePlayerTime(): { currentTime: number; duration: number } {
   const { audioRef } = usePlayer();
   const [time, setTime] = useState({ currentTime: 0, duration: 0 });
+  const rafIdRef = useRef<number>(0);
+  const isPlayingRef = useRef(false);
 
   useEffect(() => {
-    // audio 元素在 PlayerProvider 的 useEffect 里创建，可能晚于此 hook 挂载
-    // 用轮询等待 audio 就绪后再绑定事件
-    let cleanup: (() => void) | null = null;
+    let bound = false;
+
+    const readTime = () => {
+      const audio = audioRef.current;
+      if (!audio) return;
+      const ct = audio.currentTime;
+      const dur = isFinite(audio.duration) ? audio.duration : 0;
+      setTime((prev) =>
+        prev.currentTime === ct && prev.duration === dur
+          ? prev
+          : { currentTime: ct, duration: dur },
+      );
+    };
+
+    const startRaf = () => {
+      cancelAnimationFrame(rafIdRef.current);
+      const loop = () => {
+        readTime();
+        if (isPlayingRef.current) {
+          rafIdRef.current = requestAnimationFrame(loop);
+        }
+      };
+      rafIdRef.current = requestAnimationFrame(loop);
+    };
+
+    const onPlay = () => {
+      isPlayingRef.current = true;
+      startRaf();
+    };
+    const onPause = () => {
+      isPlayingRef.current = false;
+      cancelAnimationFrame(rafIdRef.current);
+      readTime(); // 暂停时同步一次最终位置
+    };
+    // seeked / durationchange 无论播放状态都需要立即同步
+    const onSeeked = () => readTime();
+    const onDurationChange = () => readTime();
 
     const bind = () => {
       const audio = audioRef.current;
       if (!audio) return false;
+      bound = true;
 
-      const update = () => {
-        const ct = audio.currentTime;
-        const dur = isFinite(audio.duration) ? audio.duration : 0;
-        setTime((prev) =>
-          prev.currentTime === ct && prev.duration === dur
-            ? prev
-            : { currentTime: ct, duration: dur },
-        );
-      };
+      audio.addEventListener("play", onPlay);
+      audio.addEventListener("pause", onPause);
+      audio.addEventListener("seeked", onSeeked);
+      audio.addEventListener("durationchange", onDurationChange);
 
-      audio.addEventListener("timeupdate", update);
-      audio.addEventListener("durationchange", update);
-      audio.addEventListener("seeked", update);
-      cleanup = () => {
-        audio.removeEventListener("timeupdate", update);
-        audio.removeEventListener("durationchange", update);
-        audio.removeEventListener("seeked", update);
-      };
+      // 如果 audio 已经在播放（hook 晚于 audio 挂载），立即启动 rAF
+      if (!audio.paused) {
+        isPlayingRef.current = true;
+        startRaf();
+      } else {
+        readTime(); // 同步初始状态
+      }
       return true;
     };
 
     if (!bind()) {
-      // audio 还未创建，短暂等待后重试
       const timer = setTimeout(() => bind(), 100);
       return () => clearTimeout(timer);
     }
 
-    return () => cleanup?.();
+    return () => {
+      cancelAnimationFrame(rafIdRef.current);
+      if (bound) {
+        const audio = audioRef.current;
+        if (!audio) return;
+        audio.removeEventListener("play", onPlay);
+        audio.removeEventListener("pause", onPause);
+        audio.removeEventListener("seeked", onSeeked);
+        audio.removeEventListener("durationchange", onDurationChange);
+      }
+    };
   }, [audioRef]);
 
   return time;

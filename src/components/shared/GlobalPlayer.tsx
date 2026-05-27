@@ -31,7 +31,7 @@ import {
 } from "@/context/PlayerContext";
 
 export default function GlobalPlayer() {
-  const { state, controls, playerVisible, lyricsMap } = usePlayer();
+  const { state, controls, playerVisible, lyricsMap, audioRef } = usePlayer();
   const {
     currentTrack,
     queue,
@@ -49,6 +49,8 @@ export default function GlobalPlayer() {
   // ── 进度条拖拽预览 ────────────────────────────────────────────────────────
   const isDraggingRef = useRef(false);
   const [seekPreview, setSeekPreview] = useState<number | null>(null);
+  // isSeeking：seek 已发出但 seeked 事件还未回来，期间继续用 preview 值防止闪回
+  const isSeekingRef = useRef(false);
   const displayTime = seekPreview !== null ? seekPreview : currentTime;
   // 进度条宽度直接由 JSX style 驱动（usePlayerTime rAF 触发重渲染），无需额外 effect
 
@@ -122,11 +124,36 @@ export default function GlobalPlayer() {
       if (!isDraggingRef.current) return;
       isDraggingRef.current = false;
       const t = getTimeFromPointer(e.clientX);
-      if (t !== null) controls.seek(t);
-      setSeekPreview(null);
+      if (t !== null) {
+        // 先标记 seeking，等 seeked 事件触发后再清除 preview，防止闪回
+        isSeekingRef.current = true;
+        setSeekPreview(t);
+        controls.seek(t);
+      } else {
+        setSeekPreview(null);
+      }
     },
     [controls, getTimeFromPointer],
   );
+
+  // seeked 事件触发后清除 preview（防止 seek 完成前进度条闪回旧位置）
+  useEffect(() => {
+    const audio = audioRef.current;
+    const onSeeked = () => {
+      if (isSeekingRef.current) {
+        isSeekingRef.current = false;
+        setSeekPreview(null);
+      }
+    };
+    const bind = () => {
+      const a = audioRef.current;
+      if (!a) { setTimeout(bind, 100); return; }
+      a.addEventListener("seeked", onSeeked);
+    };
+    bind();
+    return () => { audio?.removeEventListener("seeked", onSeeked); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── 音量拖拽 ──────────────────────────────────────────────────────────────
   const volTrackRef = useRef<HTMLDivElement>(null);
@@ -308,7 +335,6 @@ export default function GlobalPlayer() {
             className="absolute left-0 top-0 h-full bg-blue-500 rounded-r-full"
             style={{
               width: duration > 0 ? `${(displayTime / duration) * 100}%` : "0%",
-              transition: isDraggingRef.current ? "none" : "width 0.1s linear",
             }}
           />
         </div>
