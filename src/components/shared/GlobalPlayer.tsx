@@ -17,6 +17,8 @@ import {
   SkipBack,
   SkipForward,
   Trash2,
+  Volume,
+  Volume1,
   Volume2,
   VolumeX,
   X,
@@ -167,17 +169,17 @@ export default function GlobalPlayer() {
   const volTrackRef = useRef<HTMLDivElement>(null);
   const isVolDraggingRef = useRef(false);
 
-  const getVolFromPointer = useCallback((clientX: number) => {
+  const getVolFromPointer = useCallback((clientY: number) => {
     const el = volTrackRef.current;
     if (!el) return null;
     const rect = el.getBoundingClientRect();
-    return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    return Math.max(0, Math.min(1, 1 - (clientY - rect.top) / rect.height));
   }, []);
 
   const handleVolPointerDown = useCallback(
     (e: React.PointerEvent) => {
       isVolDraggingRef.current = true;
-      const v = getVolFromPointer(e.clientX);
+      const v = getVolFromPointer(e.clientY);
       if (v !== null) controls.setVolume(v);
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     },
@@ -186,7 +188,7 @@ export default function GlobalPlayer() {
   const handleVolPointerMove = useCallback(
     (e: React.PointerEvent) => {
       if (!isVolDraggingRef.current) return;
-      const v = getVolFromPointer(e.clientX);
+      const v = getVolFromPointer(e.clientY);
       if (v !== null) controls.setVolume(v);
     },
     [controls, getVolFromPointer],
@@ -194,7 +196,7 @@ export default function GlobalPlayer() {
   const handleVolPointerUp = useCallback(
     (e: React.PointerEvent) => {
       isVolDraggingRef.current = false;
-      const v = getVolFromPointer(e.clientX);
+      const v = getVolFromPointer(e.clientY);
       if (v !== null) controls.setVolume(v);
     },
     [controls, getVolFromPointer],
@@ -484,42 +486,65 @@ export default function GlobalPlayer() {
           {/* 音量面板 */}
           <div className="relative shrink-0" ref={volumeRef}>
             <div className={cn(
-              "absolute bottom-full right-0 mb-2 p-3 rounded-2xl w-36",
+              "absolute bottom-full right-1/2 mb-3 p-2.5 rounded-2xl w-12",
               "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl",
               "border border-slate-200/60 dark:border-slate-700/50",
-              "shadow-xl shadow-slate-200/40 dark:shadow-black/40",
-              "transition-all duration-200 origin-bottom-right",
-              showVolume ? "opacity-100 scale-100 pointer-events-auto translate-y-0" : "opacity-0 scale-90 pointer-events-none translate-y-1",
+              "shadow-2xl shadow-slate-200/40 dark:shadow-black/40",
+              "transition-all duration-200 origin-bottom",
+              "flex flex-col items-center gap-3 select-none",
+              showVolume 
+                ? "opacity-100 scale-100 pointer-events-auto translate-x-1/2 translate-y-0" 
+                : "opacity-0 scale-95 pointer-events-none translate-x-1/2 translate-y-2",
             )}>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={controls.toggleMute}
-                  aria-label={isMuted ? "取消静音" : "静音"}
-                  className="shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-                >
-                  {effectiveVolume === 0 ? <VolumeX size={13} /> : <Volume2 size={13} />}
-                </button>
+              <span className="shrink-0 text-[9px] font-mono font-bold text-slate-400 dark:text-slate-500 text-center w-full">
+                {Math.round(effectiveVolume * 100)}%
+              </span>
+              
+              <div
+                className="relative w-6 h-28 flex justify-center cursor-pointer select-none group/vol-area"
+                onPointerDown={handleVolPointerDown}
+                onPointerMove={handleVolPointerMove}
+                onPointerUp={handleVolPointerUp}
+                onPointerCancel={handleVolPointerUp}
+              >
+                {/* The actual thin track */}
                 <div
                   ref={volTrackRef}
-                  className="relative flex-1 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700/50 cursor-pointer group/vol"
-                  onPointerDown={handleVolPointerDown}
-                  onPointerMove={handleVolPointerMove}
-                  onPointerUp={handleVolPointerUp}
-                  onPointerCancel={handleVolPointerUp}
+                  className="relative w-1 h-full rounded-full bg-slate-200 dark:bg-slate-700/50 overflow-hidden group-hover/vol-area:bg-slate-300 dark:group-hover/vol-area:bg-slate-600 transition-colors"
                 >
                   <div
-                    className="absolute left-0 top-0 h-full bg-blue-500 rounded-full"
-                    style={{ width: `${effectiveVolume * 100}%` }}
-                  />
-                  <div
-                    className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white border border-slate-200 shadow-sm -translate-x-1/2 pointer-events-none"
-                    style={{ left: `${effectiveVolume * 100}%` }}
+                    className="absolute bottom-0 left-0 right-0 bg-blue-500 rounded-full"
+                    style={{ height: `${effectiveVolume * 100}%` }}
                   />
                 </div>
-                <span className="shrink-0 text-[10px] font-mono text-slate-400 w-5 text-right">
-                  {Math.round(effectiveVolume * 100)}
-                </span>
+                {/* Knob handle */}
+                <div
+                  className="absolute left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border border-slate-200 shadow-md pointer-events-none scale-0 group-hover/vol-area:scale-100 transition-transform duration-150"
+                  style={{
+                    bottom: `calc(${effectiveVolume * 100}% - 6px)`
+                  }}
+                />
               </div>
+
+              <button
+                onClick={controls.toggleMute}
+                aria-label={isMuted ? "取消静音" : "静音"}
+                className={cn(
+                  "shrink-0 p-1 rounded-full transition-all",
+                  "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200",
+                  "hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-90"
+                )}
+              >
+                {effectiveVolume === 0 ? (
+                  <VolumeX size={14} />
+                ) : effectiveVolume < 0.3 ? (
+                  <Volume size={14} />
+                ) : effectiveVolume < 0.7 ? (
+                  <Volume1 size={14} />
+                ) : (
+                  <Volume2 size={14} />
+                )}
+              </button>
             </div>
 
             <button
@@ -532,7 +557,15 @@ export default function GlobalPlayer() {
                 showVolume && "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300",
               )}
             >
-              {effectiveVolume === 0 ? <VolumeX size={15} /> : <Volume2 size={15} />}
+              {effectiveVolume === 0 ? (
+                <VolumeX size={15} />
+              ) : effectiveVolume < 0.3 ? (
+                <Volume size={15} />
+              ) : effectiveVolume < 0.7 ? (
+                <Volume1 size={15} />
+              ) : (
+                <Volume2 size={15} />
+              )}
             </button>
           </div>
         </div>
