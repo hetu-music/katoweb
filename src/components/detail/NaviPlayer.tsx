@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import {
   AlertCircle,
   ListPlus,
@@ -14,15 +14,9 @@ import { formatPlayerTime, usePlayer } from "@/context/PlayerContext";
 import type { PlayerTrack } from "@/context/PlayerContext";
 
 interface NaviPlayerProps {
-  /** 本站歌曲 ID */
   songId: number;
-  /** 歌曲标题 */
   title: string;
-  /** 演唱者 */
   artist?: string | null;
-  /** Navidrome 歌曲 ID，为 null 时不可播放 */
-  songNavId: string | null;
-  /** LRC 格式歌词 */
   lrcLyrics?: string | null;
   className?: string;
 }
@@ -31,7 +25,6 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
   songId,
   title,
   artist,
-  songNavId,
   lrcLyrics,
   className,
 }) => {
@@ -39,17 +32,13 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
   const { currentTrack, isPlaying, isLoading, currentTime, duration, error } =
     state;
 
-  // 判断当前播放器是否正在播放本曲目
   const isCurrentSong = currentTrack?.songId === songId;
   const isThisPlaying = isCurrentSong && isPlaying;
   const isThisLoading = isCurrentSong && isLoading;
 
-  const track: PlayerTrack | null = songNavId
-    ? { songId, title, artist, navId: songNavId, lrcLyrics }
-    : null;
+  const track: PlayerTrack = { songId, title, artist, lrcLyrics };
 
   const handleToggle = () => {
-    if (!track) return;
     if (isCurrentSong) {
       controls.toggle();
     } else {
@@ -59,7 +48,6 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
 
   const handleEnqueue = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!track) return;
     controls.enqueue(track);
   };
 
@@ -83,9 +71,7 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
       )}
     >
       <div className="relative z-10 p-4">
-        {/* 主行：图标 + 歌曲信息 + 操作按钮 */}
         <div className="flex items-center gap-3">
-          {/* 音乐图标 */}
           <div
             className={cn(
               "shrink-0 w-9 h-9 rounded-xl flex items-center justify-center",
@@ -106,7 +92,6 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
             )}
           </div>
 
-          {/* 歌曲信息 */}
           <div className="flex-1 min-w-0">
             <p
               className={cn(
@@ -133,8 +118,7 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
             )}
           </div>
 
-          {/* 加入队列按钮 */}
-          {track && !isCurrentSong && (
+          {!isCurrentSong && (
             <button
               onClick={handleEnqueue}
               aria-label="加入播放列表"
@@ -149,16 +133,15 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
             </button>
           )}
 
-          {/* 播放/暂停按钮 */}
           <button
             onClick={handleToggle}
-            disabled={isThisLoading || !songNavId}
+            disabled={isThisLoading}
             aria-label={isThisPlaying ? "暂停" : "播放"}
             className={cn(
               "shrink-0 w-10 h-10 rounded-full flex items-center justify-center",
               "transition-all duration-200",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50",
-              isThisLoading || !songNavId
+              isThisLoading
                 ? "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
                 : isThisPlaying
                   ? "bg-blue-500 text-white shadow-lg shadow-blue-500/30 hover:bg-blue-600 active:scale-95"
@@ -175,10 +158,8 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
           </button>
         </div>
 
-        {/* 进度条（仅当前播放曲目显示） */}
         {isCurrentSong && (
           <div className="mt-3 space-y-1">
-            {/* 简单进度条（不可拖拽，全局播放条才可拖拽） */}
             <div className="h-1 w-full rounded-full bg-slate-200 dark:bg-slate-700/50 overflow-hidden">
               <div
                 className="h-full bg-blue-500 rounded-full transition-all duration-300"

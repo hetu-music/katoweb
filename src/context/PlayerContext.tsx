@@ -15,7 +15,6 @@ export interface PlayerTrack {
   songId: number;
   title: string;
   artist?: string | null;
-  navId: string;
   lrcLyrics?: string | null;
 }
 
@@ -64,8 +63,8 @@ const PlayerContext = createContext<PlayerContextValue | null>(null);
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const retryCountRef = useRef(0);
-  const currentNavIdRef = useRef<string | null>(null);
-  const prevNavIdRef = useRef<string | null>(null);
+  const currentSongIdRef = useRef<number | null>(null);
+  const prevSongIdRef = useRef<number | null>(null);
   const wasLoadingRef = useRef(false);
 
   const [playerVisible, setPlayerVisible] = useState(false);
@@ -84,14 +83,14 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   });
 
   // ── 获取 stream URL ──────────────────────────────────────────────────────
-  const fetchAndSetSrc = useCallback((navId: string, isRetry = false) => {
+  const fetchAndSetSrc = useCallback((songId: number, isRetry = false) => {
     const audio = audioRef.current;
     if (!audio) return;
     if (!isRetry) retryCountRef.current = 0;
 
     setState((s) => ({ ...s, isLoading: true, error: null }));
 
-    fetch(`/api/navidrome/stream-url?songId=${encodeURIComponent(navId)}`)
+    fetch(`/api/navidrome/stream-url?songId=${encodeURIComponent(songId)}`)
       .then((r) => {
         if (!r.ok) throw new Error(`stream-url error: ${r.status}`);
         return r.json() as Promise<{ url?: string; error?: string }>;
@@ -140,7 +139,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         const nextIndex = s.currentIndex + 1;
         if (nextIndex < s.queue.length) {
           const nextTrack = s.queue[nextIndex];
-          currentNavIdRef.current = nextTrack.navId;
+          currentSongIdRef.current = nextTrack.songId;
           return {
             ...s,
             currentIndex: nextIndex,
@@ -168,8 +167,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         err?.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED;
       if (isTokenError && retryCountRef.current < 1) {
         retryCountRef.current += 1;
-        const id = currentNavIdRef.current;
-        if (id) { fetchAndSetSrc(id, true); return; }
+        const id = currentSongIdRef.current;
+        if (id !== null) { fetchAndSetSrc(id, true); return; }
       }
       let msg = "播放失败，请稍后重试";
       if (err?.code === MediaError.MEDIA_ERR_NETWORK) msg = "网络错误，无法加载音频";
@@ -203,20 +202,20 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   // ── currentTrack 变化时加载新 URL ────────────────────────────────────────
   useEffect(() => {
-    const navId = state.currentTrack?.navId ?? null;
-    if (!navId || navId === prevNavIdRef.current) return;
-    prevNavIdRef.current = navId;
-    currentNavIdRef.current = navId;
-    fetchAndSetSrc(navId);
-  }, [state.currentTrack?.navId, fetchAndSetSrc]);
+    const songId = state.currentTrack?.songId ?? null;
+    if (songId === null || songId === prevSongIdRef.current) return;
+    prevSongIdRef.current = songId;
+    currentSongIdRef.current = songId;
+    fetchAndSetSrc(songId);
+  }, [state.currentTrack?.songId, fetchAndSetSrc]);
 
   // ── 加载完成后自动播放 ────────────────────────────────────────────────────
   useEffect(() => {
-    if (wasLoadingRef.current && !state.isLoading && state.currentTrack) {
+    if (wasLoadingRef.current && !state.isLoading && state.currentTrack && !state.error) {
       audioRef.current?.play().catch(() => {});
     }
     wasLoadingRef.current = state.isLoading;
-  }, [state.isLoading, state.currentTrack]);
+  }, [state.isLoading, state.currentTrack, state.error]);
 
   // ── Controls ──────────────────────────────────────────────────────────────
 
@@ -288,10 +287,15 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       if (index === s.currentIndex) {
         audioRef.current?.pause();
         if (newQueue.length === 0) {
+          prevSongIdRef.current = null;
+          currentSongIdRef.current = null;
           return { ...s, queue: [], currentIndex: -1, currentTrack: null, isPlaying: false, currentTime: 0, duration: 0 };
         }
         const newIndex = Math.min(index, newQueue.length - 1);
-        return { ...s, queue: newQueue, currentIndex: newIndex, currentTrack: newQueue[newIndex] };
+        const newTrack = newQueue[newIndex];
+        // 重置 prevSongIdRef，确保 currentTrack 变化的 effect 能触发 fetchAndSetSrc
+        prevSongIdRef.current = null;
+        return { ...s, queue: newQueue, currentIndex: newIndex, currentTrack: newTrack };
       }
       const newIndex = index < s.currentIndex ? s.currentIndex - 1 : s.currentIndex;
       return { ...s, queue: newQueue, currentIndex: newIndex };
@@ -300,7 +304,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   const clearQueue = useCallback(() => {
     audioRef.current?.pause();
-    prevNavIdRef.current = null;
+    prevSongIdRef.current = null;
     setState((s) => ({
       ...s,
       queue: [],

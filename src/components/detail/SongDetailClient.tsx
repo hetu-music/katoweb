@@ -35,23 +35,6 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   // 是否拥有 Navidrome 试听权益（由服务端 /api/auth/me 判断）
   const hasBenefits = userLoaded && !!user?.hasBenefits;
 
-  // Navidrome 歌曲 ID（阶段一采用动态搜索方案时由此字段驱动；
-  // 当前先用歌曲标题作为搜索 key，实际 ID 通过 API 懒加载）
-  const [navidSongId, setNavidSongId] = useState<string | null>(null);
-
-  // 当用户拥有权益时，通过 Subsonic search3 接口按标题查找歌曲 ID
-  useEffect(() => {
-    if (!hasBenefits || !user) return;
-    if (navidSongId !== null) return; // 已有结果，不重复查询
-
-    fetch(`/api/navidrome/search?title=${encodeURIComponent(song.title)}`)
-      .then((r) => r.json())
-      .then((data: { id?: string | null }) => {
-        setNavidSongId(data.id ?? "");
-      })
-      .catch(() => setNavidSongId(""));
-  }, [hasBenefits, user, navidSongId, song.title]);
-
   const openUserPanel = (tab: "account" | "favorites" = "favorites") => {
     if (!user) {
       const next = encodeURIComponent(
@@ -322,7 +305,6 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 songId={song.id}
                 title={song.title}
                 artist={song.artist?.join(" / ")}
-                songNavId={navidSongId}
                 lrcLyrics={song.lyrics}
               />
             )}
