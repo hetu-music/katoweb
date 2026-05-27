@@ -58,6 +58,20 @@ export default function GlobalPlayer() {
 
   // ── 播放列表面板 ──────────────────────────────────────────────────────────
   const [showQueue, setShowQueue] = useState(false);
+  const queueRef = useRef<HTMLDivElement>(null);
+  const queueRefMobile = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!showQueue) return;
+    const handler = (e: MouseEvent) => {
+      const isClickInsideDesktop = queueRef.current?.contains(e.target as Node);
+      const isClickInsideMobile = queueRefMobile.current?.contains(e.target as Node);
+      if (!isClickInsideDesktop && !isClickInsideMobile) {
+        setShowQueue(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showQueue]);
 
   // ── 音量面板 ──────────────────────────────────────────────────────────────
   const [showVolume, setShowVolume] = useState(false);
@@ -220,120 +234,6 @@ export default function GlobalPlayer() {
 
   return (
     <>
-      {/* 播放列表面板 */}
-      {showQueue && (
-        <div
-          className={cn(
-            "fixed z-55 bottom-[104px] sm:bottom-[96px] left-1/2 -translate-x-1/2 w-full max-w-lg px-4",
-            "animate-in slide-in-from-bottom-4 fade-in duration-200",
-          )}
-        >
-          <div className="rounded-3xl overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800/40 shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-            {/* 顶栏头部 */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-950/20">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                  播放列表
-                </span>
-                <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-blue-50 dark:bg-blue-950/30 text-blue-500 dark:text-blue-400 border border-blue-100/30 dark:border-blue-800/10">
-                  {queue.length}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => controls.clearQueue()}
-                  className="flex items-center gap-1 text-xs font-medium text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/25 px-2.5 py-1.5 rounded-xl transition-all active:scale-95"
-                >
-                  <Trash2 size={13} />
-                  清空列表
-                </button>
-                <button
-                  onClick={() => setShowQueue(false)}
-                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-90"
-                >
-                  <X size={15} />
-                </button>
-              </div>
-            </div>
-
-            {/* 歌曲列表 */}
-            <div className="max-h-72 overflow-y-auto overscroll-contain no-scrollbar">
-              {queue.map((track, i) => (
-                <div
-                  key={`${track.songId}-${i}`}
-                  onClick={() => controls.jumpTo(i)}
-                  className={cn(
-                    "flex items-center gap-3.5 px-5 py-3 cursor-pointer transition-all group/item select-none border-b border-slate-50/50 dark:border-slate-800/10 last:border-b-0",
-                    i === currentIndex
-                      ? "bg-linear-to-r from-blue-500/8 to-transparent dark:from-blue-500/10 dark:to-transparent"
-                      : "hover:bg-slate-50/80 dark:hover:bg-slate-800/40",
-                  )}
-                >
-                  {/* 封面与播放指示器 */}
-                  <div className="shrink-0 w-8.5 h-8.5 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 relative shadow-sm">
-                    {track.coverUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={track.coverUrl} alt={track.title} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Music size={12} className="text-slate-400" />
-                      </div>
-                    )}
-                    {i === currentIndex && (
-                      <div className="absolute inset-0 bg-black/40 dark:bg-black/50 flex items-center justify-center">
-                        {isPlaying ? (
-                          <span className="flex gap-0.5 items-end h-3">
-                            {[60, 100, 40].map((h, j) => (
-                              <span
-                                key={j}
-                                className="w-0.5 bg-blue-400 dark:bg-blue-400 rounded-full"
-                                style={{
-                                  height: `${h}%`,
-                                  animation: `gpBounce 0.8s ease-in-out ${j * 0.2}s infinite`,
-                                }}
-                              />
-                            ))}
-                          </span>
-                        ) : (
-                          <Music size={10} className="text-white" />
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* 歌曲名与歌手 */}
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className={cn(
-                        "text-sm truncate",
-                        i === currentIndex
-                          ? "font-bold text-blue-600 dark:text-blue-400"
-                          : "font-medium text-slate-700 dark:text-slate-200 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors",
-                      )}
-                    >
-                      {track.title}
-                    </p>
-                    <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5 font-medium group-hover/item:text-slate-500 dark:group-hover/item:text-slate-400 transition-colors">
-                      {track.artist || "未知歌手"}
-                    </p>
-                  </div>
-
-                  {/* 删除单曲按钮 */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      controls.removeFromQueue(i);
-                    }}
-                    className="shrink-0 p-2 rounded-xl text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all opacity-0 group-hover/item:opacity-100 active:scale-90"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* 底部播放条 */}
       <div
@@ -347,25 +247,28 @@ export default function GlobalPlayer() {
           cardHeightClass
         )}
       >
-        {/* 进度条 */}
-        <div
-          ref={trackRef}
-          className={cn(
-            "absolute top-0 left-0 right-0 h-1 cursor-pointer bg-slate-200 dark:bg-slate-700/50 z-10 rounded-t-2xl overflow-hidden",
-            "group/prog hover:h-1.5 transition-all duration-150",
-            !duration && "pointer-events-none opacity-40",
-          )}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerUp}
-        >
+        {/* 顶部裁剪进度条容器 (防止其溢出卡片圆角) */}
+        <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-10">
+          {/* 进度条 */}
           <div
-            className="absolute left-0 top-0 h-full bg-blue-500 rounded-r-full"
-            style={{
-              width: duration > 0 ? `${(displayTime / duration) * 100}%` : "0%",
-            }}
-          />
+            ref={trackRef}
+            className={cn(
+              "absolute top-0 left-0 right-0 h-1 cursor-pointer bg-slate-200 dark:bg-slate-700/50 rounded-t-2xl overflow-hidden pointer-events-auto",
+              "group/prog hover:h-1.5 transition-all duration-150",
+              !duration && "pointer-events-none opacity-40",
+            )}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+          >
+            <div
+              className="absolute left-0 top-0 h-full bg-blue-500 rounded-r-full"
+              style={{
+                width: duration > 0 ? `${(displayTime / duration) * 100}%` : "0%",
+              }}
+            />
+          </div>
         </div>
 
         {/* ── 桌面端布局 (sm以上显示) ────────────────────────────────────────── */}
@@ -485,26 +388,149 @@ export default function GlobalPlayer() {
               <span>{formatPlayerTime(duration)}</span>
             </div>
 
-            {/* 列表按钮 */}
-            <button
-              onClick={() => setShowQueue((v) => !v)}
-              aria-label="播放列表"
-              className={cn(
-                "p-2 rounded-full transition-colors",
-                "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
-                "hover:bg-slate-100 dark:hover:bg-slate-800/80",
-                showQueue && "bg-blue-50 dark:bg-blue-500/10 text-blue-500 dark:text-blue-400",
-              )}
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="8" y1="6" x2="21" y2="6" />
-                <line x1="8" y1="12" x2="21" y2="12" />
-                <line x1="8" y1="18" x2="21" y2="18" />
-                <line x1="3" y1="6" x2="3.01" y2="6" />
-                <line x1="3" y1="12" x2="3.01" y2="12" />
-                <line x1="3" y1="18" x2="3.01" y2="18" />
-              </svg>
-            </button>
+            {/* 播放队列容器 (带 Ref) */}
+            <div className="relative shrink-0" ref={queueRef}>
+              {/* 列表弹出面板 (Desktop Popover) */}
+              <div
+                className={cn(
+                  "absolute bottom-full right-0 mb-3 rounded-2xl w-[380px] overflow-hidden",
+                  "bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl",
+                  "border border-slate-200/60 dark:border-slate-700/50",
+                  "shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]",
+                  "transition-all duration-200 origin-bottom-right",
+                  "animate-in fade-in slide-in-from-bottom-2 duration-200",
+                  "flex flex-col select-none z-50",
+                  showQueue
+                    ? "opacity-100 scale-100 pointer-events-auto translate-y-0"
+                    : "opacity-0 scale-95 pointer-events-none translate-y-2",
+                )}
+              >
+                {/* 顶栏头部 */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/40 dark:bg-slate-950/20">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                      播放队列
+                    </span>
+                    <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-blue-50 dark:bg-blue-950/30 text-blue-500 dark:text-blue-400 border border-blue-100/30 dark:border-blue-800/10">
+                      {queue.length}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => controls.clearQueue()}
+                      className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 px-2 py-1 rounded-lg transition-all active:scale-95"
+                    >
+                      <Trash2 size={12} />
+                      清空
+                    </button>
+                    <button
+                      onClick={() => setShowQueue(false)}
+                      className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-90"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* 歌曲列表 */}
+                <div className="max-h-[320px] overflow-y-auto overscroll-contain no-scrollbar">
+                  {queue.map((track, i) => (
+                    <div
+                      key={`${track.songId}-${i}`}
+                      onClick={() => controls.jumpTo(i)}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-all group/item select-none border-b border-slate-50/50 dark:border-slate-800/5 last:border-b-0",
+                        i === currentIndex
+                          ? "bg-blue-500/5 dark:bg-blue-500/10"
+                          : "hover:bg-slate-50/60 dark:hover:bg-slate-800/30",
+                      )}
+                    >
+                      {/* 封面与播放指示器 */}
+                      <div className="shrink-0 w-8 h-8 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 relative shadow-xs">
+                        {track.coverUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={track.coverUrl} alt={track.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Music size={11} className="text-slate-400" />
+                          </div>
+                        )}
+                        {i === currentIndex && (
+                          <div className="absolute inset-0 bg-black/40 dark:bg-black/55 flex items-center justify-center">
+                            {isPlaying ? (
+                              <span className="flex gap-0.5 items-end h-2.5">
+                                {[60, 100, 40].map((h, j) => (
+                                  <span
+                                    key={j}
+                                    className="w-0.5 bg-blue-400 rounded-full"
+                                    style={{
+                                      height: `${h}%`,
+                                      animation: `gpBounce 0.8s ease-in-out ${j * 0.2}s infinite`,
+                                    }}
+                                  />
+                                ))}
+                              </span>
+                            ) : (
+                              <Music size={10} className="text-white" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 歌曲名与歌手 */}
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className={cn(
+                            "text-xs truncate",
+                            i === currentIndex
+                              ? "font-bold text-blue-600 dark:text-blue-400"
+                              : "font-medium text-slate-700 dark:text-slate-200 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors",
+                          )}
+                        >
+                          {track.title}
+                        </p>
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate mt-0.5 font-medium group-hover/item:text-slate-500 dark:group-hover/item:text-slate-400 transition-colors">
+                          {track.artist || "未知歌手"}
+                        </p>
+                      </div>
+
+                      {/* 删除单曲按钮 */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          controls.removeFromQueue(i);
+                        }}
+                        className="shrink-0 p-1.5 rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all opacity-0 group-hover/item:opacity-100 active:scale-90"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 列表按钮 */}
+              <button
+                onClick={() => setShowQueue((v) => !v)}
+                aria-label="播放列表"
+                className={cn(
+                  "p-2 rounded-full transition-colors",
+                  "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
+                  "hover:bg-slate-100 dark:hover:bg-slate-800/80",
+                  showQueue && "bg-blue-50 dark:bg-blue-500/10 text-blue-500 dark:text-blue-400",
+                )}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="8" y1="6" x2="21" y2="6" />
+                  <line x1="8" y1="12" x2="21" y2="12" />
+                  <line x1="8" y1="18" x2="21" y2="18" />
+                  <line x1="3" y1="6" x2="3.01" y2="6" />
+                  <line x1="3" y1="12" x2="3.01" y2="12" />
+                  <line x1="3" y1="18" x2="3.01" y2="18" />
+                </svg>
+              </button>
+            </div>
+
 
             {/* 音量面板 */}
             <div className="relative shrink-0" ref={volumeRef}>
@@ -682,23 +708,147 @@ export default function GlobalPlayer() {
                 <SkipForward size={14} className="fill-current" />
               </button>
 
-              <button
-                onClick={() => setShowQueue((v) => !v)}
-                aria-label="播放列表"
-                className={cn(
-                  "p-1.5 rounded-full text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
-                  showQueue && "text-blue-500 dark:text-blue-400"
-                )}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="8" y1="6" x2="21" y2="6" />
-                  <line x1="8" y1="12" x2="21" y2="12" />
-                  <line x1="8" y1="18" x2="21" y2="18" />
-                  <line x1="3" y1="6" x2="3.01" y2="6" />
-                  <line x1="3" y1="12" x2="3.01" y2="12" />
-                  <line x1="3" y1="18" x2="3.01" y2="18" />
-                </svg>
-              </button>
+              {/* 播放队列容器 (移动端版, 带 Ref) */}
+              <div className="relative shrink-0" ref={queueRefMobile}>
+                {/* 列表弹出面板 (Mobile Popover) */}
+                <div
+                  className={cn(
+                    "fixed left-6 right-6 z-50 rounded-2xl overflow-hidden",
+                    currentLrcText ? "bottom-[112px]" : "bottom-[84px]",
+                    "bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl",
+                    "border border-slate-200/60 dark:border-slate-700/50",
+                    "shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]",
+                    "transition-all duration-200 origin-bottom",
+                    "animate-in fade-in slide-in-from-bottom-2 duration-200",
+                    "flex flex-col select-none",
+                    showQueue
+                      ? "opacity-100 scale-100 pointer-events-auto translate-y-0"
+                      : "opacity-0 scale-95 pointer-events-none translate-y-2",
+                  )}
+                >
+                  {/* 顶栏头部 */}
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/40 dark:bg-slate-950/20">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                        播放队列
+                      </span>
+                      <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-blue-50 dark:bg-blue-950/30 text-blue-500 dark:text-blue-400 border border-blue-100/30 dark:border-blue-800/10">
+                        {queue.length}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => controls.clearQueue()}
+                        className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 px-2 py-1 rounded-lg transition-all active:scale-95"
+                      >
+                        <Trash2 size={12} />
+                        清空
+                      </button>
+                      <button
+                        onClick={() => setShowQueue(false)}
+                        className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-90"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 歌曲列表 */}
+                  <div className="max-h-[260px] overflow-y-auto overscroll-contain no-scrollbar">
+                    {queue.map((track, i) => (
+                      <div
+                        key={`${track.songId}-${i}`}
+                        onClick={() => controls.jumpTo(i)}
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-all active:bg-slate-50/50 dark:active:bg-slate-800/20 select-none border-b border-slate-50/50 dark:border-slate-800/5 last:border-b-0",
+                          i === currentIndex
+                            ? "bg-blue-500/5 dark:bg-blue-500/10"
+                            : "",
+                        )}
+                      >
+                        {/* 封面与播放指示器 */}
+                        <div className="shrink-0 w-8 h-8 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 relative shadow-xs">
+                          {track.coverUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={track.coverUrl} alt={track.title} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Music size={11} className="text-slate-400" />
+                            </div>
+                          )}
+                          {i === currentIndex && (
+                            <div className="absolute inset-0 bg-black/40 dark:bg-black/55 flex items-center justify-center">
+                              {isPlaying ? (
+                                <span className="flex gap-0.5 items-end h-2.5">
+                                  {[60, 100, 40].map((h, j) => (
+                                    <span
+                                      key={j}
+                                      className="w-0.5 bg-blue-400 rounded-full"
+                                      style={{
+                                        height: `${h}%`,
+                                        animation: `gpBounce 0.8s ease-in-out ${j * 0.2}s infinite`,
+                                      }}
+                                    />
+                                  ))}
+                                </span>
+                              ) : (
+                                <Music size={10} className="text-white" />
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* 歌曲名与歌手 */}
+                        <div className="flex-1 min-w-0">
+                          <p
+                            className={cn(
+                              "text-xs truncate",
+                              i === currentIndex
+                                ? "font-bold text-blue-600 dark:text-blue-400"
+                                : "font-medium text-slate-700 dark:text-slate-200",
+                            )}
+                          >
+                            {track.title}
+                          </p>
+                          <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate mt-0.5 font-medium">
+                            {track.artist || "未知歌手"}
+                          </p>
+                        </div>
+
+                        {/* 删除单曲按钮 - 移动端默认不透明度 80% 以保持可见和便于点按 */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            controls.removeFromQueue(i);
+                          }}
+                          className="shrink-0 p-2 rounded-lg text-slate-400 dark:text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all active:scale-90 opacity-80"
+                        >
+                          <X size={13} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 列表按钮 */}
+                <button
+                  onClick={() => setShowQueue((v) => !v)}
+                  aria-label="播放列表"
+                  className={cn(
+                    "p-1.5 rounded-full text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors",
+                    showQueue && "text-blue-500 dark:text-blue-400"
+                  )}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="8" y1="6" x2="21" y2="6" />
+                    <line x1="8" y1="12" x2="21" y2="12" />
+                    <line x1="8" y1="18" x2="21" y2="18" />
+                    <line x1="3" y1="6" x2="3.01" y2="6" />
+                    <line x1="3" y1="12" x2="3.01" y2="12" />
+                    <line x1="3" y1="18" x2="3.01" y2="18" />
+                  </svg>
+                </button>
+              </div>
 
               {/* 音量面板 (移动端版) */}
               <div className="relative shrink-0" ref={volumeRefMobile}>
