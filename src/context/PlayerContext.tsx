@@ -287,33 +287,38 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     navigator.mediaSession.playbackState = state.isPlaying ? "playing" : "paused";
   }, [state.isPlaying]);
 
-  // ── MediaSession：用 rAF 持续同步进度条（不依赖 React state）────────────
+  // ── MediaSession：用 timeupdate 持续同步进度条 ───────────────────────────
   useEffect(() => {
     if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
-    let rafId: number;
-    let lastPosition = -1;
 
-    const sync = () => {
+    const syncPosition = () => {
       const audio = audioRef.current;
-      if (audio && audio.duration > 0 && !audio.paused) {
-        const pos = audio.currentTime;
-        // 每秒最多更新一次，避免频繁调用
-        if (Math.abs(pos - lastPosition) >= 1) {
-          lastPosition = pos;
-          try {
-            navigator.mediaSession.setPositionState({
-              duration: audio.duration,
-              playbackRate: audio.playbackRate,
-              position: Math.min(pos, audio.duration),
-            });
-          } catch { /* ignore */ }
-        }
-      }
-      rafId = requestAnimationFrame(sync);
+      if (!audio || !audio.duration) return;
+      try {
+        navigator.mediaSession.setPositionState({
+          duration: audio.duration,
+          playbackRate: audio.playbackRate,
+          position: Math.min(audio.currentTime, audio.duration),
+        });
+      } catch { /* ignore */ }
     };
 
-    rafId = requestAnimationFrame(sync);
-    return () => cancelAnimationFrame(rafId);
+    // 等待 audio 就绪
+    const bind = () => {
+      const audio = audioRef.current;
+      if (!audio) { setTimeout(bind, 100); return; }
+      audio.addEventListener("timeupdate", syncPosition);
+      audio.addEventListener("seeked", syncPosition);
+    };
+    bind();
+
+    return () => {
+      const audio = audioRef.current;
+      if (!audio) return;
+      audio.removeEventListener("timeupdate", syncPosition);
+      audio.removeEventListener("seeked", syncPosition);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── 加载完成后自动播放 ────────────────────────────────────────────────────
@@ -457,32 +462,51 @@ export function usePlayer(): PlayerContextValue {
 /**
  * 订阅播放进度的专用 hook。
  *
- * 用 requestAnimationFrame 直接读取 audio 元素，不经过 React state，
- * 因此不会触发 PlayerProvider 或其他消费者的重渲染。
- * 只有调用此 hook 的组件（GlobalPlayer）会按帧更新。
+ * 用 timeupdate 事件驱动更新（浏览器约每 250ms 触发一次），
+ * 不经过 PlayerProvider 的 state，只有 GlobalPlayer 会重渲染。
+ * 拖动 seek 时由 seekPreview state 覆盖显示，无需更高频率。
  */
 export function usePlayerTime(): { currentTime: number; duration: number } {
   const { audioRef } = usePlayer();
   const [time, setTime] = useState({ currentTime: 0, duration: 0 });
-  const rafRef = useRef<number>(0);
 
   useEffect(() => {
-    const tick = () => {
+    // audio 元素在 PlayerProvider 的 useEffect 里创建，可能晚于此 hook 挂载
+    // 用轮询等待 audio 就绪后再绑定事件
+    let cleanup: (() => void) | null = null;
+
+    const bind = () => {
       const audio = audioRef.current;
-      if (audio) {
+      if (!audio) return false;
+
+      const update = () => {
         const ct = audio.currentTime;
         const dur = isFinite(audio.duration) ? audio.duration : 0;
         setTime((prev) =>
-          // 只在值真正变化时才触发重渲染（duration 变化较少，currentTime 按帧比较）
           prev.currentTime === ct && prev.duration === dur
             ? prev
             : { currentTime: ct, duration: dur },
         );
-      }
-      rafRef.current = requestAnimationFrame(tick);
+      };
+
+      audio.addEventListener("timeupdate", update);
+      audio.addEventListener("durationchange", update);
+      audio.addEventListener("seeked", update);
+      cleanup = () => {
+        audio.removeEventListener("timeupdate", update);
+        audio.removeEventListener("durationchange", update);
+        audio.removeEventListener("seeked", update);
+      };
+      return true;
     };
-    rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
+
+    if (!bind()) {
+      // audio 还未创建，短暂等待后重试
+      const timer = setTimeout(() => bind(), 100);
+      return () => clearTimeout(timer);
+    }
+
+    return () => cleanup?.();
   }, [audioRef]);
 
   return time;

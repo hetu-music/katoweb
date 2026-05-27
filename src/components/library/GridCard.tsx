@@ -56,28 +56,12 @@ export default function GridCard({
           )}
         />
 
-        {isLoggedIn && (
-          <button
-            onClick={(event) => {
-              event.stopPropagation();
-              toggleFavorite(song.id);
-            }}
-            aria-label={active ? "取消收藏" : "收藏"}
-            title={active ? "取消收藏" : "收藏"}
-            className={cn(
-              "absolute right-2 top-2 rounded-full bg-white/80 p-1.5 text-slate-500 backdrop-blur-sm transition-all duration-200 hover:text-rose-500 dark:bg-slate-900/80 dark:text-slate-400",
-              active
-                ? "opacity-100 text-rose-500"
-                : "opacity-100 lg:opacity-0 lg:group-hover:opacity-100",
-            )}
-          >
-            <Heart size={16} className={active ? "fill-current" : ""} />
-          </button>
-        )}
-        {/* 右上角按钮组：收藏 + 加队列 + 播放 */}
+        {/* 右上角按钮组：播放 + 加队列 + 收藏 */}
         <div className={cn(
-          "absolute right-2 top-2 flex items-center gap-1",
-          "opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200",
+          "absolute right-2 top-2 flex items-center gap-1 transition-opacity duration-200",
+          active
+            ? "opacity-100"
+            : "opacity-100 lg:opacity-0 lg:group-hover:opacity-100",
         )}>
           <PlayButton
             songId={song.id}
@@ -106,8 +90,10 @@ export default function GridCard({
               aria-label={active ? "取消收藏" : "收藏"}
               title={active ? "取消收藏" : "收藏"}
               className={cn(
-                "rounded-full bg-white/80 p-1.5 text-slate-500 backdrop-blur-sm transition-all duration-200 hover:text-rose-500 dark:bg-slate-900/80 dark:text-slate-400",
-                active && "text-rose-500",
+                "rounded-full bg-white/80 p-1.5 backdrop-blur-sm transition-all duration-200 dark:bg-slate-900/80",
+                active
+                  ? "text-rose-500"
+                  : "text-slate-500 hover:text-rose-500 dark:text-slate-400",
               )}
             >
               <Heart size={14} className={active ? "fill-current" : ""} />
