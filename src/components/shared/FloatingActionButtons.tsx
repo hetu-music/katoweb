@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
-import { ArrowUp, Disc3, Download, Plus, Share2 } from "lucide-react";
-import { usePWAInstall } from "@/components/pwa/PWARegistration";
 import IOSInstallPrompt from "@/components/pwa/IOSInstallPrompt";
-import { cn } from "@/lib/utils";
+import { usePWAInstall } from "@/components/pwa/PWARegistration";
 import { usePlayer } from "@/context/PlayerContext";
+import { cn } from "@/lib/utils";
+import { ArrowUp, Disc3, Download, Plus, Share2 } from "lucide-react";
+import React, { useState } from "react";
 
 interface FloatingActionButtonsProps {
   showScrollTop: boolean;
@@ -58,11 +58,12 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
 
       <div
         className={cn(
-          "fixed bottom-8 right-8 z-50 flex flex-col gap-3 items-center",
+          "fixed right-6 z-50 flex flex-col gap-3 items-center transition-all duration-300",
+          hasPlayer ? "bottom-[112px] sm:bottom-8" : "bottom-8",
           className,
         )}
       >
-        {/* 二级菜单 */}
+        {/* 1. 二级菜单 (移到最顶部：当点击展开时，向上弹出的子菜单会飘入空旷区域，绝不遮挡其他按钮) */}
         {hasSecondaryActions && (
           <div className="relative flex flex-col items-center gap-3">
             <div
@@ -115,14 +116,14 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
           </div>
         )}
 
-        {/* 播放器开关按钮：有播放曲目时显示 */}
+        {/* 2. 播放器开关按钮：有播放曲目时显示 (放在中间) */}
         {hasPlayer && (
           <button
             onClick={() => setPlayerVisible(!playerVisible)}
             className={cn(
               buttonClass,
               playerVisible &&
-                "bg-blue-500 dark:bg-blue-500 text-white dark:text-white hover:bg-blue-600 dark:hover:bg-blue-600 ring-blue-500/30",
+              "bg-blue-500 dark:bg-blue-500 text-white dark:text-white hover:bg-blue-600 dark:hover:bg-blue-600 ring-blue-500/30",
             )}
             title={playerVisible ? "收起播放器" : "展开播放器"}
             aria-label={playerVisible ? "收起播放器" : "展开播放器"}
@@ -131,13 +132,13 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
               size={20}
               className={cn(
                 "transition-transform",
-                isPlaying && "animate-spin [animation-duration:3s]",
+                isPlaying && "animate-spin animation-duration-[3s]",
               )}
             />
           </button>
         )}
 
-        {/* 返回顶部 */}
+        {/* 3. 返回顶部 */}
         <button
           onClick={onScrollToTop}
           className={cn(
