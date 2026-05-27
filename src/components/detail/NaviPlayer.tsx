@@ -8,9 +8,10 @@ import {
   Music,
   Pause,
   Play,
+  Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatPlayerTime, usePlayer, usePlayerTime } from "@/context/PlayerContext";
+import { usePlayer } from "@/context/PlayerContext";
 import type { PlayerTrack } from "@/context/PlayerContext";
 
 interface NaviPlayerProps {
@@ -31,15 +32,14 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
   className,
 }) => {
   const { state, controls } = usePlayer();
-  const { currentTrack, isPlaying, isLoading, error } = state;
-  // currentTime / duration 由 usePlayerTime 直读 audio 元素，不经过全局 state
-  const { currentTime, duration } = usePlayerTime();
+  const { currentTrack, isPlaying, isLoading, queue, error } = state;
 
   if (!hasAudio) return null;
 
   const isCurrentSong = currentTrack?.songId === songId;
   const isThisPlaying = isCurrentSong && isPlaying;
   const isThisLoading = isCurrentSong && isLoading;
+  const isInQueue = queue.some((track) => track.songId === songId);
 
   const track: PlayerTrack = { songId, title, artist, coverUrl };
 
@@ -56,135 +56,121 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
     controls.enqueue(track);
   };
 
-  const displayTime = isCurrentSong ? currentTime : 0;
-  const displayDuration = isCurrentSong ? duration : 0;
-  const progressPercent =
-    displayDuration > 0 ? (displayTime / displayDuration) * 100 : 0;
-
   const currentError = isCurrentSong ? error : null;
 
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl",
-        "bg-white/70 dark:bg-slate-900/60",
-        "backdrop-blur-xl",
-        "border border-white/60 dark:border-slate-700/50",
-        "shadow-xl shadow-slate-200/40 dark:shadow-black/40",
-        "ring-1 ring-slate-900/5 dark:ring-white/5",
+        "relative overflow-hidden rounded-2xl transition-all duration-300",
+        "bg-white/40 dark:bg-slate-900/30 backdrop-blur-md",
+        "border border-slate-200/40 dark:border-slate-800/40",
+        "shadow-xs select-none",
         className,
       )}
     >
-      <div className="relative z-10 p-4">
-        <div className="flex items-center gap-3">
-          {/* 封面 */}
-          <div className={cn(
-            "shrink-0 w-10 h-10 rounded-xl overflow-hidden",
-            "bg-slate-100 dark:bg-slate-800",
-            "ring-1 ring-slate-900/5 dark:ring-white/10",
-          )}>
-            {coverUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={coverUrl}
-                alt={title}
-                className={cn(
-                  "w-full h-full object-cover transition-transform duration-700",
-                  isThisPlaying && "scale-110",
-                )}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                {isThisLoading ? (
-                  <Loader2 size={16} className="animate-spin text-blue-500" />
-                ) : (
-                  <Music size={16} className={cn("text-slate-400", isThisPlaying && "text-blue-500")} />
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <p
-              className={cn(
-                "text-sm font-bold truncate leading-tight",
-                isCurrentSong
-                  ? "text-blue-600 dark:text-blue-400"
-                  : "text-slate-900 dark:text-slate-50",
-              )}
-            >
-              {title}
-            </p>
-            {artist && (
-              <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
-                {artist}
+      <div className="flex items-center justify-between p-3 gap-4">
+        {/* 左侧：动态状态展示区 */}
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          {currentError ? (
+            <div className="flex items-center gap-2 text-rose-500 min-w-0">
+              <AlertCircle size={14} className="shrink-0" />
+              <p className="text-[11px] font-semibold truncate leading-none">
+                {currentError}
               </p>
-            )}
-            {currentError && (
-              <div className="flex items-center gap-1 mt-0.5">
-                <AlertCircle size={10} className="text-rose-500 shrink-0" />
-                <p className="text-[10px] text-rose-500 truncate">
-                  {currentError}
-                </p>
-              </div>
-            )}
-          </div>
+            </div>
+          ) : isThisLoading ? (
+            <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 min-w-0">
+              <Loader2 size={14} className="animate-spin shrink-0 text-blue-500" />
+              <p className="text-[11px] font-semibold tracking-wider truncate leading-none uppercase">
+                正在加载...
+              </p>
+            </div>
+          ) : isThisPlaying ? (
+            <div className="flex items-center gap-2.5 text-blue-500 dark:text-blue-400 min-w-0">
+              {/* 声波跳动微动效 */}
+              <span className="flex gap-0.5 items-end h-3 shrink-0">
+                {[60, 100, 40].map((h, j) => (
+                  <span
+                    key={j}
+                    className="w-0.5 bg-blue-500 dark:bg-blue-400 rounded-full"
+                    style={{
+                      height: `${h}%`,
+                      animation: `gpBounce 0.8s ease-in-out ${j * 0.2}s infinite`,
+                    }}
+                  />
+                ))}
+              </span>
+              <p className="text-[11px] font-bold tracking-wider truncate leading-none uppercase">
+                正在试听本首
+              </p>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 min-w-0">
+              <Music size={13} className="shrink-0 opacity-70" />
+              <p className="text-[11px] font-bold tracking-wider truncate leading-none uppercase">
+                试听本首曲目
+              </p>
+            </div>
+          )}
+        </div>
 
-          {!isCurrentSong && (
+        {/* 右侧：紧凑控制区 */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* 队列添加/已添加图标 */}
+          {isInQueue ? (
+            <div
+              title="已在播放队列"
+              className="flex items-center justify-center p-2 rounded-xl text-emerald-500 dark:text-emerald-400 bg-emerald-500/5 border border-emerald-500/10 scale-95"
+            >
+              <Check size={14} strokeWidth={2.5} />
+            </div>
+          ) : (
             <button
               onClick={handleEnqueue}
-              aria-label="加入播放列表"
-              title="加入播放列表"
+              aria-label="加入播放队列"
+              title="加入播放队列"
               className={cn(
-                "shrink-0 p-2 rounded-lg transition-colors",
-                "text-slate-400 hover:text-blue-500",
-                "hover:bg-blue-50 dark:hover:bg-blue-500/10",
+                "p-2 rounded-xl transition-all active:scale-90 border",
+                "text-slate-400 dark:text-slate-500 hover:text-blue-500 dark:hover:text-blue-400",
+                "bg-slate-50/50 dark:bg-slate-950/20 border-slate-200/50 dark:border-slate-800/40 hover:border-blue-500/20 dark:hover:border-blue-400/20",
               )}
             >
-              <ListPlus size={16} />
+              <ListPlus size={14} />
             </button>
           )}
 
+          {/* 核心播放/暂停控制按钮 */}
           <button
             onClick={handleToggle}
             disabled={isThisLoading}
             aria-label={isThisPlaying ? "暂停" : "播放"}
             className={cn(
-              "shrink-0 w-10 h-10 rounded-full flex items-center justify-center",
-              "transition-all duration-200",
+              "w-8.5 h-8.5 rounded-full flex items-center justify-center transition-all duration-200",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50",
               isThisLoading
                 ? "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
                 : isThisPlaying
-                  ? "bg-blue-500 text-white shadow-lg shadow-blue-500/30 hover:bg-blue-600 active:scale-95"
-                  : "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md hover:bg-slate-700 dark:hover:bg-slate-100 active:scale-95",
+                  ? "bg-blue-500 text-white shadow-md shadow-blue-500/25 hover:bg-blue-600 active:scale-95"
+                  : "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm hover:opacity-90 active:scale-95",
             )}
           >
             {isThisLoading ? (
-              <Loader2 size={16} className="animate-spin" />
+              <Loader2 size={13} className="animate-spin" />
             ) : isThisPlaying ? (
-              <Pause size={16} className="fill-current" />
+              <Pause size={13} className="fill-current" />
             ) : (
-              <Play size={16} className="fill-current translate-x-0.5" />
+              <Play size={13} className="fill-current translate-x-0.5" />
             )}
           </button>
         </div>
-
-        {isCurrentSong && (
-          <div className="mt-3 space-y-1">
-            <div className="h-1 w-full rounded-full bg-slate-200 dark:bg-slate-700/50 overflow-hidden">
-              <div
-                className="h-full bg-blue-500 rounded-full transition-all duration-300"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-            <div className="flex justify-between text-[10px] font-mono text-slate-400 dark:text-slate-500 select-none">
-              <span>{formatPlayerTime(displayTime)}</span>
-              <span>{formatPlayerTime(displayDuration)}</span>
-            </div>
-          </div>
-        )}
       </div>
+
+      <style>{`
+        @keyframes gpBounce {
+          0%, 100% { transform: scaleY(0.4); }
+          50% { transform: scaleY(1); }
+        }
+      `}</style>
     </div>
   );
 };
