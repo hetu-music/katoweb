@@ -61,7 +61,7 @@ function ProfileContent() {
 
   const { user, loaded: userLoaded, logout, loggingOut } = useUserContext();
 
-  const isSuperAdmin = userLoaded && !!user?.isAdmin && user?.sortOrder === 1;
+  const isSuperAdmin = userLoaded && !!user?.isSuper;
 
   const hasBenefits = userLoaded && !!user?.hasBenefits;
 
