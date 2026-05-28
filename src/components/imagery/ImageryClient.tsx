@@ -2,6 +2,7 @@
 
 import About from "@/components/library/About";
 import AppNavbar from "@/components/shared/AppNavbar";
+import { usePlayer } from "@/context/PlayerContext";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import type { ImageryCategory, ImageryItem } from "@/lib/types";
 import { useIntersection } from "@mantine/hooks";
@@ -284,6 +285,18 @@ const CategoryButton = memo(function CategoryButton({
 // ─── main component ───────────────────────────────────────────────────────────
 
 export default function ImageryClient({ items, categories }: Props) {
+  const { controls, setPlayerVisible } = usePlayer();
+
+  // 进入页面时暂停播放并隐藏播放条，离开时恢复显示
+  useEffect(() => {
+    controls.pause();
+    setPlayerVisible(false);
+    return () => {
+      setPlayerVisible(true);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // ── category hierarchy ───────────────────────────────────────────────────
   const catMap = useMemo(
     () => new Map(categories.map((c) => [c.id, c])),
