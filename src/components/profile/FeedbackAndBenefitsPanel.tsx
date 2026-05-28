@@ -18,7 +18,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface FeedbackAndBenefitsPanelProps {
   csrfToken: string;
@@ -50,6 +50,142 @@ const TYPE_LABELS: Record<RequestType, string> = {
   admin_apply: "申请管理员",
 };
 
+// ─── 歌曲搜索选择器 ───────────────────────────────────────────────────────────
+
+interface SongOption {
+  id: number;
+  title: string;
+}
+
+interface SongPickerProps {
+  value: SongOption | null;
+  onChange: (song: SongOption | null) => void;
+}
+
+function SongPicker({ value, onChange }: SongPickerProps) {
+  const [query, setQuery] = useState("");
+  const [options, setOptions] = useState<SongOption[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  // 点击外部关闭
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  // 防抖搜索
+  useEffect(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (!query.trim()) {
+      setOptions([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    timerRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `/api/public/songs/search?q=${encodeURIComponent(query)}&limit=10`,
+        );
+        const data = await res.json();
+        setOptions(data.songs ?? []);
+      } catch {
+        setOptions([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 300);
+  }, [query]);
+
+  const handleSelect = (song: SongOption) => {
+    onChange(song);
+    setQuery("");
+    setOptions([]);
+    setOpen(false);
+  };
+
+  const handleClear = () => {
+    onChange(null);
+    setQuery("");
+    setOptions([]);
+  };
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      {value ? (
+        // 已选中状态
+        <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-500/20">
+          <span className="flex-1 text-sm text-slate-800 dark:text-slate-100 truncate">
+            {value.title}
+          </span>
+          <button
+            type="button"
+            onClick={handleClear}
+            className="shrink-0 p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      ) : (
+        // 搜索输入
+        <div className="relative">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setOpen(true);
+            }}
+            onFocus={() => query && setOpen(true)}
+            placeholder="输入歌曲名称搜索..."
+            className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:border-blue-500/50 focus:bg-white dark:focus:bg-[#111] outline-none transition-all text-sm text-slate-800 dark:text-slate-200"
+          />
+          {loading && (
+            <Loader2
+              size={14}
+              className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-slate-400"
+            />
+          )}
+        </div>
+      )}
+
+      {/* 下拉列表 */}
+      {open && !value && options.length > 0 && (
+        <div className="absolute z-50 top-full mt-1 w-full bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg overflow-hidden">
+          {options.map((song) => (
+            <button
+              key={song.id}
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                handleSelect(song);
+              }}
+              className="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors truncate"
+            >
+              {song.title}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* 无结果提示 */}
+      {open && !value && query.trim() && !loading && options.length === 0 && (
+        <div className="absolute z-50 top-full mt-1 w-full bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg px-4 py-3 text-xs text-slate-400">
+          未找到相关歌曲
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── 提交表单 ─────────────────────────────────────────────────────────────────
 
 interface SubmitFormProps {
@@ -60,7 +196,7 @@ interface SubmitFormProps {
 
 function SubmitForm({ csrfToken, hasBenefits, onSubmitted }: SubmitFormProps) {
   const [type, setType] = useState<RequestType>("song_feedback");
-  const [songIdStr, setSongIdStr] = useState("");
+  const [selectedSong, setSelectedSong] = useState<{ id: number; title: string } | null>(null);
   const [category, setCategory] = useState("");
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -76,15 +212,8 @@ function SubmitForm({ csrfToken, hasBenefits, onSubmitted }: SubmitFormProps) {
       return;
     }
 
-    if (type === "song_feedback" && !songIdStr.trim()) {
-      setError("歌曲纠错需要填写歌曲 ID");
-      return;
-    }
-
-    const songId =
-      type === "song_feedback" ? parseInt(songIdStr.trim(), 10) : null;
-    if (type === "song_feedback" && (!songId || isNaN(songId))) {
-      setError("歌曲 ID 必须是有效的数字");
+    if (type === "song_feedback" && !selectedSong) {
+      setError("歌曲纠错需要选择歌曲");
       return;
     }
 
@@ -93,7 +222,7 @@ function SubmitForm({ csrfToken, hasBenefits, onSubmitted }: SubmitFormProps) {
       await apiCreateRequest(
         {
           type,
-          song_id: songId,
+          song_id: selectedSong?.id ?? null,
           category: category.trim() || null,
           content: content.trim(),
         },
@@ -101,7 +230,7 @@ function SubmitForm({ csrfToken, hasBenefits, onSubmitted }: SubmitFormProps) {
       );
       setSuccess(true);
       setContent("");
-      setSongIdStr("");
+      setSelectedSong(null);
       setCategory("");
       setTimeout(() => {
         setSuccess(false);
@@ -146,21 +275,14 @@ function SubmitForm({ csrfToken, hasBenefits, onSubmitted }: SubmitFormProps) {
         </div>
       </div>
 
-      {/* 歌曲 ID（仅纠错） */}
+      {/* 歌曲选择（仅纠错） */}
       {type === "song_feedback" && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
-              歌曲 ID
+              歌曲
             </label>
-            <input
-              type="number"
-              min={1}
-              value={songIdStr}
-              onChange={(e) => setSongIdStr(e.target.value)}
-              placeholder="请输入歌曲 ID"
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:border-blue-500/50 focus:bg-white dark:focus:bg-[#111] outline-none transition-all text-sm text-slate-800 dark:text-slate-200"
-            />
+            <SongPicker value={selectedSong} onChange={setSelectedSong} />
           </div>
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
