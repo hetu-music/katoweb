@@ -34,13 +34,14 @@ export async function getSongs(
       );
       return [];
     }
-    const data = await fetchAll<SongDetail>(
+    const data = await fetchAll<Record<string, unknown>>(
       supabase,
       table,
       selectFields,
       (q) => q.order("id", { ascending: true }),
     );
-    return mapAndSortSongs(data);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return mapAndSortSongs(data as any);
   }
 
   // Admin / 其他表：用户权限客户端
@@ -58,7 +59,8 @@ export async function getSongs(
     console.error("[getSongs] Supabase error:", error);
     throw new Error("Failed to fetch songs");
   }
-  return mapAndSortSongs(data as SongDetail[]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return mapAndSortSongs(data as any);
 }
 
 /**
