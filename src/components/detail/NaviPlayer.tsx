@@ -11,8 +11,8 @@ import {
   Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { usePlayer } from "@/context/PlayerContext";
-import type { PlayerTrack } from "@/context/PlayerContext";
+import { usePlayerStore } from "@/store/player-store";
+import type { PlayerTrack } from "@/store/player-store";
 
 interface NaviPlayerProps {
   songId: number;
@@ -31,8 +31,16 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
   hasAudio = true,
   className,
 }) => {
-  const { state, controls } = usePlayer();
-  const { currentTrack, isPlaying, isLoading, queue, error } = state;
+  const {
+    currentTrack,
+    isPlaying,
+    isLoading,
+    queue,
+    error,
+    toggle,
+    play,
+    enqueue,
+  } = usePlayerStore();
 
   if (!hasAudio) return null;
 
@@ -45,15 +53,15 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
 
   const handleToggle = () => {
     if (isCurrentSong) {
-      controls.toggle();
+      toggle();
     } else {
-      controls.play(track);
+      play(track);
     }
   };
 
   const handleEnqueue = (e: React.MouseEvent) => {
     e.stopPropagation();
-    controls.enqueue(track);
+    enqueue(track);
   };
 
   const currentError = isCurrentSong ? error : null;

@@ -1,12 +1,13 @@
 "use client";
 
+import { usePlayerStore } from "@/store/player-store";
+import { usePlayerTime } from "@/hooks/usePlayerTime";
 import {
   formatPlayerTime,
   getCurrentLrcIndex,
   parseLrc,
-  usePlayer,
-  usePlayerTime,
-} from "@/context/PlayerContext";
+} from "@/lib/player-utils";
+import { getAudio } from "@/lib/audio-engine";
 import { cn } from "@/lib/utils";
 import {
   AlertCircle,
@@ -36,7 +37,6 @@ import React, {
 
 export default function GlobalPlayer() {
   const pathname = usePathname();
-  const { state, controls, playerVisible, lyricsMap, audioRef } = usePlayer();
   const {
     currentTrack,
     queue,
@@ -46,7 +46,52 @@ export default function GlobalPlayer() {
     volume,
     isMuted,
     error,
-  } = state;
+    playerVisible,
+    lyricsMap,
+    play,
+    enqueue,
+    toggle,
+    pause,
+    jumpTo,
+    prev,
+    next,
+    removeFromQueue,
+    clearQueue,
+    seek,
+    setVolume,
+    toggleMute,
+  } = usePlayerStore();
+  const controls = useMemo(
+    () => ({
+      play,
+      enqueue,
+      toggle,
+      pause,
+      jumpTo,
+      prev,
+      next,
+      removeFromQueue,
+      clearQueue,
+      seek,
+      setVolume,
+      toggleMute,
+    }),
+    [
+      play,
+      enqueue,
+      toggle,
+      pause,
+      jumpTo,
+      prev,
+      next,
+      removeFromQueue,
+      clearQueue,
+      seek,
+      setVolume,
+      toggleMute,
+    ],
+  );
+  const audioRef = useRef(getAudio());
 
   // ── 进度时间：通过 rAF 直读 audio 元素，不经过全局 state ─────────────────
   const { currentTime, duration } = usePlayerTime();
@@ -193,7 +238,6 @@ export default function GlobalPlayer() {
       const a = audioRef.current;
       a?.removeEventListener("seeked", onSeeked);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── 音量拖拽 ──────────────────────────────────────────────────────────────

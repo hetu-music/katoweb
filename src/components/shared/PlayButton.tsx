@@ -3,7 +3,7 @@
 import React from "react";
 import { Pause, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { usePlayer } from "@/context/PlayerContext";
+import { usePlayerStore } from "@/store/player-store";
 import { useUserContext } from "@/context/UserContext";
 
 interface PlayButtonProps {
@@ -26,20 +26,20 @@ export default function PlayButton({
   size = 15,
 }: PlayButtonProps) {
   const { user, loaded } = useUserContext();
-  const { controls, state } = usePlayer();
+  const { currentTrack, isPlaying, play, toggle } = usePlayerStore();
 
   const hasBenefits = loaded && !!user?.hasBenefits;
   if (!hasBenefits || !hasAudio) return null;
 
-  const isCurrentSong = state.currentTrack?.songId === songId;
-  const isThisPlaying = isCurrentSong && state.isPlaying;
+  const isCurrentSong = currentTrack?.songId === songId;
+  const isThisPlaying = isCurrentSong && isPlaying;
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isCurrentSong) {
-      controls.toggle();
+      toggle();
     } else {
-      controls.play({ songId, title, artist, coverUrl });
+      play({ songId, title, artist, coverUrl });
     }
   };
 

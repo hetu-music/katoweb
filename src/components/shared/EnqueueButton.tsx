@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Check, ListPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { usePlayer } from "@/context/PlayerContext";
+import { usePlayerStore } from "@/store/player-store";
 import { useUserContext } from "@/context/UserContext";
 
 interface EnqueueButtonProps {
@@ -26,18 +26,18 @@ export default function EnqueueButton({
   size = 15,
 }: EnqueueButtonProps) {
   const { user, loaded } = useUserContext();
-  const { controls, state } = usePlayer();
+  const { queue, enqueue } = usePlayerStore();
   const [justAdded, setJustAdded] = useState(false);
 
   const hasBenefits = loaded && !!user?.hasBenefits;
   if (!hasBenefits || !hasAudio) return null;
 
-  const alreadyInQueue = state.queue.some((t) => t.songId === songId);
+  const alreadyInQueue = queue.some((t) => t.songId === songId);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (alreadyInQueue) return;
-    controls.enqueue({ songId, title, artist, coverUrl });
+    enqueue({ songId, title, artist, coverUrl });
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1500);
   };

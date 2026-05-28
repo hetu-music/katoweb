@@ -168,8 +168,7 @@ export default function MusicLibraryClient({
     return () => clearTimeout(timer);
   }, [mounted, filteredSongs, mountKey, notifyDataReady, viewMode]);
 
-  // 歌词加载完成后注入到 PlayerContext，供播放器显示歌词用
-  // （已移至 PlayerContext 内部按需 fetch，此处无需处理）
+  // 歌词由 player-store 订阅 currentTrack 变化后自动按需 fetch，此处无需处理
 
   const totalPages = useMemo(
     () => Math.max(1, Math.ceil(filteredSongs.length / itemsPerPage)),

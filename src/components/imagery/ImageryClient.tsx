@@ -2,7 +2,7 @@
 
 import About from "@/components/library/About";
 import AppNavbar from "@/components/shared/AppNavbar";
-import { usePlayer } from "@/context/PlayerContext";
+import { usePlayerStore } from "@/store/player-store";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import type { ImageryCategory, ImageryItem } from "@/lib/types";
 import { useIntersection } from "@mantine/hooks";
@@ -287,7 +287,7 @@ const CategoryButton = memo(function CategoryButton({
 
 export default function ImageryClient({ items, categories }: Props) {
   const router = useRouter();
-  const { setPlayerVisible } = usePlayer();
+  const { setPlayerVisible } = usePlayerStore();
 
   // 意象词云页面：隐藏播放条但不暂停音乐，离开时恢复显示
   useEffect(() => {

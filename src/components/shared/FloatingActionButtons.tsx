@@ -2,7 +2,7 @@
 
 import IOSInstallPrompt from "@/components/pwa/IOSInstallPrompt";
 import { usePWAInstall } from "@/components/pwa/PWARegistration";
-import { usePlayer } from "@/context/PlayerContext";
+import { usePlayerStore } from "@/store/player-store";
 import { cn } from "@/lib/utils";
 import { ArrowUp, Disc3, Download, Plus, Share2 } from "lucide-react";
 import React, { useState } from "react";
@@ -27,8 +27,8 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // 播放器开关
-  const { state, playerVisible, setPlayerVisible } = usePlayer();
-  const { currentTrack, isPlaying } = state;
+  const { currentTrack, isPlaying, playerVisible, setPlayerVisible } =
+    usePlayerStore();
   const hasPlayer = !!currentTrack;
 
   const showInstallButton = isInstallable || (isIOS && !isStandalone);

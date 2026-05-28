@@ -7,7 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { usePlayer } from "@/context/PlayerContext";
+import { usePlayerStore } from "@/store/player-store";
 import {
   CUSTOM_NODE_REGISTRY,
   DefaultNodeLayout,
@@ -263,11 +263,11 @@ function ImmersiveReadingPanel({ event }: { event: TimelineEvent }) {
 
 export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
   const container = useRef<HTMLDivElement>(null);
-  const { controls, setPlayerVisible } = usePlayer();
+  const { pause, setPlayerVisible } = usePlayerStore();
 
   // 进入页面时暂停播放并隐藏播放条，离开时恢复显示
   useEffect(() => {
-    controls.pause();
+    pause();
     setPlayerVisible(false);
     return () => {
       setPlayerVisible(true);
