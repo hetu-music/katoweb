@@ -431,3 +431,66 @@ export async function apiUpdateUser(
   }
   return res.json();
 }
+
+// ─── User Requests API ─────────────────────────────────────────────────────────
+
+export async function apiGetMyRequests(): Promise<{
+  requests: import("./types").UserRequest[];
+}> {
+  const res = await fetch("/api/public/requests");
+  if (!res.ok) throw new Error("获取请求列表失败");
+  return res.json();
+}
+
+export async function apiCreateRequest(
+  payload: import("./types").CreateRequestPayload,
+  csrfToken: string,
+): Promise<{ request: import("./types").UserRequest }> {
+  const res = await fetch("/api/public/requests", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-csrf-token": csrfToken,
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "提交失败");
+  return data;
+}
+
+export async function apiGetAdminRequests(params?: {
+  type?: string;
+  status?: string;
+  page?: number;
+}): Promise<{
+  requests: import("./types").UserRequest[];
+  total: number;
+  page: number;
+  pageSize: number;
+}> {
+  const sp = new URLSearchParams();
+  if (params?.type) sp.set("type", params.type);
+  if (params?.status) sp.set("status", params.status);
+  if (params?.page) sp.set("page", String(params.page));
+  const res = await fetch(`/api/admin/requests?${sp.toString()}`);
+  if (!res.ok) throw new Error("获取请求列表失败");
+  return res.json();
+}
+
+export async function apiReplyRequest(
+  payload: import("./types").ReplyRequestPayload,
+  csrfToken: string,
+): Promise<{ success: boolean }> {
+  const res = await fetch("/api/admin/requests", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "x-csrf-token": csrfToken,
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "操作失败");
+  return data;
+}

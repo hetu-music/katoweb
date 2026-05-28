@@ -158,6 +158,42 @@ export type UserRecord = {
   endpoint: string | null;
 };
 
+// ─── 用户请求/反馈相关类型 ────────────────────────────────────────────────────
+
+export type RequestType = "song_feedback" | "benefit_apply" | "admin_apply";
+export type RequestStatus = "pending" | "replied" | "approved" | "rejected";
+
+export type UserRequest = {
+  id: string;
+  user_id: string;
+  type: RequestType;
+  song_id: number | null;
+  category: string | null;
+  content: string;
+  status: RequestStatus;
+  reply: string | null;
+  replied_by: string | null;
+  replied_at: string | null;
+  created_at: string;
+  updated_at: string;
+  // 关联数据（管理员视图）
+  user_name?: string | null;
+  song_title?: string | null;
+};
+
+export type CreateRequestPayload = {
+  type: RequestType;
+  song_id?: number | null;
+  category?: string | null;
+  content: string;
+};
+
+export type ReplyRequestPayload = {
+  id: string;
+  reply: string;
+  status: RequestStatus;
+};
+
 // 用户更新字段类型（超级管理员可编辑的字段）
 export type UserUpdatePayload = {
   id: string;

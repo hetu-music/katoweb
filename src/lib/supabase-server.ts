@@ -58,6 +58,9 @@ export const TABLES = {
 
   // Navidrome 歌曲映射表
   NAVID_SONG: "navid_song",
+
+  // 用户请求/反馈表
+  USER_REQUESTS: "user_requests",
 } as const;
 
 // ─── 服务端运行时检查 ──────────────────────────────────────────────────────

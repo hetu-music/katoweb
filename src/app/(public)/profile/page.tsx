@@ -2,6 +2,8 @@
 
 import AuditLogsPanel from "@/components/admin/AuditLogsPanel";
 import UserManagePanel from "@/components/admin/UserManagePanel";
+import RequestsPanel from "@/components/admin/RequestsPanel";
+import FeedbackAndBenefitsPanel from "@/components/profile/FeedbackAndBenefitsPanel";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import EnqueueButton from "@/components/shared/EnqueueButton";
 import PlayButton from "@/components/shared/PlayButton";
@@ -39,13 +41,14 @@ import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
-type TabType = "favorites" | "account" | "benefits" | "users" | "logs";
+type TabType = "favorites" | "account" | "benefits" | "users" | "logs" | "requests";
 const PROFILE_TABS = [
   "favorites",
   "account",
   "benefits",
   "users",
   "logs",
+  "requests",
 ] as const;
 
 function ProfileContent() {
@@ -70,8 +73,8 @@ function ProfileContent() {
     if (!userLoaded) return;
     if (activeTab === "users" && !isSuperAdmin) setActiveTab("favorites");
     if (activeTab === "logs" && !isSuperAdmin) setActiveTab("favorites");
-    if (activeTab === "benefits" && !hasBenefits) setActiveTab("favorites");
-  }, [userLoaded, activeTab, isSuperAdmin, hasBenefits, setActiveTab]);
+    if (activeTab === "requests" && !user?.isAdmin) setActiveTab("favorites");
+  }, [userLoaded, activeTab, isSuperAdmin, user, setActiveTab]);
 
   const {
     favorites,
@@ -160,7 +163,7 @@ function ProfileContent() {
   }, [accountForm, user]);
 
   useEffect(() => {
-    if (!user || (activeTab !== "account" && activeTab !== "users")) return;
+    if (!user || (activeTab !== "account" && activeTab !== "users" && activeTab !== "benefits" && activeTab !== "requests")) return;
     fetch("/api/public/csrf-token")
       .then((r) => r.json())
       .then((d) => setCsrfToken(d.csrfToken || ""));
@@ -382,7 +385,8 @@ function ProfileContent() {
                 [
                   "favorites",
                   "account",
-                  ...(hasBenefits ? (["benefits"] as TabType[]) : []),
+                  "benefits",
+                  ...(user?.isAdmin ? (["requests"] as TabType[]) : []),
                   ...(isSuperAdmin ? (["users", "logs"] as TabType[]) : []),
                 ] as TabType[]
               ).map((tab) => (
@@ -404,6 +408,7 @@ function ProfileContent() {
                   )}
                   {tab === "account" && <Settings size={14} />}
                   {tab === "benefits" && <Sparkles size={14} />}
+                  {tab === "requests" && <ClipboardList size={14} />}
                   {tab === "users" && <Users size={14} />}
                   {tab === "logs" && <ClipboardList size={14} />}
                   {tab === "favorites"
@@ -411,10 +416,12 @@ function ProfileContent() {
                     : tab === "account"
                       ? "账户设置"
                       : tab === "benefits"
-                        ? "权益"
-                        : tab === "users"
-                          ? "用户管理"
-                          : "操作日志"}
+                        ? "反馈和权益"
+                        : tab === "requests"
+                          ? "反馈管理"
+                          : tab === "users"
+                            ? "用户管理"
+                            : "操作日志"}
                 </button>
               ))}
             </div>
@@ -853,21 +860,29 @@ function ProfileContent() {
                 </div>
               )}
 
-              {/* Benefits Tab — shown when navid_id, navid_pw or endpoint is set */}
-              {activeTab === "benefits" && hasBenefits && (
+              {/* Feedback & Benefits Tab — all logged-in users */}
+              {activeTab === "benefits" && user && (
+                <FeedbackAndBenefitsPanel
+                  csrfToken={csrfToken}
+                  hasBenefits={hasBenefits}
+                  isAdmin={!!user.isAdmin}
+                />
+              )}
+
+              {/* Requests Management Tab — admin only */}
+              {activeTab === "requests" && user?.isAdmin && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
-                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-8 flex-1 flex flex-col items-center justify-center gap-4 text-center">
-                    <div className="w-14 h-14 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center">
-                      <Sparkles size={24} className="text-blue-500" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                        在线试听已开通
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-6 flex-1">
+                    <div className="space-y-1 mb-6">
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <ClipboardList size={18} className="text-blue-500" />
+                        反馈管理
                       </h3>
-                      <p className="text-sm text-slate-400 mt-1.5 leading-relaxed max-w-xs">
-                        您已获得在线试听权益，可在每首歌曲的详情页直接播放高品质音频。
+                      <p className="text-xs text-slate-400">
+                        处理用户提交的纠错、申请等反馈
                       </p>
                     </div>
+                    <RequestsPanel csrfToken={csrfToken} isSuper={isSuperAdmin} />
                   </div>
                 </div>
               )}
