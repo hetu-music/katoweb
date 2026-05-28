@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "./supabase-auth";
-import { getUserClient, TABLES } from "./supabase-server";
 import { verifyCSRFToken } from "./server-utils";
 
 export interface AuthenticatedUser {
   id: string;
   email?: string;
+  app_metadata?: {
+    is_admin?: boolean;
+    is_super?: boolean;
+    [key: string]: unknown;
+  };
   [key: string]: unknown;
 }
 
@@ -125,8 +129,11 @@ export async function authenticateUserWithCSRF(
  * 高阶函数：为 API 路由添加身份验证
  *
  * options.requireCSRF       — 同时验证 CSRF token（写操作必须开启）
- * options.requireAdmin      — 额外校验 users 表中的 is_admin=true（管理后台操作必须开启）
- * options.requireSuperAdmin — 额外校验 is_admin=true AND sort_order=1（超级管理员操作）
+ * options.requireAdmin      — 额外校验 JWT app_metadata.is_admin=true（管理后台操作必须开启）
+ * options.requireSuperAdmin — 额外校验 JWT app_metadata.is_super=true（超级管理员操作）
+ *
+ * 权限来源：Supabase JWT 的 app_metadata，由数据库触发器 sync_user_claims_to_auth 同步写入，
+ * 无需额外查询 users 表，性能更好且不受 RLS 影响。
  */
 export function withAuth(
   handler: (
@@ -155,30 +162,16 @@ export function withAuth(
       return NextResponse.json({ error: "User not found" }, { status: 401 });
     }
 
-    // Admin check: verify is_admin flag in the users table
+    // 从 JWT app_metadata 读取权限，由触发器 sync_user_claims_to_auth 保持同步
     if (options.requireAdmin || options.requireSuperAdmin) {
-      try {
-        const supabase = await createSupabaseServerClient();
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        const userClient = getUserClient(session?.access_token);
-        if (!userClient) {
-          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
-        const { data: userData } = await userClient
-          .from(TABLES.USERS)
-          .select("is_admin, sort_order")
-          .eq("id", authResult.user.id)
-          .maybeSingle();
-        if (!userData?.is_admin) {
-          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
-        if (options.requireSuperAdmin && userData.sort_order !== 1) {
-          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
-      } catch (error) {
-        console.error("Admin check error:", error);
+      const appMeta = authResult.user.app_metadata;
+      const isAdmin = appMeta?.is_admin === true;
+      const isSuper = appMeta?.is_super === true;
+
+      if (!isAdmin) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+      if (options.requireSuperAdmin && !isSuper) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
     }

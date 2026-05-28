@@ -7,6 +7,7 @@ import React from "react";
 import { ChunkErrorHandler } from "@/components/shared/ChunkErrorHandler";
 import { UserProvider } from "@/context/UserContext";
 import { FavoritesProvider } from "@/context/FavoritesContext";
+import { PlayerProvider } from "@/context/PlayerContext";
 import { createQueryClient } from "@/lib/query-client";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -18,7 +19,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <QueryClientProvider client={queryClient}>
           <ChunkErrorHandler />
           <UserProvider>
-            <FavoritesProvider>{children}</FavoritesProvider>
+            <FavoritesProvider>
+              <PlayerProvider>{children}</PlayerProvider>
+            </FavoritesProvider>
           </UserProvider>
         </QueryClientProvider>
       </NuqsAdapter>

@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   UserPlus,
 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -42,6 +43,7 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
   });
   const [turnstileInstanceKey, setTurnstileInstanceKey] = useState(0);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const isLogin = mode === "login";
   const authSchema = useMemo(() => createAuthFormSchema(mode), [mode]);
@@ -97,6 +99,7 @@ export default function AuthClient({ nonce, mode }: AuthClientProps) {
       }
 
       if (isLogin) {
+        await queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
         router.replace(nextPath || "/admin");
         return;
       }

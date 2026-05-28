@@ -15,6 +15,7 @@ interface NavItem {
 const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
   const [activeId, setActiveId] = useState<string>("info");
   const [displayedActiveId, setDisplayedActiveId] = useState<string>("info");
+  const displayedActiveIdRef = useRef<string>("info");
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [showActiveLabel, setShowActiveLabel] = useState(false);
   const [isTouch, setIsTouch] = useState(false);
@@ -61,7 +62,8 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
     // 滚动停止后，延迟更新显示的 activeId
     activeDebounceRef.current = setTimeout(() => {
       // 只有当 activeId 变化时才显示标签
-      if (activeId !== displayedActiveId) {
+      if (activeId !== displayedActiveIdRef.current) {
+        displayedActiveIdRef.current = activeId;
         setDisplayedActiveId(activeId);
 
         // 显示标签
@@ -81,7 +83,6 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
         clearTimeout(activeDebounceRef.current);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeId, isScrolling]);
 
   // 监听滚动状态
@@ -165,6 +166,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
       window.scrollTo({ top, behavior: "smooth" });
 
       // 点击后立即更新显示
+      displayedActiveIdRef.current = id;
       setDisplayedActiveId(id);
       setActiveId(id);
 

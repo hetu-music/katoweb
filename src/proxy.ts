@@ -1,7 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { createSupabaseMiddlewareClient } from "./lib/supabase-auth";
-import { TABLES } from "./lib/supabase-server";
 
 export async function proxy(request: NextRequest) {
   // Generate a random nonce for CSP
@@ -34,6 +33,7 @@ export async function proxy(request: NextRequest) {
       style-src 'self' 'unsafe-inline';
       img-src 'self' blob: data: https://cover.hetu-music.com;
       font-src 'self';
+      media-src 'self' https://qb.hetu-music.com;
       object-src 'none';
       base-uri 'self';
       form-action 'self';
@@ -55,6 +55,7 @@ export async function proxy(request: NextRequest) {
       style-src 'self' 'unsafe-inline';
       img-src 'self' blob: data: https://cover.hetu-music.com;
       font-src 'self';
+      media-src 'self' https://qb.hetu-music.com;
       object-src 'none';
       base-uri 'self';
       form-action 'self';
@@ -107,14 +108,10 @@ export async function proxy(request: NextRequest) {
         return redirectResponse;
       }
 
-      // Check is_admin flag in the users table
-      const { data: userData } = await supabase
-        .from(TABLES.USERS)
-        .select("is_admin")
-        .eq("id", user.id)
-        .maybeSingle();
+      // Check is_admin flag from JWT app_metadata (synced by trigger sync_user_claims_to_auth)
+      const isAdmin = user.app_metadata?.is_admin === true;
 
-      if (!userData?.is_admin) {
+      if (!isAdmin) {
         console.warn("Auth middleware: User is not admin", user.id);
         const redirectResponse = NextResponse.redirect(
           new URL("/", request.url),

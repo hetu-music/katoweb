@@ -14,6 +14,7 @@ export type Song = {
   date?: string | null;
   type?: string[] | null;
   updated_at: string;
+  has_audio?: boolean;
   collectionInfo?: {
     created_at: string;
     review: string | null;
@@ -24,7 +25,7 @@ export type Song = {
 // Song 类型的数据库字段列表（用于 Supabase 查询）
 // 注意：year 不是数据库字段，而是从 date 计算得出的，所以不包含在内
 export const SONG_LIST_VIEW_FIELDS = [
-  "id,title,album,genre,lyricist,composer,arranger,artist,length,hascover,date,type",
+  "id,title,album,genre,lyricist,composer,arranger,artist,length,hascover,date,type,has_audio",
 ] as const;
 
 // 详细歌曲类型（包含更多字段）
@@ -152,9 +153,45 @@ export type UserRecord = {
   display: boolean;
   intro: string | null;
   is_admin: boolean;
+  is_super: boolean;
   navid_id: string | null;
   endpoint: string | null;
-  sort_order: number | null;
+};
+
+// ─── 用户请求/反馈相关类型 ────────────────────────────────────────────────────
+
+export type RequestType = "song_feedback" | "benefit_apply" | "admin_apply";
+export type RequestStatus = "pending" | "replied" | "approved" | "rejected";
+
+export type UserRequest = {
+  id: string;
+  user_id: string;
+  type: RequestType;
+  song_id: number | null;
+  category: string | null;
+  content: string;
+  status: RequestStatus;
+  reply: string | null;
+  replied_by: string | null;
+  replied_at: string | null;
+  created_at: string;
+  updated_at: string;
+  // 关联数据（管理员视图）
+  user_name?: string | null;
+  song_title?: string | null;
+};
+
+export type CreateRequestPayload = {
+  type: RequestType;
+  song_id?: number | null;
+  category?: string | null;
+  content: string;
+};
+
+export type ReplyRequestPayload = {
+  id: string;
+  reply: string;
+  status: RequestStatus;
 };
 
 // 用户更新字段类型（超级管理员可编辑的字段）
@@ -164,6 +201,7 @@ export type UserUpdatePayload = {
   display?: boolean;
   intro?: string | null;
   is_admin?: boolean;
+  is_super?: boolean;
   navid_id?: string | null;
   navid_pw?: string | null;
   endpoint?: string | null;

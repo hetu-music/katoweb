@@ -35,7 +35,7 @@ export const GET = withAuth(
     const users = await fetchAll<UserRecord>(
       supabase,
       TABLES.USERS,
-      "id, name, display, intro, is_admin, navid_id, endpoint, sort_order",
+      "id, name, display, intro, is_admin, is_super, navid_id, endpoint",
       (q) => q.order("sort_order", { ascending: true, nullsFirst: false }),
     );
 
@@ -74,10 +74,10 @@ export const PUT = withAuth(
       }
       const { data: targetUser } = await supabase
         .from(TABLES.USERS)
-        .select("sort_order")
+        .select("is_super")
         .eq("id", id)
         .maybeSingle();
-      if (targetUser?.sort_order === 1) {
+      if (targetUser?.is_super === true) {
         return NextResponse.json(
           { error: "不能撤销超级管理员的管理权限" },
           { status: 403 },

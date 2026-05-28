@@ -10,10 +10,8 @@ export interface UserInfo {
   display: boolean;
   intro: string | null;
   isAdmin: boolean;
-  sortOrder: number | null;
-  navidId: string | null;
-  navidPw: string | null;
-  endpointText: string | null;
+  isSuper: boolean;
+  hasBenefits: boolean;
 }
 
 interface UserContextValue {

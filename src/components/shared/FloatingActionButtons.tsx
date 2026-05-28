@@ -1,16 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
-import { ArrowUp, Download, Share2, Plus } from "lucide-react";
-import { usePWAInstall } from "@/components/pwa/PWARegistration";
 import IOSInstallPrompt from "@/components/pwa/IOSInstallPrompt";
+import { usePWAInstall } from "@/components/pwa/PWARegistration";
+import { usePlayer } from "@/context/PlayerContext";
+import { cn } from "@/lib/utils";
+import { ArrowUp, Disc3, Download, Plus, Share2 } from "lucide-react";
+import React, { useState } from "react";
 
 interface FloatingActionButtonsProps {
   showScrollTop: boolean;
   onScrollToTop: () => void;
   onShare?: () => void;
-  className?: string; // Add className prop for flexibility
-  children?: React.ReactNode; // Extra buttons to render in the container
+  className?: string;
+  children?: React.ReactNode;
 }
 
 const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
@@ -21,19 +23,21 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
   children,
 }) => {
   const { isInstallable, install, isIOS, isStandalone } = usePWAInstall();
-  const [showIOSPrompt, setShowIOSPrompt] = React.useState(false);
+  const [showIOSPrompt, setShowIOSPrompt] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // 播放器开关
+  const { state, playerVisible, setPlayerVisible } = usePlayer();
+  const { currentTrack, isPlaying } = state;
+  const hasPlayer = !!currentTrack;
 
   const showInstallButton = isInstallable || (isIOS && !isStandalone);
   const hasSecondaryActions =
     Boolean(children) || showInstallButton || Boolean(onShare);
 
   const handleInstallClick = () => {
-    if (isIOS) {
-      setShowIOSPrompt(true);
-    } else {
-      install();
-    }
+    if (isIOS) setShowIOSPrompt(true);
+    else install();
     setIsMenuOpen(false);
   };
 
@@ -51,18 +55,24 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
         isOpen={showIOSPrompt}
         onClose={() => setShowIOSPrompt(false)}
       />
+
       <div
-        className={`fixed bottom-8 right-8 z-50 flex flex-col gap-4 items-center ${className || ""}`}
+        className={cn(
+          "fixed right-6 z-50 flex flex-col gap-3 items-center transition-all duration-300",
+          hasPlayer ? "bottom-[112px] sm:bottom-8" : "bottom-8",
+          className,
+        )}
       >
-        {/* 二级菜单 */}
+        {/* 1. 二级菜单 (移到最顶部：当点击展开时，向上弹出的子菜单会飘入空旷区域，绝不遮挡其他按钮) */}
         {hasSecondaryActions && (
-          <div className="relative flex flex-col items-center gap-4">
+          <div className="relative flex flex-col items-center gap-3">
             <div
-              className={`flex flex-col gap-4 absolute bottom-full mb-4 transition-all duration-300 origin-bottom right-0 items-center overflow-visible ${
+              className={cn(
+                "flex flex-col gap-3 absolute bottom-full mb-3 transition-all duration-300 origin-bottom right-0 items-center overflow-visible",
                 isMenuOpen
                   ? "scale-100 opacity-100 pointer-events-auto translate-y-0"
-                  : "scale-50 opacity-0 pointer-events-none translate-y-8"
-              }`}
+                  : "scale-50 opacity-0 pointer-events-none translate-y-8",
+              )}
             >
               {children}
 
@@ -89,7 +99,6 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
               )}
             </div>
 
-            {/* 菜单触发按钮 */}
             <button
               onClick={() => setIsMenuOpen((prev) => !prev)}
               className={buttonClass}
@@ -98,22 +107,46 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
             >
               <Plus
                 size={20}
-                className={`transition-transform duration-300 ${
-                  isMenuOpen ? "rotate-45" : ""
-                }`}
+                className={cn(
+                  "transition-transform duration-300",
+                  isMenuOpen && "rotate-45",
+                )}
               />
             </button>
           </div>
         )}
 
-        {/* 返回顶部按钮 */}
+        {/* 2. 播放器开关按钮：有播放曲目时显示 (放在中间) */}
+        {hasPlayer && (
+          <button
+            onClick={() => setPlayerVisible(!playerVisible)}
+            className={cn(
+              buttonClass,
+              playerVisible &&
+              "bg-blue-500 dark:bg-blue-500 text-white dark:text-white hover:bg-blue-600 dark:hover:bg-blue-600 ring-blue-500/30",
+            )}
+            title={playerVisible ? "收起播放器" : "展开播放器"}
+            aria-label={playerVisible ? "收起播放器" : "展开播放器"}
+          >
+            <Disc3
+              size={20}
+              className={cn(
+                "transition-transform",
+                isPlaying && "animate-spin animation-duration-[3s]",
+              )}
+            />
+          </button>
+        )}
+
+        {/* 3. 返回顶部 */}
         <button
           onClick={onScrollToTop}
-          className={`${buttonClass} ${
+          className={cn(
+            buttonClass,
             showScrollTop
               ? "translate-y-0 opacity-100"
-              : "translate-y-8 opacity-0 pointer-events-none"
-          }`}
+              : "translate-y-8 opacity-0 pointer-events-none",
+          )}
           title="返回顶部"
           aria-label="返回顶部"
         >

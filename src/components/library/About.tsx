@@ -224,7 +224,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     数据与反馈
                   </h3>
                   <p>
-                    数据来源于创作者微博及各大音乐平台。若发现误漏或有意共同维护数据，欢迎联系。
+                    数据来源于创作者微博及各大音乐平台。若发现误漏，可以注册本站账号或通过下方联系方式进行反馈。
                   </p>
                   <div className="flex flex-col gap-2 mt-2">
                     <a

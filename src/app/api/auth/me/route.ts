@@ -9,7 +9,7 @@ export const GET = withAuth(
     const { data, error } = await supabase
       .from(TABLES.USERS)
       .select(
-        "name, display, intro, is_admin, sort_order, navid_id, navid_pw, endpoint",
+        "name, display, intro, is_admin, is_super, navid_id, navid_pw, endpoint",
       )
       .eq("id", user.id)
       .maybeSingle();
@@ -25,10 +25,9 @@ export const GET = withAuth(
       display: data?.display ?? false,
       intro: data?.intro ?? null,
       isAdmin: data?.is_admin ?? false,
-      sortOrder: data?.sort_order ?? null,
-      navidId: data?.navid_id ?? null,
-      navidPw: data?.navid_pw ?? null,
-      endpointText: data?.endpoint ?? null,
+      isSuper: data?.is_super ?? false,
+      hasBenefits:
+        !!data?.navid_id && !!data?.navid_pw && !!data?.endpoint,
     });
   },
 );

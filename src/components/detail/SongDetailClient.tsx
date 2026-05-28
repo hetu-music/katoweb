@@ -1,5 +1,6 @@
 "use client";
 
+import NaviPlayer from "@/components/detail/NaviPlayer";
 import TableOfContents from "@/components/detail/TableOfContents";
 import UserReview from "@/components/detail/UserReview";
 import FavoriteButton from "@/components/shared/FavoriteButton";
@@ -29,7 +30,9 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const router = useRouter();
-  const { user } = useUserContext();
+  const { user, loaded: userLoaded } = useUserContext();
+
+  const hasBenefits = userLoaded && !!user?.hasBenefits;
 
   const openUserPanel = (tab: "account" | "favorites" = "favorites") => {
     if (!user) {
@@ -218,7 +221,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
         </div>
       </nav>
 
-      <main className="pt-32 pb-20 max-w-7xl mx-auto px-6">
+      <main className="pt-32 pb-28 max-w-7xl mx-auto px-6">
         {/* 主要内容网格 */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           {/* 左侧：封面与元信息 (Col-4) */}
@@ -294,6 +297,17 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 </span>
               ))}
             </div>
+
+            {/* ── 播放器区域 ─────────────────────────────────────────────── */}
+            {userLoaded && hasBenefits && (
+              <NaviPlayer
+                songId={song.id}
+                title={song.title}
+                artist={song.artist?.join(" / ")}
+                coverUrl={getCoverUrl(song)}
+                hasAudio={song.has_audio}
+              />
+            )}
 
             {/* 外部链接 */}
             {(song.kugolink || song.qmlink || song.nelink) && (

@@ -42,7 +42,6 @@ function buildEditState(user: UserRecord): EditState {
     endpoint: user.endpoint ?? "",
   };
 }
-
 export default function UserManagePanel({ csrfToken }: UserManagePanelProps) {
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -250,7 +249,7 @@ export default function UserManagePanel({ csrfToken }: UserManagePanelProps) {
                         管理员
                       </span>
                     )}
-                    {user.sort_order === 1 && (
+                    {user.is_super && (
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400">
                         超管
                       </span>
@@ -418,18 +417,18 @@ export default function UserManagePanel({ csrfToken }: UserManagePanelProps) {
                           </span>
                         </label>
 
-                        {/* is_admin toggle — disabled for sort_order=1 */}
+                        {/* is_admin toggle — disabled for super admins */}
                         <label className="flex items-center gap-2 cursor-pointer">
                           <div
                             onClick={() => {
-                              if (user.sort_order === 1) return;
+                              if (user.is_super) return;
                               setEditState((s) =>
                                 s ? { ...s, is_admin: !s.is_admin } : s,
                               );
                             }}
                             className={cn(
                               "w-9 h-5 rounded-full transition-colors relative",
-                              user.sort_order === 1
+                              user.is_super
                                 ? "opacity-50 cursor-not-allowed"
                                 : "cursor-pointer",
                               editState.is_admin
@@ -453,7 +452,7 @@ export default function UserManagePanel({ csrfToken }: UserManagePanelProps) {
                               <ShieldOff size={12} />
                             )}
                             管理员权限
-                            {user.sort_order === 1 && (
+                            {user.is_super && (
                               <span className="text-amber-500">(锁定)</span>
                             )}
                           </span>
@@ -505,10 +504,10 @@ export default function UserManagePanel({ csrfToken }: UserManagePanelProps) {
                       </div>
                       <div>
                         <span className="text-slate-400 font-bold uppercase tracking-wide text-[10px]">
-                          Sort Order
+                          超管
                         </span>
                         <p className="text-slate-700 dark:text-slate-300 mt-0.5">
-                          {user.sort_order ?? "—"}
+                          {user.is_super ? "是" : "否"}
                         </p>
                       </div>
                       <div>
