@@ -138,7 +138,7 @@ function ProfileContent() {
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           {/* Navigation Column */}
           <aside className="w-full lg:w-60 shrink-0 lg:sticky lg:top-24 z-30">
-            <div className="p-1.5 bg-slate-100/80 dark:bg-slate-950/40 backdrop-blur-md rounded-2xl border border-slate-200/50 dark:border-slate-800/40 flex lg:flex-col overflow-x-auto no-scrollbar w-full mask-linear-fade-edges lg:mask-none gap-1 sm:gap-1.5">
+            <div className="p-1.5 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 flex lg:flex-col overflow-x-auto no-scrollbar w-full mask-linear-fade-edges lg:mask-none gap-1 sm:gap-1.5 shadow-sm">
               {(
                 [
                   "favorites",
@@ -204,7 +204,7 @@ function ProfileContent() {
               {/* Requests Management Tab — admin only */}
               {activeTab === "requests" && user?.isAdmin && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
-                  <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl border border-slate-200/50 dark:border-slate-800/50 p-5 md:p-6 flex-1">
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 md:p-6 flex-1">
                     <div className="space-y-1 mb-6">
                       <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         <ClipboardList size={18} className="text-blue-500" />
@@ -222,7 +222,7 @@ function ProfileContent() {
               {/* Users Management Tab — super admin only */}
               {activeTab === "users" && isSuperAdmin && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
-                  <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl border border-slate-200/50 dark:border-slate-800/50 p-5 md:p-6 flex-1">
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 md:p-6 flex-1">
                     <div className="space-y-1 mb-6">
                       <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                         用户管理
@@ -239,7 +239,7 @@ function ProfileContent() {
               {/* Audit Logs Tab — super admin only */}
               {activeTab === "logs" && isSuperAdmin && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
-                  <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl border border-slate-200/50 dark:border-slate-800/50 p-5 md:p-6 flex-1">
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 md:p-6 flex-1">
                     <div className="space-y-1 mb-6">
                       <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         <ClipboardList size={18} className="text-blue-500" />

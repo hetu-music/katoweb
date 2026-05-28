@@ -24,48 +24,44 @@ export default function ProfileHeaderCard({
   logout,
 }: ProfileHeaderCardProps) {
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-slate-200/50 dark:border-slate-800/50 bg-linear-to-br from-white/70 via-white/50 to-slate-50/30 dark:from-slate-900/70 dark:via-slate-900/50 dark:to-slate-950/30 backdrop-blur-xl shadow-xs p-6 md:p-8">
-      {/* Decorative ambient backgrounds */}
-      <div className="absolute -top-24 -left-20 w-80 h-80 bg-blue-500/10 dark:bg-blue-600/10 rounded-full blur-3xl -z-10 pointer-events-none" />
-      <div className="absolute -bottom-24 -right-20 w-80 h-80 bg-indigo-500/10 dark:bg-indigo-600/10 rounded-full blur-3xl -z-10 pointer-events-none" />
-      
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-6 md:p-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         {/* Left side: Avatar + User details */}
         <div className="flex items-center gap-4 sm:gap-6 min-w-0">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-linear-to-br from-blue-500 via-indigo-500 to-purple-600 p-[2.5px] shadow-lg shrink-0">
-            <div className="w-full h-full rounded-full bg-white dark:bg-slate-950 flex items-center justify-center text-2xl font-bold text-blue-600 dark:text-blue-400">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 border border-slate-200 dark:border-slate-700">
+            <div className="w-full h-full rounded-full flex items-center justify-center text-2xl font-bold text-slate-400 dark:text-slate-500">
               {user?.name?.charAt(0)?.toUpperCase() || <User size={28} />}
             </div>
           </div>
           
           <div className="min-w-0">
             <div className="flex items-center gap-2.5 flex-wrap">
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white font-serif tracking-tight truncate">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">
                 {user?.name || (userLoaded ? "访客" : "加载中...")}
               </h2>
               <span className={cn(
-                "text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs",
+                "text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider",
                 user?.isAdmin 
-                  ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20" 
-                  : "bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20"
+                  ? "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/10 dark:text-blue-400 dark:border-blue-800/30" 
+                  : "bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700"
               )}>
                 {user?.isAdmin ? (isSuperAdmin ? "系统超管" : "管理员") : "普通用户"}
               </span>
             </div>
             
             {user?.email && (
-              <div className="flex items-center gap-1.5 text-xs sm:text-sm text-slate-400 dark:text-slate-500 mt-1 mb-2">
+              <div className="flex items-center gap-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 mb-2">
                 <Mail size={13} className="shrink-0" />
                 <span className="truncate">{user.email}</span>
               </div>
             )}
             
             {user?.intro ? (
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-xl line-clamp-2 md:line-clamp-none">
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-xl line-clamp-2 md:line-clamp-none">
                 {user.intro}
               </p>
             ) : (
-              <p className="text-xs text-slate-450 dark:text-slate-550 italic">
+              <p className="text-sm text-slate-400 dark:text-slate-500 italic">
                 暂无个人简介...
               </p>
             )}
@@ -73,23 +69,23 @@ export default function ProfileHeaderCard({
         </div>
 
         {/* Right side: Stats & Actions in a row/grid */}
-        <div className="flex flex-wrap md:flex-nowrap items-center gap-4 sm:gap-6 shrink-0 pt-4 md:pt-0 border-t border-slate-200/40 dark:border-slate-800/40 md:border-t-0 w-full md:w-auto">
+        <div className="flex flex-wrap md:flex-nowrap items-center gap-4 sm:gap-6 shrink-0 pt-4 md:pt-0 border-t border-slate-100 dark:border-slate-800/50 md:border-t-0 w-full md:w-auto">
           {/* Stats */}
-          <div className="flex gap-6 sm:gap-8 bg-slate-50/50 dark:bg-slate-950/20 px-6 py-3 rounded-2xl border border-slate-200/30 dark:border-slate-800/30 flex-1 md:flex-initial justify-around md:justify-start">
+          <div className="flex gap-6 sm:gap-8 bg-slate-50 dark:bg-slate-800/30 px-6 py-3 rounded-xl border border-slate-100 dark:border-slate-800/50 flex-1 md:flex-initial justify-around md:justify-start">
             <div className="text-center min-w-[50px]">
-              <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
+              <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
                 {favoritesCount}
               </p>
-              <p className="text-[10px] font-bold text-slate-405 uppercase tracking-wider mt-0.5">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">
                 我的收藏
               </p>
             </div>
-            <div className="w-px h-8 bg-slate-200 dark:bg-slate-800 self-center" />
+            <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 self-center" />
             <div className="text-center min-w-[50px]">
-              <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
+              <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
                 {hasBenefits ? "已开通" : "未开通"}
               </p>
-              <p className="text-[10px] font-bold text-slate-405 uppercase tracking-wider mt-0.5">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">
                 试听权益
               </p>
             </div>
@@ -100,9 +96,9 @@ export default function ProfileHeaderCard({
             {user?.isAdmin && (
               <a
                 href="/admin"
-                className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 dark:bg-blue-600 text-white hover:bg-slate-800 dark:hover:bg-blue-500 transition-all font-bold text-xs shadow-xs hover:scale-[1.02] active:scale-[0.98]"
+                className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-white transition-colors text-sm font-medium"
               >
-                <ShieldCheck size={14} />
+                <ShieldCheck size={16} />
                 管理面板
               </a>
             )}
@@ -110,12 +106,12 @@ export default function ProfileHeaderCard({
               <button
                 onClick={logout}
                 disabled={loggingOut}
-                className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-rose-500 hover:border-rose-200 dark:hover:border-rose-500/30 transition-all font-bold text-xs hover:scale-[1.02] active:scale-[0.98]"
+                className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-rose-600 hover:border-rose-200 dark:hover:text-rose-400 dark:hover:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-900/10 transition-colors text-sm font-medium"
               >
                 {loggingOut ? (
-                  <Loader2 size={14} className="animate-spin" />
+                  <Loader2 size={16} className="animate-spin" />
                 ) : (
-                  <LogOut size={14} />
+                  <LogOut size={16} />
                 )}
                 退出登录
               </button>

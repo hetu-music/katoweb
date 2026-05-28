@@ -65,9 +65,9 @@ export default function FavoritesTabContent() {
 
   if (favoriteSongs.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-320px)] bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl border border-slate-200/50 dark:border-slate-800/50 p-8 text-center shadow-xs">
+      <div className="flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-320px)] bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 text-center shadow-sm">
         <Heart size={40} className="text-slate-200 dark:text-slate-800 mb-4" />
-        <p className="text-slate-455 text-sm">还没有收藏任何曲目</p>
+        <p className="text-slate-500 text-sm">还没有收藏任何曲目</p>
       </div>
     );
   }
@@ -93,7 +93,7 @@ export default function FavoritesTabContent() {
         {favoriteSongs.map((song) => (
           <div
             key={song.id}
-            className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden transition-all hover:border-blue-500/30 dark:hover:border-blue-500/30 group"
+            className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden transition-colors hover:border-blue-500 dark:hover:border-blue-500/50 group shadow-sm"
           >
             <div
               onClick={() => {
@@ -104,13 +104,13 @@ export default function FavoritesTabContent() {
               className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 cursor-pointer"
             >
               <div className="flex items-center gap-4 min-w-0">
-                <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 shadow-xs">
+                <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 ring-1 ring-slate-900/5 dark:ring-white/10">
                   <Image
                     src={getCoverUrl(song)}
                     alt={song.title}
                     width={56}
                     height={56}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-full object-cover"
                   />
                 </div>
 
@@ -133,7 +133,7 @@ export default function FavoritesTabContent() {
                 {!!song.collectionInfo?.review && (
                   <button
                     onClick={(e) => toggleReview(song.id, e)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                   >
                     {expandedReviews.get(song.id) ? "隐藏评论" : "查看评论"}
                   </button>
@@ -158,7 +158,7 @@ export default function FavoritesTabContent() {
                       e.stopPropagation();
                       toggleFavorite(song.id);
                     }}
-                    className="p-2 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all"
+                    className="p-2 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all"
                     title="取消收藏"
                   >
                     <Heart size={16} className="fill-current" />
@@ -169,12 +169,12 @@ export default function FavoritesTabContent() {
 
             {/* Expanded Review — lazy-loaded */}
             {!!song.collectionInfo?.review && expandedReviews.get(song.id) && (
-              <div className="px-4 pb-4 pt-1 border-t border-slate-100 dark:border-slate-855">
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800/30">
+              <div className="px-4 pb-4 pt-1">
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
                   {!reviewTexts.has(song.id) ? (
-                    <p className="text-xs text-slate-400 animate-pulse">加载评论中...</p>
+                    <p className="text-sm text-slate-400 animate-pulse">加载评论中...</p>
                   ) : (
-                    <p className="text-xs font-medium text-slate-705 dark:text-slate-295 whitespace-pre-line leading-relaxed">
+                    <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed">
                       {reviewTexts.get(song.id) || song.collectionInfo.review || "暂无内容"}
                     </p>
                   )}
