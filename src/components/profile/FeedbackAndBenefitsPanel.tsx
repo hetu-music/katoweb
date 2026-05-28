@@ -559,17 +559,17 @@ export default function FeedbackAndBenefitsPanel({
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
       {/* 提交反馈区域 */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden shadow-xs">
         <button
           onClick={() => setShowForm((v) => !v)}
-          className="w-full flex items-center justify-between px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+          className="w-full flex items-center justify-between px-4 sm:px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
         >
           <div className="flex items-center gap-2.5">
             <MessageSquarePlus
               size={16}
               className="text-blue-500 shrink-0"
             />
-            <span className="text-sm font-bold text-slate-800 dark:text-slate-100">
+            <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
               提交反馈 / 申请
             </span>
           </div>
@@ -581,7 +581,7 @@ export default function FeedbackAndBenefitsPanel({
         </button>
 
         {showForm && (
-          <div className="border-t border-slate-100 dark:border-slate-800 px-6 py-5 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="border-t border-slate-100 dark:border-slate-800 px-4 sm:px-5 py-4 animate-in fade-in slide-in-from-top-2 duration-200">
             <SubmitForm
               csrfToken={csrfToken}
               hasBenefits={hasBenefits}
@@ -593,7 +593,7 @@ export default function FeedbackAndBenefitsPanel({
       </div>
 
       {/* 历史记录 */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-6 flex-1">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-800/50 p-4 sm:p-5 flex-1 shadow-xs">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white">
             我的提交记录

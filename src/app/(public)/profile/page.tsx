@@ -70,6 +70,16 @@ function ProfileContent() {
     }
   }, [user]);
 
+  // Localized scrollbar gutter prevention to avoid layout shift on profile tab switches
+  useEffect(() => {
+    const htmlEl = document.documentElement;
+    const originalGutter = htmlEl.style.scrollbarGutter;
+    htmlEl.style.scrollbarGutter = "stable";
+    return () => {
+      htmlEl.style.scrollbarGutter = originalGutter;
+    };
+  }, []);
+
   const handleBack = useCallback(() => {
     const navDepthStr = sessionStorage.getItem("__katoweb_nav_depth");
     const navDepth = navDepthStr ? parseInt(navDepthStr, 10) : 0;
@@ -137,8 +147,8 @@ function ProfileContent() {
         {/* Bottom Section: Tabs Grid */}
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           {/* Navigation Column */}
-          <aside className="w-full lg:w-60 shrink-0 lg:sticky lg:top-24 z-30">
-            <div className="p-1.5 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 flex lg:flex-col overflow-x-auto no-scrollbar w-full mask-linear-fade-edges lg:mask-none gap-1 sm:gap-1.5 shadow-sm">
+          <aside className="w-full lg:w-56 shrink-0 lg:sticky lg:top-24 z-30">
+            <div className="p-1 bg-slate-50/50 dark:bg-slate-900/60 rounded-xl border border-slate-200/50 dark:border-slate-800/50 flex lg:flex-col overflow-x-auto no-scrollbar w-full gap-1 shadow-xs">
               {(
                 [
                   "favorites",
@@ -152,9 +162,9 @@ function ProfileContent() {
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={cn(
-                    "py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center lg:justify-start gap-2 whitespace-nowrap shrink-0 lg:w-full",
+                    "py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center justify-center lg:justify-start gap-2 whitespace-nowrap shrink-0 lg:w-full",
                     activeTab === tab
-                      ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-xs scale-[1.02] lg:scale-100"
+                      ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-xs"
                       : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-white/30 dark:hover:bg-slate-800/20"
                   )}
                 >

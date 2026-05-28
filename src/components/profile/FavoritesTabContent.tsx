@@ -65,9 +65,9 @@ export default function FavoritesTabContent() {
 
   if (favoriteSongs.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-320px)] bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 text-center shadow-sm">
-        <Heart size={40} className="text-slate-200 dark:text-slate-800 mb-4" />
-        <p className="text-slate-500 text-sm">还没有收藏任何曲目</p>
+      <div className="flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-320px)] bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-800/50 p-6 text-center shadow-xs">
+        <Heart size={32} className="text-slate-200 dark:text-slate-800 mb-3" />
+        <p className="text-slate-500 text-xs sm:text-sm">还没有收藏任何曲目</p>
       </div>
     );
   }
@@ -93,7 +93,7 @@ export default function FavoritesTabContent() {
         {favoriteSongs.map((song) => (
           <div
             key={song.id}
-            className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden transition-colors hover:border-blue-500 dark:hover:border-blue-500/50 group shadow-sm"
+            className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden transition-colors hover:border-blue-500/40 dark:hover:border-blue-500/30 group shadow-xs"
           >
             <div
               onClick={() => {
@@ -101,21 +101,21 @@ export default function FavoritesTabContent() {
                 sessionStorage.setItem("__katoweb_nav_depth", String(d + 1));
                 router.push(`/song/${song.id}`);
               }}
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 cursor-pointer"
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 cursor-pointer"
             >
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 ring-1 ring-slate-900/5 dark:ring-white/10">
+              <div className="flex items-center gap-3.5 min-w-0">
+                <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 ring-1 ring-slate-900/5 dark:ring-white/10">
                   <Image
                     src={getCoverUrl(song)}
                     alt={song.title}
-                    width={56}
-                    height={56}
+                    width={48}
+                    height={48}
                     className="w-full h-full object-cover"
                   />
                 </div>
 
                 <div className="min-w-0">
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  <h4 className="text-sm font-semibold text-slate-855 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                     {song.title}
                   </h4>
                   <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 truncate">
@@ -169,8 +169,8 @@ export default function FavoritesTabContent() {
 
             {/* Expanded Review — lazy-loaded */}
             {!!song.collectionInfo?.review && expandedReviews.get(song.id) && (
-              <div className="px-4 pb-4 pt-1">
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+              <div className="px-3.5 pb-3.5 pt-0.5">
+                <div className="bg-slate-50 dark:bg-slate-850/40 p-3 rounded-lg border border-slate-100/60 dark:border-slate-800/60">
                   {!reviewTexts.has(song.id) ? (
                     <p className="text-sm text-slate-400 animate-pulse">加载评论中...</p>
                   ) : (

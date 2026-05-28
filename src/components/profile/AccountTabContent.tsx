@@ -150,9 +150,9 @@ export default function AccountTabContent() {
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 md:p-8 border border-slate-200 dark:border-slate-800 shadow-sm space-y-8 flex-1">
+      <div className="bg-white dark:bg-slate-900 rounded-xl p-4 sm:p-6 border border-slate-200/50 dark:border-slate-800/50 shadow-xs space-y-6 flex-1">
         <div className="space-y-1">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+          <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
             账户设置
           </h3>
           <p className="text-xs text-slate-400">管理您的公开资料与基本信息</p>
@@ -173,7 +173,7 @@ export default function AccountTabContent() {
                   onBlur={displayNameReg.onBlur}
                   ref={displayNameReg.ref}
                   className={cn(
-                    "w-full px-4 py-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 outline-none transition-colors text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-500",
+                    "w-full px-3.5 py-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none transition-colors text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-500",
                     accountForm.formState.errors.displayName && "border-rose-300 focus:border-rose-500"
                   )}
                 />
@@ -187,7 +187,7 @@ export default function AccountTabContent() {
                 <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
                   邮箱
                 </label>
-                <div className="w-full px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-xs text-slate-500 cursor-not-allowed border border-slate-200 dark:border-slate-700">
+                <div className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/40 text-xs text-slate-500 cursor-not-allowed border border-slate-200/60 dark:border-slate-800/60">
                   {user?.email}
                 </div>
               </div>
@@ -205,7 +205,7 @@ export default function AccountTabContent() {
                 onBlur={introReg.onBlur}
                 ref={introReg.ref}
                 className={cn(
-                  "w-full px-4 py-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 outline-none transition-colors text-sm text-slate-900 dark:text-slate-100 resize-none focus:border-blue-500 dark:focus:border-blue-500",
+                  "w-full px-3.5 py-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none transition-colors text-sm text-slate-900 dark:text-slate-100 resize-none focus:border-blue-500 dark:focus:border-blue-500",
                   accountForm.formState.errors.intro && "border-rose-300 focus:border-rose-500"
                 )}
               />
@@ -299,7 +299,7 @@ export default function AccountTabContent() {
                   onBlur={currentPasswordReg.onBlur}
                   ref={currentPasswordReg.ref}
                   className={cn(
-                    "w-full px-4 py-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 outline-none transition-colors text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-500",
+                    "w-full px-3.5 py-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none transition-colors text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-500",
                     passwordForm.formState.errors.currentPassword && "border-rose-300 focus:border-rose-500"
                   )}
                 />
@@ -321,7 +321,7 @@ export default function AccountTabContent() {
                   onBlur={newPasswordReg.onBlur}
                   ref={newPasswordReg.ref}
                   className={cn(
-                    "w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/30 dark:border-slate-800/30 outline-none transition-all text-sm text-slate-800 dark:text-slate-200 focus:bg-white dark:focus:bg-slate-955 focus:border-blue-500/50",
+                    "w-full px-3.5 py-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none transition-colors text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-500",
                     passwordForm.formState.errors.newPassword && "border-rose-300 focus:border-rose-500"
                   )}
                 />
@@ -343,7 +343,7 @@ export default function AccountTabContent() {
                   onBlur={confirmPasswordReg.onBlur}
                   ref={confirmPasswordReg.ref}
                   className={cn(
-                    "w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/30 dark:border-slate-800/30 outline-none transition-all text-sm text-slate-800 dark:text-slate-200 focus:bg-white dark:focus:bg-slate-955 focus:border-blue-500/50",
+                    "w-full px-3.5 py-2 rounded-lg bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-800 outline-none transition-colors text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-500",
                     passwordForm.formState.errors.confirmPassword && "border-rose-300 focus:border-rose-500"
                   )}
                 />
