@@ -28,27 +28,25 @@ interface FeedbackAndBenefitsPanelProps {
 
 // ─── 状态标签 ─────────────────────────────────────────────────────────────────
 
-const STATUS_LABELS: Record<RequestStatus, string> = {
-  pending: "待处理",
-  replied: "已回复",
-  approved: "已同意",
-  rejected: "已拒绝",
-};
+const STATUS_LABELS = new Map<RequestStatus, string>([
+  ["pending", "待处理"],
+  ["replied", "已回复"],
+  ["approved", "已同意"],
+  ["rejected", "已拒绝"],
+]);
 
-const STATUS_COLORS: Record<RequestStatus, string> = {
-  pending:
-    "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10",
-  replied: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10",
-  approved:
-    "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10",
-  rejected: "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10",
-};
+const STATUS_COLORS = new Map<RequestStatus, string>([
+  ["pending", "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10"],
+  ["replied", "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10"],
+  ["approved", "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10"],
+  ["rejected", "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10"],
+]);
 
-const TYPE_LABELS: Record<RequestType, string> = {
-  song_feedback: "歌曲纠错",
-  benefit_apply: "申请试听",
-  admin_apply: "申请管理员",
-};
+const TYPE_LABELS = new Map<RequestType, string>([
+  ["song_feedback", "歌曲纠错"],
+  ["benefit_apply", "申请试听"],
+  ["admin_apply", "申请管理员"],
+]);
 
 // ─── 歌曲搜索选择器 ───────────────────────────────────────────────────────────
 
@@ -191,10 +189,11 @@ function SongPicker({ value, onChange }: SongPickerProps) {
 interface SubmitFormProps {
   csrfToken: string;
   hasBenefits: boolean;
+  isAdmin: boolean;
   onSubmitted: () => void;
 }
 
-function SubmitForm({ csrfToken, hasBenefits, onSubmitted }: SubmitFormProps) {
+function SubmitForm({ csrfToken, hasBenefits, isAdmin, onSubmitted }: SubmitFormProps) {
   const [type, setType] = useState<RequestType>("song_feedback");
   const [selectedSong, setSelectedSong] = useState<{ id: number; title: string } | null>(null);
   const [category, setCategory] = useState("");
@@ -255,7 +254,7 @@ function SubmitForm({ csrfToken, hasBenefits, onSubmitted }: SubmitFormProps) {
             [
               "song_feedback",
               ...(!hasBenefits ? (["benefit_apply"] as RequestType[]) : []),
-              "admin_apply",
+              ...(!isAdmin ? (["admin_apply"] as RequestType[]) : []),
             ] as RequestType[]
           ).map((t) => (
             <button
@@ -269,7 +268,7 @@ function SubmitForm({ csrfToken, hasBenefits, onSubmitted }: SubmitFormProps) {
                   : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200",
               )}
             >
-              {TYPE_LABELS[t]}
+              {TYPE_LABELS.get(t) || ""}
             </button>
           ))}
         </div>
@@ -408,7 +407,7 @@ function RequestList({ requests, loading, onRefresh }: RequestListProps) {
             <div className="flex items-center gap-3 px-4 py-3">
               {/* 类型 */}
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 shrink-0">
-                {TYPE_LABELS[req.type]}
+                {TYPE_LABELS.get(req.type) || ""}
               </span>
 
               {/* 内容预览 */}
@@ -420,10 +419,10 @@ function RequestList({ requests, loading, onRefresh }: RequestListProps) {
               <span
                 className={cn(
                   "text-[10px] font-bold px-2 py-0.5 rounded shrink-0",
-                  STATUS_COLORS[req.status],
+                  STATUS_COLORS.get(req.status) || "",
                 )}
               >
-                {STATUS_LABELS[req.status]}
+                {STATUS_LABELS.get(req.status) || ""}
               </span>
 
               {/* 展开按钮 */}
@@ -634,6 +633,7 @@ export default function FeedbackAndBenefitsPanel({
             <SubmitForm
               csrfToken={csrfToken}
               hasBenefits={hasBenefits}
+              isAdmin={isAdmin}
               onSubmitted={handleSubmitted}
             />
           </div>
