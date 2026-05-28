@@ -343,7 +343,7 @@ export default function AccountTabContent() {
                   onBlur={confirmPasswordReg.onBlur}
                   ref={confirmPasswordReg.ref}
                   className={cn(
-                    "w-full px-3.5 py-2 rounded-lg bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-800 outline-none transition-colors text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-500",
+                    "w-full px-3.5 py-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none transition-colors text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-500",
                     passwordForm.formState.errors.confirmPassword && "border-rose-300 focus:border-rose-500"
                   )}
                 />
