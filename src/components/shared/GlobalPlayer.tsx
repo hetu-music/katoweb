@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import React, {
   useCallback,
   useEffect,
@@ -34,6 +35,7 @@ import React, {
 } from "react";
 
 export default function GlobalPlayer() {
+  const pathname = usePathname();
   const { state, controls, playerVisible, lyricsMap, audioRef } = usePlayer();
   const {
     currentTrack,
@@ -239,6 +241,10 @@ export default function GlobalPlayer() {
     },
     [controls, getVolFromPointer],
   );
+
+  // 沉浸式全屏页面不显示播放条 UI（音频继续播放）
+  const HIDDEN_PATHS = ["/imagery", "/story"];
+  if (HIDDEN_PATHS.some((p) => pathname.startsWith(p))) return null;
 
   if (!currentTrack) return null;
 
