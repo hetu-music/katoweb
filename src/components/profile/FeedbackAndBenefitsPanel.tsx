@@ -558,54 +558,6 @@ export default function FeedbackAndBenefitsPanel({
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
-      {/* 权益状态卡片 */}
-      <div
-        className={cn(
-          "rounded-2xl border p-6 flex items-center gap-4",
-          hasBenefits
-            ? "bg-linear-to-r from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 border-blue-200/60 dark:border-blue-500/20"
-            : "bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-800/60",
-        )}
-      >
-        <div
-          className={cn(
-            "w-12 h-12 rounded-full flex items-center justify-center shrink-0",
-            hasBenefits
-              ? "bg-blue-100 dark:bg-blue-500/20"
-              : "bg-slate-100 dark:bg-slate-800",
-          )}
-        >
-          <Sparkles
-            size={22}
-            className={
-              hasBenefits
-                ? "text-blue-500"
-                : "text-slate-400 dark:text-slate-500"
-            }
-          />
-        </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-            {hasBenefits ? "在线试听已开通" : "在线试听未开通"}
-          </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
-            {hasBenefits
-              ? "您已获得在线试听权益，可在每首歌曲的详情页直接播放高品质音频。"
-              : "在线试听权益需要申请，管理员审核通过后即可使用。"}
-          </p>
-        </div>
-        {!hasBenefits && !isAdmin && (
-          <button
-            onClick={() => {
-              setShowForm(true);
-            }}
-            className="shrink-0 px-4 py-2 rounded-full text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm"
-          >
-            申请试听
-          </button>
-        )}
-      </div>
-
       {/* 提交反馈区域 */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
         <button
