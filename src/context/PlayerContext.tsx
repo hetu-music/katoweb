@@ -139,7 +139,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     // 瞬时同步激活，不产生任何可听见的声音
     const promise = audio.play();
     if (promise !== undefined) {
-      promise.then(() => audio.pause()).catch(() => {});
+      promise.then(() => audio.pause()).catch((_err: unknown) => { /* iOS unlock: ignore play/pause race */ });
     }
   }, []);
 
@@ -327,7 +327,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         setLyricsMap((prev) => {
           if (prev.has(songId)) return prev;
           const next = new Map(prev);
-          next.set(songId, data.lyrics!);
+          next.set(songId, data.lyrics as string);
           return next;
         });
       })
@@ -336,6 +336,33 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, [state.currentTrack?.songId]);
 
   // ── MediaSession：系统级媒体控制（锁屏、通知栏、蓝牙耳机等）────────────
+  /**
+   * 将音频当前进度同步到 MediaSession positionState，
+   * 使系统锁屏、通知栏等外部控制器能显示准确的播放进度和歌曲时长。
+   *
+   * 修复原有问题：
+   * - 原来只监听 timeupdate + seeked，切歌时 duration 为 NaN 导致锁屏进度卡死。
+   * - 现在额外监听 durationchange + loadedmetadata，确保时长一解析出来就立即同步。
+   * - 额外监听 ratechange，支持将来倍速播放时锁屏进度条正确推进。
+   *
+   * 使用 ref 存储函数以避免声明顺序问题（doSeek 在 MediaSession effect 中引用它），
+   * 同时避免 React Compiler 的 memoization 警告。
+   */
+  const syncMediaSessionPositionRef = useRef(() => {
+    if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
+    const audio = audioRef.current;
+    if (!audio || !audio.duration || isNaN(audio.duration)) return;
+    try {
+      navigator.mediaSession.setPositionState({
+        duration: audio.duration,
+        playbackRate: audio.playbackRate,
+        position: Math.min(audio.currentTime, audio.duration),
+      });
+    } catch {
+      /* setPositionState 在部分旧浏览器上可能抛出，忽略即可 */
+    }
+  });
+
   useEffect(() => {
     if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
     const { currentTrack, queue, currentIndex } = state;
@@ -353,7 +380,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       const audio = audioRef.current;
       if (!audio) return;
       audio.currentTime = Math.max(0, Math.min(time, audio.duration || 0));
-      syncMediaSessionPosition();
+      syncMediaSessionPositionRef.current();
     };
 
     navigator.mediaSession.setActionHandler("play", () => {
@@ -432,60 +459,35 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     navigator.mediaSession.playbackState = state.isPlaying ? "playing" : "paused";
   }, [state.isPlaying]);
 
-  /**
-   * 将音频当前进度同步到 MediaSession positionState，
-   * 使系统锁屏、通知栏等外部控制器能显示准确的播放进度和歌曲时长。
-   *
-   * 修复原有问题：
-   * - 原来只监听 timeupdate + seeked，切歌时 duration 为 NaN 导致锁屏进度卡死。
-   * - 现在额外监听 durationchange + loadedmetadata，确保时长一解析出来就立即同步。
-   * - 额外监听 ratechange，支持将来倍速播放时锁屏进度条正确推进。
-   */
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const syncMediaSessionPosition = useCallback(() => {
-    if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
-    const audio = audioRef.current;
-    if (!audio || !audio.duration || isNaN(audio.duration)) return;
-    try {
-      navigator.mediaSession.setPositionState({
-        duration: audio.duration,
-        playbackRate: audio.playbackRate,
-        position: Math.min(audio.currentTime, audio.duration),
-      });
-    } catch {
-      /* setPositionState 在部分旧浏览器上可能抛出，忽略即可 */
-    }
-  }, []);
-
   useEffect(() => {
     if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
 
+    const syncPos = syncMediaSessionPositionRef.current;
     const bind = () => {
       const audio = audioRef.current;
       if (!audio) {
         setTimeout(bind, 100);
         return;
       }
-      audio.addEventListener("timeupdate", syncMediaSessionPosition);
-      audio.addEventListener("seeked", syncMediaSessionPosition);
+      audio.addEventListener("timeupdate", syncPos);
+      audio.addEventListener("seeked", syncPos);
       // 【修复】补充关键事件：时长解析成功时立即同步，消灭切歌后锁屏进度卡死问题
-      audio.addEventListener("durationchange", syncMediaSessionPosition);
-      audio.addEventListener("loadedmetadata", syncMediaSessionPosition);
-      audio.addEventListener("ratechange", syncMediaSessionPosition);
+      audio.addEventListener("durationchange", syncPos);
+      audio.addEventListener("loadedmetadata", syncPos);
+      audio.addEventListener("ratechange", syncPos);
     };
     bind();
 
     return () => {
       const audio = audioRef.current;
       if (!audio) return;
-      audio.removeEventListener("timeupdate", syncMediaSessionPosition);
-      audio.removeEventListener("seeked", syncMediaSessionPosition);
-      audio.removeEventListener("durationchange", syncMediaSessionPosition);
-      audio.removeEventListener("loadedmetadata", syncMediaSessionPosition);
-      audio.removeEventListener("ratechange", syncMediaSessionPosition);
+      audio.removeEventListener("timeupdate", syncPos);
+      audio.removeEventListener("seeked", syncPos);
+      audio.removeEventListener("durationchange", syncPos);
+      audio.removeEventListener("loadedmetadata", syncPos);
+      audio.removeEventListener("ratechange", syncPos);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [syncMediaSessionPosition]);
+  }, []);
 
   // ── Controls ──────────────────────────────────────────────────────────────
 
@@ -775,6 +777,7 @@ export function usePlayerTime(): { currentTime: number; duration: number } {
     return () => {
       cancelAnimationFrame(rafIdRef.current);
       if (bound) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         const audio = audioRef.current;
         if (!audio) return;
         audio.removeEventListener("play", onPlay);

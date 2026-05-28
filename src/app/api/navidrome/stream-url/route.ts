@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
 import { createSupabaseServerClient } from "@/lib/supabase-auth";
 import { getServiceClient, TABLES } from "@/lib/supabase-server";
-const nodeCrypto = require("crypto") as typeof import("crypto");
+import nodeCrypto from "crypto";
 
 function md5(input: string): string {
   return nodeCrypto.createHash("md5").update(input, "utf8").digest("hex");

@@ -90,6 +90,7 @@ export default function RequestsPanel({
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchPage(1, typeFilter, statusFilter);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

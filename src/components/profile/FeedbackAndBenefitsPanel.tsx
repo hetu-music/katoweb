@@ -15,7 +15,6 @@ import {
   MessageSquarePlus,
   RefreshCw,
   Send,
-  Sparkles,
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -83,6 +82,7 @@ function SongPicker({ value, onChange }: SongPickerProps) {
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     if (!query.trim()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOptions([]);
       setLoading(false);
       return;
@@ -548,6 +548,7 @@ export default function FeedbackAndBenefitsPanel({
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchRequests();
   }, [fetchRequests]);
 

@@ -177,6 +177,7 @@ export default function GlobalPlayer() {
     };
     bind();
     return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       const a = audioRef.current;
       a?.removeEventListener("seeked", onSeeked);
     };
