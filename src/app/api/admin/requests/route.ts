@@ -32,17 +32,10 @@ export const GET = withAuth(
       return NextResponse.json({ error: "服务暂不可用" }, { status: 503 });
     }
 
-    // 构建查询：关联 users 表获取用户名，关联 music 表获取歌曲标题
+    // 构建查询（不做关联，避免 auth.users 外键跨 schema 问题）
     let query = supabase
       .from(TABLES.USER_REQUESTS)
-      .select(
-        `
-        *,
-        users:user_id ( name ),
-        music:song_id ( title )
-      `,
-        { count: "exact" },
-      )
+      .select("*", { count: "exact" })
       .order("created_at", { ascending: false })
       .range(from, from + pageSize - 1);
 
@@ -63,13 +56,48 @@ export const GET = withAuth(
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // 展平关联字段
-    const requests = (data ?? []).map((row) => ({
+    const rows = data ?? [];
+
+    // 批量查 public.users 获取用户名
+    const userIds = [...new Set(rows.map((r) => r.user_id as string))];
+    let userNameMap: Record<string, string> = {};
+    if (userIds.length > 0) {
+      const { data: usersData } = await supabase
+        .from(TABLES.USERS)
+        .select("id, name")
+        .in("id", userIds);
+      if (usersData) {
+        userNameMap = Object.fromEntries(
+          usersData.map((u: { id: string; name: string }) => [u.id, u.name]),
+        );
+      }
+    }
+
+    // 批量查 music 表获取歌曲标题
+    const songIds = [
+      ...new Set(
+        rows
+          .map((r) => r.song_id as number | null)
+          .filter((id): id is number => id !== null),
+      ),
+    ];
+    let songTitleMap: Record<number, string> = {};
+    if (songIds.length > 0) {
+      const { data: songsData } = await supabase
+        .from(TABLES.MUSIC)
+        .select("id, title")
+        .in("id", songIds);
+      if (songsData) {
+        songTitleMap = Object.fromEntries(
+          songsData.map((s: { id: number; title: string }) => [s.id, s.title]),
+        );
+      }
+    }
+
+    const requests = rows.map((row) => ({
       ...row,
-      user_name: (row.users as { name?: string } | null)?.name ?? null,
-      song_title: (row.music as { title?: string } | null)?.title ?? null,
-      users: undefined,
-      music: undefined,
+      user_name: userNameMap[row.user_id as string] ?? null,
+      song_title: row.song_id ? (songTitleMap[row.song_id as number] ?? null) : null,
     }));
 
     return NextResponse.json({
