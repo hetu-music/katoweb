@@ -8,6 +8,7 @@ import type { ImageryCategory, ImageryItem } from "@/lib/types";
 import { useIntersection } from "@mantine/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
+import { useRouter } from "next/navigation";
 
 import React, {
   memo,
@@ -285,11 +286,11 @@ const CategoryButton = memo(function CategoryButton({
 // ─── main component ───────────────────────────────────────────────────────────
 
 export default function ImageryClient({ items, categories }: Props) {
-  const { controls, setPlayerVisible } = usePlayer();
+  const router = useRouter();
+  const { setPlayerVisible } = usePlayer();
 
-  // 进入页面时暂停播放并隐藏播放条，离开时恢复显示
+  // 意象词云页面：隐藏播放条但不暂停音乐，离开时恢复显示
   useEffect(() => {
-    controls.pause();
     setPlayerVisible(false);
     return () => {
       setPlayerVisible(true);
@@ -675,8 +676,8 @@ export default function ImageryClient({ items, categories }: Props) {
   const handleClose = useCallback(() => setPanelOpen(false), []);
 
   const handleTitleReset = useCallback(() => {
-    window.location.href = "/";
-  }, []);
+    router.push("/");
+  }, [router]);
 
   // ── render ────────────────────────────────────────────────────────────────
   return (
