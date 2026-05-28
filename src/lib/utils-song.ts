@@ -185,8 +185,7 @@ export function filterSongs(
   selectedComposer: string[],
   selectedArranger: string[],
   // 接受基础索引或含歌词的扩展索引
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  fuseInstance?: Fuse<any>,
+  fuseInstance?: Fuse<Song>,
 ): Song[] {
   let filteredBySearch = songsData;
 

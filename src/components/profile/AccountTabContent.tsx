@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable react-hooks/refs */
 
 import { useUserContext } from "@/context/UserContext";
 import {
@@ -142,13 +141,6 @@ export default function AccountTabContent() {
     );
   }
 
-  // Pre-destructure hook-form fields to avoid spread operator security warnings
-  const displayNameReg = accountForm.register("displayName");
-  const introReg = accountForm.register("intro");
-  const currentPasswordReg = passwordForm.register("currentPassword");
-  const newPasswordReg = passwordForm.register("newPassword");
-  const confirmPasswordReg = passwordForm.register("confirmPassword");
-
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
       <div className="bg-white dark:bg-slate-900 rounded-xl p-4 sm:p-6 border border-slate-200/50 dark:border-slate-800/50 shadow-xs space-y-6 flex-1">
@@ -169,10 +161,7 @@ export default function AccountTabContent() {
                 <input
                   type="text"
                   maxLength={30}
-                  name={displayNameReg.name}
-                  onChange={displayNameReg.onChange}
-                  onBlur={displayNameReg.onBlur}
-                  ref={displayNameReg.ref}
+                  {...accountForm.register("displayName")}
                   className={cn(
                     "w-full px-3.5 py-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none transition-colors text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-500",
                     accountForm.formState.errors.displayName && "border-rose-300 focus:border-rose-500"
@@ -201,10 +190,7 @@ export default function AccountTabContent() {
               <textarea
                 maxLength={200}
                 rows={3}
-                name={introReg.name}
-                onChange={introReg.onChange}
-                onBlur={introReg.onBlur}
-                ref={introReg.ref}
+                {...accountForm.register("intro")}
                 className={cn(
                   "w-full px-3.5 py-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none transition-colors text-sm text-slate-900 dark:text-slate-100 resize-none focus:border-blue-500 dark:focus:border-blue-500",
                   accountForm.formState.errors.intro && "border-rose-300 focus:border-rose-500"
@@ -295,10 +281,7 @@ export default function AccountTabContent() {
                 </label>
                 <input
                   type="password"
-                  name={currentPasswordReg.name}
-                  onChange={currentPasswordReg.onChange}
-                  onBlur={currentPasswordReg.onBlur}
-                  ref={currentPasswordReg.ref}
+                  {...passwordForm.register("currentPassword")}
                   className={cn(
                     "w-full px-3.5 py-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none transition-colors text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-500",
                     passwordForm.formState.errors.currentPassword && "border-rose-300 focus:border-rose-500"
@@ -317,10 +300,7 @@ export default function AccountTabContent() {
                 <input
                   type="password"
                   placeholder="至少8位，包含字母和数字"
-                  name={newPasswordReg.name}
-                  onChange={newPasswordReg.onChange}
-                  onBlur={newPasswordReg.onBlur}
-                  ref={newPasswordReg.ref}
+                  {...passwordForm.register("newPassword")}
                   className={cn(
                     "w-full px-3.5 py-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none transition-colors text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-500",
                     passwordForm.formState.errors.newPassword && "border-rose-300 focus:border-rose-500"
@@ -339,10 +319,7 @@ export default function AccountTabContent() {
                 <input
                   type="password"
                   placeholder="再次输入新密码"
-                  name={confirmPasswordReg.name}
-                  onChange={confirmPasswordReg.onChange}
-                  onBlur={confirmPasswordReg.onBlur}
-                  ref={confirmPasswordReg.ref}
+                  {...passwordForm.register("confirmPassword")}
                   className={cn(
                     "w-full px-3.5 py-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none transition-colors text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-500",
                     passwordForm.formState.errors.confirmPassword && "border-rose-300 focus:border-rose-500"
