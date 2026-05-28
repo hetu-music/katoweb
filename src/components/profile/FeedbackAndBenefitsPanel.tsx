@@ -44,7 +44,7 @@ const STATUS_COLORS = new Map<RequestStatus, string>([
 
 const TYPE_LABELS = new Map<RequestType, string>([
   ["song_feedback", "歌曲纠错"],
-  ["benefit_apply", "申请试听"],
+  ["benefit_apply", "申请权益"],
   ["admin_apply", "申请管理员"],
 ]);
 
@@ -320,7 +320,7 @@ function SubmitForm({ csrfToken, hasBenefits, isAdmin, onSubmitted }: SubmitForm
             type === "song_feedback"
               ? "请描述具体的错误内容和正确信息..."
               : type === "benefit_apply"
-                ? "请说明您希望获得在线试听权益的原因..."
+                ? "请说明您希望获得权益的原因..."
                 : "请说明您希望成为管理员的原因和能力..."
           }
           className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:border-blue-500/50 focus:bg-white dark:focus:bg-[#111] outline-none transition-all text-sm text-slate-800 dark:text-slate-200 resize-none"

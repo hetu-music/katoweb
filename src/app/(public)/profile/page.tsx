@@ -184,7 +184,7 @@ function ProfileContent() {
                     : tab === "account"
                       ? "账户设置"
                       : tab === "benefits"
-                        ? "反馈和权益"
+                        ? "建议反馈"
                         : tab === "requests"
                           ? "反馈管理"
                           : tab === "users"

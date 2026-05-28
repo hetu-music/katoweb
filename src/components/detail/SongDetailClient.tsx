@@ -32,7 +32,6 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const router = useRouter();
   const { user, loaded: userLoaded } = useUserContext();
 
-  // 是否拥有 Navidrome 试听权益（由服务端 /api/auth/me 判断）
   const hasBenefits = userLoaded && !!user?.hasBenefits;
 
   const openUserPanel = (tab: "account" | "favorites" = "favorites") => {

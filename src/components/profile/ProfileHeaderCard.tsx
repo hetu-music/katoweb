@@ -61,7 +61,7 @@ export default function ProfileHeaderCard({
               <span>{favoritesCount} 收藏</span>
               <span className="text-slate-200 dark:text-slate-800/60 select-none">•</span>
               <span className={cn(hasBenefits ? "text-emerald-500 dark:text-emerald-400/90 font-medium" : "")}>
-                试听{hasBenefits ? "已开通" : "未开通"}
+                权益{hasBenefits ? "已开通" : "未开通"}
               </span>
             </div>
             

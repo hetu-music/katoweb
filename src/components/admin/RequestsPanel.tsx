@@ -38,7 +38,7 @@ const STATUS_COLORS: Record<RequestStatus, string> = {
 
 const TYPE_LABELS: Record<RequestType, string> = {
   song_feedback: "歌曲纠错",
-  benefit_apply: "申请试听",
+  benefit_apply: "申请权益",
   admin_apply: "申请管理员",
 };
 
@@ -178,7 +178,7 @@ export default function RequestsPanel({
           >
             <option value="all">全部类型</option>
             <option value="song_feedback">歌曲纠错</option>
-            <option value="benefit_apply">申请试听</option>
+            <option value="benefit_apply">申请权益</option>
             <option value="admin_apply">申请管理员</option>
           </select>
         )}
