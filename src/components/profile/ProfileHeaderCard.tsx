@@ -67,7 +67,7 @@ export default function ProfileHeaderCard({
             
             {user?.intro && (
               <div className="border-l-2 border-slate-200 dark:border-slate-800 pl-2.5 mt-2 max-w-md">
-                <p className="text-xs text-slate-500 dark:text-slate-400 italic line-clamp-1 leading-relaxed">
+                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 leading-relaxed">
                   {user.intro}
                 </p>
               </div>
