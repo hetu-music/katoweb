@@ -97,7 +97,9 @@ export const GET = withAuth(
     const requests = rows.map((row) => ({
       ...row,
       user_name: userNameMap[row.user_id as string] ?? null,
-      song_title: row.song_id ? (songTitleMap[row.song_id as number] ?? null) : null,
+      song_title: row.song_id
+        ? (songTitleMap[row.song_id as number] ?? null)
+        : null,
     }));
 
     return NextResponse.json({

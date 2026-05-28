@@ -33,22 +33,28 @@ export default function ProfileHeaderCard({
               {user?.name?.charAt(0)?.toUpperCase() || <User size={20} />}
             </span>
           </div>
-          
+
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate">
                 {user?.name || (userLoaded ? "访客" : "加载中...")}
               </h2>
-              <span className={cn(
-                "text-[9px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider scale-90 origin-left shrink-0",
-                user?.isAdmin 
-                  ? "bg-blue-50 text-blue-600 border-blue-200/60 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/30" 
-                  : "bg-slate-50 text-slate-500 border-slate-200/60 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700"
-              )}>
-                {user?.isAdmin ? (isSuperAdmin ? "系统超管" : "管理员") : "普通用户"}
+              <span
+                className={cn(
+                  "text-[9px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider scale-90 origin-left shrink-0",
+                  user?.isAdmin
+                    ? "bg-blue-50 text-blue-600 border-blue-200/60 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/30"
+                    : "bg-slate-50 text-slate-500 border-slate-200/60 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700",
+                )}
+              >
+                {user?.isAdmin
+                  ? isSuperAdmin
+                    ? "系统超管"
+                    : "管理员"
+                  : "普通用户"}
               </span>
             </div>
-            
+
             {/* Stats + Email row */}
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400 dark:text-slate-500 mt-0.5">
               {user?.email && (
@@ -57,14 +63,26 @@ export default function ProfileHeaderCard({
                   {user.email}
                 </span>
               )}
-              {user?.email && <span className="text-slate-200 dark:text-slate-800/60 select-none">•</span>}
+              {user?.email && (
+                <span className="text-slate-200 dark:text-slate-800/60 select-none">
+                  •
+                </span>
+              )}
               <span>{favoritesCount} 收藏</span>
-              <span className="text-slate-200 dark:text-slate-800/60 select-none">•</span>
-              <span className={cn(hasBenefits ? "text-emerald-500 dark:text-emerald-400/90 font-medium" : "")}>
+              <span className="text-slate-200 dark:text-slate-800/60 select-none">
+                •
+              </span>
+              <span
+                className={cn(
+                  hasBenefits
+                    ? "text-emerald-500 dark:text-emerald-400/90 font-medium"
+                    : "",
+                )}
+              >
                 权益{hasBenefits ? "已开通" : "未开通"}
               </span>
             </div>
-            
+
             {user?.intro && (
               <div className="border-l-2 border-slate-200 dark:border-slate-800 pl-2.5 mt-2 max-w-md">
                 <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 leading-relaxed">
@@ -105,4 +123,3 @@ export default function ProfileHeaderCard({
     </div>
   );
 }
-

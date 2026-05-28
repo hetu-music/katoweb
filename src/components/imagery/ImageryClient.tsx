@@ -294,7 +294,7 @@ export default function ImageryClient({ items, categories }: Props) {
     return () => {
       setPlayerVisible(true);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── category hierarchy ───────────────────────────────────────────────────

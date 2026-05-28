@@ -80,7 +80,10 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
             </div>
           ) : isThisLoading ? (
             <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 min-w-0">
-              <Loader2 size={14} className="animate-spin shrink-0 text-blue-500" />
+              <Loader2
+                size={14}
+                className="animate-spin shrink-0 text-blue-500"
+              />
               <p className="text-[11px] font-semibold tracking-wider truncate leading-none uppercase">
                 正在加载...
               </p>

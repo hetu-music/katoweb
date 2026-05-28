@@ -57,12 +57,14 @@ export default function GridCard({
         />
 
         {/* 右上角按钮组：播放 + 加队列 + 收藏 */}
-        <div className={cn(
-          "absolute right-2 top-2 flex items-center gap-1 transition-opacity duration-200",
-          active
-            ? "opacity-100"
-            : "opacity-100 lg:opacity-0 lg:group-hover:opacity-100",
-        )}>
+        <div
+          className={cn(
+            "absolute right-2 top-2 flex items-center gap-1 transition-opacity duration-200",
+            active
+              ? "opacity-100"
+              : "opacity-100 lg:opacity-0 lg:group-hover:opacity-100",
+          )}
+        >
           <PlayButton
             songId={song.id}
             title={song.title}

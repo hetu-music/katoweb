@@ -272,7 +272,7 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
     return () => {
       setPlayerVisible(true);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

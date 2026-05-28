@@ -123,7 +123,7 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
             className={cn(
               buttonClass,
               playerVisible &&
-              "bg-blue-500 dark:bg-blue-500 text-white dark:text-white hover:bg-blue-600 dark:hover:bg-blue-600 ring-blue-500/30",
+                "bg-blue-500 dark:bg-blue-500 text-white dark:text-white hover:bg-blue-600 dark:hover:bg-blue-600 ring-blue-500/30",
             )}
             title={playerVisible ? "收起播放器" : "展开播放器"}
             aria-label={playerVisible ? "收起播放器" : "展开播放器"}

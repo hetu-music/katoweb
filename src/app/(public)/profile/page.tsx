@@ -25,7 +25,13 @@ import { useRouter } from "next/navigation";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { Suspense, useCallback, useEffect, useState } from "react";
 
-type TabType = "favorites" | "account" | "benefits" | "users" | "logs" | "requests";
+type TabType =
+  | "favorites"
+  | "account"
+  | "benefits"
+  | "users"
+  | "logs"
+  | "requests";
 const PROFILE_TABS = [
   "favorites",
   "account",
@@ -165,7 +171,7 @@ function ProfileContent() {
                     "py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center justify-center lg:justify-start gap-2 whitespace-nowrap shrink-0 lg:w-full",
                     activeTab === tab
                       ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-xs"
-                      : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-white/30 dark:hover:bg-slate-800/20"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-white/30 dark:hover:bg-slate-800/20",
                   )}
                 >
                   {tab === "favorites" && (
@@ -224,7 +230,10 @@ function ProfileContent() {
                         处理用户提交的纠错、申请等反馈
                       </p>
                     </div>
-                    <RequestsPanel csrfToken={csrfToken} isSuper={isSuperAdmin} />
+                    <RequestsPanel
+                      csrfToken={csrfToken}
+                      isSuper={isSuperAdmin}
+                    />
                   </div>
                 </div>
               )}

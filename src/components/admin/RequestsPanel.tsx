@@ -221,10 +221,7 @@ export default function RequestsPanel({
             className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
             title="刷新"
           >
-            <RefreshCw
-              size={14}
-              className={cn(loading && "animate-spin")}
-            />
+            <RefreshCw size={14} className={cn(loading && "animate-spin")} />
           </button>
         </div>
       </div>
@@ -285,9 +282,7 @@ export default function RequestsPanel({
                   {/* 展开 */}
                   <button
                     onClick={() =>
-                      setExpandedId((prev) =>
-                        prev === req.id ? null : req.id,
-                      )
+                      setExpandedId((prev) => (prev === req.id ? null : req.id))
                     }
                     className="shrink-0 p-1 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                   >
@@ -316,7 +311,9 @@ export default function RequestsPanel({
                             歌曲:{" "}
                             <span className="text-slate-600 dark:text-slate-300">
                               {req.song_title ?? (
-                                <span className="font-mono">#{req.song_id}</span>
+                                <span className="font-mono">
+                                  #{req.song_id}
+                                </span>
                               )}
                             </span>
                           </span>
@@ -370,10 +367,9 @@ export default function RequestsPanel({
                       {/* 状态选择 + 提交 */}
                       <div className="flex flex-wrap items-center gap-2">
                         {/* 状态按钮组：纠错只有"已回复"，申请类有"同意/拒绝" */}
-                        {(
-                          isFeedback
-                            ? (["replied"] as const)
-                            : (["approved", "rejected"] as const)
+                        {(isFeedback
+                          ? (["replied"] as const)
+                          : (["approved", "rejected"] as const)
                         ).map((s) => (
                           <button
                             key={s}

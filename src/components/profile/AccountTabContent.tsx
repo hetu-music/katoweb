@@ -164,7 +164,8 @@ export default function AccountTabContent() {
                   {...accountForm.register("displayName")}
                   className={cn(
                     "w-full px-3.5 py-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none transition-colors text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-500",
-                    accountForm.formState.errors.displayName && "border-rose-300 focus:border-rose-500"
+                    accountForm.formState.errors.displayName &&
+                      "border-rose-300 focus:border-rose-500",
                   )}
                 />
                 {accountForm.formState.errors.displayName && (
@@ -193,7 +194,8 @@ export default function AccountTabContent() {
                 {...accountForm.register("intro")}
                 className={cn(
                   "w-full px-3.5 py-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none transition-colors text-sm text-slate-900 dark:text-slate-100 resize-none focus:border-blue-500 dark:focus:border-blue-500",
-                  accountForm.formState.errors.intro && "border-rose-300 focus:border-rose-500"
+                  accountForm.formState.errors.intro &&
+                    "border-rose-300 focus:border-rose-500",
                 )}
               />
               {accountForm.formState.errors.intro && (
@@ -222,7 +224,7 @@ export default function AccountTabContent() {
                       "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500/50",
                       displayPublic
                         ? "bg-blue-500"
-                        : "bg-slate-300 dark:bg-slate-700"
+                        : "bg-slate-300 dark:bg-slate-700",
                     )}
                     aria-pressed={displayPublic}
                     aria-label="切换公开展示"
@@ -230,7 +232,7 @@ export default function AccountTabContent() {
                     <span
                       className={cn(
                         "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
-                        displayPublic ? "translate-x-5" : "translate-x-0"
+                        displayPublic ? "translate-x-5" : "translate-x-0",
                       )}
                     />
                   </button>
@@ -250,7 +252,7 @@ export default function AccountTabContent() {
                   "px-6 py-2.5 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2",
                   accountForm.formState.isSubmitting || !csrfToken
                     ? "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
-                    : "bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-500/10 active:scale-95"
+                    : "bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-500/10 active:scale-95",
                 )}
               >
                 {accountForm.formState.isSubmitting ? (
@@ -273,7 +275,11 @@ export default function AccountTabContent() {
             <p className="text-xs text-slate-400">设置一个更安全的新密码</p>
           </div>
 
-          <form onSubmit={handleChangePassword} className="space-y-6" noValidate>
+          <form
+            onSubmit={handleChangePassword}
+            className="space-y-6"
+            noValidate
+          >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
@@ -284,7 +290,8 @@ export default function AccountTabContent() {
                   {...passwordForm.register("currentPassword")}
                   className={cn(
                     "w-full px-3.5 py-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none transition-colors text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-500",
-                    passwordForm.formState.errors.currentPassword && "border-rose-300 focus:border-rose-500"
+                    passwordForm.formState.errors.currentPassword &&
+                      "border-rose-300 focus:border-rose-500",
                   )}
                 />
                 {passwordForm.formState.errors.currentPassword && (
@@ -303,7 +310,8 @@ export default function AccountTabContent() {
                   {...passwordForm.register("newPassword")}
                   className={cn(
                     "w-full px-3.5 py-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none transition-colors text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-500",
-                    passwordForm.formState.errors.newPassword && "border-rose-300 focus:border-rose-500"
+                    passwordForm.formState.errors.newPassword &&
+                      "border-rose-300 focus:border-rose-500",
                   )}
                 />
                 {passwordForm.formState.errors.newPassword && (
@@ -322,7 +330,8 @@ export default function AccountTabContent() {
                   {...passwordForm.register("confirmPassword")}
                   className={cn(
                     "w-full px-3.5 py-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none transition-colors text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-500",
-                    passwordForm.formState.errors.confirmPassword && "border-rose-300 focus:border-rose-500"
+                    passwordForm.formState.errors.confirmPassword &&
+                      "border-rose-300 focus:border-rose-500",
                   )}
                 />
                 {passwordForm.formState.errors.confirmPassword && (
@@ -341,7 +350,7 @@ export default function AccountTabContent() {
                   "px-6 py-2.5 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2",
                   passwordForm.formState.isSubmitting || !csrfToken
                     ? "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
-                    : "bg-rose-600 text-white hover:bg-rose-700 shadow-md shadow-rose-500/10 active:scale-95"
+                    : "bg-rose-600 text-white hover:bg-rose-700 shadow-md shadow-rose-500/10 active:scale-95",
                 )}
               >
                 {passwordForm.formState.isSubmitting ? (
@@ -355,7 +364,7 @@ export default function AccountTabContent() {
                     "text-xs font-bold",
                     pwdMsg === "密码修改成功"
                       ? "text-emerald-500"
-                      : "text-rose-500"
+                      : "text-rose-500",
                   )}
                 >
                   {pwdMsg}

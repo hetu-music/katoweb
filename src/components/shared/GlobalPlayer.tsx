@@ -64,7 +64,9 @@ export default function GlobalPlayer() {
     if (!showQueue) return;
     const handler = (e: MouseEvent) => {
       const isClickInsideDesktop = queueRef.current?.contains(e.target as Node);
-      const isClickInsideMobile = queueRefMobile.current?.contains(e.target as Node);
+      const isClickInsideMobile = queueRefMobile.current?.contains(
+        e.target as Node,
+      );
       if (!isClickInsideDesktop && !isClickInsideMobile) {
         setShowQueue(false);
       }
@@ -80,8 +82,12 @@ export default function GlobalPlayer() {
   useEffect(() => {
     if (!showVolume) return;
     const handler = (e: MouseEvent) => {
-      const isClickInsideDesktop = volumeRef.current?.contains(e.target as Node);
-      const isClickInsideMobile = volumeRefMobile.current?.contains(e.target as Node);
+      const isClickInsideDesktop = volumeRef.current?.contains(
+        e.target as Node,
+      );
+      const isClickInsideMobile = volumeRefMobile.current?.contains(
+        e.target as Node,
+      );
       if (!isClickInsideDesktop && !isClickInsideMobile) {
         setShowVolume(false);
       }
@@ -172,7 +178,10 @@ export default function GlobalPlayer() {
     };
     const bind = () => {
       const a = audioRef.current;
-      if (!a) { setTimeout(bind, 100); return; }
+      if (!a) {
+        setTimeout(bind, 100);
+        return;
+      }
       a.addEventListener("seeked", onSeeked);
     };
     bind();
@@ -190,14 +199,20 @@ export default function GlobalPlayer() {
   const isVolDraggingRef = useRef(false);
   const activeVolTrackRef = useRef<HTMLDivElement | null>(null);
 
-  const getVolFromPointer = useCallback((clientY: number, trackEl: HTMLDivElement | null) => {
-    if (!trackEl) return null;
-    const rect = trackEl.getBoundingClientRect();
-    return Math.max(0, Math.min(1, 1 - (clientY - rect.top) / rect.height));
-  }, []);
+  const getVolFromPointer = useCallback(
+    (clientY: number, trackEl: HTMLDivElement | null) => {
+      if (!trackEl) return null;
+      const rect = trackEl.getBoundingClientRect();
+      return Math.max(0, Math.min(1, 1 - (clientY - rect.top) / rect.height));
+    },
+    [],
+  );
 
   const handleVolPointerDown = useCallback(
-    (e: React.PointerEvent, trackRef: React.RefObject<HTMLDivElement | null>) => {
+    (
+      e: React.PointerEvent,
+      trackRef: React.RefObject<HTMLDivElement | null>,
+    ) => {
       isVolDraggingRef.current = true;
       activeVolTrackRef.current = trackRef.current;
       const v = getVolFromPointer(e.clientY, trackRef.current);
@@ -235,7 +250,6 @@ export default function GlobalPlayer() {
 
   return (
     <>
-
       {/* 底部播放条 */}
       <div
         className={cn(
@@ -244,8 +258,10 @@ export default function GlobalPlayer() {
           "border border-slate-200/60 dark:border-slate-700/50",
           "rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.4)]",
           "transition-all duration-300 ease-in-out select-none",
-          playerVisible ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0 pointer-events-none",
-          cardHeightClass
+          playerVisible
+            ? "translate-y-0 opacity-100"
+            : "translate-y-12 opacity-0 pointer-events-none",
+          cardHeightClass,
         )}
       >
         {/* 顶部裁剪进度条容器 (防止其溢出卡片圆角) */}
@@ -266,7 +282,8 @@ export default function GlobalPlayer() {
             <div
               className="absolute left-0 top-0 h-full bg-blue-500 rounded-r-full"
               style={{
-                width: duration > 0 ? `${(displayTime / duration) * 100}%` : "0%",
+                width:
+                  duration > 0 ? `${(displayTime / duration) * 100}%` : "0%",
               }}
             />
           </div>
@@ -310,7 +327,9 @@ export default function GlobalPlayer() {
                 {error ? (
                   <div className="flex items-center gap-1">
                     <AlertCircle size={10} className="text-rose-500 shrink-0" />
-                    <p className="text-[10px] text-rose-500 truncate">{error}</p>
+                    <p className="text-[10px] text-rose-500 truncate">
+                      {error}
+                    </p>
                   </div>
                 ) : currentLrcText ? (
                   <p
@@ -450,7 +469,11 @@ export default function GlobalPlayer() {
                       <div className="shrink-0 w-8 h-8 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 relative shadow-xs">
                         {track.coverUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={track.coverUrl} alt={track.title} className="w-full h-full object-cover" />
+                          <img
+                            src={track.coverUrl}
+                            alt={track.title}
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
                             <Music size={11} className="text-slate-400" />
@@ -518,10 +541,20 @@ export default function GlobalPlayer() {
                   "p-2 rounded-full transition-colors",
                   "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
                   "hover:bg-slate-100 dark:hover:bg-slate-800/80",
-                  showQueue && "bg-blue-50 dark:bg-blue-500/10 text-blue-500 dark:text-blue-400",
+                  showQueue &&
+                    "bg-blue-50 dark:bg-blue-500/10 text-blue-500 dark:text-blue-400",
                 )}
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <line x1="8" y1="6" x2="21" y2="6" />
                   <line x1="8" y1="12" x2="21" y2="12" />
                   <line x1="8" y1="18" x2="21" y2="18" />
@@ -532,20 +565,21 @@ export default function GlobalPlayer() {
               </button>
             </div>
 
-
             {/* 音量面板 */}
             <div className="relative shrink-0" ref={volumeRef}>
-              <div className={cn(
-                "absolute bottom-full right-1/2 mb-3 p-2.5 rounded-2xl w-12",
-                "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl",
-                "border border-slate-200/60 dark:border-slate-700/50",
-                "shadow-2xl shadow-slate-200/40 dark:shadow-black/40",
-                "transition-all duration-200 origin-bottom",
-                "flex flex-col items-center gap-3 select-none",
-                showVolume
-                  ? "opacity-100 scale-100 pointer-events-auto translate-x-1/2 translate-y-0"
-                  : "opacity-0 scale-95 pointer-events-none translate-x-1/2 translate-y-2",
-              )}>
+              <div
+                className={cn(
+                  "absolute bottom-full right-1/2 mb-3 p-2.5 rounded-2xl w-12",
+                  "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl",
+                  "border border-slate-200/60 dark:border-slate-700/50",
+                  "shadow-2xl shadow-slate-200/40 dark:shadow-black/40",
+                  "transition-all duration-200 origin-bottom",
+                  "flex flex-col items-center gap-3 select-none",
+                  showVolume
+                    ? "opacity-100 scale-100 pointer-events-auto translate-x-1/2 translate-y-0"
+                    : "opacity-0 scale-95 pointer-events-none translate-x-1/2 translate-y-2",
+                )}
+              >
                 <span className="shrink-0 text-[9px] font-mono font-bold text-slate-400 dark:text-slate-500 text-center w-full">
                   {Math.round(effectiveVolume * 100)}%
                 </span>
@@ -571,7 +605,7 @@ export default function GlobalPlayer() {
                   <div
                     className="absolute left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border border-slate-200 shadow-md pointer-events-none scale-0 group-hover/vol-area:scale-100 transition-transform duration-150"
                     style={{
-                      bottom: `calc(${effectiveVolume * 100}% - 6px)`
+                      bottom: `calc(${effectiveVolume * 100}% - 6px)`,
                     }}
                   />
                 </div>
@@ -582,7 +616,7 @@ export default function GlobalPlayer() {
                   className={cn(
                     "shrink-0 p-1 rounded-full transition-all",
                     "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200",
-                    "hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-90"
+                    "hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-90",
                   )}
                 >
                   {effectiveVolume === 0 ? (
@@ -604,7 +638,8 @@ export default function GlobalPlayer() {
                   "p-2 rounded-full transition-colors",
                   "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
                   "hover:bg-slate-100 dark:hover:bg-slate-800/80",
-                  showVolume && "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300",
+                  showVolume &&
+                    "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300",
                 )}
               >
                 {effectiveVolume === 0 ? (
@@ -673,7 +708,8 @@ export default function GlobalPlayer() {
                 aria-label="上一首"
                 className={cn(
                   "p-1.5 rounded-full transition-all text-slate-600 dark:text-slate-300 active:scale-75",
-                  !hasPrev && "text-slate-300 dark:text-slate-700 opacity-40 pointer-events-none"
+                  !hasPrev &&
+                    "text-slate-300 dark:text-slate-700 opacity-40 pointer-events-none",
                 )}
               >
                 <SkipBack size={14} className="fill-current" />
@@ -685,7 +721,7 @@ export default function GlobalPlayer() {
                 aria-label={isPlaying ? "暂停" : "播放"}
                 className={cn(
                   "w-8.5 h-8.5 rounded-full flex items-center justify-center transition-all bg-blue-500 text-white shadow-md active:scale-90",
-                  isLoading && "bg-slate-100 dark:bg-slate-800 text-slate-400"
+                  isLoading && "bg-slate-100 dark:bg-slate-800 text-slate-400",
                 )}
               >
                 {isLoading ? (
@@ -703,7 +739,8 @@ export default function GlobalPlayer() {
                 aria-label="下一首"
                 className={cn(
                   "p-1.5 rounded-full transition-all text-slate-600 dark:text-slate-300 active:scale-75",
-                  !hasNext && "text-slate-300 dark:text-slate-700 opacity-40 pointer-events-none"
+                  !hasNext &&
+                    "text-slate-300 dark:text-slate-700 opacity-40 pointer-events-none",
                 )}
               >
                 <SkipForward size={14} className="fill-current" />
@@ -771,7 +808,11 @@ export default function GlobalPlayer() {
                         <div className="shrink-0 w-8 h-8 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 relative shadow-xs">
                           {track.coverUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={track.coverUrl} alt={track.title} className="w-full h-full object-cover" />
+                            <img
+                              src={track.coverUrl}
+                              alt={track.title}
+                              className="w-full h-full object-cover"
+                            />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <Music size={11} className="text-slate-400" />
@@ -837,10 +878,19 @@ export default function GlobalPlayer() {
                   aria-label="播放列表"
                   className={cn(
                     "p-1.5 rounded-full text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors",
-                    showQueue && "text-blue-500 dark:text-blue-400"
+                    showQueue && "text-blue-500 dark:text-blue-400",
                   )}
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <line x1="8" y1="6" x2="21" y2="6" />
                     <line x1="8" y1="12" x2="21" y2="12" />
                     <line x1="8" y1="18" x2="21" y2="18" />
@@ -853,24 +903,28 @@ export default function GlobalPlayer() {
 
               {/* 音量面板 (移动端版) */}
               <div className="relative shrink-0" ref={volumeRefMobile}>
-                <div className={cn(
-                  "absolute bottom-full right-1/2 mb-3 p-2.5 rounded-2xl w-12",
-                  "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl",
-                  "border border-slate-200/60 dark:border-slate-700/50",
-                  "shadow-2xl shadow-slate-200/40 dark:shadow-black/40",
-                  "transition-all duration-200 origin-bottom",
-                  "flex flex-col items-center gap-3 select-none",
-                  showVolume
-                    ? "opacity-100 scale-100 pointer-events-auto translate-x-1/2 translate-y-0"
-                    : "opacity-0 scale-95 pointer-events-none translate-x-1/2 translate-y-2",
-                )}>
+                <div
+                  className={cn(
+                    "absolute bottom-full right-1/2 mb-3 p-2.5 rounded-2xl w-12",
+                    "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl",
+                    "border border-slate-200/60 dark:border-slate-700/50",
+                    "shadow-2xl shadow-slate-200/40 dark:shadow-black/40",
+                    "transition-all duration-200 origin-bottom",
+                    "flex flex-col items-center gap-3 select-none",
+                    showVolume
+                      ? "opacity-100 scale-100 pointer-events-auto translate-x-1/2 translate-y-0"
+                      : "opacity-0 scale-95 pointer-events-none translate-x-1/2 translate-y-2",
+                  )}
+                >
                   <span className="shrink-0 text-[9px] font-mono font-bold text-slate-400 dark:text-slate-500 text-center w-full">
                     {Math.round(effectiveVolume * 100)}%
                   </span>
 
                   <div
                     className="relative w-6 h-28 flex justify-center cursor-pointer select-none group/vol-area"
-                    onPointerDown={(e) => handleVolPointerDown(e, volTrackRefMobile)}
+                    onPointerDown={(e) =>
+                      handleVolPointerDown(e, volTrackRefMobile)
+                    }
                     onPointerMove={handleVolPointerMove}
                     onPointerUp={handleVolPointerUp}
                     onPointerCancel={handleVolPointerUp}
@@ -888,7 +942,7 @@ export default function GlobalPlayer() {
                     <div
                       className="absolute left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border border-slate-200 shadow-md pointer-events-none scale-0 group-hover/vol-area:scale-100 transition-transform duration-150"
                       style={{
-                        bottom: `calc(${effectiveVolume * 100}% - 6px)`
+                        bottom: `calc(${effectiveVolume * 100}% - 6px)`,
                       }}
                     />
                   </div>
@@ -899,7 +953,7 @@ export default function GlobalPlayer() {
                     className={cn(
                       "shrink-0 p-1 rounded-full transition-all",
                       "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200",
-                      "hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-90"
+                      "hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-90",
                     )}
                   >
                     {effectiveVolume === 0 ? (
@@ -921,7 +975,8 @@ export default function GlobalPlayer() {
                     "p-1.5 rounded-full transition-colors",
                     "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
                     "hover:bg-slate-100 dark:hover:bg-slate-800/80",
-                    showVolume && "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300",
+                    showVolume &&
+                      "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300",
                   )}
                 >
                   {effectiveVolume === 0 ? (

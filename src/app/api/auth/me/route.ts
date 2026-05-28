@@ -26,8 +26,7 @@ export const GET = withAuth(
       intro: data?.intro ?? null,
       isAdmin: data?.is_admin ?? false,
       isSuper: data?.is_super ?? false,
-      hasBenefits:
-        !!data?.navid_id && !!data?.navid_pw && !!data?.endpoint,
+      hasBenefits: !!data?.navid_id && !!data?.navid_pw && !!data?.endpoint,
     });
   },
 );

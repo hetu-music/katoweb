@@ -18,9 +18,13 @@ export default function FavoritesTabContent() {
     loaded: favoritesLoaded,
   } = useFavorites();
 
-  const [expandedReviews, setExpandedReviews] = useState<Map<number, boolean>>(new Map());
+  const [expandedReviews, setExpandedReviews] = useState<Map<number, boolean>>(
+    new Map(),
+  );
   // Lazy-loaded review texts: songId -> review text (or "loading")
-  const [reviewTexts, setReviewTexts] = useState<Map<number, string | null>>(new Map());
+  const [reviewTexts, setReviewTexts] = useState<Map<number, string | null>>(
+    new Map(),
+  );
 
   const toggleReview = useCallback(
     async (id: number, e: React.MouseEvent) => {
@@ -97,7 +101,10 @@ export default function FavoritesTabContent() {
           >
             <div
               onClick={() => {
-                const d = parseInt(sessionStorage.getItem("__katoweb_nav_depth") || "0", 10);
+                const d = parseInt(
+                  sessionStorage.getItem("__katoweb_nav_depth") || "0",
+                  10,
+                );
                 sessionStorage.setItem("__katoweb_nav_depth", String(d + 1));
                 router.push(`/song/${song.id}`);
               }}
@@ -122,7 +129,9 @@ export default function FavoritesTabContent() {
                     {song.collectionInfo?.created_at && (
                       <span>
                         收藏于{" "}
-                        {new Date(song.collectionInfo.created_at).toLocaleDateString()}
+                        {new Date(
+                          song.collectionInfo.created_at,
+                        ).toLocaleDateString()}
                       </span>
                     )}
                   </p>
@@ -172,10 +181,14 @@ export default function FavoritesTabContent() {
               <div className="px-3.5 pb-3.5 pt-0.5">
                 <div className="bg-slate-50 dark:bg-slate-850/40 p-3 rounded-lg border border-slate-100/60 dark:border-slate-800/60">
                   {!reviewTexts.has(song.id) ? (
-                    <p className="text-sm text-slate-400 animate-pulse">加载评论中...</p>
+                    <p className="text-sm text-slate-400 animate-pulse">
+                      加载评论中...
+                    </p>
                   ) : (
                     <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed">
-                      {reviewTexts.get(song.id) || song.collectionInfo.review || "暂无内容"}
+                      {reviewTexts.get(song.id) ||
+                        song.collectionInfo.review ||
+                        "暂无内容"}
                     </p>
                   )}
                 </div>

@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  apiCreateRequest,
-  apiGetMyRequests,
-} from "@/lib/client-api";
+import { apiCreateRequest, apiGetMyRequests } from "@/lib/client-api";
 import type { UserRequest, RequestType, RequestStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import {
@@ -35,10 +32,22 @@ const STATUS_LABELS = new Map<RequestStatus, string>([
 ]);
 
 const STATUS_COLORS = new Map<RequestStatus, string>([
-  ["pending", "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10"],
-  ["replied", "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10"],
-  ["approved", "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10"],
-  ["rejected", "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10"],
+  [
+    "pending",
+    "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10",
+  ],
+  [
+    "replied",
+    "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10",
+  ],
+  [
+    "approved",
+    "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10",
+  ],
+  [
+    "rejected",
+    "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10",
+  ],
 ]);
 
 const TYPE_LABELS = new Map<RequestType, string>([
@@ -70,7 +79,10 @@ function SongPicker({ value, onChange }: SongPickerProps) {
   // 点击外部关闭
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     }
@@ -193,9 +205,17 @@ interface SubmitFormProps {
   onSubmitted: () => void;
 }
 
-function SubmitForm({ csrfToken, hasBenefits, isAdmin, onSubmitted }: SubmitFormProps) {
+function SubmitForm({
+  csrfToken,
+  hasBenefits,
+  isAdmin,
+  onSubmitted,
+}: SubmitFormProps) {
   const [type, setType] = useState<RequestType>("song_feedback");
-  const [selectedSong, setSelectedSong] = useState<{ id: number; title: string } | null>(null);
+  const [selectedSong, setSelectedSong] = useState<{
+    id: number;
+    title: string;
+  } | null>(null);
   const [category, setCategory] = useState("");
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -566,10 +586,7 @@ export default function FeedbackAndBenefitsPanel({
           className="w-full flex items-center justify-between px-4 sm:px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
         >
           <div className="flex items-center gap-2.5">
-            <MessageSquarePlus
-              size={16}
-              className="text-blue-500 shrink-0"
-            />
+            <MessageSquarePlus size={16} className="text-blue-500 shrink-0" />
             <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
               提交反馈 / 申请
             </span>

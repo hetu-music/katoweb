@@ -52,7 +52,10 @@ export const GET = withAuth(
           .in("id", songIds);
         if (songsData) {
           songTitleMap = Object.fromEntries(
-            songsData.map((s: { id: number; title: string }) => [s.id, s.title]),
+            songsData.map((s: { id: number; title: string }) => [
+              s.id,
+              s.title,
+            ]),
           );
         }
       }
@@ -60,7 +63,9 @@ export const GET = withAuth(
 
     const requests = rows.map((row) => ({
       ...row,
-      song_title: row.song_id ? (songTitleMap[row.song_id as number] ?? null) : null,
+      song_title: row.song_id
+        ? (songTitleMap[row.song_id as number] ?? null)
+        : null,
     }));
 
     return NextResponse.json({ requests });

@@ -35,8 +35,7 @@ export const GET = async (
     {
       headers: {
         // CDN 缓存 6 小时，客户端缓存 30 分钟
-        "Cache-Control":
-          "public, s-maxage=21600, stale-while-revalidate=1800",
+        "Cache-Control": "public, s-maxage=21600, stale-while-revalidate=1800",
       },
     },
   );

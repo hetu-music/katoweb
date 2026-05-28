@@ -139,7 +139,11 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     // 瞬时同步激活，不产生任何可听见的声音
     const promise = audio.play();
     if (promise !== undefined) {
-      promise.then(() => audio.pause()).catch((_err: unknown) => { /* iOS unlock: ignore play/pause race */ });
+      promise
+        .then(() => audio.pause())
+        .catch((_err: unknown) => {
+          /* iOS unlock: ignore play/pause race */
+        });
     }
   }, []);
 
@@ -149,58 +153,55 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
    * 引入竞态锁：每次调用时将 songId 写入 loadingTrackIdRef，
    * fetch 回调执行时检查 id 是否仍匹配，不匹配则丢弃（用户已切歌）。
    */
-  const fetchAndSetSrc = useCallback(
-    (songId: number, isRetry = false) => {
-      const audio = audioRef.current;
-      if (!audio) return;
+  const fetchAndSetSrc = useCallback((songId: number, isRetry = false) => {
+    const audio = audioRef.current;
+    if (!audio) return;
 
-      if (!isRetry) {
-        retryCountRef.current = 0;
-        loadingTrackIdRef.current = songId; // 【竞态锁】记录当前目标
-      }
+    if (!isRetry) {
+      retryCountRef.current = 0;
+      loadingTrackIdRef.current = songId; // 【竞态锁】记录当前目标
+    }
 
-      setState((s) => ({ ...s, isLoading: true, error: null }));
+    setState((s) => ({ ...s, isLoading: true, error: null }));
 
-      fetch(`/api/navidrome/stream-url?songId=${encodeURIComponent(songId)}`)
-        .then((r) => {
-          if (!r.ok) throw new Error(`stream-url error: ${r.status}`);
-          return r.json() as Promise<{ url?: string; error?: string }>;
-        })
-        .then(({ url, error }) => {
-          // 【竞态锁检查】若用户在请求期间已切到其他歌曲，直接丢弃此结果
-          if (songId !== loadingTrackIdRef.current) return;
+    fetch(`/api/navidrome/stream-url?songId=${encodeURIComponent(songId)}`)
+      .then((r) => {
+        if (!r.ok) throw new Error(`stream-url error: ${r.status}`);
+        return r.json() as Promise<{ url?: string; error?: string }>;
+      })
+      .then(({ url, error }) => {
+        // 【竞态锁检查】若用户在请求期间已切到其他歌曲，直接丢弃此结果
+        if (songId !== loadingTrackIdRef.current) return;
 
-          if (!url) throw new Error(error ?? "未获取到播放地址");
+        if (!url) throw new Error(error ?? "未获取到播放地址");
 
-          audio.pause();
-          audio.src = url;
-          audio.load();
+        audio.pause();
+        audio.src = url;
+        audio.load();
 
-          setState((s) => ({
-            ...s,
-            isLoading: false,
-            error: null,
-            // 【关键】isPlaying 不在这里重置，它代表"用户意图"
-            // shouldPlayAfterLoadRef 决定 canplay 时是否实际播放
-          }));
-        })
-        .catch((err: unknown) => {
-          // 若已切歌，静默丢弃旧请求的错误
-          if (songId !== loadingTrackIdRef.current) return;
+        setState((s) => ({
+          ...s,
+          isLoading: false,
+          error: null,
+          // 【关键】isPlaying 不在这里重置，它代表"用户意图"
+          // shouldPlayAfterLoadRef 决定 canplay 时是否实际播放
+        }));
+      })
+      .catch((err: unknown) => {
+        // 若已切歌，静默丢弃旧请求的错误
+        if (songId !== loadingTrackIdRef.current) return;
 
-          const msg =
-            err instanceof Error ? err.message : "获取播放地址失败，请稍后重试";
-          setState((s) => ({
-            ...s,
-            isLoading: false,
-            isPlaying: false,
-            error: msg,
-          }));
-          shouldPlayAfterLoadRef.current = false;
-        });
-    },
-    [],
-  );
+        const msg =
+          err instanceof Error ? err.message : "获取播放地址失败，请稍后重试";
+        setState((s) => ({
+          ...s,
+          isLoading: false,
+          isPlaying: false,
+          error: msg,
+        }));
+        shouldPlayAfterLoadRef.current = false;
+      });
+  }, []);
 
   // ── 初始化 Audio，绑定事件（只执行一次） ─────────────────────────────────
   useEffect(() => {
@@ -270,7 +271,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       }
 
       let msg = "播放失败，请稍后重试";
-      if (err?.code === MediaError.MEDIA_ERR_NETWORK) msg = "网络错误，无法加载音频";
+      if (err?.code === MediaError.MEDIA_ERR_NETWORK)
+        msg = "网络错误，无法加载音频";
       if (err?.code === MediaError.MEDIA_ERR_DECODE) msg = "音频解码失败";
       if (err?.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED)
         msg = "不支持的音频格式或无权限";
@@ -311,7 +313,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     if (songId === loadingTrackIdRef.current && state.isLoading) return;
     loadingTrackIdRef.current = songId;
     fetchAndSetSrc(songId);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.currentTrack?.songId]);
 
   // ── 按需 fetch 当前曲目歌词 ───────────────────────────────────────────────
@@ -331,8 +333,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
           return next;
         });
       })
-      .catch(() => {/* 歌词加载失败不影响播放 */});
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+      .catch(() => {
+        /* 歌词加载失败不影响播放 */
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.currentTrack?.songId]);
 
   // ── MediaSession：系统级媒体控制（锁屏、通知栏、蓝牙耳机等）────────────
@@ -349,7 +353,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
    * 同时避免 React Compiler 的 memoization 警告。
    */
   const syncMediaSessionPositionRef = useRef(() => {
-    if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
+    if (typeof navigator === "undefined" || !("mediaSession" in navigator))
+      return;
     const audio = audioRef.current;
     if (!audio || !audio.duration || isNaN(audio.duration)) return;
     try {
@@ -364,7 +369,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
-    if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
+    if (typeof navigator === "undefined" || !("mediaSession" in navigator))
+      return;
     const { currentTrack, queue, currentIndex } = state;
     if (!currentTrack) return;
 
@@ -450,17 +456,27 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     navigator.mediaSession.setActionHandler("seekto", (d) => {
       if (d.seekTime != null) doSeek(d.seekTime);
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.currentTrack, state.currentIndex, state.queue.length, safePlay, syncUnlockAudio]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    state.currentTrack,
+    state.currentIndex,
+    state.queue.length,
+    safePlay,
+    syncUnlockAudio,
+  ]);
 
   // ── MediaSession：同步播放状态 ────────────────────────────────────────────
   useEffect(() => {
-    if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
-    navigator.mediaSession.playbackState = state.isPlaying ? "playing" : "paused";
+    if (typeof navigator === "undefined" || !("mediaSession" in navigator))
+      return;
+    navigator.mediaSession.playbackState = state.isPlaying
+      ? "playing"
+      : "paused";
   }, [state.isPlaying]);
 
   useEffect(() => {
-    if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
+    if (typeof navigator === "undefined" || !("mediaSession" in navigator))
+      return;
 
     const syncPos = syncMediaSessionPositionRef.current;
     const bind = () => {
@@ -491,44 +507,49 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   // ── Controls ──────────────────────────────────────────────────────────────
 
-  const play = useCallback((track: PlayerTrack) => {
-    setPlayerVisible(true);
+  const play = useCallback(
+    (track: PlayerTrack) => {
+      setPlayerVisible(true);
 
-    // 【iOS 解锁】在同步点击上下文中激活音频对象，确保后续异步 play() 不被拦截
-    syncUnlockAudio();
-    shouldPlayAfterLoadRef.current = true;
+      // 【iOS 解锁】在同步点击上下文中激活音频对象，确保后续异步 play() 不被拦截
+      syncUnlockAudio();
+      shouldPlayAfterLoadRef.current = true;
 
-    setState((s) => {
-      const existingIndex = s.queue.findIndex((t) => t.songId === track.songId);
-      if (existingIndex !== -1) {
-        // 已在队列中：直接跳转并播放，无需重新加载
-        const isSameTrack = s.currentTrack?.songId === track.songId;
-        if (isSameTrack) {
-          // 已是当前曲目，直接播放
-          safePlay();
-          return { ...s, isPlaying: true };
+      setState((s) => {
+        const existingIndex = s.queue.findIndex(
+          (t) => t.songId === track.songId,
+        );
+        if (existingIndex !== -1) {
+          // 已在队列中：直接跳转并播放，无需重新加载
+          const isSameTrack = s.currentTrack?.songId === track.songId;
+          if (isSameTrack) {
+            // 已是当前曲目，直接播放
+            safePlay();
+            return { ...s, isPlaying: true };
+          }
+          return {
+            ...s,
+            currentIndex: existingIndex,
+            currentTrack: s.queue[existingIndex],
+            isPlaying: true,
+            isLoading: true,
+          };
         }
+        // 不在队列中：追加并跳转
+        const newQueue = [...s.queue, track];
+        const newIndex = newQueue.length - 1;
         return {
           ...s,
-          currentIndex: existingIndex,
-          currentTrack: s.queue[existingIndex],
+          queue: newQueue,
+          currentIndex: newIndex,
+          currentTrack: track,
           isPlaying: true,
           isLoading: true,
         };
-      }
-      // 不在队列中：追加并跳转
-      const newQueue = [...s.queue, track];
-      const newIndex = newQueue.length - 1;
-      return {
-        ...s,
-        queue: newQueue,
-        currentIndex: newIndex,
-        currentTrack: track,
-        isPlaying: true,
-        isLoading: true,
-      };
-    });
-  }, [syncUnlockAudio, safePlay]);
+      });
+    },
+    [syncUnlockAudio, safePlay],
+  );
 
   const enqueue = useCallback((track: PlayerTrack) => {
     setState((s) => {
@@ -628,7 +649,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
           isLoading: true,
         };
       }
-      const newIndex = index < s.currentIndex ? s.currentIndex - 1 : s.currentIndex;
+      const newIndex =
+        index < s.currentIndex ? s.currentIndex - 1 : s.currentIndex;
       return { ...s, queue: newQueue, currentIndex: newIndex };
     });
   }, []);
@@ -667,8 +689,18 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const controls: PlayerControls = {
-    play, enqueue, toggle, pause, jumpTo, prev, next,
-    removeFromQueue, clearQueue, seek, setVolume, toggleMute,
+    play,
+    enqueue,
+    toggle,
+    pause,
+    jumpTo,
+    prev,
+    next,
+    removeFromQueue,
+    clearQueue,
+    seek,
+    setVolume,
+    toggleMute,
   };
 
   return (
