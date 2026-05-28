@@ -34,6 +34,7 @@ export async function proxy(request: NextRequest) {
       style-src 'self' 'unsafe-inline';
       img-src 'self' blob: data: https://cover.hetu-music.com;
       font-src 'self';
+      media-src 'self' https://qb.hetu-music.com;
       object-src 'none';
       base-uri 'self';
       form-action 'self';
@@ -55,6 +56,7 @@ export async function proxy(request: NextRequest) {
       style-src 'self' 'unsafe-inline';
       img-src 'self' blob: data: https://cover.hetu-music.com;
       font-src 'self';
+      media-src 'self' https://qb.hetu-music.com;
       object-src 'none';
       base-uri 'self';
       form-action 'self';
