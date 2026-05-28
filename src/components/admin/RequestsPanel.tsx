@@ -312,15 +312,12 @@ export default function RequestsPanel({
                         </span>
                         {req.song_id && (
                           <span>
-                            歌曲 ID:{" "}
-                            <span className="font-mono text-slate-600 dark:text-slate-300">
-                              {req.song_id}
+                            歌曲:{" "}
+                            <span className="text-slate-600 dark:text-slate-300">
+                              {req.song_title ?? (
+                                <span className="font-mono">#{req.song_id}</span>
+                              )}
                             </span>
-                            {req.song_title && (
-                              <span className="text-slate-500 dark:text-slate-400 ml-1">
-                                ({req.song_title})
-                              </span>
-                            )}
                           </span>
                         )}
                         {req.category && (

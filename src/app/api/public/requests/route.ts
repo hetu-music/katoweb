@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
 import { createSupabaseServerClient } from "@/lib/supabase-auth";
-import { TABLES } from "@/lib/supabase-server";
+import { getServiceClient, TABLES } from "@/lib/supabase-server";
 
 // ─── 创建请求 schema ──────────────────────────────────────────────────────────
 
@@ -32,7 +32,38 @@ export const GET = withAuth(
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ requests: data ?? [] });
+    const rows = data ?? [];
+
+    // 批量查 music 表获取歌曲标题
+    const songIds = [
+      ...new Set(
+        rows
+          .map((r) => r.song_id as number | null)
+          .filter((id): id is number => id !== null),
+      ),
+    ];
+    let songTitleMap: Record<number, string> = {};
+    if (songIds.length > 0) {
+      const serviceClient = getServiceClient();
+      if (serviceClient) {
+        const { data: songsData } = await serviceClient
+          .from(TABLES.MUSIC)
+          .select("id, title")
+          .in("id", songIds);
+        if (songsData) {
+          songTitleMap = Object.fromEntries(
+            songsData.map((s: { id: number; title: string }) => [s.id, s.title]),
+          );
+        }
+      }
+    }
+
+    const requests = rows.map((row) => ({
+      ...row,
+      song_title: row.song_id ? (songTitleMap[row.song_id as number] ?? null) : null,
+    }));
+
+    return NextResponse.json({ requests });
   },
 );
 

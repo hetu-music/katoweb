@@ -454,11 +454,11 @@ function RequestList({ requests, loading, onRefresh }: RequestListProps) {
 
                 {/* 附加信息 */}
                 <div className="flex flex-wrap gap-x-6 gap-y-1 text-[11px] text-slate-400">
-                  {req.song_id && (
+                  {req.song_title && (
                     <span>
-                      歌曲 ID:{" "}
-                      <span className="font-mono text-slate-600 dark:text-slate-300">
-                        {req.song_id}
+                      歌曲:{" "}
+                      <span className="text-slate-600 dark:text-slate-300">
+                        {req.song_title}
                       </span>
                     </span>
                   )}
