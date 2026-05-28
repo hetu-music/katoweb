@@ -17,8 +17,8 @@ import {
   Heart,
   Home,
   Loader2,
+  MessageSquare,
   Settings,
-  Sparkles,
   Users,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -28,14 +28,14 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 type TabType =
   | "favorites"
   | "account"
-  | "benefits"
+  | "feedback"
   | "users"
   | "logs"
   | "requests";
 const PROFILE_TABS = [
   "favorites",
   "account",
-  "benefits",
+  "feedback",
   "users",
   "logs",
   "requests",
@@ -159,7 +159,7 @@ function ProfileContent() {
                 [
                   "favorites",
                   "account",
-                  "benefits",
+                  "feedback",
                   ...(user?.isAdmin ? (["requests"] as TabType[]) : []),
                   ...(isSuperAdmin ? (["users", "logs"] as TabType[]) : []),
                 ] as TabType[]
@@ -181,7 +181,7 @@ function ProfileContent() {
                     />
                   )}
                   {tab === "account" && <Settings size={14} />}
-                  {tab === "benefits" && <Sparkles size={14} />}
+                  {tab === "feedback" && <MessageSquare size={14} />}
                   {tab === "requests" && <ClipboardList size={14} />}
                   {tab === "users" && <Users size={14} />}
                   {tab === "logs" && <ClipboardList size={14} />}
@@ -189,7 +189,7 @@ function ProfileContent() {
                     ? "我的收藏"
                     : tab === "account"
                       ? "账户设置"
-                      : tab === "benefits"
+                      : tab === "feedback"
                         ? "建议反馈"
                         : tab === "requests"
                           ? "反馈管理"
@@ -209,7 +209,7 @@ function ProfileContent() {
               {activeTab === "account" && <AccountTabContent />}
 
               {/* Feedback & Benefits Tab — all logged-in users */}
-              {activeTab === "benefits" && user && (
+              {activeTab === "feedback" && user && (
                 <FeedbackAndBenefitsPanel
                   csrfToken={csrfToken}
                   hasBenefits={hasBenefits}
