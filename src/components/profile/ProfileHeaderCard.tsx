@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { Loader2, LogOut, Mail, ShieldCheck, User } from "lucide-react";
+import Link from "next/link";
 import type { UserInfo } from "@/context/UserContext";
 
 interface ProfileHeaderCardProps {
@@ -96,13 +97,13 @@ export default function ProfileHeaderCard({
         {/* Right: Actions */}
         <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
           {user?.isAdmin && (
-            <a
+            <Link
               href="/admin"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-slate-900 transition-colors text-xs font-bold shadow-xs"
             >
               <ShieldCheck size={14} />
               管理面板
-            </a>
+            </Link>
           )}
           {user && (
             <button

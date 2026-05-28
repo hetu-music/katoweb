@@ -23,7 +23,9 @@ import {
   VolumeX,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import React, {
   useCallback,
   useEffect,
@@ -33,6 +35,7 @@ import React, {
 } from "react";
 
 export default function GlobalPlayer() {
+  const pathname = usePathname();
   const { state, controls, playerVisible, lyricsMap, audioRef } = usePlayer();
   const {
     currentTrack,
@@ -239,6 +242,10 @@ export default function GlobalPlayer() {
     [controls, getVolFromPointer],
   );
 
+  // 沉浸式全屏页面不显示播放条 UI（音频继续播放）
+  const HIDDEN_PATHS = ["/imagery", "/story"];
+  if (HIDDEN_PATHS.some((p) => pathname.startsWith(p))) return null;
+
   if (!currentTrack) return null;
 
   const hasPrev = currentIndex > 0;
@@ -296,10 +303,11 @@ export default function GlobalPlayer() {
             {/* 封面 */}
             <div className="shrink-0 w-11 h-11 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10 shadow-sm relative">
               {currentTrack.coverUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={currentTrack.coverUrl}
                   alt={currentTrack.title}
+                  width={44}
+                  height={44}
                   className={cn(
                     "w-full h-full object-cover transition-transform duration-700",
                     isPlaying && "scale-105",
@@ -468,10 +476,11 @@ export default function GlobalPlayer() {
                       {/* 封面与播放指示器 */}
                       <div className="shrink-0 w-8 h-8 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 relative shadow-xs">
                         {track.coverUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
+                          <Image
                             src={track.coverUrl}
                             alt={track.title}
+                            width={32}
+                            height={32}
                             className="w-full h-full object-cover"
                           />
                         ) : (
@@ -664,10 +673,11 @@ export default function GlobalPlayer() {
               {/* 封面 */}
               <div className="shrink-0 w-10 h-10 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10 shadow-sm relative">
                 {currentTrack.coverUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={currentTrack.coverUrl}
                     alt={currentTrack.title}
+                    width={40}
+                    height={40}
                     className="w-full h-full object-cover"
                   />
                 ) : isLoading ? (
@@ -807,10 +817,11 @@ export default function GlobalPlayer() {
                         {/* 封面与播放指示器 */}
                         <div className="shrink-0 w-8 h-8 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 relative shadow-xs">
                           {track.coverUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
+                            <Image
                               src={track.coverUrl}
                               alt={track.title}
+                              width={32}
+                              height={32}
                               className="w-full h-full object-cover"
                             />
                           ) : (

@@ -222,8 +222,11 @@ export default function MusicLibraryClient({
 
   const handleTitleReset = useCallback(() => {
     sessionStorage.removeItem("music_library_scrollY");
-    window.location.href = window.location.pathname;
-  }, []);
+    resetAllFilters();
+    setSearchQuery("");
+    window.scrollTo({ top: 0, behavior: "instant" });
+    router.refresh();
+  }, [router, resetAllFilters, setSearchQuery]);
 
   const navigateToSong = useCallback(
     (songId: number) => {

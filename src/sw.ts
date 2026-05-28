@@ -2,7 +2,6 @@
 
 import {
   CacheFirst,
-  CacheableResponsePlugin,
   ExpirationPlugin,
   NetworkFirst,
   NetworkOnly,
@@ -66,21 +65,6 @@ const serwist = new Serwist({
       handler: new StaleWhileRevalidate({
         cacheName: "next-optimized-images",
         plugins: [
-          new ExpirationPlugin({
-            maxEntries: 60,
-            maxAgeSeconds: 60 * 60 * 24 * 7,
-          }),
-        ],
-      }),
-    },
-    {
-      matcher: ({ url }) => url.origin === "https://cover.hetu-music.com",
-      handler: new CacheFirst({
-        cacheName: "cover-images",
-        plugins: [
-          new CacheableResponsePlugin({
-            statuses: [0, 200],
-          }),
           new ExpirationPlugin({
             maxEntries: 200,
             maxAgeSeconds: 60 * 60 * 24 * 30,
