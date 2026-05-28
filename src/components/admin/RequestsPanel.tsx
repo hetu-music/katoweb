@@ -237,9 +237,11 @@ export default function RequestsPanel({
         <div className="space-y-2">
           {requests.map((req) => {
             const isExpanded = expandedId === req.id;
+            const isFeedback = req.type === "song_feedback";
+            const defaultStatus = isFeedback ? "replied" : "approved";
             const replyState = replyStates[req.id] ?? {
               reply: req.reply ?? "",
-              status: req.status === "pending" ? "replied" : req.status,
+              status: req.status === "pending" ? defaultStatus : req.status,
             };
 
             return (
@@ -369,14 +371,11 @@ export default function RequestsPanel({
 
                       {/* 状态选择 + 提交 */}
                       <div className="flex flex-wrap items-center gap-2">
-                        {/* 状态按钮组 */}
+                        {/* 状态按钮组：纠错只有"已回复"，申请类有"同意/拒绝" */}
                         {(
-                          [
-                            "replied",
-                            ...(isSuper
-                              ? (["approved", "rejected"] as const)
-                              : []),
-                          ] as ("replied" | "approved" | "rejected")[]
+                          isFeedback
+                            ? (["replied"] as const)
+                            : (["approved", "rejected"] as const)
                         ).map((s) => (
                           <button
                             key={s}
