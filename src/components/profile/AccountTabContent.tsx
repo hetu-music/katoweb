@@ -17,7 +17,8 @@ import { useForm, useWatch } from "react-hook-form";
 export default function AccountTabContent() {
   const { user, loaded: userLoaded, refetch } = useUserContext();
   const csrfToken = useCsrfToken();
-  const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">("idle");
+  const [saveErrMsg, setSaveErrMsg] = useState<string>("");
   const [pwdMsg, setPwdMsg] = useState<string | null>(null);
 
   const accountForm = useForm<ProfileAccountFormValues>({
@@ -60,9 +61,10 @@ export default function AccountTabContent() {
 
   const handleSave = accountForm.handleSubmit(
     async ({ displayName, intro, display }) => {
-      setSaveMsg(null);
+      setSaveStatus("idle");
       if (!csrfToken) {
-        setSaveMsg("保存失败");
+        setSaveStatus("error");
+        setSaveErrMsg("保存失败");
         return;
       }
       try {
@@ -79,17 +81,19 @@ export default function AccountTabContent() {
           }),
         });
         if (res.ok) {
-          setSaveMsg("已保存");
+          setSaveStatus("saved");
           // Refresh user context details
           await refetch();
         } else {
           const d = await res.json();
-          setSaveMsg(d.error || "保存失败");
+          setSaveStatus("error");
+          setSaveErrMsg(d.error || "保存失败");
         }
       } catch {
-        setSaveMsg("保存失败");
+        setSaveStatus("error");
+        setSaveErrMsg("保存失败");
       } finally {
-        setTimeout(() => setSaveMsg(null), 2500);
+        setTimeout(() => setSaveStatus("idle"), 2500);
       }
     },
   );
@@ -241,22 +245,26 @@ export default function AccountTabContent() {
                 type="submit"
                 disabled={accountForm.formState.isSubmitting || !csrfToken}
                 className={cn(
-                  "px-6 py-2.5 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2",
+                  "px-5 py-2 rounded-full text-sm font-bold flex items-center justify-center gap-2",
                   accountForm.formState.isSubmitting || !csrfToken
                     ? "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
-                    : saveMsg === "已保存"
+                    : saveStatus === "saved"
                       ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/10"
-                      : saveMsg
+                      : saveStatus === "error"
                         ? "bg-rose-500 text-white shadow-md shadow-rose-500/10"
                         : "bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-500/10 active:scale-95",
                 )}
               >
                 {accountForm.formState.isSubmitting ? (
                   <Loader2 size={16} className="animate-spin" />
-                ) : saveMsg === "已保存" ? (
+                ) : saveStatus === "saved" ? (
                   <Check size={16} />
                 ) : null}
-                {saveMsg ?? "保存更改"}
+                {saveStatus === "saved"
+                  ? "已保存"
+                  : saveStatus === "error"
+                    ? saveErrMsg
+                    : "保存更改"}
               </button>
             </div>
           </form>
@@ -343,7 +351,7 @@ export default function AccountTabContent() {
                 type="submit"
                 disabled={passwordForm.formState.isSubmitting || !csrfToken}
                 className={cn(
-                  "px-6 py-2.5 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2",
+                  "px-5 py-2 rounded-full text-sm font-bold flex items-center justify-center gap-2",
                   passwordForm.formState.isSubmitting || !csrfToken
                     ? "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
                     : "bg-rose-600 text-white hover:bg-rose-700 shadow-md shadow-rose-500/10 active:scale-95",
