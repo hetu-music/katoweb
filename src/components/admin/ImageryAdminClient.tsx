@@ -4,7 +4,6 @@ import ThemeToggle from "@/components/shared/ThemeToggle";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
 import type { ImageryCategory } from "@/lib/types";
 import {
-  ArrowLeft,
   BookOpen,
   Home,
   Layers,
@@ -112,43 +111,39 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans transition-colors duration-500 dark:bg-[#0B0F19]">
       <nav className="fixed left-0 right-0 top-0 z-50 border-b border-slate-200/50 bg-[#FAFAFA]/80 backdrop-blur-md dark:border-slate-800/50 dark:bg-[#0B0F19]/80">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
-          <div className="flex items-center gap-3">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-6">
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 rounded-lg p-1">
             <Link
               href="/admin"
-              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
-              title="返回主后台"
+              className="px-4 py-1.5 rounded-md text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
             >
-              <ArrowLeft size={18} />
+              歌曲管理
             </Link>
-            <div className="flex items-center gap-1 font-serif text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-              勘鉴
-              <span className="mx-2 h-5 w-[2px] translate-y-[1.5px] rounded-full bg-violet-600" />
+            <span className="px-4 py-1.5 rounded-md text-sm font-medium bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm">
               意象管理
-            </div>
+            </span>
           </div>
-
-          <div className="flex items-center gap-3">
-            <ThemeToggle className="rounded-full p-2 text-slate-600 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800" />
+          <div className="flex items-center gap-1">
+            <ThemeToggle className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800" />
             <Link
               href="/profile"
-              className="rounded-full p-2 text-slate-600 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800"
+              className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800"
               title="个人中心"
             >
-              <User size={20} />
+              <User size={18} />
             </Link>
             <Link
               href="/"
-              className="rounded-full p-2 text-slate-600 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800"
+              className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800"
               title="返回主页"
             >
-              <Home size={20} />
+              <Home size={18} />
             </Link>
           </div>
         </div>
       </nav>
 
-      <main className="pt-32 pb-20 max-w-7xl mx-auto px-6">
+      <main className="pt-24 pb-20 max-w-7xl mx-auto px-6">
         {/* Header & Stats */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
