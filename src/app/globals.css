@@ -164,7 +164,7 @@
   animation-name: word-breathe;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
-  animation-duration: var(--word-breathe-duration, 4s);
+  animation-duration: var(--word-breathe-duration, 6s);
   animation-delay: var(--word-breathe-delay, 0s);
   animation-fill-mode: both;
 
@@ -212,7 +212,7 @@
 }
 
 .hero-title-char {
-  animation: hero-title-reveal 3.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: hero-title-reveal 5s cubic-bezier(0.25, 0.1, 0.1, 1) both;
   will-change: transform, opacity, filter;
 }
 
@@ -231,7 +231,7 @@
 }
 
 .hero-unroll {
-  animation: hero-unroll 2.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: hero-unroll 4s cubic-bezier(0.25, 0.1, 0.1, 1) both;
   will-change: transform, opacity, filter;
 }
 

@@ -7,6 +7,7 @@ import FavoriteButton from "@/components/shared/FavoriteButton";
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import ImageModal from "@/components/shared/ImageModal";
 import ThemeToggle from "@/components/shared/ThemeToggle";
+import { useScrollTop } from "@/hooks/useScrollTop";
 import { useUserContext } from "@/context/UserContext";
 import { getGenreTagStyle, getTypeTagStyle } from "@/lib/constants";
 import { SongDetailClientProps } from "@/lib/types";
@@ -50,7 +51,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
     router.push(`/profile?tab=${tab}`);
   };
 
-  const [showScrollTop, setShowScrollTop] = useState(false);
+  const { showScrollTop, scrollToTop } = useScrollTop();
   const [lyricsType, setLyricsType] = useState<"normal" | "lrc">("normal");
   const [imageModal, setImageModal] = useState<{
     isOpen: boolean;
@@ -78,20 +79,6 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
     requestAnimationFrame(() => {
       setAnimationReady(true);
     });
-  }, []);
-
-  // 滚动监听
-  useEffect(() => {
-    const onScroll = () => {
-      setShowScrollTop(window.scrollY > 200);
-    };
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  // scrollToTop 函数
-  const scrollToTop = useCallback(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   // 分享歌曲

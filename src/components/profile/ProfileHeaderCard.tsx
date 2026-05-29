@@ -1,29 +1,19 @@
 "use client";
 
+import { useFavorites } from "@/context/FavoritesContext";
+import { useUserContext } from "@/context/UserContext";
 import { cn } from "@/lib/utils";
 import { Loader2, LogOut, Mail, ShieldCheck, User } from "lucide-react";
 import Link from "next/link";
-import type { UserInfo } from "@/context/UserContext";
 
-interface ProfileHeaderCardProps {
-  user: UserInfo | null;
-  userLoaded: boolean;
-  isSuperAdmin: boolean;
-  hasBenefits: boolean;
-  favoritesCount: number;
-  loggingOut: boolean;
-  logout: () => Promise<void>;
-}
+export default function ProfileHeaderCard() {
+  const { user, loaded: userLoaded, logout, loggingOut } = useUserContext();
+  const { favorites } = useFavorites();
 
-export default function ProfileHeaderCard({
-  user,
-  userLoaded,
-  isSuperAdmin,
-  hasBenefits,
-  favoritesCount,
-  loggingOut,
-  logout,
-}: ProfileHeaderCardProps) {
+  const isSuperAdmin = userLoaded && !!user?.isSuper;
+  const hasBenefits = userLoaded && !!user?.hasBenefits;
+  const favoritesCount = favorites.length;
+
   return (
     <div className="rounded-2xl border border-slate-200/60 dark:border-slate-800/60 bg-white dark:bg-slate-900 shadow-xs p-4 sm:p-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

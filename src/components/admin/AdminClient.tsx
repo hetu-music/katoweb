@@ -3,6 +3,8 @@
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import Pagination from "@/components/shared/Pagination";
 import ThemeToggle from "@/components/shared/ThemeToggle";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
+import { useScrollTop } from "@/hooks/useScrollTop";
 import { useSyncedQueryState } from "@/hooks/useSyncedQueryState";
 import {
   mergeAutoCompleteData,
@@ -49,7 +51,6 @@ import {
   Wand2,
   X,
   XCircle,
-  Tag,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -502,13 +503,7 @@ export default function AdminClientComponent({
     [setCurrentPage],
   );
 
-  // Auth & Actions
-  const [csrfToken, setCsrfToken] = useState("");
-  useEffect(() => {
-    fetch("/api/public/csrf-token")
-      .then((r) => r.json())
-      .then((d) => setCsrfToken(d.csrfToken || ""));
-  }, []);
+  const csrfToken = useCsrfToken();
   const [formMode, setFormMode] = useState<"add" | "edit" | null>(null);
   const [editSong, setEditSong] = useState<SongDetail | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
@@ -517,7 +512,7 @@ export default function AdminClientComponent({
     text: string;
   } | null>(null);
   const [showNotification, setShowNotification] = useState(false);
-  const [showScrollTop, setShowScrollTop] = useState(false);
+  const { showScrollTop, scrollToTop } = useScrollTop();
 
   const songForm = useForm<SongFormStateValues>({
     resolver: zodResolver(songFormStateSchema) as Resolver<SongFormStateValues>,
@@ -532,13 +527,6 @@ export default function AdminClientComponent({
     setTimeout(() => setOperationMsg(null), 3000);
   });
 
-  // Scroll listener
-  useEffect(() => {
-    const onScroll = () => setShowScrollTop(window.scrollY > 200);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   // Notification Auto-Show
   useEffect(() => {
     const lastTime = localStorage.getItem("lastNotificationTime");
@@ -551,11 +539,6 @@ export default function AdminClientComponent({
       return () => clearTimeout(t);
     }
   }, []);
-
-  const scrollToTop = useCallback(
-    () => window.scrollTo({ top: 0, behavior: "smooth" }),
-    [],
-  );
 
   const toggleRowExpansion = useCallback((id: number) => {
     setExpandedRows((prev) => {
@@ -662,40 +645,46 @@ export default function AdminClientComponent({
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500 font-sans">
       {/* Navbar to match MusicLibraryClient */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="text-2xl font-bold tracking-tight flex items-center gap-1 font-serif text-slate-900 dark:text-white">
-            勘鉴
-            <span className="w-[2px] h-5 bg-blue-600 mx-2 rounded-full translate-y-[1.5px]" />
-            管理后台
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 rounded-lg p-1">
+            <span className="px-4 py-1.5 rounded-md text-sm font-medium bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm">
+              歌曲管理
+            </span>
+            <Link
+              href="/admin/imagery"
+              className="px-4 py-1.5 rounded-md text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+            >
+              意象管理
+            </Link>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
             <button
               onClick={() => setShowNotification(true)}
-              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+              className="p-2 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400"
               title="使用说明"
             >
-              <Bell size={20} />
+              <Bell size={18} />
             </button>
-            <ThemeToggle className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400" />
+            <ThemeToggle className="p-2 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400" />
             <Link
               href="/profile"
-              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+              className="p-2 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400"
               title="个人中心"
             >
-              <User size={20} />
+              <User size={18} />
             </Link>
             <Link
               href="/"
-              className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+              className="p-2 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400"
               title="返回主页"
             >
-              <Home size={20} />
+              <Home size={18} />
             </Link>
           </div>
         </div>
       </nav>
 
-      <main className="pt-32 pb-20 max-w-7xl mx-auto px-6">
+      <main className="pt-24 pb-20 max-w-7xl mx-auto px-6">
         {/* Header & Stats */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
@@ -715,13 +704,6 @@ export default function AdminClientComponent({
           </div>
 
           <div className="flex items-center gap-3">
-            <Link
-              href="/admin/imagery"
-              className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-full font-medium shadow-sm hover:shadow-md hover:border-violet-300 dark:hover:border-violet-700 transition-all hover:-translate-y-0.5"
-            >
-              <Tag size={18} className="text-violet-500" />
-              <span>意象管理</span>
-            </Link>
             <button
               onClick={openAddForm}
               className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-full font-medium shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"

@@ -1,6 +1,7 @@
 "use client";
 
 import { apiCreateRequest, apiGetMyRequests } from "@/lib/client-api";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
 import type { UserRequest, RequestType, RequestStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import {
@@ -14,10 +15,9 @@ import {
   Send,
   X,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useReducer } from "react";
 
 interface FeedbackAndBenefitsPanelProps {
-  csrfToken: string;
   hasBenefits: boolean;
   isAdmin: boolean;
 }
@@ -198,45 +198,98 @@ function SongPicker({ value, onChange }: SongPickerProps) {
 
 // ─── 提交表单 ─────────────────────────────────────────────────────────────────
 
+interface SubmitFormState {
+  type: RequestType;
+  selectedSong: { id: number; title: string } | null;
+  category: string;
+  content: string;
+  submitting: boolean;
+  error: string | null;
+  success: boolean;
+}
+
+type SubmitFormAction =
+  | { type: "SET_TYPE"; payload: RequestType }
+  | { type: "SET_SONG"; payload: { id: number; title: string } | null }
+  | { type: "SET_CATEGORY"; payload: string }
+  | { type: "SET_CONTENT"; payload: string }
+  | { type: "SUBMIT_START" }
+  | { type: "SUBMIT_SUCCESS" }
+  | { type: "SUBMIT_ERROR"; payload: string }
+  | { type: "RESET" };
+
+const initialSubmitFormState: SubmitFormState = {
+  type: "song_feedback",
+  selectedSong: null,
+  category: "",
+  content: "",
+  submitting: false,
+  error: null,
+  success: false,
+};
+
+function submitFormReducer(
+  state: SubmitFormState,
+  action: SubmitFormAction,
+): SubmitFormState {
+  switch (action.type) {
+    case "SET_TYPE":
+      return { ...state, type: action.payload };
+    case "SET_SONG":
+      return { ...state, selectedSong: action.payload };
+    case "SET_CATEGORY":
+      return { ...state, category: action.payload };
+    case "SET_CONTENT":
+      return { ...state, content: action.payload };
+    case "SUBMIT_START":
+      return { ...state, submitting: true, error: null };
+    case "SUBMIT_SUCCESS":
+      return {
+        ...state,
+        submitting: false,
+        success: true,
+        content: "",
+        selectedSong: null,
+        category: "",
+      };
+    case "SUBMIT_ERROR":
+      return { ...state, submitting: false, error: action.payload };
+    case "RESET":
+      return initialSubmitFormState;
+    default:
+      return state;
+  }
+}
+
 interface SubmitFormProps {
-  csrfToken: string;
   hasBenefits: boolean;
   isAdmin: boolean;
   onSubmitted: () => void;
 }
 
 function SubmitForm({
-  csrfToken,
   hasBenefits,
   isAdmin,
   onSubmitted,
 }: SubmitFormProps) {
-  const [type, setType] = useState<RequestType>("song_feedback");
-  const [selectedSong, setSelectedSong] = useState<{
-    id: number;
-    title: string;
-  } | null>(null);
-  const [category, setCategory] = useState("");
-  const [content, setContent] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const csrfToken = useCsrfToken();
+  const [state, dispatch] = useReducer(submitFormReducer, initialSubmitFormState);
+  const { type, selectedSong, category, content, submitting, error, success } = state;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
 
     if (!content.trim()) {
-      setError("请填写内容");
+      dispatch({ type: "SUBMIT_ERROR", payload: "请填写内容" });
       return;
     }
 
     if (type === "song_feedback" && !selectedSong) {
-      setError("歌曲纠错需要选择歌曲");
+      dispatch({ type: "SUBMIT_ERROR", payload: "歌曲纠错需要选择歌曲" });
       return;
     }
 
-    setSubmitting(true);
+    dispatch({ type: "SUBMIT_START" });
     try {
       await apiCreateRequest(
         {
@@ -247,18 +300,16 @@ function SubmitForm({
         },
         csrfToken,
       );
-      setSuccess(true);
-      setContent("");
-      setSelectedSong(null);
-      setCategory("");
+      dispatch({ type: "SUBMIT_SUCCESS" });
       setTimeout(() => {
-        setSuccess(false);
+        dispatch({ type: "RESET" });
         onSubmitted();
       }, 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "提交失败，请稍后重试");
-    } finally {
-      setSubmitting(false);
+      dispatch({
+        type: "SUBMIT_ERROR",
+        payload: err instanceof Error ? err.message : "提交失败，请稍后重试",
+      });
     }
   };
 
@@ -280,7 +331,7 @@ function SubmitForm({
             <button
               key={t}
               type="button"
-              onClick={() => setType(t)}
+              onClick={() => dispatch({ type: "SET_TYPE", payload: t })}
               className={cn(
                 "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
                 type === t
@@ -301,7 +352,7 @@ function SubmitForm({
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
               歌曲
             </label>
-            <SongPicker value={selectedSong} onChange={setSelectedSong} />
+            <SongPicker value={selectedSong} onChange={(song) => dispatch({ type: "SET_SONG", payload: song })} />
           </div>
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
@@ -314,7 +365,7 @@ function SubmitForm({
               type="text"
               maxLength={100}
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => dispatch({ type: "SET_CATEGORY", payload: e.target.value })}
               placeholder="如：歌词错误、作者信息等"
               className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:border-blue-500/50 focus:bg-white dark:focus:bg-[#111] outline-none transition-all text-sm text-slate-800 dark:text-slate-200"
             />
@@ -335,7 +386,7 @@ function SubmitForm({
           rows={4}
           maxLength={2000}
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={(e) => dispatch({ type: "SET_CONTENT", payload: e.target.value })}
           placeholder={
             type === "song_feedback"
               ? "请描述具体的错误内容和正确信息..."
@@ -547,13 +598,12 @@ function RequestList({ requests, loading, onRefresh }: RequestListProps) {
 // ─── 主组件 ───────────────────────────────────────────────────────────────────
 
 export default function FeedbackAndBenefitsPanel({
-  csrfToken,
   hasBenefits,
   isAdmin,
 }: FeedbackAndBenefitsPanelProps) {
   const [requests, setRequests] = useState<UserRequest[]>([]);
   const [loadingRequests, setLoadingRequests] = useState(true);
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(true);
 
   const fetchRequests = useCallback(async () => {
     setLoadingRequests(true);
@@ -601,7 +651,6 @@ export default function FeedbackAndBenefitsPanel({
         {showForm && (
           <div className="border-t border-slate-100 dark:border-slate-800 px-4 sm:px-5 py-4 animate-in fade-in slide-in-from-top-2 duration-200">
             <SubmitForm
-              csrfToken={csrfToken}
               hasBenefits={hasBenefits}
               isAdmin={isAdmin}
               onSubmitted={handleSubmitted}

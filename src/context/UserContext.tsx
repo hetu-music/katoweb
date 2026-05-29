@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import React, { createContext, useCallback, useContext } from "react";
 
 export interface UserInfo {
@@ -54,8 +54,6 @@ async function fetchCsrfToken() {
 }
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const queryClient = useQueryClient();
-
   const {
     data: user = null,
     isPending,
@@ -83,7 +81,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       }
     },
     onSuccess: () => {
-      queryClient.setQueryData(AUTH_ME_QUERY_KEY, null);
+      // 直接跳转到登录页。由于是全页刷新跳转（window.location.href），整个 React 状态和内存缓存会自动清空。
+      // 避免在跳转成功前瞬间清空 queryData，从而解决页面闪烁显示“访客”UI 的视觉不连贯问题。
       window.location.href = "/login";
     },
   });

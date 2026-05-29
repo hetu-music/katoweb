@@ -95,7 +95,7 @@ export default function GridCard({
                 "rounded-full bg-white/80 p-1.5 backdrop-blur-sm transition-all duration-200 dark:bg-slate-900/80",
                 active
                   ? "text-rose-500"
-                  : "text-slate-500 hover:text-rose-500 dark:text-slate-400",
+                  : "text-slate-500 hover:text-rose-500 hover:bg-rose-50/80 dark:hover:bg-rose-500/10 dark:text-slate-400",
               )}
             >
               <Heart size={14} className={active ? "fill-current" : ""} />
