@@ -7,6 +7,7 @@ import { useFavorites } from "@/context/FavoritesContext";
 import { useFilteredSongs } from "@/hooks/useFilteredSongs";
 import { useMouseDragScroll } from "@/hooks/useMouseDragScroll";
 import { useMusicLibraryState } from "@/hooks/useMusicLibraryState";
+import { useScrollTop } from "@/hooks/useScrollTop";
 import {
   DEFAULT_MUSIC_LIBRARY_VIEW_MODE,
   FILTER_OPTION_ALL,
@@ -77,7 +78,7 @@ export default function MusicLibraryClient({
   const [showAbout, setShowAbout] = useState(false);
   const [activeSongId, setActiveSongId] = useState<number | null>(null);
   const [mountKey, setMountKey] = useState(0);
-  const [showScrollTop, setShowScrollTop] = useState(false);
+  const { showScrollTop, scrollToTop } = useScrollTop();
   const { containerRef, hasDraggedRef, dragHandlers } =
     useMouseDragScroll<HTMLDivElement>();
 
@@ -153,15 +154,6 @@ export default function MusicLibraryClient({
   }, []);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 200);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
     if (!mounted) return;
 
     const timer = setTimeout(notifyDataReady, 0);
@@ -190,10 +182,6 @@ export default function MusicLibraryClient({
     const startIndex = (safePage - 1) * itemsPerPage;
     return filteredSongs.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredSongs, itemsPerPage, safePage]);
-
-  const scrollToTop = useCallback(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
 
   const handleShare = useCallback(async () => {
     const shareData = {

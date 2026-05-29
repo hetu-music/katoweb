@@ -8,8 +8,8 @@ import ProfileHeaderCard from "@/components/profile/ProfileHeaderCard";
 import FavoritesTabContent from "@/components/profile/FavoritesTabContent";
 import AccountTabContent from "@/components/profile/AccountTabContent";
 import ThemeToggle from "@/components/shared/ThemeToggle";
-import { useFavorites } from "@/context/FavoritesContext";
 import { useUserContext } from "@/context/UserContext";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect } from "react";
 
 type TabType =
   | "favorites"
@@ -52,9 +52,8 @@ function ProfileContent() {
     }),
   );
 
-  const { user, loaded: userLoaded, logout, loggingOut } = useUserContext();
-  const { favorites } = useFavorites();
-  const [csrfToken, setCsrfToken] = useState("");
+  const { user, loaded: userLoaded } = useUserContext();
+  const csrfToken = useCsrfToken();
 
   const isSuperAdmin = userLoaded && !!user?.isSuper;
   const hasBenefits = userLoaded && !!user?.hasBenefits;
@@ -66,15 +65,6 @@ function ProfileContent() {
     if (activeTab === "logs" && !isSuperAdmin) setActiveTab("favorites");
     if (activeTab === "requests" && !user?.isAdmin) setActiveTab("favorites");
   }, [userLoaded, activeTab, isSuperAdmin, user, setActiveTab]);
-
-  // Fetch CSRF token for sub-panels
-  useEffect(() => {
-    if (user) {
-      fetch("/api/public/csrf-token")
-        .then((r) => r.json())
-        .then((d) => setCsrfToken(d.csrfToken || ""));
-    }
-  }, [user]);
 
   // Localized scrollbar gutter prevention to avoid layout shift on profile tab switches
   useEffect(() => {
@@ -140,15 +130,7 @@ function ProfileContent() {
 
       <main className="pt-28 pb-20 max-w-7xl mx-auto px-4 sm:px-6 space-y-6 md:space-y-8">
         {/* Profile Stats Header Card */}
-        <ProfileHeaderCard
-          user={user}
-          userLoaded={userLoaded}
-          isSuperAdmin={isSuperAdmin}
-          hasBenefits={hasBenefits}
-          favoritesCount={favorites.length}
-          loggingOut={loggingOut}
-          logout={logout}
-        />
+        <ProfileHeaderCard />
 
         {/* Bottom Section: Tabs Grid */}
         <div className="flex flex-col lg:flex-row gap-6 items-start">
@@ -211,7 +193,6 @@ function ProfileContent() {
               {/* Feedback & Benefits Tab — all logged-in users */}
               {activeTab === "feedback" && user && (
                 <FeedbackAndBenefitsPanel
-                  csrfToken={csrfToken}
                   hasBenefits={hasBenefits}
                   isAdmin={!!user.isAdmin}
                 />

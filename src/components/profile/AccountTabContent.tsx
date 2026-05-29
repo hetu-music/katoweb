@@ -1,6 +1,7 @@
 "use client";
 
 import { useUserContext } from "@/context/UserContext";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
 import {
   profileAccountFormSchema,
   profilePasswordFormSchema,
@@ -15,9 +16,9 @@ import { useForm, useWatch } from "react-hook-form";
 
 export default function AccountTabContent() {
   const { user, loaded: userLoaded, refetch } = useUserContext();
+  const csrfToken = useCsrfToken();
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [pwdMsg, setPwdMsg] = useState<string | null>(null);
-  const [csrfToken, setCsrfToken] = useState("");
 
   const accountForm = useForm<ProfileAccountFormValues>({
     resolver: zodResolver(profileAccountFormSchema),
@@ -57,21 +58,6 @@ export default function AccountTabContent() {
     }
   }, [accountForm, user]);
 
-  const refreshCsrfToken = async () => {
-    const r = await fetch("/api/public/csrf-token");
-    const d = await r.json();
-    setCsrfToken(d.csrfToken || "");
-    return d.csrfToken || "";
-  };
-
-  // Fetch CSRF Token on mount
-  useEffect(() => {
-    if (user) {
-      refreshCsrfToken();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
-
   const handleSave = accountForm.handleSubmit(
     async ({ displayName, intro, display }) => {
       setSaveMsg(null);
@@ -94,9 +80,8 @@ export default function AccountTabContent() {
         });
         if (res.ok) {
           setSaveMsg("已保存");
-          // Refresh user context details and get a fresh CSRF token
+          // Refresh user context details
           await refetch();
-          await refreshCsrfToken();
         } else {
           const d = await res.json();
           setSaveMsg(d.error || "保存失败");
@@ -128,7 +113,6 @@ export default function AccountTabContent() {
         if (res.ok) {
           setPwdMsg("密码修改成功");
           passwordForm.reset();
-          await refreshCsrfToken();
         } else {
           const d = await res.json();
           setPwdMsg(d.error || "修改失败");

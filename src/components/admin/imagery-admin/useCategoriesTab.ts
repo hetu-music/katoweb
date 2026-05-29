@@ -1,0 +1,142 @@
+"use client";
+
+import {
+  apiCreateImageryCategory,
+  apiDeleteImageryCategory,
+  apiUpdateImageryCategory,
+} from "@/lib/client-api";
+import { toCategoryPayload } from "@/lib/imagery-form";
+import type { ImageryCategory } from "@/lib/types";
+import { useCallback, useMemo, useState } from "react";
+import type { CategoryFormValues, ModalState } from "./types";
+import { buildTree, getCategoryPath } from "./utils";
+
+const PAGE_SIZE = 20;
+
+export function useCategoriesTab(
+  initialCategories: ImageryCategory[],
+  csrfToken: string,
+  showToast: (type: "success" | "error", text: string) => void,
+) {
+  const [categories, setCategories] = useState<ImageryCategory[]>(initialCategories);
+  const [page, setPage] = useState(1);
+  const [modal, setModal] = useState<ModalState>({ type: "none" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const categoryTree = useMemo(() => buildTree(categories), [categories]);
+
+  const sortedCategories = useMemo(
+    () =>
+      [...categories].sort((left, right) =>
+        getCategoryPath(left.id, categories).localeCompare(
+          getCategoryPath(right.id, categories),
+          "zh-CN",
+        ),
+      ),
+    [categories],
+  );
+
+  const totalPages = Math.max(1, Math.ceil(sortedCategories.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pagedCategories = useMemo(
+    () =>
+      sortedCategories.slice(
+        (currentPage - 1) * PAGE_SIZE,
+        currentPage * PAGE_SIZE,
+      ),
+    [currentPage, sortedCategories],
+  );
+
+  const openAdd = (parentId?: number) =>
+    setModal({ type: "add-category", parentId });
+  const openEdit = (category: ImageryCategory) =>
+    setModal({ type: "edit-category", category });
+  const openDelete = (category: ImageryCategory) =>
+    setModal({ type: "delete-category", category });
+  const closeModal = () => setModal({ type: "none" });
+
+  const handleAdd = async (values: CategoryFormValues) => {
+    setIsSubmitting(true);
+    try {
+      const created = await apiCreateImageryCategory(
+        toCategoryPayload(values, categories),
+        csrfToken,
+      );
+      setCategories((current) => [...current, created]);
+      showToast("success", `分类「${created.name}」已创建`);
+      closeModal();
+    } catch (error) {
+      showToast("error", error instanceof Error ? error.message : "创建分类失败");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEdit = async (values: CategoryFormValues) => {
+    if (modal.type !== "edit-category") return;
+    setIsSubmitting(true);
+    try {
+      const updated = await apiUpdateImageryCategory(
+        modal.category.id,
+        toCategoryPayload(values, categories),
+        csrfToken,
+      );
+      setCategories((current) =>
+        current.map((category) =>
+          category.id === updated.id ? updated : category,
+        ),
+      );
+      showToast("success", "分类已更新");
+      closeModal();
+    } catch (error) {
+      showToast("error", error instanceof Error ? error.message : "更新分类失败");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (modal.type !== "delete-category") return;
+    setIsSubmitting(true);
+    try {
+      await apiDeleteImageryCategory(modal.category.id, csrfToken);
+      setCategories((current) =>
+        current.filter((category) => category.id !== modal.category.id),
+      );
+      showToast("success", `分类「${modal.category.name}」已删除`);
+      closeModal();
+    } catch (error) {
+      showToast("error", error instanceof Error ? error.message : "删除分类失败");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const getCategoryPathFn = useCallback(
+    (id: number) => getCategoryPath(id, categories),
+    [categories],
+  );
+
+  return {
+    categories,
+    setCategories,
+    categoryTree,
+    sortedCategories,
+    pagedCategories,
+    currentPage,
+    totalPages,
+    page,
+    setPage,
+    modal,
+    setModal,
+    isSubmitting,
+    openAdd,
+    openEdit,
+    openDelete,
+    closeModal,
+    handleAdd,
+    handleEdit,
+    handleDelete,
+    getCategoryPathFn,
+  };
+}

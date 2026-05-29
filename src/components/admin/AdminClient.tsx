@@ -3,6 +3,8 @@
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import Pagination from "@/components/shared/Pagination";
 import ThemeToggle from "@/components/shared/ThemeToggle";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
+import { useScrollTop } from "@/hooks/useScrollTop";
 import { useSyncedQueryState } from "@/hooks/useSyncedQueryState";
 import {
   mergeAutoCompleteData,
@@ -502,13 +504,7 @@ export default function AdminClientComponent({
     [setCurrentPage],
   );
 
-  // Auth & Actions
-  const [csrfToken, setCsrfToken] = useState("");
-  useEffect(() => {
-    fetch("/api/public/csrf-token")
-      .then((r) => r.json())
-      .then((d) => setCsrfToken(d.csrfToken || ""));
-  }, []);
+  const csrfToken = useCsrfToken();
   const [formMode, setFormMode] = useState<"add" | "edit" | null>(null);
   const [editSong, setEditSong] = useState<SongDetail | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
@@ -517,7 +513,7 @@ export default function AdminClientComponent({
     text: string;
   } | null>(null);
   const [showNotification, setShowNotification] = useState(false);
-  const [showScrollTop, setShowScrollTop] = useState(false);
+  const { showScrollTop, scrollToTop } = useScrollTop();
 
   const songForm = useForm<SongFormStateValues>({
     resolver: zodResolver(songFormStateSchema) as Resolver<SongFormStateValues>,
@@ -532,13 +528,6 @@ export default function AdminClientComponent({
     setTimeout(() => setOperationMsg(null), 3000);
   });
 
-  // Scroll listener
-  useEffect(() => {
-    const onScroll = () => setShowScrollTop(window.scrollY > 200);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   // Notification Auto-Show
   useEffect(() => {
     const lastTime = localStorage.getItem("lastNotificationTime");
@@ -551,11 +540,6 @@ export default function AdminClientComponent({
       return () => clearTimeout(t);
     }
   }, []);
-
-  const scrollToTop = useCallback(
-    () => window.scrollTo({ top: 0, behavior: "smooth" }),
-    [],
-  );
 
   const toggleRowExpansion = useCallback((id: number) => {
     setExpandedRows((prev) => {
