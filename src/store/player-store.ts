@@ -51,7 +51,11 @@ export interface PlayerActions {
   _onEnded: () => void;
   _addLyrics: (songId: number, lyrics: string) => void;
   /** 内部：stream-url fetch，timeOffset 用于 opus seek */
-  _fetchAndSetSrc: (songId: number, isRetry?: boolean, timeOffset?: number) => void;
+  _fetchAndSetSrc: (
+    songId: number,
+    isRetry?: boolean,
+    timeOffset?: number,
+  ) => void;
 }
 
 // ─── 内部可变 refs（不放 store，避免触发订阅） ────────────────────────────────
@@ -114,9 +118,10 @@ function syncMediaSessionPosition() {
   const audio = getAudio();
   if (!audio || !trackDuration) return;
   // seek 进行中用目标时间，避免 audio.currentTime 归零时给系统控件传错误值
-  const position = _isSeekingMediaSession && _seekTargetTime !== null
-    ? _seekTargetTime
-    : Math.min(seekBase + audio.currentTime, trackDuration);
+  const position =
+    _isSeekingMediaSession && _seekTargetTime !== null
+      ? _seekTargetTime
+      : Math.min(seekBase + audio.currentTime, trackDuration);
   try {
     navigator.mediaSession.setPositionState({
       duration: trackDuration,
@@ -202,7 +207,11 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
       fetch(`/api/navidrome/stream-url?${qs}`)
         .then((r) => {
           if (!r.ok) throw new Error(`stream-url error: ${r.status}`);
-          return r.json() as Promise<{ url?: string; duration?: number; error?: string }>;
+          return r.json() as Promise<{
+            url?: string;
+            duration?: number;
+            error?: string;
+          }>;
         })
         .then(({ url, duration, error }) => {
           // 版本号不匹配说明已有更新的请求，丢弃此结果
@@ -220,7 +229,9 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
           set({
             error: null,
             seekBase: timeOffset,
-            ...(duration != null && duration > 0 ? { trackDuration: duration } : {}),
+            ...(duration != null && duration > 0
+              ? { trackDuration: duration }
+              : {}),
           });
         })
         .catch((err: unknown) => {
@@ -312,7 +323,13 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
       _shouldPlayAfterLoad = s.isPlaying;
       const track = s.queue[index];
       _loadingTrackId = track.songId;
-      set({ currentIndex: index, currentTrack: track, isLoading: true, seekBase: 0, trackDuration: 0 });
+      set({
+        currentIndex: index,
+        currentTrack: track,
+        isLoading: true,
+        seekBase: 0,
+        trackDuration: 0,
+      });
       get()._fetchAndSetSrc(track.songId);
     },
 
@@ -324,7 +341,13 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
       _shouldPlayAfterLoad = s.isPlaying;
       const track = s.queue[i];
       _loadingTrackId = track.songId;
-      set({ currentIndex: i, currentTrack: track, isLoading: true, seekBase: 0, trackDuration: 0 });
+      set({
+        currentIndex: i,
+        currentTrack: track,
+        isLoading: true,
+        seekBase: 0,
+        trackDuration: 0,
+      });
       get()._fetchAndSetSrc(track.songId);
     },
 
@@ -336,7 +359,13 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
       _shouldPlayAfterLoad = s.isPlaying;
       const track = s.queue[i];
       _loadingTrackId = track.songId;
-      set({ currentIndex: i, currentTrack: track, isLoading: true, seekBase: 0, trackDuration: 0 });
+      set({
+        currentIndex: i,
+        currentTrack: track,
+        isLoading: true,
+        seekBase: 0,
+        trackDuration: 0,
+      });
       get()._fetchAndSetSrc(track.songId);
     },
 
@@ -518,7 +547,13 @@ if (typeof window !== "undefined") {
         title: currentTrack.title,
         artist: currentTrack.artist ?? undefined,
         artwork: currentTrack.coverUrl
-          ? [{ src: currentTrack.coverUrl, sizes: "512x512", type: "image/jpeg" }]
+          ? [
+              {
+                src: currentTrack.coverUrl,
+                sizes: "512x512",
+                type: "image/jpeg",
+              },
+            ]
           : undefined,
       });
     }

@@ -99,7 +99,7 @@ export const GET = withAuth(
       });
       const songInfoRes = await fetch(`${base}/rest/getSong?${songInfoParams}`);
       if (songInfoRes.ok) {
-        const songInfo = await songInfoRes.json() as {
+        const songInfo = (await songInfoRes.json()) as {
           "subsonic-response"?: { song?: { duration?: number } };
         };
         duration = songInfo?.["subsonic-response"]?.song?.duration ?? null;

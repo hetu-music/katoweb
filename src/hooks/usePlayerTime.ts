@@ -4,17 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { getAudio } from "@/lib/audio-engine";
 import { usePlayerStore } from "@/store/player-store";
 
-/**
- * 订阅播放进度的专用 hook。
- * 用 requestAnimationFrame 循环直读 audio.currentTime，约 60fps 平滑更新。
- * 暂停时自动降级为事件驱动，避免空转消耗 CPU。
- *
- * opus 流没有 Content-Length，audio.duration 为 Infinity，
- * 因此 duration 从 store.trackDuration 读取（由 getSong API 提供），
- * currentTime 为 store.seekBase + audio.currentTime。
- *
- * seekBase 用 ref 读取，避免 seekBase 变化时重新绑定事件导致闪烁。
- */
 export function usePlayerTime(): { currentTime: number; duration: number } {
   const trackDuration = usePlayerStore((s) => s.trackDuration);
   const seekBase = usePlayerStore((s) => s.seekBase);
@@ -88,7 +77,7 @@ export function usePlayerTime(): { currentTime: number; duration: number } {
       audio.removeEventListener("seeked", onSeeked);
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
     };
-  // 只在挂载时绑定一次，seekBase 通过 ref 读取
+    // 只在挂载时绑定一次，seekBase 通过 ref 读取
   }, []);
 
   return { currentTime, duration: trackDuration };
