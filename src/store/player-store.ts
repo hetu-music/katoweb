@@ -62,6 +62,8 @@ let _loadingTrackId: number | null = null;
 let _retryCount = 0;
 /** 播放意图：canplay 时是否自动播放 */
 let _shouldPlayAfterLoad = false;
+/** seek 中：_fetchAndSetSrc 内部 audio.pause() 触发的 pause 事件应被忽略 */
+let _isSeeking = false;
 
 // ─── 工具 ─────────────────────────────────────────────────────────────────────
 
@@ -190,7 +192,9 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
           if (songId !== _loadingTrackId) return;
           if (!url) throw new Error(error ?? "未获取到播放地址");
 
+          _isSeeking = true;
           audio.pause();
+          _isSeeking = false;
           audio.src = url;
           audio.load();
 
@@ -415,9 +419,10 @@ if (typeof window !== "undefined") {
     audio.addEventListener("play", () =>
       usePlayerStore.getState()._setPlaying(true),
     );
-    audio.addEventListener("pause", () =>
-      usePlayerStore.getState()._setPlaying(false),
-    );
+    audio.addEventListener("pause", () => {
+      if (_isSeeking) return;
+      usePlayerStore.getState()._setPlaying(false);
+    });
     audio.addEventListener("ended", () => usePlayerStore.getState()._onEnded());
     audio.addEventListener("volumechange", () => {
       usePlayerStore.getState()._setVolumeState(audio.volume, audio.muted);
