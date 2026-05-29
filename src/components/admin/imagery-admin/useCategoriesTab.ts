@@ -18,7 +18,8 @@ export function useCategoriesTab(
   csrfToken: string,
   showToast: (type: "success" | "error", text: string) => void,
 ) {
-  const [categories, setCategories] = useState<ImageryCategory[]>(initialCategories);
+  const [categories, setCategories] =
+    useState<ImageryCategory[]>(initialCategories);
   const [page, setPage] = useState(1);
   const [modal, setModal] = useState<ModalState>({ type: "none" });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,7 +37,10 @@ export function useCategoriesTab(
     [categories],
   );
 
-  const totalPages = Math.max(1, Math.ceil(sortedCategories.length / PAGE_SIZE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(sortedCategories.length / PAGE_SIZE),
+  );
   const currentPage = Math.min(page, totalPages);
   const pagedCategories = useMemo(
     () =>
@@ -66,7 +70,10 @@ export function useCategoriesTab(
       showToast("success", `分类「${created.name}」已创建`);
       closeModal();
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "创建分类失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "创建分类失败",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -89,7 +96,10 @@ export function useCategoriesTab(
       showToast("success", "分类已更新");
       closeModal();
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "更新分类失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "更新分类失败",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -106,7 +116,10 @@ export function useCategoriesTab(
       showToast("success", `分类「${modal.category.name}」已删除`);
       closeModal();
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "删除分类失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "删除分类失败",
+      );
     } finally {
       setIsSubmitting(false);
     }

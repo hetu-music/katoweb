@@ -51,7 +51,11 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   const imagery = useImageryTab(csrfToken, showToast);
   const categories = useCategoriesTab(initialCategories, csrfToken, showToast);
   const meanings = useMeaningsTab(csrfToken, showToast);
-  const occurrences = useOccurrencesTab(csrfToken, showToast, imagery.refreshItems);
+  const occurrences = useOccurrencesTab(
+    csrfToken,
+    showToast,
+    imagery.refreshItems,
+  );
 
   // ── Derived state shared across tabs ──────────────────────────────────────
 
@@ -78,7 +82,9 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
         .map((category) => category.parent_id)
         .filter((value): value is number => value !== null),
     );
-    return categories.categories.filter((category) => !parentIds.has(category.id));
+    return categories.categories.filter(
+      (category) => !parentIds.has(category.id),
+    );
   }, [categories.categories]);
 
   // ── Active modal (one at a time across all tabs) ───────────────────────────
@@ -102,10 +108,30 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
   // ── Tab config ─────────────────────────────────────────────────────────────
 
   const tabs: { key: Tab; label: string; icon: ReactNode; hint: string }[] = [
-    { key: "imagery", label: "意象管理", icon: <Tag size={14} />, hint: "词条与概览" },
-    { key: "categories", label: "分类管理", icon: <ListTree size={14} />, hint: "树形与分页" },
-    { key: "meanings", label: "含义管理", icon: <BookOpen size={14} />, hint: "全局含义库" },
-    { key: "occurrences", label: "关系管理", icon: <Layers size={14} />, hint: "按歌曲维护" },
+    {
+      key: "imagery",
+      label: "意象管理",
+      icon: <Tag size={14} />,
+      hint: "词条与概览",
+    },
+    {
+      key: "categories",
+      label: "分类管理",
+      icon: <ListTree size={14} />,
+      hint: "树形与分页",
+    },
+    {
+      key: "meanings",
+      label: "含义管理",
+      icon: <BookOpen size={14} />,
+      hint: "全局含义库",
+    },
+    {
+      key: "occurrences",
+      label: "关系管理",
+      icon: <Layers size={14} />,
+      hint: "按歌曲维护",
+    },
   ];
 
   return (
@@ -258,7 +284,8 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
                 />
                 {((activeTab === "imagery" && imagery.searchTerm) ||
                   (activeTab === "meanings" && meanings.searchTerm) ||
-                  (activeTab === "occurrences" && occurrences.songSearchTerm)) && (
+                  (activeTab === "occurrences" &&
+                    occurrences.songSearchTerm)) && (
                   <button
                     onClick={() => {
                       if (activeTab === "imagery") {
@@ -352,7 +379,9 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
               onStartEditRelation={occurrences.startEditRelation}
               onResetRelationEditor={occurrences.resetRelationEditor}
               onSaveRelation={occurrences.handleSaveRelation}
-              getCategoryPath={(categoryId) => categories.getCategoryPathFn(categoryId)}
+              getCategoryPath={(categoryId) =>
+                categories.getCategoryPathFn(categoryId)
+              }
             />
           )}
         </div>

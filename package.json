@@ -1,6 +1,6 @@
 {
   "name": "katoweb",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -17,7 +17,7 @@
   "dependencies": {
     "@gsap/react": "^2.1.2",
     "@hookform/resolvers": "^5.4.0",
-    "@mantine/hooks": "^9.2.1",
+    "@mantine/hooks": "^9.2.2",
     "@marsidev/react-turnstile": "^1.5.2",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-popover": "^1.1.15",

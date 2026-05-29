@@ -17,7 +17,9 @@ import { useForm, useWatch } from "react-hook-form";
 export default function AccountTabContent() {
   const { user, loaded: userLoaded, refetch } = useUserContext();
   const csrfToken = useCsrfToken();
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">("idle");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">(
+    "idle",
+  );
   const [saveErrMsg, setSaveErrMsg] = useState<string>("");
   const [pwdMsg, setPwdMsg] = useState<string | null>(null);
 

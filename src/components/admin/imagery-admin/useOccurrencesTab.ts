@@ -25,11 +25,15 @@ export function useOccurrencesTab(
   const [songSearchTerm, setSongSearchTerm] = useState("");
   const [songsPage, setSongsPage] = useState(1);
   const [expandedSongId, setExpandedSongId] = useState<number | null>(null);
-  const [relationEditor, setRelationEditor] = useState<RelationEditor>({ type: "none" });
+  const [relationEditor, setRelationEditor] = useState<RelationEditor>({
+    type: "none",
+  });
   const [occurrencesBySong, setOccurrencesBySong] = useState<
     Record<number, OccurrenceWithSong[]>
   >({});
-  const [occurrenceLoadingSongId, setOccurrenceLoadingSongId] = useState<number | null>(null);
+  const [occurrenceLoadingSongId, setOccurrenceLoadingSongId] = useState<
+    number | null
+  >(null);
   const [occurrenceSubmitting, setOccurrenceSubmitting] = useState(false);
   const [modal, setModal] = useState<ModalState>({ type: "none" });
 
@@ -37,7 +41,10 @@ export function useOccurrencesTab(
     void apiGetSongs()
       .then((songs) => setAllSongs(songs))
       .catch((error: unknown) => {
-        showToast("error", error instanceof Error ? error.message : "加载歌曲失败");
+        showToast(
+          "error",
+          error instanceof Error ? error.message : "加载歌曲失败",
+        );
       })
       .finally(() => setSongsLoading(false));
   }, [showToast]);
@@ -46,11 +53,16 @@ export function useOccurrencesTab(
     if (!songSearchTerm.trim()) return allSongs;
     const query = songSearchTerm.trim().toLowerCase();
     return allSongs.filter((song) =>
-      `${song.id} ${song.title} ${song.album ?? ""}`.toLowerCase().includes(query),
+      `${song.id} ${song.title} ${song.album ?? ""}`
+        .toLowerCase()
+        .includes(query),
     );
   }, [allSongs, songSearchTerm]);
 
-  const songsTotalPages = Math.max(1, Math.ceil(filteredSongs.length / SONG_PAGE_SIZE));
+  const songsTotalPages = Math.max(
+    1,
+    Math.ceil(filteredSongs.length / SONG_PAGE_SIZE),
+  );
   const currentSongsPage = Math.min(songsPage, songsTotalPages);
   const pagedSongs = useMemo(
     () =>
@@ -66,13 +78,21 @@ export function useOccurrencesTab(
       setOccurrenceLoadingSongId(songId);
       try {
         const occurrences = await apiGetOccurrencesForSong(songId);
-        setOccurrencesBySong((current) => ({ ...current, [songId]: occurrences }));
+        setOccurrencesBySong((current) => ({
+          ...current,
+          [songId]: occurrences,
+        }));
         return occurrences;
       } catch (error) {
-        showToast("error", error instanceof Error ? error.message : "加载关系失败");
+        showToast(
+          "error",
+          error instanceof Error ? error.message : "加载关系失败",
+        );
         return [];
       } finally {
-        setOccurrenceLoadingSongId((current) => (current === songId ? null : current));
+        setOccurrenceLoadingSongId((current) =>
+          current === songId ? null : current,
+        );
       }
     },
     [showToast],
@@ -96,7 +116,10 @@ export function useOccurrencesTab(
     await loadOccurrencesForSong(songId);
   };
 
-  const startEditRelation = (songId: number, occurrence: OccurrenceWithSong) => {
+  const startEditRelation = (
+    songId: number,
+    occurrence: OccurrenceWithSong,
+  ) => {
     setExpandedSongId(songId);
     setRelationEditor({ type: "edit", songId, occurrence });
   };
@@ -117,7 +140,11 @@ export function useOccurrencesTab(
         );
         showToast("success", "关系已创建");
       } else {
-        await apiUpdateOccurrence(relationEditor.occurrence.id, payload, csrfToken);
+        await apiUpdateOccurrence(
+          relationEditor.occurrence.id,
+          payload,
+          csrfToken,
+        );
         showToast("success", "关系已更新");
       }
 
@@ -127,7 +154,10 @@ export function useOccurrencesTab(
       ]);
       resetRelationEditor();
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "保存关系失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "保存关系失败",
+      );
     } finally {
       setOccurrenceSubmitting(false);
     }
@@ -151,7 +181,10 @@ export function useOccurrencesTab(
       closeModal();
       showToast("success", "关系已删除");
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "删除关系失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "删除关系失败",
+      );
     } finally {
       setOccurrenceSubmitting(false);
     }
@@ -183,7 +216,10 @@ export function useOccurrencesTab(
     handleSaveRelation,
     handleDeleteRelation,
     /** 触发删除确认 modal */
-    openDeleteOccurrenceModal: (occurrenceId: number, songId: number, label: string) =>
-      setModal({ type: "delete-occurrence", occurrenceId, songId, label }),
+    openDeleteOccurrenceModal: (
+      occurrenceId: number,
+      songId: number,
+      label: string,
+    ) => setModal({ type: "delete-occurrence", occurrenceId, songId, label }),
   };
 }

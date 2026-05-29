@@ -75,7 +75,8 @@ export function useImageryTab(
   );
 
   const openAdd = () => setModal({ type: "add-imagery" });
-  const openEdit = (item: ImageryItem) => setModal({ type: "edit-imagery", item });
+  const openEdit = (item: ImageryItem) =>
+    setModal({ type: "edit-imagery", item });
   const closeModal = () => setModal({ type: "none" });
 
   const handleAdd = async ({ name }: ImageryFormValues) => {
@@ -89,7 +90,10 @@ export function useImageryTab(
       showToast("success", `意象「${created.name}」已创建`);
       closeModal();
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "创建意象失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "创建意象失败",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -108,7 +112,10 @@ export function useImageryTab(
       showToast("success", "意象已更新");
       closeModal();
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "更新意象失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "更新意象失败",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -119,11 +126,16 @@ export function useImageryTab(
     setIsSubmitting(true);
     try {
       await apiDeleteImagery(modal.item.id, csrfToken);
-      setItems((current) => current.filter((item) => item.id !== modal.item.id));
+      setItems((current) =>
+        current.filter((item) => item.id !== modal.item.id),
+      );
       showToast("success", `意象「${modal.item.name}」已删除`);
       closeModal();
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "删除意象失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "删除意象失败",
+      );
     } finally {
       setIsSubmitting(false);
     }

@@ -31,7 +31,10 @@ export function useMeaningsTab(
     void apiGetMeanings()
       .then((nextMeanings) => setMeanings(nextMeanings))
       .catch((error: unknown) => {
-        showToast("error", error instanceof Error ? error.message : "加载含义失败");
+        showToast(
+          "error",
+          error instanceof Error ? error.message : "加载含义失败",
+        );
       })
       .finally(() => setMeaningsLoading(false));
   }, [showToast]);
@@ -40,11 +43,16 @@ export function useMeaningsTab(
     if (!searchTerm.trim()) return meanings;
     const query = searchTerm.trim().toLowerCase();
     return meanings.filter((meaning) =>
-      `${meaning.label} ${meaning.description ?? ""}`.toLowerCase().includes(query),
+      `${meaning.label} ${meaning.description ?? ""}`
+        .toLowerCase()
+        .includes(query),
     );
   }, [meanings, searchTerm]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredMeanings.length / PAGE_SIZE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredMeanings.length / PAGE_SIZE),
+  );
   const currentPage = Math.min(page, totalPages);
   const pagedMeanings = useMemo(
     () =>
@@ -81,14 +89,22 @@ export function useMeaningsTab(
     if (meaningSubmitting) return;
     setMeaningSubmitting(true);
     try {
-      const created = await apiCreateGlobalMeaning(toMeaningPayload(values), csrfToken);
+      const created = await apiCreateGlobalMeaning(
+        toMeaningPayload(values),
+        csrfToken,
+      );
       setMeanings((current) =>
-        [...current, created].sort((a, b) => a.label.localeCompare(b.label, "zh-CN")),
+        [...current, created].sort((a, b) =>
+          a.label.localeCompare(b.label, "zh-CN"),
+        ),
       );
       resetEditor();
       showToast("success", `含义「${created.label}」已创建`);
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "创建含义失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "创建含义失败",
+      );
     } finally {
       setMeaningSubmitting(false);
     }
@@ -111,7 +127,10 @@ export function useMeaningsTab(
       resetEditor();
       showToast("success", "含义已更新");
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "更新含义失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "更新含义失败",
+      );
     } finally {
       setMeaningSubmitting(false);
     }
@@ -127,7 +146,10 @@ export function useMeaningsTab(
       closeModal();
       showToast("success", "含义已删除");
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "删除含义失败");
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "删除含义失败",
+      );
     } finally {
       setMeaningSubmitting(false);
     }
@@ -158,6 +180,10 @@ export function useMeaningsTab(
     handleDelete,
     /** 触发删除确认 modal */
     openDeleteModal: (meaning: ImageryMeaning) =>
-      setModal({ type: "delete-meaning", meaningId: meaning.id, label: meaning.label }),
+      setModal({
+        type: "delete-meaning",
+        meaningId: meaning.id,
+        label: meaning.label,
+      }),
   };
 }

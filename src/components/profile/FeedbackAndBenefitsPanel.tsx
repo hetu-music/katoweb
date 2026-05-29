@@ -267,14 +267,14 @@ interface SubmitFormProps {
   onSubmitted: () => void;
 }
 
-function SubmitForm({
-  hasBenefits,
-  isAdmin,
-  onSubmitted,
-}: SubmitFormProps) {
+function SubmitForm({ hasBenefits, isAdmin, onSubmitted }: SubmitFormProps) {
   const csrfToken = useCsrfToken();
-  const [state, dispatch] = useReducer(submitFormReducer, initialSubmitFormState);
-  const { type, selectedSong, category, content, submitting, error, success } = state;
+  const [state, dispatch] = useReducer(
+    submitFormReducer,
+    initialSubmitFormState,
+  );
+  const { type, selectedSong, category, content, submitting, error, success } =
+    state;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -352,7 +352,10 @@ function SubmitForm({
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
               歌曲
             </label>
-            <SongPicker value={selectedSong} onChange={(song) => dispatch({ type: "SET_SONG", payload: song })} />
+            <SongPicker
+              value={selectedSong}
+              onChange={(song) => dispatch({ type: "SET_SONG", payload: song })}
+            />
           </div>
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">
@@ -365,7 +368,9 @@ function SubmitForm({
               type="text"
               maxLength={100}
               value={category}
-              onChange={(e) => dispatch({ type: "SET_CATEGORY", payload: e.target.value })}
+              onChange={(e) =>
+                dispatch({ type: "SET_CATEGORY", payload: e.target.value })
+              }
               placeholder="如：歌词错误、作者信息等"
               className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:border-blue-500/50 focus:bg-white dark:focus:bg-[#111] outline-none transition-all text-sm text-slate-800 dark:text-slate-200"
             />
@@ -386,7 +391,9 @@ function SubmitForm({
           rows={4}
           maxLength={2000}
           value={content}
-          onChange={(e) => dispatch({ type: "SET_CONTENT", payload: e.target.value })}
+          onChange={(e) =>
+            dispatch({ type: "SET_CONTENT", payload: e.target.value })
+          }
           placeholder={
             type === "song_feedback"
               ? "请描述具体的错误内容和正确信息..."
