@@ -499,13 +499,20 @@ if (typeof window !== "undefined") {
 
     if (!currentTrack) return;
 
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: currentTrack.title,
-      artist: currentTrack.artist ?? undefined,
-      artwork: currentTrack.coverUrl
-        ? [{ src: currentTrack.coverUrl, sizes: "512x512", type: "image/jpeg" }]
-        : undefined,
-    });
+    // 只有 track 真正变化时才重新赋值 metadata，避免 seek 后 isPlaying 变化触发重新注册导致控件闪退
+    const trackChanged =
+      state.currentTrack !== prev.currentTrack ||
+      state.currentIndex !== prev.currentIndex;
+
+    if (trackChanged) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: currentTrack.title,
+        artist: currentTrack.artist ?? undefined,
+        artwork: currentTrack.coverUrl
+          ? [{ src: currentTrack.coverUrl, sizes: "512x512", type: "image/jpeg" }]
+          : undefined,
+      });
+    }
 
     navigator.mediaSession.setActionHandler("play", () => {
       _shouldPlayAfterLoad = true;
@@ -515,24 +522,6 @@ if (typeof window !== "undefined") {
       _shouldPlayAfterLoad = false;
       getAudio()?.pause();
     });
-    navigator.mediaSession.setActionHandler(
-      "previoustrack",
-      currentIndex > 0
-        ? () => {
-            syncUnlockAudio();
-            usePlayerStore.getState().prev();
-          }
-        : null,
-    );
-    navigator.mediaSession.setActionHandler(
-      "nexttrack",
-      currentIndex < queue.length - 1
-        ? () => {
-            syncUnlockAudio();
-            usePlayerStore.getState().next();
-          }
-        : null,
-    );
     navigator.mediaSession.setActionHandler("seekbackward", (d) => {
       const s = usePlayerStore.getState();
       const audio = getAudio();
@@ -572,6 +561,28 @@ if (typeof window !== "undefined") {
         usePlayerStore.getState().seek(seekTime);
       }, 300);
     });
+
+    // previoustrack/nexttrack 依赖队列位置，只在 track/queue 变化时重新注册
+    if (!trackChanged && state.queue.length === prev.queue.length) return;
+
+    navigator.mediaSession.setActionHandler(
+      "previoustrack",
+      currentIndex > 0
+        ? () => {
+            syncUnlockAudio();
+            usePlayerStore.getState().prev();
+          }
+        : null,
+    );
+    navigator.mediaSession.setActionHandler(
+      "nexttrack",
+      currentIndex < queue.length - 1
+        ? () => {
+            syncUnlockAudio();
+            usePlayerStore.getState().next();
+          }
+        : null,
+    );
   });
 }
 
