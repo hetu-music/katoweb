@@ -603,7 +603,7 @@ export default function FeedbackAndBenefitsPanel({
 }: FeedbackAndBenefitsPanelProps) {
   const [requests, setRequests] = useState<UserRequest[]>([]);
   const [loadingRequests, setLoadingRequests] = useState(true);
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(true);
 
   const fetchRequests = useCallback(async () => {
     setLoadingRequests(true);
