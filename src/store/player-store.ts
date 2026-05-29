@@ -23,6 +23,10 @@ export interface PlayerState {
   error: string | null;
   playerVisible: boolean;
   lyricsMap: Map<number, string>;
+  /** 从 Navidrome getSong 获取的准确时长（秒），opus 流无法从 audio.duration 读取 */
+  trackDuration: number;
+  /** seek 后的时间基准：显示时间 = seekBase + audio.currentTime */
+  seekBase: number;
 }
 
 export interface PlayerActions {
@@ -46,8 +50,8 @@ export interface PlayerActions {
   _setVolumeState: (volume: number, isMuted: boolean) => void;
   _onEnded: () => void;
   _addLyrics: (songId: number, lyrics: string) => void;
-  /** 内部：stream-url fetch */
-  _fetchAndSetSrc: (songId: number, isRetry?: boolean) => void;
+  /** 内部：stream-url fetch，timeOffset 用于 opus seek */
+  _fetchAndSetSrc: (songId: number, isRetry?: boolean, timeOffset?: number) => void;
 }
 
 // ─── 内部可变 refs（不放 store，避免触发订阅） ────────────────────────────────
@@ -96,13 +100,14 @@ function syncUnlockAudio() {
 function syncMediaSessionPosition() {
   if (typeof navigator === "undefined" || !("mediaSession" in navigator))
     return;
+  const { trackDuration, seekBase } = usePlayerStore.getState();
   const audio = getAudio();
-  if (!audio || !audio.duration || isNaN(audio.duration)) return;
+  if (!audio || !trackDuration) return;
   try {
     navigator.mediaSession.setPositionState({
-      duration: audio.duration,
+      duration: trackDuration,
       playbackRate: audio.playbackRate,
-      position: Math.min(audio.currentTime, audio.duration),
+      position: Math.min(seekBase + audio.currentTime, trackDuration),
     });
   } catch {
     /* ignore */
@@ -124,6 +129,8 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
     error: null,
     playerVisible: false,
     lyricsMap: new Map(),
+    trackDuration: 0,
+    seekBase: 0,
 
     // ── 内部 setters ──────────────────────────────────────────────────────────
     _setPlaying: (v) => set({ isPlaying: v }),
@@ -150,6 +157,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
           currentTrack: nextTrack,
           isPlaying: true,
           isLoading: true,
+          seekBase: 0,
         });
         get()._fetchAndSetSrc(nextTrack.songId);
       } else {
@@ -159,7 +167,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
     },
 
     // ── stream-url fetch ──────────────────────────────────────────────────────
-    _fetchAndSetSrc: (songId, isRetry = false) => {
+    _fetchAndSetSrc: (songId, isRetry = false, timeOffset = 0) => {
       const audio = getAudio();
       if (!audio) return;
 
@@ -170,12 +178,15 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
 
       set({ isLoading: true, error: null });
 
-      fetch(`/api/navidrome/stream-url?songId=${encodeURIComponent(songId)}`)
+      const qs = new URLSearchParams({ songId: String(songId) });
+      if (timeOffset > 0) qs.set("timeOffset", String(Math.floor(timeOffset)));
+
+      fetch(`/api/navidrome/stream-url?${qs}`)
         .then((r) => {
           if (!r.ok) throw new Error(`stream-url error: ${r.status}`);
-          return r.json() as Promise<{ url?: string; error?: string }>;
+          return r.json() as Promise<{ url?: string; duration?: number; error?: string }>;
         })
-        .then(({ url, error }) => {
+        .then(({ url, duration, error }) => {
           if (songId !== _loadingTrackId) return;
           if (!url) throw new Error(error ?? "未获取到播放地址");
 
@@ -183,7 +194,13 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
           audio.src = url;
           audio.load();
 
-          set({ isLoading: false, error: null });
+          // 更新 seekBase 和 trackDuration
+          set({
+            isLoading: false,
+            error: null,
+            seekBase: timeOffset,
+            ...(duration != null && duration > 0 ? { trackDuration: duration } : {}),
+          });
         })
         .catch((err: unknown) => {
           if (songId !== _loadingTrackId) return;
@@ -218,6 +235,8 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
           currentTrack: s.queue[existingIndex],
           isPlaying: true,
           isLoading: true,
+          seekBase: 0,
+          trackDuration: 0,
         });
         get()._fetchAndSetSrc(s.queue[existingIndex].songId);
         return;
@@ -232,6 +251,8 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
         currentTrack: track,
         isPlaying: true,
         isLoading: true,
+        seekBase: 0,
+        trackDuration: 0,
       });
       get()._fetchAndSetSrc(track.songId);
     },
@@ -266,7 +287,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
       _shouldPlayAfterLoad = s.isPlaying;
       const track = s.queue[index];
       _loadingTrackId = track.songId;
-      set({ currentIndex: index, currentTrack: track, isLoading: true });
+      set({ currentIndex: index, currentTrack: track, isLoading: true, seekBase: 0, trackDuration: 0 });
       get()._fetchAndSetSrc(track.songId);
     },
 
@@ -278,7 +299,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
       _shouldPlayAfterLoad = s.isPlaying;
       const track = s.queue[i];
       _loadingTrackId = track.songId;
-      set({ currentIndex: i, currentTrack: track, isLoading: true });
+      set({ currentIndex: i, currentTrack: track, isLoading: true, seekBase: 0, trackDuration: 0 });
       get()._fetchAndSetSrc(track.songId);
     },
 
@@ -290,7 +311,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
       _shouldPlayAfterLoad = s.isPlaying;
       const track = s.queue[i];
       _loadingTrackId = track.songId;
-      set({ currentIndex: i, currentTrack: track, isLoading: true });
+      set({ currentIndex: i, currentTrack: track, isLoading: true, seekBase: 0, trackDuration: 0 });
       get()._fetchAndSetSrc(track.songId);
     },
 
@@ -308,6 +329,8 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
             currentIndex: -1,
             currentTrack: null,
             isPlaying: false,
+            seekBase: 0,
+            trackDuration: 0,
           });
           return;
         }
@@ -319,6 +342,8 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
           currentIndex: newIndex,
           currentTrack: newQueue[newIndex],
           isLoading: true,
+          seekBase: 0,
+          trackDuration: 0,
         });
         get()._fetchAndSetSrc(newQueue[newIndex].songId);
         return;
@@ -339,13 +364,18 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
         currentTrack: null,
         isPlaying: false,
         error: null,
+        seekBase: 0,
+        trackDuration: 0,
       });
     },
 
+    // opus 流不支持原生 seek，改用 timeOffset 重新请求流
     seek: (time) => {
-      const audio = getAudio();
-      if (!audio) return;
-      audio.currentTime = Math.max(0, Math.min(time, audio.duration || 0));
+      const s = get();
+      if (!s.currentTrack) return;
+      const targetTime = Math.max(0, Math.min(time, s.trackDuration || 0));
+      _shouldPlayAfterLoad = true;
+      get()._fetchAndSetSrc(s.currentTrack.songId, false, targetTime);
     },
 
     setVolume: (vol) => {
@@ -364,10 +394,8 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
 );
 
 // ─── Audio 事件绑定（模块加载时执行一次） ─────────────────────────────────────
-// 在浏览器环境下，模块首次 import 时绑定，之后永不解绑。
 
 if (typeof window !== "undefined") {
-  // 延迟到下一个 tick，确保 store 已完全初始化
   setTimeout(() => {
     const audio = getAudio();
     if (!audio) return;
@@ -445,12 +473,10 @@ if (typeof window !== "undefined") {
 
     const { currentTrack, currentIndex, queue, isPlaying } = state;
 
-    // 同步播放状态
     navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused";
 
     if (!currentTrack) return;
 
-    // 同步元数据
     navigator.mediaSession.metadata = new MediaMetadata({
       title: currentTrack.title,
       artist: currentTrack.artist ?? undefined,
@@ -458,14 +484,6 @@ if (typeof window !== "undefined") {
         ? [{ src: currentTrack.coverUrl, sizes: "512x512", type: "image/jpeg" }]
         : undefined,
     });
-
-    // 同步控制按钮
-    const doSeek = (time: number) => {
-      const audio = getAudio();
-      if (!audio) return;
-      audio.currentTime = Math.max(0, Math.min(time, audio.duration || 0));
-      syncMediaSessionPosition();
-    };
 
     navigator.mediaSession.setActionHandler("play", () => {
       _shouldPlayAfterLoad = true;
@@ -494,17 +512,19 @@ if (typeof window !== "undefined") {
         : null,
     );
     navigator.mediaSession.setActionHandler("seekbackward", (d) => {
+      const s = usePlayerStore.getState();
       const audio = getAudio();
       if (!audio) return;
-      doSeek(audio.currentTime - (d.seekOffset ?? 10));
+      s.seek(s.seekBase + audio.currentTime - (d.seekOffset ?? 10));
     });
     navigator.mediaSession.setActionHandler("seekforward", (d) => {
+      const s = usePlayerStore.getState();
       const audio = getAudio();
       if (!audio) return;
-      doSeek(audio.currentTime + (d.seekOffset ?? 10));
+      s.seek(s.seekBase + audio.currentTime + (d.seekOffset ?? 10));
     });
     navigator.mediaSession.setActionHandler("seekto", (d) => {
-      if (d.seekTime != null) doSeek(d.seekTime);
+      if (d.seekTime != null) usePlayerStore.getState().seek(d.seekTime);
     });
   });
 }
