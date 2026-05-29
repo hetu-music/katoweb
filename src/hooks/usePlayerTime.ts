@@ -12,21 +12,34 @@ import { usePlayerStore } from "@/store/player-store";
  * opus 流没有 Content-Length，audio.duration 为 Infinity，
  * 因此 duration 从 store.trackDuration 读取（由 getSong API 提供），
  * currentTime 为 store.seekBase + audio.currentTime。
+ *
+ * seekBase 用 ref 读取，避免 seekBase 变化时重新绑定事件导致闪烁。
  */
 export function usePlayerTime(): { currentTime: number; duration: number } {
   const trackDuration = usePlayerStore((s) => s.trackDuration);
   const seekBase = usePlayerStore((s) => s.seekBase);
 
-  const [currentTime, setCurrentTime] = useState(0);
+  // 用 ref 持有最新 seekBase，rAF 回调里直接读 ref，不触发重新绑定
+  const seekBaseRef = useRef(seekBase);
+  useEffect(() => {
+    seekBaseRef.current = seekBase;
+  }, [seekBase]);
+
+  const [currentTime, setCurrentTime] = useState(seekBase);
   const rafIdRef = useRef<number>(0);
   const isPlayingRef = useRef(false);
+
+  // seekBase 变化时立即同步 currentTime，避免进度条跳回 0
+  useEffect(() => {
+    setCurrentTime(seekBase);
+  }, [seekBase]);
 
   useEffect(() => {
     const audio = getAudio();
     if (!audio) return;
 
     const readTime = () => {
-      const ct = seekBase + audio.currentTime;
+      const ct = seekBaseRef.current + audio.currentTime;
       setCurrentTime((prev) => (prev === ct ? prev : ct));
     };
 
@@ -72,7 +85,9 @@ export function usePlayerTime(): { currentTime: number; duration: number } {
       audio.removeEventListener("seeked", onSeeked);
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
     };
-  }, [seekBase]);
+  // 只在挂载时绑定一次，seekBase 通过 ref 读取
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return { currentTime, duration: trackDuration };
 }

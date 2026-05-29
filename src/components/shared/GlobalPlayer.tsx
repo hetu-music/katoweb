@@ -211,13 +211,16 @@ export default function GlobalPlayer() {
   );
 
   // opus seek 是重新请求流，触发 canplay 而非 seeked，preview 在 canplay 后清除
+  // 等下一个 rAF 帧（此时 seekBase + audio.currentTime 已稳定）再释放 preview
   useEffect(() => {
     const onCanPlay = () => {
       if (isSeekingRef.current) {
-        setTimeout(() => {
-          isSeekingRef.current = false;
-          setSeekPreview(null);
-        }, 50);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            isSeekingRef.current = false;
+            setSeekPreview(null);
+          });
+        });
       }
     };
     const bind = () => {
