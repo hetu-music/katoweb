@@ -8,7 +8,8 @@ import {
 import { toCategoryPayload } from "@/lib/imagery-form";
 import type { ImageryCategory } from "@/lib/types";
 import { useCallback, useMemo, useState } from "react";
-import type { CategoryFormValues, ModalState } from "./types";
+import type { CategoryFormValues } from "@/lib/imagery-form";
+import type { ModalState } from "./types";
 import { buildTree, getCategoryPath } from "./utils";
 
 const PAGE_SIZE = 20;

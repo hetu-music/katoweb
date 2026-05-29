@@ -8,7 +8,8 @@ import {
 } from "@/lib/client-api";
 import type { ImageryItem } from "@/lib/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { ImageryFormValues, ModalState } from "./types";
+import type { ImageryFormValues } from "@/lib/imagery-form";
+import type { ModalState } from "./types";
 
 const PAGE_SIZE = 20;
 
