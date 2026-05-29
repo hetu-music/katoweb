@@ -87,7 +87,7 @@ export default function ListRow({
                 "rounded-lg p-2 transition-all duration-200",
                 active
                   ? "text-rose-500"
-                  : "text-slate-400 opacity-100 hover:text-rose-400 dark:text-slate-500 lg:opacity-0 lg:group-hover:opacity-100",
+                  : "text-slate-400 opacity-100 hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 dark:text-slate-500 lg:opacity-0 lg:group-hover:opacity-100",
               )}
             >
               <Heart size={16} className={active ? "fill-current" : ""} />
@@ -149,7 +149,7 @@ export default function ListRow({
               "rounded-lg p-2 transition-all duration-200",
               active
                 ? "text-rose-500"
-                : "text-slate-400 opacity-100 hover:text-rose-400 dark:text-slate-500 lg:opacity-0 lg:group-hover:opacity-100",
+                : "text-slate-400 hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 dark:text-slate-500 lg:opacity-0 lg:group-hover:opacity-100",
             )}
           >
             <Heart size={16} className={active ? "fill-current" : ""} />
