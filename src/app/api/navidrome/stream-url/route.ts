@@ -90,8 +90,8 @@ export const GET = withAuth(
       v: "1.16.1",
       c: "katoweb",
       id: navidSongId,
-      format: "aac",
-      maxBitRate: "320",
+      format: "opus",
+      maxBitRate: "192",
     });
 
     return NextResponse.json({ url: `${base}/rest/stream?${params}` });
