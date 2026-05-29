@@ -408,6 +408,8 @@ if (typeof window !== "undefined") {
     audio.addEventListener("canplay", () => {
       usePlayerStore.getState()._setLoading(false);
       if (_shouldPlayAfterLoad) safePlay();
+      // seek 后新流就绪，立即同步系统媒体控件位置
+      syncMediaSessionPosition();
     });
 
     audio.addEventListener("play", () =>
@@ -448,11 +450,8 @@ if (typeof window !== "undefined") {
       usePlayerStore.getState()._setError(msg);
     });
 
-    // MediaSession 进度同步
+    // MediaSession 进度同步（timeupdate 持续更新，canplay 在 seek 后立即同步）
     audio.addEventListener("timeupdate", syncMediaSessionPosition);
-    audio.addEventListener("seeked", syncMediaSessionPosition);
-    audio.addEventListener("durationchange", syncMediaSessionPosition);
-    audio.addEventListener("loadedmetadata", syncMediaSessionPosition);
     audio.addEventListener("ratechange", syncMediaSessionPosition);
   }, 0);
 }
