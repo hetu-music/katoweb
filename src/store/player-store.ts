@@ -64,6 +64,12 @@ let _retryCount = 0;
 let _shouldPlayAfterLoad = false;
 /** seek 中：_fetchAndSetSrc 内部 audio.pause() 触发的 pause 事件应被忽略 */
 let _isSeeking = false;
+/** seek 进行中：暂停 MediaSession position 更新，避免系统控件收到非法值 */
+let _isSeekingMediaSession = false;
+/** seek 目标时间，seek 进行中用于立即更新系统控件显示位置 */
+let _seekTargetTime: number | null = null;
+/** MediaSession seekto debounce timer */
+let _seekToTimer: ReturnType<typeof setTimeout> | null = null;
 
 // ─── 工具 ─────────────────────────────────────────────────────────────────────
 
@@ -105,11 +111,15 @@ function syncMediaSessionPosition() {
   const { trackDuration, seekBase } = usePlayerStore.getState();
   const audio = getAudio();
   if (!audio || !trackDuration) return;
+  // seek 进行中用目标时间，避免 audio.currentTime 归零时给系统控件传错误值
+  const position = _isSeekingMediaSession && _seekTargetTime !== null
+    ? _seekTargetTime
+    : Math.min(seekBase + audio.currentTime, trackDuration);
   try {
     navigator.mediaSession.setPositionState({
       duration: trackDuration,
       playbackRate: audio.playbackRate,
-      position: Math.min(seekBase + audio.currentTime, trackDuration),
+      position: Math.max(0, Math.min(position, trackDuration)),
     });
   } catch {
     /* ignore */
@@ -179,6 +189,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
       }
 
       set({ isLoading: true, error: null });
+      _isSeekingMediaSession = true;
 
       const qs = new URLSearchParams({ songId: String(songId) });
       if (timeOffset > 0) qs.set("timeOffset", String(Math.floor(timeOffset)));
@@ -210,6 +221,8 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
           const msg =
             err instanceof Error ? err.message : "获取播放地址失败，请稍后重试";
           _shouldPlayAfterLoad = false;
+          _isSeekingMediaSession = false;
+          _seekTargetTime = null;
           set({ isLoading: false, isPlaying: false, error: msg });
         });
     },
@@ -377,6 +390,10 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
       const s = get();
       if (!s.currentTrack) return;
       const targetTime = Math.max(0, Math.min(time, s.trackDuration || 0));
+      // 立即告知系统控件目标位置，不等 canplay
+      _seekTargetTime = targetTime;
+      _isSeekingMediaSession = true;
+      syncMediaSessionPosition();
       _shouldPlayAfterLoad = true;
       get()._fetchAndSetSrc(s.currentTrack.songId, false, targetTime);
     },
@@ -411,7 +428,9 @@ if (typeof window !== "undefined") {
     audio.addEventListener("canplay", () => {
       usePlayerStore.getState()._setLoading(false);
       if (_shouldPlayAfterLoad) safePlay();
-      // seek 后新流就绪，立即同步系统媒体控件位置
+      // seek 后新流就绪，恢复 MediaSession position 更新并立即同步正确位置
+      _isSeekingMediaSession = false;
+      _seekTargetTime = null;
       syncMediaSessionPosition();
     });
 
@@ -527,7 +546,27 @@ if (typeof window !== "undefined") {
       s.seek(s.seekBase + audio.currentTime + (d.seekOffset ?? 10));
     });
     navigator.mediaSession.setActionHandler("seekto", (d) => {
-      if (d.seekTime != null) usePlayerStore.getState().seek(d.seekTime);
+      if (d.seekTime == null) return;
+      const seekTime = d.seekTime;
+
+      // d.fastSeek === true 表示还在拖动中，只更新系统进度条显示，不触发实际 seek
+      // d.fastSeek === false 或 undefined 表示松手，此时才真正 seek
+      if (d.fastSeek) {
+        // 清掉之前可能残留的 debounce timer
+        if (_seekToTimer !== null) {
+          clearTimeout(_seekToTimer);
+          _seekToTimer = null;
+        }
+        syncMediaSessionPosition();
+        return;
+      }
+
+      // 松手：如果有 debounce timer 也清掉，直接执行
+      if (_seekToTimer !== null) {
+        clearTimeout(_seekToTimer);
+        _seekToTimer = null;
+      }
+      usePlayerStore.getState().seek(seekTime);
     });
   });
 }
