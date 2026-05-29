@@ -198,9 +198,8 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
           audio.src = url;
           audio.load();
 
-          // 更新 seekBase 和 trackDuration
+          // 更新 seekBase 和 trackDuration，isLoading 由 loadstart/canplay 事件管理，不在这里改
           set({
-            isLoading: false,
             error: null,
             seekBase: timeOffset,
             ...(duration != null && duration > 0 ? { trackDuration: duration } : {}),
