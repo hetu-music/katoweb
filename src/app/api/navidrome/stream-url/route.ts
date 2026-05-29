@@ -90,7 +90,7 @@ export const GET = withAuth(
       v: "1.16.1",
       c: "katoweb",
       id: navidSongId,
-      format: "opus",
+      format: "aac",
       maxBitRate: "320",
     });
 
