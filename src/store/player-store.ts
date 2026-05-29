@@ -549,24 +549,28 @@ if (typeof window !== "undefined") {
       if (d.seekTime == null) return;
       const seekTime = d.seekTime;
 
-      // d.fastSeek === true 表示还在拖动中，只更新系统进度条显示，不触发实际 seek
-      // d.fastSeek === false 或 undefined 表示松手，此时才真正 seek
+      // 立即更新系统控件显示位置（用目标时间），让进度条跟手
+      _seekTargetTime = seekTime;
+      _isSeekingMediaSession = true;
+      syncMediaSessionPosition();
+
+      // fastSeek=true 表示还在拖动（部分浏览器支持），跳过实际 seek
       if (d.fastSeek) {
-        // 清掉之前可能残留的 debounce timer
-        if (_seekToTimer !== null) {
-          clearTimeout(_seekToTimer);
+        if (_seekToTimer !== null) clearTimeout(_seekToTimer);
+        // 设一个较长的 fallback timer，防止 fastSeek 后没有 fastSeek=false 的收尾事件
+        _seekToTimer = setTimeout(() => {
           _seekToTimer = null;
-        }
-        syncMediaSessionPosition();
+          usePlayerStore.getState().seek(seekTime);
+        }, 500);
         return;
       }
 
-      // 松手：如果有 debounce timer 也清掉，直接执行
-      if (_seekToTimer !== null) {
-        clearTimeout(_seekToTimer);
+      // fastSeek 不支持或已松手：debounce 300ms，防止拖动时每帧都发请求
+      if (_seekToTimer !== null) clearTimeout(_seekToTimer);
+      _seekToTimer = setTimeout(() => {
         _seekToTimer = null;
-      }
-      usePlayerStore.getState().seek(seekTime);
+        usePlayerStore.getState().seek(seekTime);
+      }, 300);
     });
   });
 }
