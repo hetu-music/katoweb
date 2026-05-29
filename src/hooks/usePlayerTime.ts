@@ -30,9 +30,12 @@ export function usePlayerTime(): { currentTime: number; duration: number } {
   const isPlayingRef = useRef(false);
 
   // seekBase 变化时立即同步 currentTime，避免进度条跳回 0
-  useEffect(() => {
+  // 用 useState 存上一次的 seekBase，在渲染期间比较并更新（React 官方推荐的 derived state 模式）
+  const [prevSeekBase, setPrevSeekBase] = useState(seekBase);
+  if (prevSeekBase !== seekBase) {
+    setPrevSeekBase(seekBase);
     setCurrentTime(seekBase);
-  }, [seekBase]);
+  }
 
   useEffect(() => {
     const audio = getAudio();
@@ -86,7 +89,6 @@ export function usePlayerTime(): { currentTime: number; duration: number } {
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
     };
   // 只在挂载时绑定一次，seekBase 通过 ref 读取
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return { currentTime, duration: trackDuration };
