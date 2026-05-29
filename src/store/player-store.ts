@@ -23,6 +23,10 @@ export interface PlayerState {
   error: string | null;
   playerVisible: boolean;
   lyricsMap: Map<number, string>;
+  /** 从 Navidrome getSong 获取的准确时长（秒），opus 流无法从 audio.duration 读取 */
+  trackDuration: number;
+  /** seek 后的时间基准：显示时间 = seekBase + audio.currentTime */
+  seekBase: number;
 }
 
 export interface PlayerActions {
@@ -46,8 +50,8 @@ export interface PlayerActions {
   _setVolumeState: (volume: number, isMuted: boolean) => void;
   _onEnded: () => void;
   _addLyrics: (songId: number, lyrics: string) => void;
-  /** 内部：stream-url fetch */
-  _fetchAndSetSrc: (songId: number, isRetry?: boolean) => void;
+  /** 内部：stream-url fetch，timeOffset 用于 opus seek */
+  _fetchAndSetSrc: (songId: number, isRetry?: boolean, timeOffset?: number) => void;
 }
 
 // ─── 内部可变 refs（不放 store，避免触发订阅） ────────────────────────────────
@@ -58,6 +62,16 @@ let _loadingTrackId: number | null = null;
 let _retryCount = 0;
 /** 播放意图：canplay 时是否自动播放 */
 let _shouldPlayAfterLoad = false;
+/** seek 中：_fetchAndSetSrc 内部 audio.pause() 触发的 pause 事件应被忽略 */
+let _isSeeking = false;
+/** seek 进行中：暂停 MediaSession position 更新，避免系统控件收到非法值 */
+let _isSeekingMediaSession = false;
+/** seek 目标时间，seek 进行中用于立即更新系统控件显示位置 */
+let _seekTargetTime: number | null = null;
+/** MediaSession seekto debounce timer */
+let _seekToTimer: ReturnType<typeof setTimeout> | null = null;
+/** fetch 请求版本号，每次 _fetchAndSetSrc 递增，回调里不匹配则丢弃（防并发竞态） */
+let _fetchGeneration = 0;
 
 // ─── 工具 ─────────────────────────────────────────────────────────────────────
 
@@ -96,13 +110,18 @@ function syncUnlockAudio() {
 function syncMediaSessionPosition() {
   if (typeof navigator === "undefined" || !("mediaSession" in navigator))
     return;
+  const { trackDuration, seekBase } = usePlayerStore.getState();
   const audio = getAudio();
-  if (!audio || !audio.duration || isNaN(audio.duration)) return;
+  if (!audio || !trackDuration) return;
+  // seek 进行中用目标时间，避免 audio.currentTime 归零时给系统控件传错误值
+  const position = _isSeekingMediaSession && _seekTargetTime !== null
+    ? _seekTargetTime
+    : Math.min(seekBase + audio.currentTime, trackDuration);
   try {
     navigator.mediaSession.setPositionState({
-      duration: audio.duration,
+      duration: trackDuration,
       playbackRate: audio.playbackRate,
-      position: Math.min(audio.currentTime, audio.duration),
+      position: Math.max(0, Math.min(position, trackDuration)),
     });
   } catch {
     /* ignore */
@@ -124,6 +143,8 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
     error: null,
     playerVisible: false,
     lyricsMap: new Map(),
+    trackDuration: 0,
+    seekBase: 0,
 
     // ── 内部 setters ──────────────────────────────────────────────────────────
     _setPlaying: (v) => set({ isPlaying: v }),
@@ -150,6 +171,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
           currentTrack: nextTrack,
           isPlaying: true,
           isLoading: true,
+          seekBase: 0,
         });
         get()._fetchAndSetSrc(nextTrack.songId);
       } else {
@@ -159,7 +181,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
     },
 
     // ── stream-url fetch ──────────────────────────────────────────────────────
-    _fetchAndSetSrc: (songId, isRetry = false) => {
+    _fetchAndSetSrc: (songId, isRetry = false, timeOffset = 0) => {
       const audio = getAudio();
       if (!audio) return;
 
@@ -168,28 +190,48 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
         _loadingTrackId = songId;
       }
 
-      set({ isLoading: true, error: null });
+      // 每次新请求递增版本号，回调里不匹配则说明已被更新的请求取代，直接丢弃
+      const generation = ++_fetchGeneration;
 
-      fetch(`/api/navidrome/stream-url?songId=${encodeURIComponent(songId)}`)
+      set({ isLoading: true, error: null });
+      _isSeekingMediaSession = true;
+
+      const qs = new URLSearchParams({ songId: String(songId) });
+      if (timeOffset > 0) qs.set("timeOffset", String(Math.floor(timeOffset)));
+
+      fetch(`/api/navidrome/stream-url?${qs}`)
         .then((r) => {
           if (!r.ok) throw new Error(`stream-url error: ${r.status}`);
-          return r.json() as Promise<{ url?: string; error?: string }>;
+          return r.json() as Promise<{ url?: string; duration?: number; error?: string }>;
         })
-        .then(({ url, error }) => {
+        .then(({ url, duration, error }) => {
+          // 版本号不匹配说明已有更新的请求，丢弃此结果
+          if (generation !== _fetchGeneration) return;
           if (songId !== _loadingTrackId) return;
           if (!url) throw new Error(error ?? "未获取到播放地址");
 
+          _isSeeking = true;
           audio.pause();
+          _isSeeking = false;
           audio.src = url;
           audio.load();
 
-          set({ isLoading: false, error: null });
+          // 更新 seekBase 和 trackDuration，isLoading 由 loadstart/canplay 事件管理，不在这里改
+          set({
+            error: null,
+            seekBase: timeOffset,
+            ...(duration != null && duration > 0 ? { trackDuration: duration } : {}),
+          });
         })
         .catch((err: unknown) => {
+          // 版本号不匹配说明已被取代，静默丢弃
+          if (generation !== _fetchGeneration) return;
           if (songId !== _loadingTrackId) return;
           const msg =
             err instanceof Error ? err.message : "获取播放地址失败，请稍后重试";
           _shouldPlayAfterLoad = false;
+          _isSeekingMediaSession = false;
+          _seekTargetTime = null;
           set({ isLoading: false, isPlaying: false, error: msg });
         });
     },
@@ -218,6 +260,8 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
           currentTrack: s.queue[existingIndex],
           isPlaying: true,
           isLoading: true,
+          seekBase: 0,
+          trackDuration: 0,
         });
         get()._fetchAndSetSrc(s.queue[existingIndex].songId);
         return;
@@ -232,6 +276,8 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
         currentTrack: track,
         isPlaying: true,
         isLoading: true,
+        seekBase: 0,
+        trackDuration: 0,
       });
       get()._fetchAndSetSrc(track.songId);
     },
@@ -266,7 +312,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
       _shouldPlayAfterLoad = s.isPlaying;
       const track = s.queue[index];
       _loadingTrackId = track.songId;
-      set({ currentIndex: index, currentTrack: track, isLoading: true });
+      set({ currentIndex: index, currentTrack: track, isLoading: true, seekBase: 0, trackDuration: 0 });
       get()._fetchAndSetSrc(track.songId);
     },
 
@@ -278,7 +324,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
       _shouldPlayAfterLoad = s.isPlaying;
       const track = s.queue[i];
       _loadingTrackId = track.songId;
-      set({ currentIndex: i, currentTrack: track, isLoading: true });
+      set({ currentIndex: i, currentTrack: track, isLoading: true, seekBase: 0, trackDuration: 0 });
       get()._fetchAndSetSrc(track.songId);
     },
 
@@ -290,7 +336,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
       _shouldPlayAfterLoad = s.isPlaying;
       const track = s.queue[i];
       _loadingTrackId = track.songId;
-      set({ currentIndex: i, currentTrack: track, isLoading: true });
+      set({ currentIndex: i, currentTrack: track, isLoading: true, seekBase: 0, trackDuration: 0 });
       get()._fetchAndSetSrc(track.songId);
     },
 
@@ -308,6 +354,8 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
             currentIndex: -1,
             currentTrack: null,
             isPlaying: false,
+            seekBase: 0,
+            trackDuration: 0,
           });
           return;
         }
@@ -319,6 +367,8 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
           currentIndex: newIndex,
           currentTrack: newQueue[newIndex],
           isLoading: true,
+          seekBase: 0,
+          trackDuration: 0,
         });
         get()._fetchAndSetSrc(newQueue[newIndex].songId);
         return;
@@ -339,13 +389,22 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
         currentTrack: null,
         isPlaying: false,
         error: null,
+        seekBase: 0,
+        trackDuration: 0,
       });
     },
 
+    // opus 流不支持原生 seek，改用 timeOffset 重新请求流
     seek: (time) => {
-      const audio = getAudio();
-      if (!audio) return;
-      audio.currentTime = Math.max(0, Math.min(time, audio.duration || 0));
+      const s = get();
+      if (!s.currentTrack) return;
+      const targetTime = Math.max(0, Math.min(time, s.trackDuration || 0));
+      // 立即告知系统控件目标位置，不等 canplay
+      _seekTargetTime = targetTime;
+      _isSeekingMediaSession = true;
+      syncMediaSessionPosition();
+      _shouldPlayAfterLoad = true;
+      get()._fetchAndSetSrc(s.currentTrack.songId, false, targetTime);
     },
 
     setVolume: (vol) => {
@@ -364,10 +423,8 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
 );
 
 // ─── Audio 事件绑定（模块加载时执行一次） ─────────────────────────────────────
-// 在浏览器环境下，模块首次 import 时绑定，之后永不解绑。
 
 if (typeof window !== "undefined") {
-  // 延迟到下一个 tick，确保 store 已完全初始化
   setTimeout(() => {
     const audio = getAudio();
     if (!audio) return;
@@ -380,14 +437,19 @@ if (typeof window !== "undefined") {
     audio.addEventListener("canplay", () => {
       usePlayerStore.getState()._setLoading(false);
       if (_shouldPlayAfterLoad) safePlay();
+      // seek 后新流就绪，恢复 MediaSession position 更新并立即同步正确位置
+      _isSeekingMediaSession = false;
+      _seekTargetTime = null;
+      syncMediaSessionPosition();
     });
 
     audio.addEventListener("play", () =>
       usePlayerStore.getState()._setPlaying(true),
     );
-    audio.addEventListener("pause", () =>
-      usePlayerStore.getState()._setPlaying(false),
-    );
+    audio.addEventListener("pause", () => {
+      if (_isSeeking) return;
+      usePlayerStore.getState()._setPlaying(false);
+    });
     audio.addEventListener("ended", () => usePlayerStore.getState()._onEnded());
     audio.addEventListener("volumechange", () => {
       usePlayerStore.getState()._setVolumeState(audio.volume, audio.muted);
@@ -420,11 +482,8 @@ if (typeof window !== "undefined") {
       usePlayerStore.getState()._setError(msg);
     });
 
-    // MediaSession 进度同步
+    // MediaSession 进度同步（timeupdate 持续更新，canplay 在 seek 后立即同步）
     audio.addEventListener("timeupdate", syncMediaSessionPosition);
-    audio.addEventListener("seeked", syncMediaSessionPosition);
-    audio.addEventListener("durationchange", syncMediaSessionPosition);
-    audio.addEventListener("loadedmetadata", syncMediaSessionPosition);
     audio.addEventListener("ratechange", syncMediaSessionPosition);
   }, 0);
 }
@@ -445,27 +504,24 @@ if (typeof window !== "undefined") {
 
     const { currentTrack, currentIndex, queue, isPlaying } = state;
 
-    // 同步播放状态
     navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused";
 
     if (!currentTrack) return;
 
-    // 同步元数据
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: currentTrack.title,
-      artist: currentTrack.artist ?? undefined,
-      artwork: currentTrack.coverUrl
-        ? [{ src: currentTrack.coverUrl, sizes: "512x512", type: "image/jpeg" }]
-        : undefined,
-    });
+    // 只有 track 真正变化时才重新赋值 metadata，避免 seek 后 isPlaying 变化触发重新注册导致控件闪退
+    const trackChanged =
+      state.currentTrack !== prev.currentTrack ||
+      state.currentIndex !== prev.currentIndex;
 
-    // 同步控制按钮
-    const doSeek = (time: number) => {
-      const audio = getAudio();
-      if (!audio) return;
-      audio.currentTime = Math.max(0, Math.min(time, audio.duration || 0));
-      syncMediaSessionPosition();
-    };
+    if (trackChanged) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: currentTrack.title,
+        artist: currentTrack.artist ?? undefined,
+        artwork: currentTrack.coverUrl
+          ? [{ src: currentTrack.coverUrl, sizes: "512x512", type: "image/jpeg" }]
+          : undefined,
+      });
+    }
 
     navigator.mediaSession.setActionHandler("play", () => {
       _shouldPlayAfterLoad = true;
@@ -475,6 +531,49 @@ if (typeof window !== "undefined") {
       _shouldPlayAfterLoad = false;
       getAudio()?.pause();
     });
+    navigator.mediaSession.setActionHandler("seekbackward", (d) => {
+      const s = usePlayerStore.getState();
+      const audio = getAudio();
+      if (!audio) return;
+      s.seek(s.seekBase + audio.currentTime - (d.seekOffset ?? 10));
+    });
+    navigator.mediaSession.setActionHandler("seekforward", (d) => {
+      const s = usePlayerStore.getState();
+      const audio = getAudio();
+      if (!audio) return;
+      s.seek(s.seekBase + audio.currentTime + (d.seekOffset ?? 10));
+    });
+    navigator.mediaSession.setActionHandler("seekto", (d) => {
+      if (d.seekTime == null) return;
+      const seekTime = d.seekTime;
+
+      // 立即更新系统控件显示位置（用目标时间），让进度条跟手
+      _seekTargetTime = seekTime;
+      _isSeekingMediaSession = true;
+      syncMediaSessionPosition();
+
+      // fastSeek=true 表示还在拖动（部分浏览器支持），跳过实际 seek
+      if (d.fastSeek) {
+        if (_seekToTimer !== null) clearTimeout(_seekToTimer);
+        // 设一个较长的 fallback timer，防止 fastSeek 后没有 fastSeek=false 的收尾事件
+        _seekToTimer = setTimeout(() => {
+          _seekToTimer = null;
+          usePlayerStore.getState().seek(seekTime);
+        }, 500);
+        return;
+      }
+
+      // fastSeek 不支持或已松手：debounce 300ms，防止拖动时每帧都发请求
+      if (_seekToTimer !== null) clearTimeout(_seekToTimer);
+      _seekToTimer = setTimeout(() => {
+        _seekToTimer = null;
+        usePlayerStore.getState().seek(seekTime);
+      }, 300);
+    });
+
+    // previoustrack/nexttrack 依赖队列位置，只在 track/queue 变化时重新注册
+    if (!trackChanged && state.queue.length === prev.queue.length) return;
+
     navigator.mediaSession.setActionHandler(
       "previoustrack",
       currentIndex > 0
@@ -493,19 +592,6 @@ if (typeof window !== "undefined") {
           }
         : null,
     );
-    navigator.mediaSession.setActionHandler("seekbackward", (d) => {
-      const audio = getAudio();
-      if (!audio) return;
-      doSeek(audio.currentTime - (d.seekOffset ?? 10));
-    });
-    navigator.mediaSession.setActionHandler("seekforward", (d) => {
-      const audio = getAudio();
-      if (!audio) return;
-      doSeek(audio.currentTime + (d.seekOffset ?? 10));
-    });
-    navigator.mediaSession.setActionHandler("seekto", (d) => {
-      if (d.seekTime != null) doSeek(d.seekTime);
-    });
   });
 }
 

@@ -210,18 +210,17 @@ export default function GlobalPlayer() {
     [controls, getTimeFromPointer],
   );
 
-  // seeked 事件触发后清除 preview（防止 seek 完成前进度条闪回旧位置）
-  // 【修复】加入 50ms 的延迟：seeked 触发时 audio.currentTime 就已终止位置，
-  // 但 rAF 循环可能还有一帧慨湐读取的时间尚未刷新。
-  // 延迟后再释放 preview 可以确保 slider 源滑透明、不闪烁。
+  // opus seek 是重新请求流，触发 canplay 而非 seeked，preview 在 canplay 后清除
+  // 等下一个 rAF 帧（此时 seekBase + audio.currentTime 已稳定）再释放 preview
   useEffect(() => {
-    const onSeeked = () => {
+    const onCanPlay = () => {
       if (isSeekingRef.current) {
-        // RAF 周期约 16ms，50ms 足够确保至少两帧已用新时间渲染
-        setTimeout(() => {
-          isSeekingRef.current = false;
-          setSeekPreview(null);
-        }, 50);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            isSeekingRef.current = false;
+            setSeekPreview(null);
+          });
+        });
       }
     };
     const bind = () => {
@@ -230,13 +229,13 @@ export default function GlobalPlayer() {
         setTimeout(bind, 100);
         return;
       }
-      a.addEventListener("seeked", onSeeked);
+      a.addEventListener("canplay", onCanPlay);
     };
     bind();
     return () => {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       const a = audioRef.current;
-      a?.removeEventListener("seeked", onSeeked);
+      a?.removeEventListener("canplay", onCanPlay);
     };
   }, []);
 

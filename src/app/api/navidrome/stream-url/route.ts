@@ -12,6 +12,7 @@ export const GET = withAuth(
   async (request: NextRequest, user: AuthenticatedUser) => {
     const { searchParams } = new URL(request.url);
     const songIdStr = searchParams.get("songId")?.trim();
+    const timeOffsetStr = searchParams.get("timeOffset");
 
     if (!songIdStr) {
       return NextResponse.json(
@@ -83,17 +84,52 @@ export const GET = withAuth(
     const token = md5(navid_pw + salt);
     const base = endpoint.replace(/\/$/, "");
 
-    const params = new URLSearchParams({
+    // 从 Navidrome getSong 获取准确的 duration（opus 流没有 Content-Length，
+    // 浏览器无法从 audio.duration 读取，必须从元数据获取）
+    let duration: number | null = null;
+    try {
+      const songInfoParams = new URLSearchParams({
+        u: navid_id,
+        t: token,
+        s: salt,
+        v: "1.16.1",
+        c: "katoweb",
+        id: navidSongId,
+        f: "json",
+      });
+      const songInfoRes = await fetch(`${base}/rest/getSong?${songInfoParams}`);
+      if (songInfoRes.ok) {
+        const songInfo = await songInfoRes.json() as {
+          "subsonic-response"?: { song?: { duration?: number } };
+        };
+        duration = songInfo?.["subsonic-response"]?.song?.duration ?? null;
+      }
+    } catch {
+      // duration 获取失败不影响播放，降级为 null
+    }
+
+    // 构造 stream URL，seek 时带 timeOffset 让 Navidrome 从指定秒数开始返回流
+    const streamParams = new URLSearchParams({
       u: navid_id,
       t: token,
       s: salt,
       v: "1.16.1",
       c: "katoweb",
       id: navidSongId,
-      format: "aac",
-      maxBitRate: "320",
+      format: "opus",
+      maxBitRate: "192",
     });
 
-    return NextResponse.json({ url: `${base}/rest/stream?${params}` });
+    if (timeOffsetStr) {
+      const timeOffset = parseFloat(timeOffsetStr);
+      if (!isNaN(timeOffset) && timeOffset > 0) {
+        streamParams.set("timeOffset", String(Math.floor(timeOffset)));
+      }
+    }
+
+    return NextResponse.json({
+      url: `${base}/rest/stream?${streamParams}`,
+      duration,
+    });
   },
 );
