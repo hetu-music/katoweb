@@ -70,6 +70,8 @@ let _isSeekingMediaSession = false;
 let _seekTargetTime: number | null = null;
 /** MediaSession seekto debounce timer */
 let _seekToTimer: ReturnType<typeof setTimeout> | null = null;
+/** fetch 请求版本号，每次 _fetchAndSetSrc 递增，回调里不匹配则丢弃（防并发竞态） */
+let _fetchGeneration = 0;
 
 // ─── 工具 ─────────────────────────────────────────────────────────────────────
 
@@ -188,6 +190,9 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
         _loadingTrackId = songId;
       }
 
+      // 每次新请求递增版本号，回调里不匹配则说明已被更新的请求取代，直接丢弃
+      const generation = ++_fetchGeneration;
+
       set({ isLoading: true, error: null });
       _isSeekingMediaSession = true;
 
@@ -200,6 +205,8 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
           return r.json() as Promise<{ url?: string; duration?: number; error?: string }>;
         })
         .then(({ url, duration, error }) => {
+          // 版本号不匹配说明已有更新的请求，丢弃此结果
+          if (generation !== _fetchGeneration) return;
           if (songId !== _loadingTrackId) return;
           if (!url) throw new Error(error ?? "未获取到播放地址");
 
@@ -217,6 +224,8 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
           });
         })
         .catch((err: unknown) => {
+          // 版本号不匹配说明已被取代，静默丢弃
+          if (generation !== _fetchGeneration) return;
           if (songId !== _loadingTrackId) return;
           const msg =
             err instanceof Error ? err.message : "获取播放地址失败，请稍后重试";
