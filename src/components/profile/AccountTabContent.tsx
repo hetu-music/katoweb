@@ -244,7 +244,11 @@ export default function AccountTabContent() {
                   "px-6 py-2.5 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2",
                   accountForm.formState.isSubmitting || !csrfToken
                     ? "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
-                    : "bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-500/10 active:scale-95",
+                    : saveMsg === "已保存"
+                      ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/10"
+                      : saveMsg
+                        ? "bg-rose-500 text-white shadow-md shadow-rose-500/10"
+                        : "bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-500/10 active:scale-95",
                 )}
               >
                 {accountForm.formState.isSubmitting ? (
