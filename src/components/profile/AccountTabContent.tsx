@@ -57,13 +57,19 @@ export default function AccountTabContent() {
     }
   }, [accountForm, user]);
 
+  const refreshCsrfToken = async () => {
+    const r = await fetch("/api/public/csrf-token");
+    const d = await r.json();
+    setCsrfToken(d.csrfToken || "");
+    return d.csrfToken || "";
+  };
+
   // Fetch CSRF Token on mount
   useEffect(() => {
     if (user) {
-      fetch("/api/public/csrf-token")
-        .then((r) => r.json())
-        .then((d) => setCsrfToken(d.csrfToken || ""));
+      refreshCsrfToken();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const handleSave = accountForm.handleSubmit(
@@ -88,8 +94,9 @@ export default function AccountTabContent() {
         });
         if (res.ok) {
           setSaveMsg("已保存");
-          // Refresh user context details immediately
+          // Refresh user context details and get a fresh CSRF token
           await refetch();
+          await refreshCsrfToken();
         } else {
           const d = await res.json();
           setSaveMsg(d.error || "保存失败");
@@ -121,6 +128,7 @@ export default function AccountTabContent() {
         if (res.ok) {
           setPwdMsg("密码修改成功");
           passwordForm.reset();
+          await refreshCsrfToken();
         } else {
           const d = await res.json();
           setPwdMsg(d.error || "修改失败");
