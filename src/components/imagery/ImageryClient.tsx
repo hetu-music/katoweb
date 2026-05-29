@@ -213,7 +213,7 @@ const WordItem = memo(function WordItem({
     <div
       className="relative"
       style={{
-        opacity: hasSelection ? (isSelected ? 1 : 0.08) : 1,
+        opacity: hasSelection ? (isSelected ? 1 : 0.06) : 1,
         transform: isSelected ? "scale(1.1)" : "scale(1)",
         zIndex: isSelected ? 30 : undefined,
         transition:
@@ -479,7 +479,7 @@ export default function ImageryClient({ items, categories }: Props) {
           paletteText,
           paletteAccent,
           fontSize: calcFontSize(item.count, maxCount),
-          breatheDuration: 3.5 + (idx % 7) * 0.6,
+          breatheDuration: 5.5 + (idx % 7) * 0.6,
           breatheDelay: (idx % 13) * 0.35,
         };
       });
@@ -759,7 +759,7 @@ export default function ImageryClient({ items, categories }: Props) {
               <span
                 key={i}
                 className={`hero-title-char inline-block ${mounted ? "" : "opacity-0"}`}
-                style={{ animationDelay: `${i * 300}ms` }}
+                style={{ animationDelay: `${i * 400}ms` }}
               >
                 {char}
               </span>
@@ -767,7 +767,7 @@ export default function ImageryClient({ items, categories }: Props) {
           </h1>
           <p
             className={`font-serif text-base md:text-xl text-slate-500 dark:text-slate-400 tracking-[0.4em] pl-[0.4em] mb-3 ${mounted ? "hero-unroll" : "opacity-0"}`}
-            style={{ animationDelay: "1600ms" }}
+            style={{ animationDelay: "2200ms" }}
           >
             行过 {wordDisplayList.length} ，长歌踏雪去何方
           </p>
