@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import SongDetailClient from "@/components/detail/SongDetailClient";
-import { getSongById } from "@/lib/service-songs";
+import { getSongById } from "@/lib/server/service-songs";
 
 type PageProps = {
   params: Promise<{ id: string }>;

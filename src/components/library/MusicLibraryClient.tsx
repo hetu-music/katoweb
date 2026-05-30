@@ -4,10 +4,10 @@ import AppNavbar from "@/components/shared/AppNavbar";
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import Pagination from "@/components/shared/Pagination";
 import { useFavorites } from "@/context/FavoritesContext";
-import { useFilteredSongs } from "@/hooks/useFilteredSongs";
-import { useMouseDragScroll } from "@/hooks/useMouseDragScroll";
-import { useMusicLibraryState } from "@/hooks/useMusicLibraryState";
-import { useScrollTop } from "@/hooks/useScrollTop";
+import { useFilteredSongs } from "@/hooks/library/useFilteredSongs";
+import { useMouseDragScroll } from "@/hooks/ui/useMouseDragScroll";
+import { useMusicLibraryState } from "@/hooks/library/useMusicLibraryState";
+import { useScrollTop } from "@/hooks/ui/useScrollTop";
 import {
   DEFAULT_MUSIC_LIBRARY_VIEW_MODE,
   FILTER_OPTION_ALL,
@@ -15,12 +15,11 @@ import {
   type MusicLibraryViewMode,
 } from "@/lib/constants";
 import type { MusicLibraryClientProps } from "@/lib/types";
-import { cn } from "@/lib/utils";
-import { extractLyricsSnippet } from "@/hooks/useLyricsIndex";
-import { calculateFilterOptions } from "@/lib/utils-song";
+import { cn } from "@/lib/utils/utils";
+import { extractLyricsSnippet } from "@/hooks/library/useLyricsIndex";
+import { calculateFilterOptions } from "@/lib/utils/utils-song";
 import {
   Disc,
-  Heart,
   LayoutGrid,
   List,
   Mic2,
@@ -439,14 +438,9 @@ export default function MusicLibraryClient({
                   <div className="mb-2 hidden border-b border-slate-100 px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:border-slate-800 md:flex">
                     <div className="mr-6 w-16">Cover</div>
                     <div className="grow">Title / Lyricist / Composer</div>
-                    {isLoggedIn && (
-                      <div className="ml-8 flex w-8 items-center justify-center">
-                        <Heart
-                          size={12}
-                          className="text-slate-300 dark:text-slate-600"
-                        />
-                      </div>
-                    )}
+                    <div className="ml-8 w-8" />
+                    <div className="ml-8 w-8" />
+                    {isLoggedIn && <div className="ml-8 w-8" />}
                     <div className="ml-8 w-24 text-center">Type</div>
                     <div className="ml-8 w-24 text-center">Genre</div>
                     <div className="ml-8 w-16">Year</div>

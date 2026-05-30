@@ -4,11 +4,11 @@ import {
   apiCreateImageryCategory,
   apiDeleteImageryCategory,
   apiUpdateImageryCategory,
-} from "@/lib/client-api";
-import { toCategoryPayload } from "@/lib/imagery-form";
+} from "@/lib/api/client-api";
+import { toCategoryPayload } from "@/lib/forms/imagery-form";
 import type { ImageryCategory } from "@/lib/types";
 import { useCallback, useMemo, useState } from "react";
-import type { CategoryFormValues } from "@/lib/imagery-form";
+import type { CategoryFormValues } from "@/lib/forms/imagery-form";
 import type { ModalState } from "./types";
 import { buildTree, getCategoryPath } from "./utils";
 

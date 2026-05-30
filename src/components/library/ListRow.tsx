@@ -2,9 +2,9 @@
 
 import { useFavorites } from "@/context/FavoritesContext";
 import type { Song } from "@/lib/types";
-import { cn } from "@/lib/utils";
-import { formatTime } from "@/lib/utils-common";
-import { getCoverUrl } from "@/lib/utils-song";
+import { cn } from "@/lib/utils/utils";
+import { formatTime } from "@/lib/utils/utils-common";
+import { getCoverUrl } from "@/lib/utils/utils-song";
 import { Calendar, Clock, Heart } from "lucide-react";
 import type React from "react";
 import CoverArt from "./CoverArt";
@@ -74,6 +74,26 @@ export default function ListRow({
       </div>
 
       <div className="hidden shrink-0 items-center gap-8 text-sm text-slate-500 dark:text-slate-400 md:flex">
+        <div className="flex w-8 items-center justify-center">
+          <PlayButton
+            songId={song.id}
+            title={song.title}
+            artist={song.artist?.join(" / ")}
+            coverUrl={getCoverUrl(song)}
+            hasAudio={song.has_audio}
+            className="opacity-0 group-hover:opacity-100"
+          />
+        </div>
+        <div className="flex w-8 items-center justify-center">
+          <EnqueueButton
+            songId={song.id}
+            title={song.title}
+            artist={song.artist?.join(" / ")}
+            coverUrl={getCoverUrl(song)}
+            hasAudio={song.has_audio}
+            className="opacity-0 group-hover:opacity-100"
+          />
+        </div>
         {isLoggedIn && (
           <div className="flex w-8 items-center justify-center">
             <button
@@ -104,40 +124,10 @@ export default function ListRow({
           <Clock size={14} />
           {formatTime(song.length)}
         </div>
-        <EnqueueButton
-          songId={song.id}
-          title={song.title}
-          artist={song.artist?.join(" / ")}
-          coverUrl={getCoverUrl(song)}
-          hasAudio={song.has_audio}
-          className="opacity-0 group-hover:opacity-100"
-        />
-        <PlayButton
-          songId={song.id}
-          title={song.title}
-          artist={song.artist?.join(" / ")}
-          coverUrl={getCoverUrl(song)}
-          hasAudio={song.has_audio}
-          className="opacity-0 group-hover:opacity-100"
-        />
       </div>
 
       {isLoggedIn && (
-        <div className="ml-2 flex shrink-0 items-center gap-1 md:hidden">
-          <PlayButton
-            songId={song.id}
-            title={song.title}
-            artist={song.artist?.join(" / ")}
-            coverUrl={getCoverUrl(song)}
-            hasAudio={song.has_audio}
-          />
-          <EnqueueButton
-            songId={song.id}
-            title={song.title}
-            artist={song.artist?.join(" / ")}
-            coverUrl={getCoverUrl(song)}
-            hasAudio={song.has_audio}
-          />
+        <div className="ml-2 flex shrink-0 items-center md:hidden">
           <button
             onClick={(event) => {
               event.stopPropagation();
@@ -149,7 +139,7 @@ export default function ListRow({
               "rounded-lg p-2 transition-all duration-200",
               active
                 ? "text-rose-500"
-                : "text-slate-400 hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 dark:text-slate-500 lg:opacity-0 lg:group-hover:opacity-100",
+                : "text-slate-400 hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 dark:text-slate-500",
             )}
           >
             <Heart size={16} className={active ? "fill-current" : ""} />

@@ -7,7 +7,7 @@ import {
   imageryFormSchema,
   categoryFormSchema,
   type ImageryFormValues,
-} from "@/lib/imagery-form";
+} from "@/lib/forms/imagery-form";
 import type { ImageryCategory } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, Loader2, X } from "lucide-react";

@@ -10,7 +10,7 @@ import {
   Play,
   Check,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
 import { usePlayerStore } from "@/store/player-store";
 import type { PlayerTrack } from "@/store/player-store";
 

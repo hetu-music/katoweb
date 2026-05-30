@@ -1,8 +1,8 @@
 "use client";
 
-import { apiGetUsers, apiUpdateUser } from "@/lib/client-api";
+import { apiGetUsers, apiUpdateUser } from "@/lib/api/client-api";
 import type { UserRecord, UserUpdatePayload } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
 import {
   Check,
   ChevronDown,

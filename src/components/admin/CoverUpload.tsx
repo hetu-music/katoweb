@@ -9,7 +9,7 @@ import {
   FileX,
   Loader2,
 } from "lucide-react";
-import { apiCheckFileExists } from "@/lib/client-api";
+import { apiCheckFileExists } from "@/lib/api/client-api";
 
 interface CoverUploadProps {
   songId?: number;

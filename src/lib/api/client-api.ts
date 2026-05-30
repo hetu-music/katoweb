@@ -1,5 +1,5 @@
 // Admin 管理页面 API 封装
-import type { Song, UserRecord, UserUpdatePayload } from "./types";
+import type { Song, UserRecord, UserUpdatePayload } from "@/lib/types";
 
 // 新增歌曲
 export async function apiCreateSong(song: Partial<Song>, csrfToken: string) {
@@ -49,31 +49,6 @@ export async function apiChangePassword(
       "x-csrf-token": csrfToken,
     },
     body: JSON.stringify({ oldPassword, newPassword }),
-  });
-  return res.json();
-}
-
-// 获取 display name
-export async function apiGetDisplayName() {
-  const res = await fetch("/api/auth/account");
-  return res.json();
-}
-
-// 更新 display name
-export async function apiUpdateDisplayName(
-  displayName: string,
-  csrfToken: string,
-  display?: boolean,
-) {
-  const body: { displayName: string; display?: boolean } = { displayName };
-  if (typeof display === "boolean") body.display = display;
-  const res = await fetch("/api/auth/account", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-csrf-token": csrfToken,
-    },
-    body: JSON.stringify(body),
   });
   return res.json();
 }
@@ -240,13 +215,6 @@ export async function apiDeleteImageryCategory(id: number, csrfToken: string) {
 }
 
 // ─── Imagery meanings API ──────────────────────────────────────────────────────
-
-export async function apiGetImageryMeanings(imageryId: number) {
-  void imageryId;
-  const res = await fetch("/api/admin/meanings");
-  if (!res.ok) throw new Error("获取含义列表失败");
-  return res.json();
-}
 
 export async function apiGetMeanings() {
   const res = await fetch("/api/admin/meanings");
@@ -435,7 +403,7 @@ export async function apiUpdateUser(
 // ─── User Requests API ─────────────────────────────────────────────────────────
 
 export async function apiGetMyRequests(): Promise<{
-  requests: import("./types").UserRequest[];
+  requests: import("../types").UserRequest[];
 }> {
   const res = await fetch("/api/public/requests");
   if (!res.ok) throw new Error("获取请求列表失败");
@@ -443,9 +411,9 @@ export async function apiGetMyRequests(): Promise<{
 }
 
 export async function apiCreateRequest(
-  payload: import("./types").CreateRequestPayload,
+  payload: import("../types").CreateRequestPayload,
   csrfToken: string,
-): Promise<{ request: import("./types").UserRequest }> {
+): Promise<{ request: import("../types").UserRequest }> {
   const res = await fetch("/api/public/requests", {
     method: "POST",
     headers: {
@@ -464,7 +432,7 @@ export async function apiGetAdminRequests(params?: {
   status?: string;
   page?: number;
 }): Promise<{
-  requests: import("./types").UserRequest[];
+  requests: import("../types").UserRequest[];
   total: number;
   page: number;
   pageSize: number;
@@ -479,7 +447,7 @@ export async function apiGetAdminRequests(params?: {
 }
 
 export async function apiReplyRequest(
-  payload: import("./types").ReplyRequestPayload,
+  payload: import("../types").ReplyRequestPayload,
   csrfToken: string,
 ): Promise<{ success: boolean }> {
   const res = await fetch("/api/admin/requests", {

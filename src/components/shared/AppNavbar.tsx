@@ -2,7 +2,7 @@
 
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import { useUserContext } from "@/context/UserContext";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
 import { Info, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { forwardRef, useCallback } from "react";

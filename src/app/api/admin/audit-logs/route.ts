@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
-import { getServiceClient, TABLES } from "@/lib/supabase-server";
+import { withAuth, type AuthenticatedUser } from "@/lib/server/server-auth";
+import { getServiceClient, TABLES } from "@/lib/db/supabase-server";
 
 const PAGE_SIZE = 50;
 

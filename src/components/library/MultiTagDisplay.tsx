@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { getTypeTagStyle, getGenreTagStyle } from "@/lib/constants";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
 
 const MultiTagDisplay = ({
   tags,

@@ -3,7 +3,7 @@ import Loading from "@/components/shared/Loading";
 import {
   getImageryCategories,
   getImageryWithCounts,
-} from "@/lib/service-imagery";
+} from "@/lib/server/service-imagery";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 

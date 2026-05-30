@@ -2,7 +2,7 @@ import type {
   SearchResultItem,
   SearchResponse,
   AutoCompleteResponse,
-} from "@/lib/api-auto-complete";
+} from "@/lib/api/api-auto-complete";
 import {
   type MusicProvider,
   msToSeconds,

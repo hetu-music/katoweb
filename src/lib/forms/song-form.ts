@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { SongDetail } from "./types";
+import type { SongDetail } from "@/lib/types";
 
 const normalizeString = (value: unknown) =>
   typeof value === "string" ? value : value == null ? "" : String(value);

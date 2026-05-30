@@ -2,8 +2,8 @@ import {
   createRelationFormValues,
   relationFormSchema,
   type RelationFormValues,
-} from "@/lib/imagery-form";
-import type { OccurrenceWithSong } from "@/lib/service-imagery";
+} from "@/lib/forms/imagery-form";
+import type { OccurrenceWithSong } from "@/lib/server/service-imagery";
 import type { ImageryCategory, ImageryItem, ImageryMeaning } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronDown, ChevronRight, Edit2, Layers, Plus } from "lucide-react";

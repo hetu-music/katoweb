@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
-import type { DetailResponse } from "@/lib/api-auto-complete";
+import { withAuth, type AuthenticatedUser } from "@/lib/server/server-auth";
+import type { DetailResponse } from "@/lib/api/api-auto-complete";
 import {
   neteaseProvider,
   kugouProvider,

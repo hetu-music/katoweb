@@ -1,14 +1,14 @@
 "use client";
 
 import { useUserContext } from "@/context/UserContext";
-import { useCsrfToken } from "@/hooks/useCsrfToken";
+import { useCsrfToken } from "@/hooks/utils/useCsrfToken";
 import {
   profileAccountFormSchema,
   profilePasswordFormSchema,
   type ProfileAccountFormValues,
   type ProfilePasswordFormValues,
-} from "@/lib/profile-form";
-import { cn } from "@/lib/utils";
+} from "@/lib/forms/profile-form";
+import { cn } from "@/lib/utils/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";

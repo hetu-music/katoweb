@@ -1,6 +1,6 @@
 import Loading from "@/components/shared/Loading";
 import QjtxClient from "@/components/story/qjtx/QjtxClient";
-import { getQjtxTimeline } from "@/lib/service-story";
+import { getQjtxTimeline } from "@/lib/server/service-story";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 

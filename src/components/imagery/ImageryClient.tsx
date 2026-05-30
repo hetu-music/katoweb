@@ -3,7 +3,7 @@
 import About from "@/components/library/About";
 import AppNavbar from "@/components/shared/AppNavbar";
 import { usePlayerStore } from "@/store/player-store";
-import { useIsDesktop } from "@/hooks/useIsDesktop";
+import { useIsDesktop } from "@/hooks/ui/useIsDesktop";
 import type { ImageryCategory, ImageryItem } from "@/lib/types";
 import { useIntersection } from "@mantine/hooks";
 import { useQuery } from "@tanstack/react-query";

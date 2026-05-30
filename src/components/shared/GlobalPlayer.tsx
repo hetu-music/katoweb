@@ -1,14 +1,14 @@
 "use client";
 
 import { usePlayerStore } from "@/store/player-store";
-import { usePlayerTime } from "@/hooks/usePlayerTime";
+import { usePlayerTime } from "@/hooks/player/usePlayerTime";
 import {
   formatPlayerTime,
   getCurrentLrcIndex,
   parseLrc,
-} from "@/lib/player-utils";
-import { getAudio } from "@/lib/audio-engine";
-import { cn } from "@/lib/utils";
+} from "@/lib/player/player-utils";
+import { getAudio } from "@/lib/player/audio-engine";
+import { cn } from "@/lib/utils/utils";
 import {
   AlertCircle,
   Loader2,
@@ -129,19 +129,20 @@ export default function GlobalPlayer() {
   const volumeRefMobile = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!showVolume) return;
-    const handler = (e: MouseEvent) => {
-      const isClickInsideDesktop = volumeRef.current?.contains(
-        e.target as Node,
-      );
-      const isClickInsideMobile = volumeRefMobile.current?.contains(
-        e.target as Node,
-      );
+    const handler = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as Node;
+      const isClickInsideDesktop = volumeRef.current?.contains(target);
+      const isClickInsideMobile = volumeRefMobile.current?.contains(target);
       if (!isClickInsideDesktop && !isClickInsideMobile) {
         setShowVolume(false);
       }
     };
     document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    document.addEventListener("touchstart", handler);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("touchstart", handler);
+    };
   }, [showVolume]);
 
   // ── LRC 歌词 ──────────────────────────────────────────────────────────────
@@ -320,22 +321,25 @@ export default function GlobalPlayer() {
           <div
             ref={trackRef}
             className={cn(
-              "absolute top-0 left-0 right-0 h-1 cursor-pointer bg-slate-200 dark:bg-slate-700/50 rounded-t-2xl overflow-hidden pointer-events-auto",
-              "group/prog hover:h-1.5 transition-all duration-150",
+              "absolute top-0 left-0 right-0 cursor-pointer pointer-events-auto [touch-action:none]",
+              "group/prog",
               !duration && "pointer-events-none opacity-40",
             )}
+            style={{ paddingBottom: "12px" }}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerUp}
           >
-            <div
-              className="absolute left-0 top-0 h-full bg-blue-500 rounded-r-full"
-              style={{
-                width:
-                  duration > 0 ? `${(displayTime / duration) * 100}%` : "0%",
-              }}
-            />
+            <div className="h-1 bg-slate-200 dark:bg-slate-700/50 rounded-t-2xl overflow-hidden group-hover/prog:h-1.5 transition-all duration-150">
+              <div
+                className="h-full bg-blue-500 rounded-r-full"
+                style={{
+                  width:
+                    duration > 0 ? `${(displayTime / duration) * 100}%` : "0%",
+                }}
+              />
+            </div>
           </div>
         </div>
 
@@ -637,7 +641,7 @@ export default function GlobalPlayer() {
                 </span>
 
                 <div
-                  className="relative w-6 h-28 flex justify-center cursor-pointer select-none group/vol-area"
+                  className="relative w-6 h-28 flex justify-center cursor-pointer select-none group/vol-area [touch-action:none]"
                   onPointerDown={(e) => handleVolPointerDown(e, volTrackRef)}
                   onPointerMove={handleVolPointerMove}
                   onPointerUp={handleVolPointerUp}
@@ -975,7 +979,7 @@ export default function GlobalPlayer() {
                   </span>
 
                   <div
-                    className="relative w-6 h-28 flex justify-center cursor-pointer select-none group/vol-area"
+                    className="relative w-10 h-28 flex justify-center cursor-pointer select-none group/vol-area [touch-action:none]"
                     onPointerDown={(e) =>
                       handleVolPointerDown(e, volTrackRefMobile)
                     }
@@ -985,18 +989,18 @@ export default function GlobalPlayer() {
                   >
                     <div
                       ref={volTrackRefMobile}
-                      className="relative w-1 h-full rounded-full bg-slate-200 dark:bg-slate-700/50 overflow-hidden group-hover/vol-area:bg-slate-300 dark:group-hover/vol-area:bg-slate-600 transition-colors"
+                      className="relative w-1.5 h-full rounded-full bg-slate-200 dark:bg-slate-700/50 overflow-hidden transition-colors"
                     >
                       <div
                         className="absolute bottom-0 left-0 right-0 bg-blue-500 rounded-full"
                         style={{ height: `${effectiveVolume * 100}%` }}
                       />
                     </div>
-                    {/* Knob handle */}
+                    {/* Knob handle - always visible on mobile */}
                     <div
-                      className="absolute left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border border-slate-200 shadow-md pointer-events-none scale-0 group-hover/vol-area:scale-100 transition-transform duration-150"
+                      className="absolute left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-white border border-slate-200 shadow-md pointer-events-none"
                       style={{
-                        bottom: `calc(${effectiveVolume * 100}% - 6px)`,
+                        bottom: `calc(${effectiveVolume * 100}% - 8px)`,
                       }}
                     />
                   </div>

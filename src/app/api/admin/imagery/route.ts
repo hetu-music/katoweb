@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
-import { getImageryWithCounts, createImagery } from "@/lib/service-imagery";
-import { createSupabaseServerClient } from "@/lib/supabase-auth";
+import { withAuth, type AuthenticatedUser } from "@/lib/server/server-auth";
+import { getImageryWithCounts, createImagery } from "@/lib/server/service-imagery";
+import { createSupabaseServerClient } from "@/lib/db/supabase-auth";
 import { z } from "zod";
 
 const CreateImagerySchema = z.object({

@@ -1,4 +1,4 @@
-import { getSongs } from "@/lib/service-songs";
+import { getSongs } from "@/lib/server/service-songs";
 import type { MetadataRoute } from "next";
 
 const SITE_URL = "https://hetu-music.com";

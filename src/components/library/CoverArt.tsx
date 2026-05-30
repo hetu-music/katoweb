@@ -1,8 +1,8 @@
 "use client";
 
 import type { Song } from "@/lib/types";
-import { cn } from "@/lib/utils";
-import { getCoverUrl } from "@/lib/utils-song";
+import { cn } from "@/lib/utils/utils";
+import { getCoverUrl } from "@/lib/utils/utils-song";
 import Image from "next/image";
 
 interface CoverArtProps {

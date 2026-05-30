@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { uploadCoverFile, validateFile } from "@/lib/service-upload";
-import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
+import { uploadCoverFile, validateFile } from "@/lib/server/service-upload";
+import { withAuth, type AuthenticatedUser } from "@/lib/server/server-auth";
 
 export const POST = withAuth(
   async (request: NextRequest, _user: AuthenticatedUser) => {

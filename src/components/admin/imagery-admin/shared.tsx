@@ -1,6 +1,6 @@
 import type React from "react";
 import { Loader2, Search, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
 
 export { cn };
 

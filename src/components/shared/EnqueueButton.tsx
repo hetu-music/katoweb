@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Check, ListPlus } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
 import { usePlayerStore } from "@/store/player-store";
 import { useUserContext } from "@/context/UserContext";
 
@@ -50,8 +50,8 @@ export default function EnqueueButton({
       className={cn(
         "rounded-lg p-2 transition-all duration-200",
         alreadyInQueue || justAdded
-          ? "text-emerald-500 cursor-default"
-          : "text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10",
+          ? "text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 cursor-default"
+          : "text-slate-400 dark:text-slate-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10",
         className,
       )}
     >

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
-import { getServiceClient, fetchAll, TABLES } from "@/lib/supabase-server";
+import { withAuth, type AuthenticatedUser } from "@/lib/server/server-auth";
+import { getServiceClient, fetchAll, TABLES } from "@/lib/db/supabase-server";
 import type { UserRecord } from "@/lib/types";
 
 // ─── 更新字段 Zod schema ──────────────────────────────────────────────────────

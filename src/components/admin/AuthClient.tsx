@@ -8,7 +8,7 @@ import {
   otpFormSchema,
   type AuthFormValues,
   type OtpFormValues,
-} from "@/lib/auth-form";
+} from "@/lib/forms/auth-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Turnstile } from "@marsidev/react-turnstile";
 import {
