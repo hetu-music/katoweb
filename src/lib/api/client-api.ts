@@ -1,5 +1,5 @@
 // Admin 管理页面 API 封装
-import type { Song, UserRecord, UserUpdatePayload } from "./types";
+import type { Song, UserRecord, UserUpdatePayload } from "../types";
 
 // 新增歌曲
 export async function apiCreateSong(song: Partial<Song>, csrfToken: string) {
@@ -403,7 +403,7 @@ export async function apiUpdateUser(
 // ─── User Requests API ─────────────────────────────────────────────────────────
 
 export async function apiGetMyRequests(): Promise<{
-  requests: import("./types").UserRequest[];
+  requests: import("../types").UserRequest[];
 }> {
   const res = await fetch("/api/public/requests");
   if (!res.ok) throw new Error("获取请求列表失败");
@@ -411,9 +411,9 @@ export async function apiGetMyRequests(): Promise<{
 }
 
 export async function apiCreateRequest(
-  payload: import("./types").CreateRequestPayload,
+  payload: import("../types").CreateRequestPayload,
   csrfToken: string,
-): Promise<{ request: import("./types").UserRequest }> {
+): Promise<{ request: import("../types").UserRequest }> {
   const res = await fetch("/api/public/requests", {
     method: "POST",
     headers: {
@@ -432,7 +432,7 @@ export async function apiGetAdminRequests(params?: {
   status?: string;
   page?: number;
 }): Promise<{
-  requests: import("./types").UserRequest[];
+  requests: import("../types").UserRequest[];
   total: number;
   page: number;
   pageSize: number;
@@ -447,7 +447,7 @@ export async function apiGetAdminRequests(params?: {
 }
 
 export async function apiReplyRequest(
-  payload: import("./types").ReplyRequestPayload,
+  payload: import("../types").ReplyRequestPayload,
   csrfToken: string,
 ): Promise<{ success: boolean }> {
   const res = await fetch("/api/admin/requests", {

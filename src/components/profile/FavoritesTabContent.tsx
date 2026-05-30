@@ -1,7 +1,7 @@
 "use client";
 
 import { useFavorites } from "@/context/FavoritesContext";
-import { getCoverUrl } from "@/lib/utils-song";
+import { getCoverUrl } from "@/lib/utils/utils-song";
 import PlayButton from "@/components/shared/PlayButton";
 import EnqueueButton from "@/components/shared/EnqueueButton";
 import { Heart, Loader2, Trash2 } from "lucide-react";

@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { getAudio } from "@/lib/audio-engine";
+import { getAudio } from "@/lib/player/audio-engine";
 
 // ─── 类型 ─────────────────────────────────────────────────────────────────────
 

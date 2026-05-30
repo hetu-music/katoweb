@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase-auth";
-import { getImageryCategories } from "@/lib/service-imagery";
+import { createSupabaseServerClient } from "@/lib/db/supabase-auth";
+import { getImageryCategories } from "@/lib/server/service-imagery";
 import ImageryAdminClient from "@/components/admin/ImageryAdminClient";
 import type { Metadata } from "next";
 

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
-import { createSupabaseServerClient } from "@/lib/supabase-auth";
-import { getServiceClient, TABLES } from "@/lib/supabase-server";
+import { withAuth, type AuthenticatedUser } from "@/lib/server/server-auth";
+import { createSupabaseServerClient } from "@/lib/db/supabase-auth";
+import { getServiceClient, TABLES } from "@/lib/db/supabase-server";
 
 // ─── 创建请求 schema ──────────────────────────────────────────────────────────
 

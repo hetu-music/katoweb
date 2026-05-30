@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSongs, createSong, updateSong } from "@/lib/service-songs";
-import { TABLES } from "@/lib/supabase-server";
-import { createSupabaseServerClient } from "@/lib/supabase-auth";
+import { getSongs, createSong, updateSong } from "@/lib/server/service-songs";
+import { TABLES } from "@/lib/db/supabase-server";
+import { createSupabaseServerClient } from "@/lib/db/supabase-auth";
 import { z } from "zod";
-import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
+import { withAuth, type AuthenticatedUser } from "@/lib/server/server-auth";
 
 //类型校验
 const SongSchema = z.object({

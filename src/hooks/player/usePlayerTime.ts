@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { getAudio } from "@/lib/audio-engine";
+import { getAudio } from "@/lib/player/audio-engine";
 import { usePlayerStore } from "@/store/player-store";
 
 export function usePlayerTime(): { currentTime: number; duration: number } {

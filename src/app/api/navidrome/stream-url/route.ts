@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
-import { createSupabaseServerClient } from "@/lib/supabase-auth";
-import { getServiceClient, TABLES } from "@/lib/supabase-server";
+import { withAuth, type AuthenticatedUser } from "@/lib/server/server-auth";
+import { createSupabaseServerClient } from "@/lib/db/supabase-auth";
+import { getServiceClient, TABLES } from "@/lib/db/supabase-server";
 import nodeCrypto from "crypto";
 
 function md5(input: string): string {

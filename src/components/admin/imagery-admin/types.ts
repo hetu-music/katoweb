@@ -1,4 +1,4 @@
-import type { OccurrenceWithSong } from "@/lib/service-imagery";
+import type { OccurrenceWithSong } from "@/lib/server/service-imagery";
 import type { ImageryCategory, ImageryItem } from "@/lib/types";
 
 export type Tab = "imagery" | "categories" | "meanings" | "occurrences";

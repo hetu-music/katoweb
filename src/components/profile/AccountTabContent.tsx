@@ -8,7 +8,7 @@ import {
   type ProfileAccountFormValues,
   type ProfilePasswordFormValues,
 } from "@/lib/forms/profile-form";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";

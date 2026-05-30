@@ -5,7 +5,7 @@ import {
   apiDeleteImagery,
   apiGetImageryItems,
   apiUpdateImagery,
-} from "@/lib/client-api";
+} from "@/lib/api/client-api";
 import type { ImageryItem } from "@/lib/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ImageryFormValues } from "@/lib/forms/imagery-form";

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Pause, Play } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
 import { usePlayerStore } from "@/store/player-store";
 import { useUserContext } from "@/context/UserContext";
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServiceClient, TABLES } from "@/lib/supabase-server";
-import { processLyricsForSearch } from "@/lib/utils-song";
+import { getServiceClient, TABLES } from "@/lib/db/supabase-server";
+import { processLyricsForSearch } from "@/lib/utils/utils-song";
 
 // 歌词索引 API - 仅返回 id 和处理后的纯文本歌词
 // 供前端异步拉取，用于本地歌词全文搜索

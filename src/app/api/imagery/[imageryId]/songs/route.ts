@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSongsForImagery } from "@/lib/service-imagery";
+import { getSongsForImagery } from "@/lib/server/service-imagery";
 
 export async function GET(
   _req: NextRequest,

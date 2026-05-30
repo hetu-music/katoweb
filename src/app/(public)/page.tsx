@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import MusicLibraryClient from "@/components/library/MusicLibraryClient";
-import { getSongs } from "@/lib/service-songs";
+import { getSongs } from "@/lib/server/service-songs";
 import { Song } from "@/lib/types";
 import Loading from "@/components/shared/Loading";
 import ErrorState from "@/components/shared/Error";

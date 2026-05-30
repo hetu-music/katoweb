@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
+import { withAuth, type AuthenticatedUser } from "@/lib/server/server-auth";
 import {
   getImageryCategories,
   createImageryCategory,
-} from "@/lib/service-imagery";
-import { createSupabaseServerClient } from "@/lib/supabase-auth";
+} from "@/lib/server/service-imagery";
+import { createSupabaseServerClient } from "@/lib/db/supabase-auth";
 import { z } from "zod";
 
 const CreateCategorySchema = z.object({

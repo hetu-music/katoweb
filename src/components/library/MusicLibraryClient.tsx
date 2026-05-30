@@ -15,9 +15,9 @@ import {
   type MusicLibraryViewMode,
 } from "@/lib/constants";
 import type { MusicLibraryClientProps } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
 import { extractLyricsSnippet } from "@/hooks/library/useLyricsIndex";
-import { calculateFilterOptions } from "@/lib/utils-song";
+import { calculateFilterOptions } from "@/lib/utils/utils-song";
 import {
   Disc,
   LayoutGrid,

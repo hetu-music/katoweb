@@ -3,10 +3,10 @@ import {
   getUserClient,
   fetchAll,
   TABLES,
-} from "./supabase-server";
-import { Song, SongDetail, SONG_LIST_VIEW_FIELDS } from "./types";
-import { mapAndSortSongs } from "./utils-song";
-import { processLyrics } from "./utils-lyrics";
+} from "../db/supabase-server";
+import { Song, SongDetail, SONG_LIST_VIEW_FIELDS } from "../types";
+import { mapAndSortSongs } from "../utils/utils-song";
+import { processLyrics } from "../utils/utils-lyrics";
 
 /**
  * 获取所有歌曲数据

@@ -11,7 +11,7 @@ import {
   calculateFilterOptions,
   createFuseInstance,
   filterSongs,
-} from "@/lib/utils-song";
+} from "@/lib/utils/utils-song";
 import { useLyricsIndex } from "./useLyricsIndex";
 
 interface UseFilteredSongsOptions {

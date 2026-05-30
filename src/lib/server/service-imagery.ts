@@ -3,14 +3,14 @@ import {
   getUserClient,
   fetchAll,
   TABLES,
-} from "./supabase-server";
+} from "../db/supabase-server";
 import type {
   ImageryCategory,
   ImageryItem,
   ImageryMeaning,
   ImageryOccurrence,
   SongRef,
-} from "./types";
+} from "../types";
 
 // Suppress unused import warnings — these types are re-exported or used transitively
 void (undefined as unknown as ImageryOccurrence);

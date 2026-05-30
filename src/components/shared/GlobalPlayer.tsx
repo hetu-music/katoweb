@@ -6,9 +6,9 @@ import {
   formatPlayerTime,
   getCurrentLrcIndex,
   parseLrc,
-} from "@/lib/player-utils";
-import { getAudio } from "@/lib/audio-engine";
-import { cn } from "@/lib/utils";
+} from "@/lib/player/player-utils";
+import { getAudio } from "@/lib/player/audio-engine";
+import { cn } from "@/lib/utils/utils";
 import {
   AlertCircle,
   Loader2,

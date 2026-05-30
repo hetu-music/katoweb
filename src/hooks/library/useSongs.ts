@@ -6,7 +6,7 @@ import {
   mapAndSortSongs,
   filterSongs,
   createFuseInstance,
-} from "@/lib/utils-song";
+} from "@/lib/utils/utils-song";
 
 export function useSongs(
   initialSongs: SongDetail[],

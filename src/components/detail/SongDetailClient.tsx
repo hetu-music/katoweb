@@ -11,8 +11,8 @@ import { useScrollTop } from "@/hooks/ui/useScrollTop";
 import { useUserContext } from "@/context/UserContext";
 import { getGenreTagStyle, getTypeTagStyle } from "@/lib/constants";
 import { SongDetailClientProps } from "@/lib/types";
-import { cn } from "@/lib/utils";
-import { calculateSongInfo, getCoverUrl, getNmnUrl } from "@/lib/utils-song";
+import { cn } from "@/lib/utils/utils";
+import { calculateSongInfo, getCoverUrl, getNmnUrl } from "@/lib/utils/utils-song";
 import {
   ArrowLeft,
   Disc,

@@ -1,9 +1,9 @@
 "use client";
 
-import { apiCreateRequest, apiGetMyRequests } from "@/lib/client-api";
+import { apiCreateRequest, apiGetMyRequests } from "@/lib/api/client-api";
 import { useCsrfToken } from "@/hooks/utils/useCsrfToken";
 import type { UserRequest, RequestType, RequestStatus } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
 import {
   Check,
   ChevronDown,

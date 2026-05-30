@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { clearAuthCookies } from "@/lib/server-utils";
-import { createSupabaseServerClient } from "@/lib/supabase-auth";
-import { withAuth, type AuthenticatedUser } from "@/lib/server-auth";
+import { clearAuthCookies } from "@/lib/server/server-utils";
+import { createSupabaseServerClient } from "@/lib/db/supabase-auth";
+import { withAuth, type AuthenticatedUser } from "@/lib/server/server-auth";
 
 export const POST = withAuth(
   async (_request: NextRequest, _user: AuthenticatedUser) => {

@@ -5,7 +5,7 @@ import {
   apiDeleteGlobalMeaning,
   apiGetMeanings,
   apiUpdateGlobalMeaning,
-} from "@/lib/client-api";
+} from "@/lib/api/client-api";
 import { toMeaningPayload } from "@/lib/forms/imagery-form";
 import type { MeaningFormValues } from "@/lib/forms/imagery-form";
 import type { ImageryMeaning } from "@/lib/types";

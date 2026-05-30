@@ -1,5 +1,5 @@
-import { verifyCSRFToken } from "@/lib/server-utils";
-import { createSupabaseServerClient } from "@/lib/supabase-auth";
+import { verifyCSRFToken } from "@/lib/server/server-utils";
+import { createSupabaseServerClient } from "@/lib/db/supabase-auth";
 import { NextRequest, NextResponse } from "next/server";
 
 /**

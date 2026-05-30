@@ -1,8 +1,8 @@
 "use client";
 
-import { apiGetAdminRequests, apiReplyRequest } from "@/lib/client-api";
+import { apiGetAdminRequests, apiReplyRequest } from "@/lib/api/client-api";
 import type { UserRequest, RequestStatus, RequestType } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
 import {
   Check,
   ChevronDown,

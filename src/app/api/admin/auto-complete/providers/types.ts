@@ -1,7 +1,7 @@
 import type {
   SearchResponse,
   AutoCompleteResponse,
-} from "@/lib/api-auto-complete";
+} from "@/lib/api/api-auto-complete";
 
 /**
  * 音乐搜索提供者接口

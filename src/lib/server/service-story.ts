@@ -1,4 +1,4 @@
-import { getServiceClient, TABLES } from "./supabase-server";
+import { getServiceClient, TABLES } from "../db/supabase-server";
 import { type TimelineEvent } from "@/components/story/qjtx/types";
 
 /** 数据库中 story_qjtx 表的行结构（平铺） */

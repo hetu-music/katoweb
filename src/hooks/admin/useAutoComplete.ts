@@ -8,7 +8,7 @@ import {
   type SearchResultItem,
   type MusicProviderType,
   type AutoCompleteResponse,
-} from "@/lib/api-auto-complete";
+} from "@/lib/api/api-auto-complete";
 
 // ============================================
 // 类型定义

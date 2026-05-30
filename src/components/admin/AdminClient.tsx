@@ -15,8 +15,8 @@ import { useSongs } from "@/hooks/library/useSongs";
 import {
   type MusicProviderType,
   type SearchResultItem,
-} from "@/lib/api-auto-complete";
-import { apiCreateSong, apiUpdateSong } from "@/lib/client-api";
+} from "@/lib/api/api-auto-complete";
+import { apiCreateSong, apiUpdateSong } from "@/lib/api/client-api";
 import { genreColorMap, songFields, typeColorMap } from "@/lib/constants";
 import {
   createEmptySongFormState,
@@ -32,9 +32,9 @@ import type {
   SongFieldConfig,
   SongFormFieldKey,
 } from "@/lib/types";
-import { cn } from "@/lib/utils";
-import { convertEmptyStringToNull, formatField } from "@/lib/utils-common";
-import { getCoverUrl } from "@/lib/utils-song";
+import { cn } from "@/lib/utils/utils";
+import { convertEmptyStringToNull, formatField } from "@/lib/utils/utils-common";
+import { getCoverUrl } from "@/lib/utils/utils-song";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   AlertCircle,

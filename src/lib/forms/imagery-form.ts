@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { OccurrenceWithSong } from "../service-imagery";
+import type { OccurrenceWithSong } from "../server/service-imagery";
 import type { ImageryCategory, ImageryItem, ImageryMeaning } from "../types";
 
 const normalizeString = (value: unknown) =>

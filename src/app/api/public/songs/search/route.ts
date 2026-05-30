@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth } from "@/lib/server-auth";
-import { getServiceClient, TABLES } from "@/lib/supabase-server";
+import { withAuth } from "@/lib/server/server-auth";
+import { getServiceClient, TABLES } from "@/lib/db/supabase-server";
 
 /**
  * GET /api/public/songs/search?q=关键词&limit=10

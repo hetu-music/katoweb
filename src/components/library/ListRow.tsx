@@ -2,9 +2,9 @@
 
 import { useFavorites } from "@/context/FavoritesContext";
 import type { Song } from "@/lib/types";
-import { cn } from "@/lib/utils";
-import { formatTime } from "@/lib/utils-common";
-import { getCoverUrl } from "@/lib/utils-song";
+import { cn } from "@/lib/utils/utils";
+import { formatTime } from "@/lib/utils/utils-common";
+import { getCoverUrl } from "@/lib/utils/utils-song";
 import { Calendar, Clock, Heart } from "lucide-react";
 import type React from "react";
 import CoverArt from "./CoverArt";

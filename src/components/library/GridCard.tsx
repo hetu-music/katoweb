@@ -3,8 +3,8 @@
 import { useFavorites } from "@/context/FavoritesContext";
 import { FILTER_OPTION_UNKNOWN, getTypeTagStyle } from "@/lib/constants";
 import type { Song } from "@/lib/types";
-import { cn } from "@/lib/utils";
-import { getCoverUrl } from "@/lib/utils-song";
+import { cn } from "@/lib/utils/utils";
+import { getCoverUrl } from "@/lib/utils/utils-song";
 import { Heart } from "lucide-react";
 import type React from "react";
 import CoverArt from "./CoverArt";
