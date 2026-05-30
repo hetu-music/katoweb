@@ -7,8 +7,8 @@ import {
   apiGetSongs,
   apiUpdateOccurrence,
 } from "@/lib/client-api";
-import { toRelationPayload } from "@/lib/imagery-form";
-import type { RelationFormValues } from "@/lib/imagery-form";
+import { toRelationPayload } from "@/lib/forms/imagery-form";
+import type { RelationFormValues } from "@/lib/forms/imagery-form";
 import type { OccurrenceWithSong } from "@/lib/service-imagery";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ModalState, RelationEditor, SongOption } from "./types";

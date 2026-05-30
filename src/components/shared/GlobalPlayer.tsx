@@ -1,7 +1,7 @@
 "use client";
 
 import { usePlayerStore } from "@/store/player-store";
-import { usePlayerTime } from "@/hooks/usePlayerTime";
+import { usePlayerTime } from "@/hooks/player/usePlayerTime";
 import {
   formatPlayerTime,
   getCurrentLrcIndex,

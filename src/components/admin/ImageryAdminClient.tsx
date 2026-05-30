@@ -1,7 +1,7 @@
 "use client";
 
 import ThemeToggle from "@/components/shared/ThemeToggle";
-import { useCsrfToken } from "@/hooks/useCsrfToken";
+import { useCsrfToken } from "@/hooks/utils/useCsrfToken";
 import type { ImageryCategory } from "@/lib/types";
 import {
   BookOpen,

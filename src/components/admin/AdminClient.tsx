@@ -3,15 +3,15 @@
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import Pagination from "@/components/shared/Pagination";
 import ThemeToggle from "@/components/shared/ThemeToggle";
-import { useCsrfToken } from "@/hooks/useCsrfToken";
-import { useScrollTop } from "@/hooks/useScrollTop";
-import { useSyncedQueryState } from "@/hooks/useSyncedQueryState";
+import { useCsrfToken } from "@/hooks/utils/useCsrfToken";
+import { useScrollTop } from "@/hooks/ui/useScrollTop";
+import { useSyncedQueryState } from "@/hooks/utils/useSyncedQueryState";
 import {
   mergeAutoCompleteData,
   useAutoComplete,
-} from "@/hooks/useAutoComplete";
+} from "@/hooks/admin/useAutoComplete";
 
-import { useSongs } from "@/hooks/useSongs";
+import { useSongs } from "@/hooks/library/useSongs";
 import {
   type MusicProviderType,
   type SearchResultItem,
@@ -25,7 +25,7 @@ import {
   toSongFormState,
   type SongArrayFieldItem,
   type SongFormStateValues,
-} from "@/lib/song-form";
+} from "@/lib/forms/song-form";
 import type {
   Song,
   SongDetail,

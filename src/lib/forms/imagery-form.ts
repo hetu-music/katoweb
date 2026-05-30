@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { OccurrenceWithSong } from "./service-imagery";
-import type { ImageryCategory, ImageryItem, ImageryMeaning } from "./types";
+import type { OccurrenceWithSong } from "../service-imagery";
+import type { ImageryCategory, ImageryItem, ImageryMeaning } from "../types";
 
 const normalizeString = (value: unknown) =>
   typeof value === "string" ? value : value == null ? "" : String(value);

@@ -2,7 +2,7 @@ import {
   createRelationFormValues,
   relationFormSchema,
   type RelationFormValues,
-} from "@/lib/imagery-form";
+} from "@/lib/forms/imagery-form";
 import type { OccurrenceWithSong } from "@/lib/service-imagery";
 import type { ImageryCategory, ImageryItem, ImageryMeaning } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";

@@ -14,7 +14,7 @@ import {
   type MusicLibraryViewMode,
   MUSIC_LIBRARY_VIEW_MODES,
 } from "@/lib/constants";
-import { useSyncedQueryState } from "./useSyncedQueryState";
+import { useSyncedQueryState } from "../utils/useSyncedQueryState";
 
 export interface MusicLibraryState {
   searchQuery: string;

@@ -6,8 +6,8 @@ import {
   apiGetMeanings,
   apiUpdateGlobalMeaning,
 } from "@/lib/client-api";
-import { toMeaningPayload } from "@/lib/imagery-form";
-import type { MeaningFormValues } from "@/lib/imagery-form";
+import { toMeaningPayload } from "@/lib/forms/imagery-form";
+import type { MeaningFormValues } from "@/lib/forms/imagery-form";
 import type { ImageryMeaning } from "@/lib/types";
 import { useEffect, useMemo, useState } from "react";
 import type { ModalState } from "./types";

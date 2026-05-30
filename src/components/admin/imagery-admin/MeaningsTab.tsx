@@ -2,7 +2,7 @@ import {
   createMeaningFormValues,
   meaningFormSchema,
   type MeaningFormValues,
-} from "@/lib/imagery-form";
+} from "@/lib/forms/imagery-form";
 import type { ImageryMeaning } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BookOpen, Edit2 } from "lucide-react";

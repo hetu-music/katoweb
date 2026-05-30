@@ -4,10 +4,10 @@ import AppNavbar from "@/components/shared/AppNavbar";
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import Pagination from "@/components/shared/Pagination";
 import { useFavorites } from "@/context/FavoritesContext";
-import { useFilteredSongs } from "@/hooks/useFilteredSongs";
-import { useMouseDragScroll } from "@/hooks/useMouseDragScroll";
-import { useMusicLibraryState } from "@/hooks/useMusicLibraryState";
-import { useScrollTop } from "@/hooks/useScrollTop";
+import { useFilteredSongs } from "@/hooks/library/useFilteredSongs";
+import { useMouseDragScroll } from "@/hooks/ui/useMouseDragScroll";
+import { useMusicLibraryState } from "@/hooks/library/useMusicLibraryState";
+import { useScrollTop } from "@/hooks/ui/useScrollTop";
 import {
   DEFAULT_MUSIC_LIBRARY_VIEW_MODE,
   FILTER_OPTION_ALL,
@@ -16,7 +16,7 @@ import {
 } from "@/lib/constants";
 import type { MusicLibraryClientProps } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { extractLyricsSnippet } from "@/hooks/useLyricsIndex";
+import { extractLyricsSnippet } from "@/hooks/library/useLyricsIndex";
 import { calculateFilterOptions } from "@/lib/utils-song";
 import {
   Disc,

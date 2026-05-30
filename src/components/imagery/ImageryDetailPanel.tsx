@@ -12,7 +12,7 @@ import {
   SheetDescription,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useIsDesktop } from "@/hooks/useIsDesktop";
+import { useIsDesktop } from "@/hooks/ui/useIsDesktop";
 import type { ImageryItem, SongRef } from "@/lib/types";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";

@@ -9,7 +9,7 @@ import FavoritesTabContent from "@/components/profile/FavoritesTabContent";
 import AccountTabContent from "@/components/profile/AccountTabContent";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import { useUserContext } from "@/context/UserContext";
-import { useCsrfToken } from "@/hooks/useCsrfToken";
+import { useCsrfToken } from "@/hooks/utils/useCsrfToken";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,

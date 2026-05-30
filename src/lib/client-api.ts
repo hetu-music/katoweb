@@ -53,31 +53,6 @@ export async function apiChangePassword(
   return res.json();
 }
 
-// 获取 display name
-export async function apiGetDisplayName() {
-  const res = await fetch("/api/auth/account");
-  return res.json();
-}
-
-// 更新 display name
-export async function apiUpdateDisplayName(
-  displayName: string,
-  csrfToken: string,
-  display?: boolean,
-) {
-  const body: { displayName: string; display?: boolean } = { displayName };
-  if (typeof display === "boolean") body.display = display;
-  const res = await fetch("/api/auth/account", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-csrf-token": csrfToken,
-    },
-    body: JSON.stringify(body),
-  });
-  return res.json();
-}
-
 // 获取账号信息（含 displayName, display, intro）
 export async function apiGetAccountInfo() {
   const res = await fetch("/api/auth/account");
@@ -240,13 +215,6 @@ export async function apiDeleteImageryCategory(id: number, csrfToken: string) {
 }
 
 // ─── Imagery meanings API ──────────────────────────────────────────────────────
-
-export async function apiGetImageryMeanings(imageryId: number) {
-  void imageryId;
-  const res = await fetch("/api/admin/meanings");
-  if (!res.ok) throw new Error("获取含义列表失败");
-  return res.json();
-}
 
 export async function apiGetMeanings() {
   const res = await fetch("/api/admin/meanings");
