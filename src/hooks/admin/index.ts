@@ -1,7 +1,4 @@
-export {
-  mergeAutoCompleteData,
-  useAutoComplete,
-} from "./useAutoComplete";
+export { mergeAutoCompleteData, useAutoComplete } from "./useAutoComplete";
 export type {
   AutoCompleteActions,
   AutoCompleteState,

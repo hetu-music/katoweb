@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyCSRFToken, verifyTurnstileToken } from "@/lib/server/server-utils";
+import {
+  verifyCSRFToken,
+  verifyTurnstileToken,
+} from "@/lib/server/server-utils";
 import { createSupabaseServerClient } from "@/lib/db/supabase-auth";
 
 export async function POST(request: NextRequest) {

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth, type AuthenticatedUser } from "@/lib/server/server-auth";
-import { getMeaningsForImagery, createMeaning } from "@/lib/server/service-imagery";
+import {
+  getMeaningsForImagery,
+  createMeaning,
+} from "@/lib/server/service-imagery";
 import { createSupabaseServerClient } from "@/lib/db/supabase-auth";
 import { z } from "zod";
 
