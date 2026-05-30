@@ -8,6 +8,7 @@ import {
   Home,
   Layers,
   ListTree,
+  Music,
   Plus,
   Search,
   Tag,
@@ -138,15 +139,23 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
     <div className="min-h-screen bg-[#FAFAFA] font-sans transition-colors duration-500 dark:bg-[#0B0F19]">
       <nav className="fixed left-0 right-0 top-0 z-50 border-b border-slate-200/50 bg-[#FAFAFA]/80 backdrop-blur-md dark:border-slate-800/50 dark:bg-[#0B0F19]/80">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-6">
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 rounded-lg p-1">
+          <div className="flex items-center gap-1.5 bg-slate-200/50 dark:bg-slate-900/50 backdrop-blur-md border border-slate-200/30 dark:border-slate-800/60 rounded-full p-1 shadow-inner relative">
+            {/* 歌曲管理 (当前未激活态) */}
             <Link
               href="/admin"
-              className="px-4 py-1.5 rounded-md text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+              className="group relative flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium tracking-wide text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/40 hover:shadow-xs transition-all duration-300"
             >
-              歌曲管理
+              <Music
+                size={14}
+                className="text-slate-400 dark:text-slate-500 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-300 group-hover:scale-110"
+              />
+              <span>歌曲管理</span>
             </Link>
-            <span className="px-4 py-1.5 rounded-md text-sm font-medium bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm">
-              意象管理
+
+            {/* 意象管理 (当前激活态 - 紫色主题) */}
+            <span className="relative flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium tracking-wide bg-linear-to-r from-violet-600 to-fuchsia-600 dark:from-violet-500 dark:to-fuchsia-500 text-white shadow-md shadow-violet-500/20 dark:shadow-violet-500/10 transition-all select-none">
+              <Tag size={14} className="animate-pulse" />
+              <span>意象管理</span>
             </span>
           </div>
           <div className="flex items-center gap-1">

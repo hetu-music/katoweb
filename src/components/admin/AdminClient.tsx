@@ -3,13 +3,13 @@
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import Pagination from "@/components/shared/Pagination";
 import ThemeToggle from "@/components/shared/ThemeToggle";
-import { useCsrfToken } from "@/hooks/utils/useCsrfToken";
-import { useScrollTop } from "@/hooks/ui/useScrollTop";
-import { useSyncedQueryState } from "@/hooks/utils/useSyncedQueryState";
 import {
   mergeAutoCompleteData,
   useAutoComplete,
 } from "@/hooks/admin/useAutoComplete";
+import { useScrollTop } from "@/hooks/ui/useScrollTop";
+import { useCsrfToken } from "@/hooks/utils/useCsrfToken";
+import { useSyncedQueryState } from "@/hooks/utils/useSyncedQueryState";
 
 import { useSongs } from "@/hooks/library/useSongs";
 import {
@@ -47,9 +47,11 @@ import {
   Eye,
   EyeOff,
   Home,
+  Music,
   Plus,
   Save,
   Search,
+  Tag,
   User,
   Wand2,
   X,
@@ -62,10 +64,10 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Controller,
   FormProvider,
-  type Resolver,
   useFieldArray,
   useForm,
   useFormContext,
+  type Resolver,
 } from "react-hook-form";
 import CoverUpload from "./CoverUpload";
 import Notification from "./Notification";
@@ -649,15 +651,23 @@ export default function AdminClientComponent({
       {/* Navbar to match MusicLibraryClient */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 rounded-lg p-1">
-            <span className="px-4 py-1.5 rounded-md text-sm font-medium bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm">
-              歌曲管理
+          <div className="flex items-center gap-1.5 bg-slate-200/50 dark:bg-slate-900/50 backdrop-blur-md border border-slate-200/30 dark:border-slate-800/60 rounded-full p-1 shadow-inner relative">
+            {/* 歌曲管理 (当前激活态 - 蓝色主题) */}
+            <span className="relative flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium tracking-wide bg-linear-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 text-white shadow-md shadow-blue-500/20 dark:shadow-blue-500/10 transition-all select-none">
+              <Music size={14} className="animate-pulse" />
+              <span>歌曲管理</span>
             </span>
+
+            {/* 意象管理 (当前未激活态) */}
             <Link
               href="/admin/imagery"
-              className="px-4 py-1.5 rounded-md text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+              className="group relative flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium tracking-wide text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/40 hover:shadow-xs transition-all duration-300"
             >
-              意象管理
+              <Tag
+                size={14}
+                className="text-slate-400 dark:text-slate-500 group-hover:text-violet-500 dark:group-hover:text-violet-400 transition-colors duration-300 group-hover:scale-110"
+              />
+              <span>意象管理</span>
             </Link>
           </div>
           <div className="flex items-center gap-1">
@@ -692,7 +702,7 @@ export default function AdminClientComponent({
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
             <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-50 mb-4">
-              Dashboard
+              歌曲管理
             </h1>
             <div className="flex flex-wrap gap-3">
               <div className="px-3 py-1 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-sm font-medium border border-blue-100 dark:border-blue-800">
