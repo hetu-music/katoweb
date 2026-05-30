@@ -59,7 +59,7 @@ export default function PlayButton({
       {isThisPlaying ? (
         <Pause size={size} className="fill-current" />
       ) : (
-        <Play size={size} className="fill-current translate-x-px" />
+        <Play size={size} className="fill-current" />
       )}
     </button>
   );
