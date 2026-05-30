@@ -20,9 +20,12 @@ const AppNavbar = forwardRef<HTMLElement, AppNavbarProps>(function AppNavbar(
   ref,
 ) {
   const router = useRouter();
-  const { user } = useUserContext();
+  const { user, loaded } = useUserContext();
 
   const openUserPanel = useCallback(() => {
+    // 登录状态尚未同步完成，忽略点击，避免误跳转到登录页
+    if (!loaded) return;
+
     if (!user) {
       const next = encodeURIComponent(
         window.location.pathname + window.location.search,
@@ -37,7 +40,7 @@ const AppNavbar = forwardRef<HTMLElement, AppNavbarProps>(function AppNavbar(
     );
     sessionStorage.setItem("__katoweb_nav_depth", String(navDepth + 1));
     router.push("/profile?tab=favorites");
-  }, [router, user]);
+  }, [router, user, loaded]);
 
   return (
     <nav
@@ -67,8 +70,9 @@ const AppNavbar = forwardRef<HTMLElement, AppNavbarProps>(function AppNavbar(
           )}
           <button
             onClick={openUserPanel}
-            className="relative rounded-full p-2 text-slate-600 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800"
-            title={user ? user.name : "登录"}
+            className="relative rounded-full p-2 text-slate-600 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-wait"
+            title={!loaded ? "加载中…" : user ? user.name : "登录"}
+            disabled={!loaded}
           >
             <User
               size={20}
