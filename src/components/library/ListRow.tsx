@@ -74,6 +74,26 @@ export default function ListRow({
       </div>
 
       <div className="hidden shrink-0 items-center gap-8 text-sm text-slate-500 dark:text-slate-400 md:flex">
+        <div className="flex w-8 items-center justify-center">
+          <PlayButton
+            songId={song.id}
+            title={song.title}
+            artist={song.artist?.join(" / ")}
+            coverUrl={getCoverUrl(song)}
+            hasAudio={song.has_audio}
+            className="opacity-0 group-hover:opacity-100"
+          />
+        </div>
+        <div className="flex w-8 items-center justify-center">
+          <EnqueueButton
+            songId={song.id}
+            title={song.title}
+            artist={song.artist?.join(" / ")}
+            coverUrl={getCoverUrl(song)}
+            hasAudio={song.has_audio}
+            className="opacity-0 group-hover:opacity-100"
+          />
+        </div>
         {isLoggedIn && (
           <div className="flex w-8 items-center justify-center">
             <button
@@ -104,22 +124,6 @@ export default function ListRow({
           <Clock size={14} />
           {formatTime(song.length)}
         </div>
-        <EnqueueButton
-          songId={song.id}
-          title={song.title}
-          artist={song.artist?.join(" / ")}
-          coverUrl={getCoverUrl(song)}
-          hasAudio={song.has_audio}
-          className="opacity-0 group-hover:opacity-100"
-        />
-        <PlayButton
-          songId={song.id}
-          title={song.title}
-          artist={song.artist?.join(" / ")}
-          coverUrl={getCoverUrl(song)}
-          hasAudio={song.has_audio}
-          className="opacity-0 group-hover:opacity-100"
-        />
       </div>
 
       {isLoggedIn && (

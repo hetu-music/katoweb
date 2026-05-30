@@ -52,7 +52,7 @@ export default function PlayButton({
         "rounded-lg p-2 transition-all duration-200",
         isThisPlaying
           ? "text-blue-500 bg-blue-50 dark:bg-blue-500/10"
-          : "text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10",
+          : "text-slate-400 dark:text-slate-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10",
         className,
       )}
     >
