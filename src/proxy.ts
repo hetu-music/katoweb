@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { createSupabaseMiddlewareClient } from "./lib/db/supabase-auth";
+import { createSupabaseMiddlewareClient } from "@/lib/db/supabase-auth";
 
 export async function proxy(request: NextRequest) {
   // Generate a random nonce for CSP

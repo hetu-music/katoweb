@@ -1,5 +1,5 @@
 // Admin 管理页面 API 封装
-import type { Song, UserRecord, UserUpdatePayload } from "../types";
+import type { Song, UserRecord, UserUpdatePayload } from "@/lib/types";
 
 // 新增歌曲
 export async function apiCreateSong(song: Partial<Song>, csrfToken: string) {

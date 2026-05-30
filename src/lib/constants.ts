@@ -1,4 +1,4 @@
-import type { SongFieldConfig } from "./types";
+import type { SongFieldConfig } from "@/lib/types";
 
 export const FILTER_OPTION_ALL = "全部";
 export const FILTER_OPTION_UNKNOWN = "未知";

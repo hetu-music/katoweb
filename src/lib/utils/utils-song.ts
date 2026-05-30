@@ -1,11 +1,11 @@
-import { Song, SongDetail, FilterOptions, SongInfo } from "../types";
+import { Song, SongDetail, FilterOptions, SongInfo } from "@/lib/types";
 import {
   FILTER_OPTION_ALL,
   FILTER_OPTION_UNKNOWN,
   TYPE_ORDER,
-} from "../constants";
+} from "@/lib/constants";
 import Fuse from "fuse.js";
-import { formatDate, formatTime } from "./utils-common";
+import { formatDate, formatTime } from "@/lib/utils/utils-common";
 
 // 判断字符串首字母是否为英文
 function startsWithEnglish(str: string): boolean {
