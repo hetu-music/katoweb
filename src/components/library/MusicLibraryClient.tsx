@@ -20,7 +20,6 @@ import { extractLyricsSnippet } from "@/hooks/useLyricsIndex";
 import { calculateFilterOptions } from "@/lib/utils-song";
 import {
   Disc,
-  Heart,
   LayoutGrid,
   List,
   Mic2,
@@ -441,14 +440,7 @@ export default function MusicLibraryClient({
                     <div className="grow">Title / Lyricist / Composer</div>
                     <div className="ml-8 w-8" />
                     <div className="ml-8 w-8" />
-                    {isLoggedIn && (
-                      <div className="ml-8 flex w-8 items-center justify-center">
-                        <Heart
-                          size={12}
-                          className="text-slate-300 dark:text-slate-600"
-                        />
-                      </div>
-                    )}
+                    {isLoggedIn && <div className="ml-8 w-8" />}
                     <div className="ml-8 w-24 text-center">Type</div>
                     <div className="ml-8 w-24 text-center">Genre</div>
                     <div className="ml-8 w-16">Year</div>

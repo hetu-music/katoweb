@@ -127,21 +127,7 @@ export default function ListRow({
       </div>
 
       {isLoggedIn && (
-        <div className="ml-2 flex shrink-0 items-center gap-1 md:hidden">
-          <PlayButton
-            songId={song.id}
-            title={song.title}
-            artist={song.artist?.join(" / ")}
-            coverUrl={getCoverUrl(song)}
-            hasAudio={song.has_audio}
-          />
-          <EnqueueButton
-            songId={song.id}
-            title={song.title}
-            artist={song.artist?.join(" / ")}
-            coverUrl={getCoverUrl(song)}
-            hasAudio={song.has_audio}
-          />
+        <div className="ml-2 flex shrink-0 items-center md:hidden">
           <button
             onClick={(event) => {
               event.stopPropagation();
@@ -153,7 +139,7 @@ export default function ListRow({
               "rounded-lg p-2 transition-all duration-200",
               active
                 ? "text-rose-500"
-                : "text-slate-400 hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 dark:text-slate-500 lg:opacity-0 lg:group-hover:opacity-100",
+                : "text-slate-400 hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 dark:text-slate-500",
             )}
           >
             <Heart size={16} className={active ? "fill-current" : ""} />
