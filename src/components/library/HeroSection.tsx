@@ -71,7 +71,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
         </h1>
 
         <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 mt-auto -mb-1 lg:-mb-1.5 min-h-[24px]">
-          <span className="text-blue-600 dark:text-blue-500 font-mono text-lg leading-none relative top-0 md:top-[-1.5px] select-none">
+          <span className="text-blue-600 dark:text-blue-500 font-mono text-lg leading-none relative top-[-0.5px] md:top-[-2px] select-none">
             &gt;
           </span>
           <AnimatePresence mode="wait">
