@@ -21,6 +21,7 @@ const FEATURE_ENTRANCES = [
     textHover: "group-hover:text-[#7A2828] dark:group-hover:text-[#F38B8B]",
     haloBg: "bg-[#A33E3E]/25 dark:bg-[#DE5D5D]/25",
     glow: "rgba(163,62,62,0.15)",
+    offsetClass: "relative -left-[2px]",
   },
   {
     id: "imagery",
@@ -32,6 +33,7 @@ const FEATURE_ENTRANCES = [
     textHover: "group-hover:text-[#1D514A] dark:group-hover:text-[#6FD1C4]",
     haloBg: "bg-[#2E756C]/25 dark:bg-[#44B0A2]/25",
     glow: "rgba(46,117,108,0.15)",
+    offsetClass: "",
   },
 ];
 
@@ -122,7 +124,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
 
                 {/* 竖排标题 - 确保文字和光点绝对中心对齐 */}
                 <div
-                  className={`[writing-mode:vertical-rl] font-calligraphy font-medium text-[18px] tracking-[0.55em] -mb-[0.55em] ${feature.textBase} ${feature.textHover} transition-[color,filter,text-shadow] duration-1000 group-hover:drop-shadow-[0_0_12px_${feature.glow}] select-none`}
+                  className={`[writing-mode:vertical-rl] font-calligraphy font-medium text-[18px] tracking-[0.55em] -mb-[0.55em] ${feature.offsetClass} ${feature.textBase} ${feature.textHover} transition-[color,filter,text-shadow] duration-1000 group-hover:drop-shadow-[0_0_12px_${feature.glow}] select-none`}
                 >
                   {feature.label.split("").map((char, i) => (
                     <motion.span
