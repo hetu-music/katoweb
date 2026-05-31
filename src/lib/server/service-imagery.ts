@@ -235,6 +235,49 @@ export async function updateImageryCategory(
   },
   accessToken: string,
 ) {
+  // 如果传了 parent_id，校验新父分类必须与当前分类同级（level 相差 1）
+  if ("parent_id" in data) {
+    const supabase = getUserClient(accessToken);
+    if (!supabase) throw new Error("Supabase client unavailable");
+
+    // 查当前分类的 level
+    const { data: current, error: currentError } = await supabase
+      .from(TABLES.IMAGERY_CAT)
+      .select("level")
+      .eq("id", id)
+      .single();
+    if (currentError) throw currentError;
+
+    const currentLevel = (current as { level: number | null }).level ?? 1;
+
+    if (data.parent_id === null) {
+      // 改为顶级：只有 L1（level === 1）才允许无父分类
+      if (currentLevel !== 1) {
+        throw Object.assign(
+          new Error("只有 L1 分类可以设为顶级分类"),
+          { code: "INVALID_PARENT_LEVEL" },
+        );
+      }
+    } else {
+      // 查新父分类的 level
+      const { data: parent, error: parentError } = await supabase
+        .from(TABLES.IMAGERY_CAT)
+        .select("level")
+        .eq("id", data.parent_id)
+        .single();
+      if (parentError) throw parentError;
+
+      const parentLevel = (parent as { level: number | null }).level ?? 1;
+
+      if (parentLevel !== currentLevel - 1) {
+        throw Object.assign(
+          new Error("父分类必须与当前分类同级（只能在同层级间调整父分类）"),
+          { code: "INVALID_PARENT_LEVEL" },
+        );
+      }
+    }
+  }
+
   const supabase = getUserClient(accessToken);
   if (!supabase) throw new Error("Supabase client unavailable");
   const { data: updated, error } = await supabase

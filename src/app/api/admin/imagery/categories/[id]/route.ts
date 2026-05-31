@@ -48,6 +48,12 @@ export const PUT = withAuth(
       );
       return NextResponse.json(updated);
     } catch (e) {
+      if (
+        e instanceof Error &&
+        (e as Error & { code?: string }).code === "INVALID_PARENT_LEVEL"
+      ) {
+        return NextResponse.json({ error: e.message }, { status: 400 });
+      }
       console.error("[PUT /api/admin/imagery/categories/[id]]", e);
       return NextResponse.json(
         { error: "Internal server error" },
