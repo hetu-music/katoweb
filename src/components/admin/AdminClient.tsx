@@ -683,7 +683,13 @@ export default function AdminClientComponent({
             >
               <Bell size={18} />
             </button>
-            <ThemeToggle className="p-2 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400" />
+            <Link
+              href="/"
+              className="p-2 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400"
+              title="返回主页"
+            >
+              <Home size={18} />
+            </Link>
             <Link
               href="/profile"
               className="p-2 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400"
@@ -694,13 +700,7 @@ export default function AdminClientComponent({
                 className={user ? "text-blue-500 dark:text-blue-400" : ""}
               />
             </Link>
-            <Link
-              href="/"
-              className="p-2 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400"
-              title="返回主页"
-            >
-              <Home size={18} />
-            </Link>
+            <ThemeToggle className="p-2 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400" />
           </div>
         </div>
       </nav>

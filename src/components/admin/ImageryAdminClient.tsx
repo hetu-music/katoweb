@@ -161,7 +161,13 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
             </span>
           </div>
           <div className="flex items-center gap-1">
-            <ThemeToggle className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800" />
+            <Link
+              href="/"
+              className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800"
+              title="返回主页"
+            >
+              <Home size={18} />
+            </Link>
             <Link
               href="/profile"
               className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800"
@@ -172,13 +178,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
                 className={user ? "text-blue-500 dark:text-blue-400" : ""}
               />
             </Link>
-            <Link
-              href="/"
-              className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800"
-              title="返回主页"
-            >
-              <Home size={18} />
-            </Link>
+            <ThemeToggle className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800" />
           </div>
         </div>
       </nav>
