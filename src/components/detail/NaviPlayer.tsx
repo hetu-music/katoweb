@@ -170,7 +170,7 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
             ) : isThisPlaying ? (
               <Pause size={13} className="fill-current" />
             ) : (
-              <Play size={13} className="fill-current translate-x-0.5" />
+              <Play size={13} className="fill-current" />
             )}
           </button>
         </div>

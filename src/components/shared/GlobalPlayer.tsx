@@ -436,7 +436,7 @@ export default function GlobalPlayer() {
               ) : isPlaying ? (
                 <Pause size={16} className="fill-current" />
               ) : (
-                <Play size={16} className="fill-current translate-x-[1px]" />
+                <Play size={16} className="fill-current" />
               )}
             </button>
             <button
@@ -786,7 +786,7 @@ export default function GlobalPlayer() {
                 ) : isPlaying ? (
                   <Pause size={13} className="fill-current" />
                 ) : (
-                  <Play size={13} className="fill-current translate-x-[1px]" />
+                  <Play size={13} className="fill-current" />
                 )}
               </button>
 
