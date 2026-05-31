@@ -1,6 +1,7 @@
 "use client";
 
 import { usePlayerStore } from "@/store/player-store";
+import { useShallow } from "zustand/react/shallow";
 import { usePlayerTime } from "@/hooks/player/usePlayerTime";
 import {
   formatPlayerTime,
@@ -33,52 +34,33 @@ import React, {
 
 export default function GlobalPlayer() {
   const pathname = usePathname();
-  const {
-    currentTrack,
-    queue,
-    currentIndex,
-    isPlaying,
-    isLoading,
-    error,
-    playerVisible,
-    lyricsMap,
-    play,
-    enqueue,
-    toggle,
-    pause,
-    jumpTo,
-    prev,
-    next,
-    removeFromQueue,
-    clearQueue,
-    seek,
-  } = usePlayerStore();
-  const controls = useMemo(
-    () => ({
-      play,
-      enqueue,
-      toggle,
-      pause,
-      jumpTo,
-      prev,
-      next,
-      removeFromQueue,
-      clearQueue,
-      seek,
-    }),
-    [
-      play,
-      enqueue,
-      toggle,
-      pause,
-      jumpTo,
-      prev,
-      next,
-      removeFromQueue,
-      clearQueue,
-      seek,
-    ],
+
+  // 细粒度 selector，只订阅各自需要的字段，避免无关状态变化触发整体重渲染
+  const currentTrack = usePlayerStore((s) => s.currentTrack);
+  const queue = usePlayerStore((s) => s.queue);
+  const currentIndex = usePlayerStore((s) => s.currentIndex);
+  const isPlaying = usePlayerStore((s) => s.isPlaying);
+  const isLoading = usePlayerStore((s) => s.isLoading);
+  const error = usePlayerStore((s) => s.error);
+  const playerVisible = usePlayerStore((s) => s.playerVisible);
+  const lyricsMap = usePlayerStore((s) => s.lyricsMap);
+
+  // actions 在 Zustand store 中引用稳定，用 useShallow 避免每次返回新对象引用
+  const controls = usePlayerStore(
+    useShallow((s) => ({
+      play: s.play,
+      enqueue: s.enqueue,
+      toggle: s.toggle,
+      pause: s.pause,
+      jumpTo: s.jumpTo,
+      prev: s.prev,
+      next: s.next,
+      removeFromQueue: s.removeFromQueue,
+      clearQueue: s.clearQueue,
+      seek: s.seek,
+    })),
   );
+
   const audioRef = useRef(getAudio());
 
   // ── 进度条 & 时间码的 DOM refs（高频更新绕开 React 渲染） ─────────────────
@@ -103,19 +85,21 @@ export default function GlobalPlayer() {
 
   // ── 进度条拖拽预览 ────────────────────────────────────────────────────────
   const isDraggingRef = useRef(false);
-  const [seekPreview, setSeekPreview] = useState<number | null>(null);
-  // isSeeking：seek 已发出但 seeked 事件还未回来，期间继续用 preview 值防止闪回
+  // isSeeking：seek 已发出但 canplay 事件还未回来，期间继续用 preview 值防止闪回
   const isSeekingRef = useRef(false);
 
-  // seekPreview 变化时同步 ref 并直接更新 DOM
-  useEffect(() => {
-    seekPreviewRef.current = seekPreview;
-    if (seekPreview !== null && duration > 0) {
-      const pct = (seekPreview / duration) * 100;
+  /**
+   * 直接操作 DOM 更新进度条和时间码，完全绕开 React 渲染管线。
+   * null 表示清除预览（恢复由 rAF 驱动的正常更新）。
+   */
+  const applySeekPreviewDOM = useCallback((t: number | null, dur: number) => {
+    seekPreviewRef.current = t;
+    if (t !== null && dur > 0) {
+      const pct = (t / dur) * 100;
       if (progressBarRef.current) progressBarRef.current.style.width = `${pct}%`;
-      if (timeCurrentRef.current) timeCurrentRef.current.textContent = formatPlayerTime(seekPreview);
+      if (timeCurrentRef.current) timeCurrentRef.current.textContent = formatPlayerTime(t);
     }
-  }, [seekPreview, duration]);
+  }, []);
 
   // ── 播放列表面板 ──────────────────────────────────────────────────────────
   const [showQueue, setShowQueue] = useState(false);
@@ -169,7 +153,7 @@ export default function GlobalPlayer() {
       isDraggingRef.current = true;
       const t = getTimeFromPointer(e.clientX);
       if (t !== null) {
-        setSeekPreview(t);
+        applySeekPreviewDOM(t, duration);
       }
       try {
         (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -177,17 +161,17 @@ export default function GlobalPlayer() {
         // Safari may not support setPointerCapture in all contexts
       }
     },
-    [duration, getTimeFromPointer],
+    [duration, getTimeFromPointer, applySeekPreviewDOM],
   );
   const handlePointerMove = useCallback(
     (e: React.PointerEvent) => {
       if (!isDraggingRef.current || !duration) return;
       const t = getTimeFromPointer(e.clientX);
       if (t !== null) {
-        setSeekPreview(t);
+        applySeekPreviewDOM(t, duration);
       }
     },
-    [duration, getTimeFromPointer],
+    [duration, getTimeFromPointer, applySeekPreviewDOM],
   );
   const handlePointerUp = useCallback(
     (e: React.PointerEvent) => {
@@ -195,15 +179,15 @@ export default function GlobalPlayer() {
       isDraggingRef.current = false;
       const t = getTimeFromPointer(e.clientX);
       if (t !== null) {
-        // 先标记 seeking，等 seeked 事件触发后再清除 preview，防止闪回
+        // 先标记 seeking，等 canplay 事件触发后再清除 preview，防止闪回
         isSeekingRef.current = true;
-        setSeekPreview(t);
+        applySeekPreviewDOM(t, duration);
         controls.seek(t);
       } else {
-        setSeekPreview(null);
+        applySeekPreviewDOM(null, duration);
       }
     },
-    [controls, getTimeFromPointer],
+    [controls, duration, getTimeFromPointer, applySeekPreviewDOM],
   );
   // Safari Touch Events fallback for seek bar
   const handleSeekTouchStart = useCallback(
@@ -211,17 +195,17 @@ export default function GlobalPlayer() {
       if (!duration) return;
       isDraggingRef.current = true;
       const t = getTimeFromPointer(e.touches[0].clientX);
-      if (t !== null) setSeekPreview(t);
+      if (t !== null) applySeekPreviewDOM(t, duration);
     },
-    [duration, getTimeFromPointer],
+    [duration, getTimeFromPointer, applySeekPreviewDOM],
   );
   const handleSeekTouchMove = useCallback(
     (e: React.TouchEvent) => {
       if (!isDraggingRef.current || !duration) return;
       const t = getTimeFromPointer(e.touches[0].clientX);
-      if (t !== null) setSeekPreview(t);
+      if (t !== null) applySeekPreviewDOM(t, duration);
     },
-    [duration, getTimeFromPointer],
+    [duration, getTimeFromPointer, applySeekPreviewDOM],
   );
   const handleSeekTouchEnd = useCallback(
     (e: React.TouchEvent) => {
@@ -231,13 +215,13 @@ export default function GlobalPlayer() {
       const t = getTimeFromPointer(touch.clientX);
       if (t !== null) {
         isSeekingRef.current = true;
-        setSeekPreview(t);
+        applySeekPreviewDOM(t, duration);
         controls.seek(t);
       } else {
-        setSeekPreview(null);
+        applySeekPreviewDOM(null, duration);
       }
     },
-    [controls, getTimeFromPointer],
+    [controls, duration, getTimeFromPointer, applySeekPreviewDOM],
   );
 
   // opus seek 是重新请求流，触发 canplay 而非 seeked，preview 在 canplay 后清除
@@ -248,7 +232,7 @@ export default function GlobalPlayer() {
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             isSeekingRef.current = false;
-            setSeekPreview(null);
+            applySeekPreviewDOM(null, 0);
           });
         });
       }
@@ -267,7 +251,7 @@ export default function GlobalPlayer() {
       const a = audioRef.current;
       a?.removeEventListener("canplay", onCanPlay);
     };
-  }, []);
+  }, [applySeekPreviewDOM]);
 
   // 沉浸式全屏页面不显示播放条 UI（音频继续播放）
   const HIDDEN_PATHS = ["/imagery", "/story"];
@@ -494,7 +478,7 @@ export default function GlobalPlayer() {
                 <div className="max-h-[320px] overflow-y-auto overscroll-contain no-scrollbar">
                   {queue.map((track, i) => (
                     <div
-                      key={`${track.songId}-${i}`}
+                      key={track.songId}
                       onClick={() => controls.jumpTo(i)}
                       className={cn(
                         "flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-all group/item select-none border-b border-slate-50/50 dark:border-slate-800/5 last:border-b-0",
@@ -574,7 +558,7 @@ export default function GlobalPlayer() {
 
               {/* 列表按钮 */}
               <button
-                onClick={() => setShowQueue((v) => !v)}
+                onClick={() => setShowQueue((v: boolean) => !v)}
                 aria-label="播放列表"
                 className={cn(
                   "p-2 rounded-full transition-colors",
@@ -745,9 +729,9 @@ export default function GlobalPlayer() {
 
                   {/* 歌曲列表 */}
                   <div className="max-h-[260px] overflow-y-auto overscroll-contain no-scrollbar">
-                    {queue.map((track, i) => (
+                  {queue.map((track, i) => (
                       <div
-                        key={`${track.songId}-${i}`}
+                        key={track.songId}
                         onClick={() => controls.jumpTo(i)}
                         className={cn(
                           "flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-all active:bg-slate-50/50 dark:active:bg-slate-800/20 select-none border-b border-slate-50/50 dark:border-slate-800/5 last:border-b-0",
@@ -827,7 +811,7 @@ export default function GlobalPlayer() {
 
                 {/* 列表按钮 */}
                 <button
-                  onClick={() => setShowQueue((v) => !v)}
+                  onClick={() => setShowQueue((v: boolean) => !v)}
                   aria-label="播放列表"
                   className={cn(
                     "p-1.5 rounded-full text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors",
