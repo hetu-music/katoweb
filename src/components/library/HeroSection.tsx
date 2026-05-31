@@ -33,7 +33,7 @@ const FEATURE_ENTRANCES = [
     textHover: "group-hover:text-[#1D514A] dark:group-hover:text-[#6FD1C4]",
     haloBg: "bg-[#2E756C]/25 dark:bg-[#44B0A2]/25",
     glow: "rgba(46,117,108,0.15)",
-    offsetClass: "",
+    offsetClass: "relative -left-[0.5px]",
   },
 ];
 
@@ -157,22 +157,31 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                   ))}
                 </div>
 
-                {/* Hover 展开的微光宣纸画卷面板 */}
-                <div className="absolute top-12 right-full mr-4 lg:mr-6 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-[width,opacity] duration-2000 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:w-[220px] lg:group-hover:w-[250px] group-hover:opacity-100 z-10 will-change-[width,opacity]">
-                  <div className="flex w-max shrink-0 items-center gap-4 lg:gap-5 backdrop-blur-md bg-white/80 dark:bg-slate-900/80 border border-slate-200/50 dark:border-slate-800/50 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)] rounded-2xl pl-5 pr-4 py-3.5 h-full border-r-2">
-                    <div className="flex flex-col items-end">
-                      <span className="text-[15px] font-serif font-bold tracking-[0.15em] text-slate-800 dark:text-slate-200 mb-1 whitespace-nowrap drop-shadow-xs transition-colors duration-500">
-                        {feature.label}
-                      </span>
-                      <span className="text-[11px] font-sans font-light tracking-widest text-slate-500 dark:text-slate-400 whitespace-nowrap transition-colors duration-500">
-                        {feature.desc}
-                      </span>
+                {/* Hover 展开的竖版云纱画笺面板 */}
+                <div className="absolute top-[-14px] right-full mr-4 lg:mr-6 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-[width,opacity] duration-1500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:w-[112px] group-hover:opacity-100 z-10 will-change-[width,opacity]">
+                  <div className="flex w-[112px] h-[150px] shrink-0 flex-row-reverse justify-center items-center gap-2.5 backdrop-blur-md bg-[#FCFAF2]/95 dark:bg-[#0E131F]/95 border border-[#E6DFCD] dark:border-slate-800/80 shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] rounded-2xl py-4 px-3 relative overflow-hidden select-none">
+                    {/* 内置古典信笺框边线 */}
+                    <div className="absolute inset-[4px] border border-[#E6DFCD]/50 dark:border-slate-800/30 rounded-xl pointer-events-none" />
+
+                    {/* 右侧：主标题竖排 */}
+                    <div className={`[writing-mode:vertical-rl] font-serif font-bold text-[15px] tracking-[0.25em] ${feature.textBase} whitespace-nowrap z-10 mb-0 leading-none`}>
+                      {feature.label}
                     </div>
-                    <Icon
-                      size={18}
-                      strokeWidth={1.5}
-                      className={`${feature.textBase} shrink-0 transition-all duration-1000 ease-out group-hover:rotate-12`}
-                    />
+
+                    {/* 中间古典分割线 */}
+                    <div className="h-full w-px bg-slate-200/60 dark:bg-slate-800/60 z-10" />
+
+                    {/* 左侧：描述文字与小图标 */}
+                    <div className="flex flex-col items-center justify-between h-full py-1 z-10">
+                      <div className="[writing-mode:vertical-rl] font-sans font-light text-[11px] tracking-[0.2em] text-slate-500 dark:text-slate-400 whitespace-nowrap leading-[1.4] mb-0">
+                        {feature.desc}
+                      </div>
+                      <Icon
+                        size={14}
+                        strokeWidth={1.5}
+                        className={`${feature.textBase} opacity-80 shrink-0 transition-transform duration-1000 group-hover:rotate-12`}
+                      />
+                    </div>
                   </div>
                 </div>
               </Link>
