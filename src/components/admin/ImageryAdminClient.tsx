@@ -337,11 +337,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
             <CategoriesTab
               categoryTree={categories.categoryTree}
               imageryCountByCategory={imageryCountByCategory}
-              pagedCategories={categories.pagedCategories}
-              currentPage={categories.currentPage}
-              totalPages={categories.totalPages}
-              getCategoryPath={categories.getCategoryPathFn}
-              onPageChange={categories.setPage}
+              categories={categories.categories}
               onAddCategory={categories.openAdd}
               onEditCategory={categories.openEdit}
               onDeleteCategory={categories.openDelete}
