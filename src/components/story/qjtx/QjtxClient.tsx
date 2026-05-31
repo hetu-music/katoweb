@@ -343,9 +343,7 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
         container.current,
       );
 
-      // ─ 在 tick 外缓存 DOM 引用 ──────────────────────────────────────────────
-      // 原来的写法在 updateLinesAndDots 内部用同名变量重复查询，导致每帧
-      // 都有 2 次额外 querySelector。现在查询一次，ticker 里只做计算和写值。
+      // ─ 缓存 DOM 引用 ────────────────────────────────────────────────────────
       const containerEl = container.current?.querySelector<HTMLElement>(
         ".timeline-container",
       );
@@ -370,9 +368,7 @@ export default function QjtxClient({ events }: { events: TimelineEvent[] }) {
       dots.forEach((dot) => setDotState(dot, false));
 
       // ─ 预缓存每个 dot 对应的 wrapper 引用 ──────────────────────────────────
-      // 原来的写法在 updateLinesAndDots 内部每次都调用 dot.closest()，
-      // 即每帧 O(n) 次 DOM 遍历。预缓存后变为 O(1) 直接引用。
-      // 位置计算仍使用 getBoundingClientRect()——它返回精确的当前视口坐标，
+      // 位置计算使用 getBoundingClientRect()——它返回精确的当前视口坐标，
       // 在 ScrollTrigger pin 期间 container 静止但 wrappers 相对视口位置
       // 发生变化时依然正确（offsetTop 在这种情况下会失准）。
       const dotWrappers = dots.map((dot) =>

@@ -6,12 +6,21 @@ import { Suspense } from "react";
 
 const STORY_TITLE = "倾尽天下 · 编年史";
 
+function buildDescription(
+  count: number,
+  firstYear: string | undefined,
+  secondLastYear: string | undefined,
+) {
+  return `以 ${count} 个历史节点展现《倾尽天下》的故事，从${firstYear ?? "乱世初起"}到${secondLastYear ?? "故人长绝"}，沉浸式回望白炎、朱砂与故国山河。`;
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const events = await getQjtxTimeline();
-  const firstEvent = events[0];
-  const secondLastEvent =
-    events[events.length - 2] || events[events.length - 1];
-  const description = `以 ${events.length} 个历史节点展现《倾尽天下》的故事，从${firstEvent?.year ?? "乱世初起"}到${secondLastEvent?.year ?? "故人长绝"}，沉浸式回望白炎、朱砂与故国山河。`;
+  const description = buildDescription(
+    events.length,
+    events[0]?.year,
+    (events[events.length - 2] ?? events[events.length - 1])?.year,
+  );
 
   return {
     title: STORY_TITLE,
@@ -60,11 +69,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function QingJinTianXiaPage() {
   const events = await getQjtxTimeline();
-
-  const firstEvent = events[0];
-  const secondLastEvent =
-    events[events.length - 2] || events[events.length - 1];
-  const description = `以 ${events.length} 个历史节点展现《倾尽天下》的故事，从${firstEvent?.year ?? "乱世初起"}到${secondLastEvent?.year ?? "故人长绝"}，沉浸式回望白炎、朱砂与故国山河。`;
+  const description = buildDescription(
+    events.length,
+    events[0]?.year,
+    (events[events.length - 2] ?? events[events.length - 1])?.year,
+  );
 
   const jsonLd = {
     "@context": "https://schema.org",
