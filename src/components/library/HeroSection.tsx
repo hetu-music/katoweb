@@ -205,14 +205,14 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
               >
                 <div className="flex items-center gap-4">
                   {/* 菱形小印章指示点 - 加上与桌面端统一的无边界高斯模糊光晕 */}
-                  <div className="relative flex items-center justify-center h-5 w-5">
+                  <div className="relative flex items-center justify-center h-3 w-3">
                     {/* concentric ripples */}
                     <div
-                      className={`absolute h-2.5 w-2.5 rounded-full opacity-0 blur-[2.5px] ${feature.haloBg} classical-ripple-anim`}
+                      className={`absolute h-2.5 w-2.5 rounded-full opacity-0 blur-[2px] ${feature.haloBg} classical-ripple-anim`}
                       style={{ animationDelay: "0s" }}
                     />
                     <div
-                      className={`absolute h-2.5 w-2.5 rounded-full opacity-0 blur-[2.5px] ${feature.haloBg} classical-ripple-anim`}
+                      className={`absolute h-2.5 w-2.5 rounded-full opacity-0 blur-[2px] ${feature.haloBg} classical-ripple-anim`}
                       style={{ animationDelay: "2s" }}
                     />
                     {/* 核心印章 */}
