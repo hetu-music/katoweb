@@ -14,7 +14,7 @@ const FEATURE_ENTRANCES = [
   {
     id: "qjtx",
     label: "倾尽天下",
-    desc: "一纸长歌，倾尽天下",
+    desc: "一曲长歌，倾尽天下",
     href: "/story/qjtx",
     icon: Scroll,
     textBase: "text-[#A33E3E] dark:text-[#DE5D5D]",
@@ -54,7 +54,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
 
   const currentText =
     hoveredId === "qjtx"
-      ? "一纸长歌，倾尽天下"
+      ? "一曲长歌，倾尽天下"
       : hoveredId === "imagery"
         ? "探索词中万千意象"
         : "你一定想知道，戏里讲了什么故事";
