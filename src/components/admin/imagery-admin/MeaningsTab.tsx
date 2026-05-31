@@ -5,7 +5,7 @@ import {
 } from "@/lib/forms/imagery-form";
 import type { ImageryMeaning } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BookOpen, Edit2 } from "lucide-react";
+import { BookOpen, Edit2, Trash2 } from "lucide-react";
 import { useEffect } from "react";
 import { type Resolver, useForm } from "react-hook-form";
 import {
@@ -113,6 +113,7 @@ export default function MeaningsTab({
   totalPages,
   onPageChange,
   onStartEdit,
+  onStartDelete,
   onReset,
   onCreate,
   onUpdate,
@@ -127,6 +128,7 @@ export default function MeaningsTab({
   totalPages: number;
   onPageChange: (page: number) => void;
   onStartEdit: (meaning: ImageryMeaning) => void;
+  onStartDelete: (meaning: ImageryMeaning) => void;
   onReset: () => void;
   onCreate: (values: MeaningFormValues) => void | Promise<void>;
   onUpdate: (values: MeaningFormValues) => void | Promise<void>;
@@ -199,6 +201,13 @@ export default function MeaningsTab({
                         className="rounded-xl p-2 text-emerald-600 transition-colors hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20"
                       >
                         <Edit2 size={13} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onStartDelete(meaning)}
+                        className="rounded-xl p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20"
+                      >
+                        <Trash2 size={13} />
                       </button>
                     </div>
                   </div>

@@ -355,6 +355,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
               totalPages={meanings.totalPages}
               onPageChange={meanings.setPage}
               onStartEdit={meanings.startEdit}
+              onStartDelete={meanings.openDeleteModal}
               onReset={meanings.resetEditor}
               onCreate={meanings.handleCreate}
               onUpdate={meanings.handleUpdate}
@@ -383,6 +384,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
               onStartEditRelation={occurrences.startEditRelation}
               onResetRelationEditor={occurrences.resetRelationEditor}
               onSaveRelation={occurrences.handleSaveRelation}
+              onDeleteRelation={occurrences.openDeleteOccurrenceModal}
               getCategoryPath={(categoryId) =>
                 categories.getCategoryPathFn(categoryId)
               }

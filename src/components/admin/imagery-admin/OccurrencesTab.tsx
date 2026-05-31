@@ -6,7 +6,7 @@ import {
 import type { OccurrenceWithSong } from "@/lib/server/service-imagery";
 import type { ImageryCategory, ImageryItem, ImageryMeaning } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronDown, ChevronRight, Edit2, Layers, Plus, X } from "lucide-react";
+import { ChevronDown, ChevronRight, Edit2, Layers, Plus, Trash2, X } from "lucide-react";
 import { useEffect } from "react";
 import { type Resolver, useFieldArray, useForm } from "react-hook-form";
 import {
@@ -196,6 +196,7 @@ function OccurrenceRow({
   categories,
   getCategoryPath,
   onEdit,
+  onDelete,
 }: {
   songId: number;
   occurrence: OccurrenceWithSong;
@@ -205,6 +206,7 @@ function OccurrenceRow({
     categories: ImageryCategory[],
   ) => string;
   onEdit: (songId: number, occurrence: OccurrenceWithSong) => void;
+  onDelete: (occurrenceId: number, songId: number, label: string) => void;
 }) {
   return (
     <div className="flex flex-col bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden transition-all hover:shadow-md hover:border-blue-200 dark:hover:border-blue-900/30 px-4 py-4 group">
@@ -261,6 +263,19 @@ function OccurrenceRow({
           >
             <Edit2 size={13} />
           </button>
+          <button
+            type="button"
+            onClick={() =>
+              onDelete(
+                occurrence.id,
+                songId,
+                occurrence.imagery_name ?? `意象 #${occurrence.imagery_id}`,
+              )
+            }
+            className="rounded-xl p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20"
+          >
+            <Trash2 size={13} />
+          </button>
         </div>
       </div>
     </div>
@@ -288,6 +303,7 @@ export default function OccurrencesTab({
   onStartEditRelation,
   onResetRelationEditor,
   onSaveRelation,
+  onDeleteRelation,
   getCategoryPath,
 }: {
   songSearchTerm: string;
@@ -310,6 +326,7 @@ export default function OccurrencesTab({
   onStartEditRelation: (songId: number, occurrence: OccurrenceWithSong) => void;
   onResetRelationEditor: () => void;
   onSaveRelation: (values: RelationFormValues) => void | Promise<void>;
+  onDeleteRelation: (occurrenceId: number, songId: number, label: string) => void;
   getCategoryPath: (
     categoryId: number,
     categories: ImageryCategory[],
@@ -436,6 +453,7 @@ export default function OccurrencesTab({
                               categories={categories}
                               getCategoryPath={getCategoryPath}
                               onEdit={onStartEditRelation}
+                              onDelete={onDeleteRelation}
                             />
                           );
                         })}
