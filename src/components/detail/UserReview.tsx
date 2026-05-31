@@ -125,34 +125,36 @@ const UserReview: React.FC<UserReviewProps> = ({ songId }) => {
           </div>
         </div>
       ) : (
-        <div className="flex items-end justify-between gap-4">
-          <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm whitespace-pre-line flex-1">
+        <div className="space-y-3">
+          <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm whitespace-pre-line break-words min-w-0">
             {review || (
               <span className="text-slate-400 italic">暂无评论</span>
             )}
           </p>
-          {/* 添加/编辑按钮 */}
-          <button
-            onClick={() => setIsEditingReview(true)}
-            className={cn(
-              "shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all active:scale-95",
-              "text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800",
-              "border border-slate-200 dark:border-slate-700",
-              "hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600",
-            )}
-          >
-            {review ? (
-              <>
-                <Pencil size={13} />
-                编辑评论
-              </>
-            ) : (
-              <>
-                <MessageSquarePlus size={14} />
-                添加评论
-              </>
-            )}
-          </button>
+          {/* 添加/编辑按钮 — 右对齐 */}
+          <div className="flex justify-end">
+            <button
+              onClick={() => setIsEditingReview(true)}
+              className={cn(
+                "flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all active:scale-95",
+                "text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800",
+                "border border-slate-200 dark:border-slate-700",
+                "hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600",
+              )}
+            >
+              {review ? (
+                <>
+                  <Pencil size={13} />
+                  编辑评论
+                </>
+              ) : (
+                <>
+                  <MessageSquarePlus size={14} />
+                  添加评论
+                </>
+              )}
+            </button>
+          </div>
         </div>
       )}
     </div>
