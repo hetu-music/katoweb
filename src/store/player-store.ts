@@ -548,11 +548,12 @@ if (typeof window !== "undefined") {
         artist: currentTrack.artist ?? undefined,
         artwork: currentTrack.coverUrl
           ? [
-              {
-                src: currentTrack.coverUrl,
-                sizes: "512x512",
-                type: "image/jpeg",
-              },
+              { src: currentTrack.coverUrl, sizes: "96x96",   type: "image/jpeg" },
+              { src: currentTrack.coverUrl, sizes: "128x128", type: "image/jpeg" },
+              { src: currentTrack.coverUrl, sizes: "192x192", type: "image/jpeg" },
+              { src: currentTrack.coverUrl, sizes: "256x256", type: "image/jpeg" },
+              { src: currentTrack.coverUrl, sizes: "384x384", type: "image/jpeg" },
+              { src: currentTrack.coverUrl, sizes: "512x512", type: "image/jpeg" },
             ]
           : undefined,
       });
