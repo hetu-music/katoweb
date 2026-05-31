@@ -67,8 +67,18 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
           <span className="text-blue-600 dark:text-blue-500 font-mono text-lg leading-none relative top-0 md:top-[-1.5px] select-none">
             &gt;
           </span>
-          <p className="font-light tracking-[0.15em] text-sm md:text-[15px] leading-relaxed mb-0">
-            你一定想知道，戏里讲了什么故事
+          <motion.p
+            key={hoveredId || "default"}
+            initial={{ opacity: 0, y: 4, filter: "blur(2px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="font-light tracking-[0.15em] text-sm md:text-[15px] leading-relaxed mb-0"
+          >
+            {hoveredId === "qjtx"
+              ? "一纸长歌，倾尽天下"
+              : hoveredId === "imagery"
+              ? "探索词中万千意象"
+              : "你一定想知道，戏里讲了什么故事"}
             {isHoverDevice ? (
               <motion.span
                 animate={{ opacity: [0.3, 1, 0.3] }}
@@ -86,7 +96,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 ……
               </span>
             )}
-          </p>
+          </motion.p>
         </div>
       </div>
 
@@ -157,33 +167,6 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                   ))}
                 </div>
 
-                {/* Hover 展开的竖版云纱画笺面板 */}
-                <div className="absolute top-[-14px] right-full mr-4 lg:mr-6 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-[width,opacity] duration-1500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:w-[112px] group-hover:opacity-100 z-10 will-change-[width,opacity]">
-                  <div className="flex w-[112px] h-[150px] shrink-0 flex-row-reverse justify-center items-center gap-2.5 backdrop-blur-md bg-[#FCFAF2]/95 dark:bg-[#0E131F]/95 border border-[#E6DFCD] dark:border-slate-800/80 shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] rounded-2xl py-4 px-3 relative overflow-hidden select-none">
-                    {/* 内置古典信笺框边线 */}
-                    <div className="absolute inset-[4px] border border-[#E6DFCD]/50 dark:border-slate-800/30 rounded-xl pointer-events-none" />
-
-                    {/* 右侧：主标题竖排 */}
-                    <div className={`[writing-mode:vertical-rl] font-serif font-bold text-[15px] tracking-[0.25em] ${feature.textBase} whitespace-nowrap z-10 mb-0 leading-none`}>
-                      {feature.label}
-                    </div>
-
-                    {/* 中间古典分割线 */}
-                    <div className="h-full w-px bg-slate-200/60 dark:bg-slate-800/60 z-10" />
-
-                    {/* 左侧：描述文字与小图标 */}
-                    <div className="flex flex-col items-center justify-between h-full py-1 z-10">
-                      <div className="[writing-mode:vertical-rl] font-sans font-light text-[11px] tracking-[0.2em] text-slate-500 dark:text-slate-400 whitespace-nowrap leading-[1.4] mb-0">
-                        {feature.desc}
-                      </div>
-                      <Icon
-                        size={14}
-                        strokeWidth={1.5}
-                        className={`${feature.textBase} opacity-80 shrink-0 transition-transform duration-1000 group-hover:rotate-12`}
-                      />
-                    </div>
-                  </div>
-                </div>
               </Link>
             );
           })}
