@@ -135,7 +135,6 @@
   animation: classical-ripple 4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
 }
 
-
 /* 功能入口字符浮动 */
 @keyframes feature-drift {
   0%,

@@ -35,7 +35,9 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const isLoading = usePlayerStore((s) => s.isLoading);
-  const isInQueue = usePlayerStore((s) => s.queue.some((t) => t.songId === songId));
+  const isInQueue = usePlayerStore((s) =>
+    s.queue.some((t) => t.songId === songId),
+  );
   const error = usePlayerStore((s) => s.error);
   const toggle = usePlayerStore((s) => s.toggle);
   const play = usePlayerStore((s) => s.play);
@@ -59,10 +61,13 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
     }
   }, [isCurrentSong, toggle, play, track]);
 
-  const handleEnqueue = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    enqueue(track);
-  }, [enqueue, track]);
+  const handleEnqueue = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      enqueue(track);
+    },
+    [enqueue, track],
+  );
 
   const currentError = isCurrentSong ? error : null;
 

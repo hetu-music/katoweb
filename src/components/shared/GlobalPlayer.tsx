@@ -96,8 +96,10 @@ export default function GlobalPlayer() {
     seekPreviewRef.current = t;
     if (t !== null && dur > 0) {
       const pct = (t / dur) * 100;
-      if (progressBarRef.current) progressBarRef.current.style.width = `${pct}%`;
-      if (timeCurrentRef.current) timeCurrentRef.current.textContent = formatPlayerTime(t);
+      if (progressBarRef.current)
+        progressBarRef.current.style.width = `${pct}%`;
+      if (timeCurrentRef.current)
+        timeCurrentRef.current.textContent = formatPlayerTime(t);
     }
   }, []);
 
@@ -240,8 +242,10 @@ export default function GlobalPlayer() {
             if (a && trackDuration > 0) {
               const ct = seekBase + a.currentTime;
               const pct = (ct / trackDuration) * 100;
-              if (progressBarRef.current) progressBarRef.current.style.width = `${pct}%`;
-              if (timeCurrentRef.current) timeCurrentRef.current.textContent = formatPlayerTime(ct);
+              if (progressBarRef.current)
+                progressBarRef.current.style.width = `${pct}%`;
+              if (timeCurrentRef.current)
+                timeCurrentRef.current.textContent = formatPlayerTime(ct);
             }
             seekPreviewRef.current = null;
           });
@@ -597,7 +601,6 @@ export default function GlobalPlayer() {
                 </svg>
               </button>
             </div>
-
           </div>
         </div>
 
@@ -739,7 +742,7 @@ export default function GlobalPlayer() {
 
                   {/* 歌曲列表 */}
                   <div className="max-h-[260px] overflow-y-auto overscroll-contain no-scrollbar">
-                  {queue.map((track, i) => (
+                    {queue.map((track, i) => (
                       <div
                         key={track.songId}
                         onClick={() => controls.jumpTo(i)}

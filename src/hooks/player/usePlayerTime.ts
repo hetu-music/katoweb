@@ -14,7 +14,9 @@ import { usePlayerStore } from "@/store/player-store";
  * - onTick：每个 rAF 帧调用，供调用方直接操作 DOM（进度条宽度、时间码文字），
  *   完全绕开 React 渲染管线。
  */
-export function usePlayerTime(onTick?: (currentTime: number, duration: number) => void): {
+export function usePlayerTime(
+  onTick?: (currentTime: number, duration: number) => void,
+): {
   currentTime: number;
   duration: number;
 } {
@@ -25,9 +27,15 @@ export function usePlayerTime(onTick?: (currentTime: number, duration: number) =
   const trackDurationRef = useRef(trackDuration);
   const onTickRef = useRef(onTick);
 
-  useEffect(() => { seekBaseRef.current = seekBase; }, [seekBase]);
-  useEffect(() => { trackDurationRef.current = trackDuration; }, [trackDuration]);
-  useEffect(() => { onTickRef.current = onTick; });
+  useEffect(() => {
+    seekBaseRef.current = seekBase;
+  }, [seekBase]);
+  useEffect(() => {
+    trackDurationRef.current = trackDuration;
+  }, [trackDuration]);
+  useEffect(() => {
+    onTickRef.current = onTick;
+  });
 
   const [currentTime, setCurrentTime] = useState(seekBase);
   const rafIdRef = useRef<number>(0);

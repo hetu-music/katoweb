@@ -551,7 +551,7 @@ if (typeof window !== "undefined") {
         artist: currentTrack.artist ?? undefined,
         artwork: artworkSrc
           ? [
-              { src: artworkSrc, sizes: "96x96",   type: "image/jpeg" },
+              { src: artworkSrc, sizes: "96x96", type: "image/jpeg" },
               { src: artworkSrc, sizes: "128x128", type: "image/jpeg" },
               { src: artworkSrc, sizes: "192x192", type: "image/jpeg" },
               { src: artworkSrc, sizes: "256x256", type: "image/jpeg" },

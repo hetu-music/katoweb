@@ -56,8 +56,8 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
     hoveredId === "qjtx"
       ? "一纸长歌，倾尽天下"
       : hoveredId === "imagery"
-      ? "探索词中万千意象"
-      : "你一定想知道，戏里讲了什么故事";
+        ? "探索词中万千意象"
+        : "你一定想知道，戏里讲了什么故事";
 
   return (
     <div
@@ -224,7 +224,6 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                     </motion.span>
                   ))}
                 </div>
-
               </Link>
             );
           })}
@@ -285,7 +284,11 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                     {feature.label.split("").map((char, i) => (
                       <motion.span
                         key={i}
-                        initial={{ opacity: 0, scale: 0.8, filter: "blur(8px)" }}
+                        initial={{
+                          opacity: 0,
+                          scale: 0.8,
+                          filter: "blur(8px)",
+                        }}
                         animate={
                           !hoveredId || hoveredId === feature.id
                             ? { opacity: 1, scale: 1, filter: "blur(0px)" }
