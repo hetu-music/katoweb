@@ -1,6 +1,7 @@
 "use client";
 
 import ThemeToggle from "@/components/shared/ThemeToggle";
+import { useUserContext } from "@/context/UserContext";
 import { useCsrfToken } from "@/hooks/utils/useCsrfToken";
 import type { ImageryCategory } from "@/lib/types";
 import {
@@ -35,6 +36,7 @@ interface Props {
 }
 
 export default function ImageryAdminClient({ initialCategories }: Props) {
+  const { user } = useUserContext();
   const csrfToken = useCsrfToken();
   const [activeTab, setActiveTab] = useState<Tab>("imagery");
   const [toast, setToast] = useState<{
@@ -159,14 +161,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
             </span>
           </div>
           <div className="flex items-center gap-1">
-            <ThemeToggle className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800" />
-            <Link
-              href="/profile"
-              className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800"
-              title="个人中心"
-            >
-              <User size={18} />
-            </Link>
             <Link
               href="/"
               className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800"
@@ -174,6 +168,17 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
             >
               <Home size={18} />
             </Link>
+            <Link
+              href="/profile"
+              className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800"
+              title={user?.name ?? "个人中心"}
+            >
+              <User
+                size={18}
+                className={user ? "text-blue-500 dark:text-blue-400" : ""}
+              />
+            </Link>
+            <ThemeToggle className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800" />
           </div>
         </div>
       </nav>
@@ -337,14 +342,9 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
             <CategoriesTab
               categoryTree={categories.categoryTree}
               imageryCountByCategory={imageryCountByCategory}
-              pagedCategories={categories.pagedCategories}
-              currentPage={categories.currentPage}
-              totalPages={categories.totalPages}
-              getCategoryPath={categories.getCategoryPathFn}
-              onPageChange={categories.setPage}
+              categories={categories.categories}
               onAddCategory={categories.openAdd}
               onEditCategory={categories.openEdit}
-              onDeleteCategory={categories.openDelete}
             />
           )}
 
@@ -360,6 +360,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
               totalPages={meanings.totalPages}
               onPageChange={meanings.setPage}
               onStartEdit={meanings.startEdit}
+              onStartDelete={meanings.openDeleteModal}
               onReset={meanings.resetEditor}
               onCreate={meanings.handleCreate}
               onUpdate={meanings.handleUpdate}
@@ -388,6 +389,7 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
               onStartEditRelation={occurrences.startEditRelation}
               onResetRelationEditor={occurrences.resetRelationEditor}
               onSaveRelation={occurrences.handleSaveRelation}
+              onDeleteRelation={occurrences.openDeleteOccurrenceModal}
               getCategoryPath={(categoryId) =>
                 categories.getCategoryPathFn(categoryId)
               }
@@ -438,10 +440,8 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
         onClose={closeActiveModal}
         onAddImagery={imagery.handleAdd}
         onEditImagery={imagery.handleEdit}
-        onDeleteImagery={imagery.handleDelete}
         onAddCategory={categories.handleAdd}
         onEditCategory={categories.handleEdit}
-        onDeleteCategory={categories.handleDelete}
         onDeleteMeaning={meanings.handleDelete}
         onDeleteOccurrence={occurrences.handleDeleteRelation}
       />

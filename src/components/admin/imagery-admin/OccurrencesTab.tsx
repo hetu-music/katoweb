@@ -6,9 +6,9 @@ import {
 import type { OccurrenceWithSong } from "@/lib/server/service-imagery";
 import type { ImageryCategory, ImageryItem, ImageryMeaning } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronDown, ChevronRight, Edit2, Layers, Plus } from "lucide-react";
+import { ChevronDown, ChevronRight, Edit2, Layers, Plus, Trash2, X } from "lucide-react";
 import { useEffect } from "react";
-import { type Resolver, useForm } from "react-hook-form";
+import { type Resolver, useFieldArray, useForm } from "react-hook-form";
 import {
   compactInputClassName,
   EmptyState,
@@ -50,6 +50,11 @@ function RelationEditorCard({
     defaultValues: initialValues,
     mode: "onBlur",
     reValidateMode: "onChange",
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "lyric_timetag",
   });
 
   useEffect(() => {
@@ -126,17 +131,42 @@ function RelationEditorCard({
         </div>
 
         <div>
-          <textarea
-            rows={4}
-            placeholder='lyric_timetag JSON，如：[{"start": 12.4, "end": 14.8}]'
-            {...form.register("lyric_timetag")}
-            className={`w-full ${compactInputClassName()} text-xs font-mono`}
-          />
-          {form.formState.errors.lyric_timetag && (
-            <p className="mt-2 text-xs text-red-500">
-              {form.formState.errors.lyric_timetag.message}
-            </p>
-          )}
+          <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+            Lyric Timetag
+          </label>
+          <div className="space-y-2">
+            {fields.map((field, index) => (
+              <div key={field.id} className="flex gap-2">
+                <input
+                  {...form.register(`lyric_timetag.${index}.value`)}
+                  placeholder="01:26.04 或 01:26.040"
+                  className={`flex-1 font-mono text-xs ${compactInputClassName()}`}
+                />
+                <button
+                  type="button"
+                  onClick={() => remove(index)}
+                  className="rounded-lg p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+            {fields.map((_, index) =>
+              form.formState.errors.lyric_timetag?.[index]?.value ? (
+                <p key={index} className="text-xs text-red-500">
+                  第 {index + 1} 项：{form.formState.errors.lyric_timetag[index]?.value?.message}
+                </p>
+              ) : null,
+            )}
+            <button
+              type="button"
+              onClick={() => append({ value: "" })}
+              className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
+            >
+              <Plus size={13} />
+              添加一项
+            </button>
+          </div>
         </div>
 
         <div className="mt-4 flex justify-end gap-2">
@@ -166,6 +196,7 @@ function OccurrenceRow({
   categories,
   getCategoryPath,
   onEdit,
+  onDelete,
 }: {
   songId: number;
   occurrence: OccurrenceWithSong;
@@ -175,6 +206,7 @@ function OccurrenceRow({
     categories: ImageryCategory[],
   ) => string;
   onEdit: (songId: number, occurrence: OccurrenceWithSong) => void;
+  onDelete: (occurrenceId: number, songId: number, label: string) => void;
 }) {
   return (
     <div className="flex flex-col bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden transition-all hover:shadow-md hover:border-blue-200 dark:hover:border-blue-900/30 px-4 py-4 group">
@@ -206,19 +238,43 @@ function OccurrenceRow({
             <div className="mb-1 text-xs uppercase tracking-[0.2em] text-slate-400">
               lyric_timetag
             </div>
-            <pre className="overflow-x-auto rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-600 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-300">
-              {JSON.stringify(occurrence.lyric_timetag, null, 2)}
-            </pre>
+            <div className="flex flex-wrap gap-1.5">
+              {occurrence.lyric_timetag.length > 0 ? (
+                occurrence.lyric_timetag.map((t, i) => (
+                  <span
+                    key={i}
+                    className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-[11px] text-slate-600 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-300"
+                  >
+                    {t}
+                  </span>
+                ))
+              ) : (
+                <span className="text-xs text-slate-400">（无）</span>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="hidden items-center gap-1 group-hover:flex">
+        <div className="invisible flex items-center gap-1 group-hover:visible">
           <button
             type="button"
             onClick={() => onEdit(songId, occurrence)}
             className="rounded-xl p-2 text-emerald-600 transition-colors hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20"
           >
             <Edit2 size={13} />
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              onDelete(
+                occurrence.id,
+                songId,
+                occurrence.imagery_name ?? `意象 #${occurrence.imagery_id}`,
+              )
+            }
+            className="rounded-xl p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20"
+          >
+            <Trash2 size={13} />
           </button>
         </div>
       </div>
@@ -247,6 +303,7 @@ export default function OccurrencesTab({
   onStartEditRelation,
   onResetRelationEditor,
   onSaveRelation,
+  onDeleteRelation,
   getCategoryPath,
 }: {
   songSearchTerm: string;
@@ -269,6 +326,7 @@ export default function OccurrencesTab({
   onStartEditRelation: (songId: number, occurrence: OccurrenceWithSong) => void;
   onResetRelationEditor: () => void;
   onSaveRelation: (values: RelationFormValues) => void | Promise<void>;
+  onDeleteRelation: (occurrenceId: number, songId: number, label: string) => void;
   getCategoryPath: (
     categoryId: number,
     categories: ImageryCategory[],
@@ -395,6 +453,7 @@ export default function OccurrencesTab({
                               categories={categories}
                               getCategoryPath={getCategoryPath}
                               onEdit={onStartEditRelation}
+                              onDelete={onDeleteRelation}
                             />
                           );
                         })}

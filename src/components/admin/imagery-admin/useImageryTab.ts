@@ -2,7 +2,6 @@
 
 import {
   apiCreateImagery,
-  apiDeleteImagery,
   apiGetImageryItems,
   apiUpdateImagery,
 } from "@/lib/api/client-api";
@@ -122,26 +121,6 @@ export function useImageryTab(
     }
   };
 
-  const handleDelete = async () => {
-    if (modal.type !== "delete-imagery") return;
-    setIsSubmitting(true);
-    try {
-      await apiDeleteImagery(modal.item.id, csrfToken);
-      setItems((current) =>
-        current.filter((item) => item.id !== modal.item.id),
-      );
-      showToast("success", `意象「${modal.item.name}」已删除`);
-      closeModal();
-    } catch (error) {
-      showToast(
-        "error",
-        error instanceof Error ? error.message : "删除意象失败",
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return {
     items,
     setItems,
@@ -163,6 +142,5 @@ export function useImageryTab(
     closeModal,
     handleAdd,
     handleEdit,
-    handleDelete,
   };
 }

@@ -59,8 +59,10 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { parseAsInteger, parseAsString } from "nuqs";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useUserContext } from "@/context/UserContext";
 import {
   Controller,
   FormProvider,
@@ -443,6 +445,9 @@ export default function AdminClientComponent({
   initialSongs: SongDetail[];
   initialError: string | null;
 }) {
+  const router = useRouter();
+  const { user } = useUserContext();
+
   // States
   const [searchTerm, setSearchTerm] = useSyncedQueryState<string>(
     "q",
@@ -678,14 +683,6 @@ export default function AdminClientComponent({
             >
               <Bell size={18} />
             </button>
-            <ThemeToggle className="p-2 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400" />
-            <Link
-              href="/profile"
-              className="p-2 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400"
-              title="个人中心"
-            >
-              <User size={18} />
-            </Link>
             <Link
               href="/"
               className="p-2 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400"
@@ -693,6 +690,17 @@ export default function AdminClientComponent({
             >
               <Home size={18} />
             </Link>
+            <Link
+              href="/profile"
+              className="p-2 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400"
+              title={user?.name ?? "个人中心"}
+            >
+              <User
+                size={18}
+                className={user ? "text-blue-500 dark:text-blue-400" : ""}
+              />
+            </Link>
+            <ThemeToggle className="p-2 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400" />
           </div>
         </div>
       </nav>

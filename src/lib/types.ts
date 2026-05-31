@@ -99,7 +99,7 @@ export type ImageryOccurrence = {
   imagery_id: number;
   category_id: number;
   meaning_id: number | null;
-  lyric_timetag: Record<string, unknown>[];
+  lyric_timetag: string[];
 };
 
 export type SongRef = {

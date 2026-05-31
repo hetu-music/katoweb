@@ -7,10 +7,8 @@ export type ModalState =
   | { type: "none" }
   | { type: "add-imagery" }
   | { type: "edit-imagery"; item: ImageryItem }
-  | { type: "delete-imagery"; item: ImageryItem }
   | { type: "add-category"; parentId?: number }
   | { type: "edit-category"; category: ImageryCategory }
-  | { type: "delete-category"; category: ImageryCategory }
   | { type: "delete-meaning"; meaningId: number; label: string }
   | {
       type: "delete-occurrence";

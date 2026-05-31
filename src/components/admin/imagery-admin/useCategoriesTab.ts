@@ -2,7 +2,6 @@
 
 import {
   apiCreateImageryCategory,
-  apiDeleteImageryCategory,
   apiUpdateImageryCategory,
 } from "@/lib/api/client-api";
 import { toCategoryPayload } from "@/lib/forms/imagery-form";
@@ -56,8 +55,6 @@ export function useCategoriesTab(
     setModal({ type: "add-category", parentId });
   const openEdit = (category: ImageryCategory) =>
     setModal({ type: "edit-category", category });
-  const openDelete = (category: ImageryCategory) =>
-    setModal({ type: "delete-category", category });
   const closeModal = () => setModal({ type: "none" });
 
   const handleAdd = async (values: CategoryFormValues) => {
@@ -106,26 +103,6 @@ export function useCategoriesTab(
     }
   };
 
-  const handleDelete = async () => {
-    if (modal.type !== "delete-category") return;
-    setIsSubmitting(true);
-    try {
-      await apiDeleteImageryCategory(modal.category.id, csrfToken);
-      setCategories((current) =>
-        current.filter((category) => category.id !== modal.category.id),
-      );
-      showToast("success", `分类「${modal.category.name}」已删除`);
-      closeModal();
-    } catch (error) {
-      showToast(
-        "error",
-        error instanceof Error ? error.message : "删除分类失败",
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const getCategoryPathFn = useCallback(
     (id: number) => getCategoryPath(id, categories),
     [categories],
@@ -146,11 +123,9 @@ export function useCategoriesTab(
     isSubmitting,
     openAdd,
     openEdit,
-    openDelete,
     closeModal,
     handleAdd,
     handleEdit,
-    handleDelete,
     getCategoryPathFn,
   };
 }

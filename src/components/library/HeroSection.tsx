@@ -14,7 +14,7 @@ const FEATURE_ENTRANCES = [
   {
     id: "qjtx",
     label: "倾尽天下",
-    desc: "一纸长歌，倾尽天下",
+    desc: "一曲长歌，倾尽天下",
     href: "/story/qjtx",
     icon: Scroll,
     textBase: "text-[#A33E3E] dark:text-[#DE5D5D]",
@@ -54,7 +54,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
 
   const currentText =
     hoveredId === "qjtx"
-      ? "一纸长歌，倾尽天下"
+      ? "一曲长歌，倾尽天下"
       : hoveredId === "imagery"
         ? "探索词中万千意象"
         : "你一定想知道，戏里讲了什么故事";
@@ -67,7 +67,18 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
       {/* 左侧：标题与子标题 */}
       <div className="flex flex-col justify-between flex-1 gap-8 md:gap-0">
         <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50 italic tracking-tight leading-[0.8] -mt-1 lg:-mt-1.5">
-          谣歌 <span className="text-[1.3em] font-semibold">{songCount}</span>
+          谣歌{" "}
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={songCount}
+              className="text-[1.3em] font-semibold inline-block"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } }}
+              exit={{ opacity: 0, y: -10, transition: { duration: 0.18, ease: "easeIn" } }}
+            >
+              {songCount}
+            </motion.span>
+          </AnimatePresence>
         </h1>
 
         <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 mt-auto -mb-1 lg:-mb-1.5 min-h-[24px]">
@@ -89,27 +100,24 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 duration: 0.35,
                 ease: [0.25, 1, 0.5, 1],
               }}
-              className="font-light text-sm md:text-[15px] leading-relaxed mb-0 flex flex-wrap items-center select-none"
+              className="font-light text-base md:text-[17px] leading-relaxed mb-0 flex flex-wrap items-center select-none font-[family-name:var(--font-calligraphy)] text-stone-500 dark:text-stone-400"
             >
               {currentText.split("").map((char, i) => (
                 <motion.span
                   key={i}
                   initial={{
                     opacity: 0,
-                    filter: "blur(14px)",
-                    scale: 1.25,
-                    y: 4,
+                    filter: "blur(10px)",
                   }}
                   animate={{
-                    opacity: 1,
-                    filter: "blur(0px)",
-                    scale: 1,
-                    y: 0,
+                    opacity: [0, 0.7, 1],
+                    filter: ["blur(10px)", "blur(4px)", "blur(0px)"],
                   }}
                   transition={{
-                    duration: 0.8,
-                    ease: [0.16, 1, 0.3, 1],
-                    delay: i * 0.035,
+                    duration: 2.2,
+                    ease: [0.22, 0.6, 0.36, 1],
+                    delay: i * 0.1,
+                    times: [0, 0.35, 1],
                   }}
                   className="inline-block mr-[0.15em] origin-center"
                 >
@@ -123,7 +131,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                   animate={{ opacity: 1, filter: "blur(0px)" }}
                   transition={{
                     duration: 0.8,
-                    delay: currentText.length * 0.035,
+                    delay: currentText.length * 0.1,
                     ease: "easeOut",
                   }}
                   className="inline-block"
@@ -146,7 +154,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                   animate={{ opacity: 1, filter: "blur(0px)" }}
                   transition={{
                     duration: 0.8,
-                    delay: currentText.length * 0.035,
+                    delay: currentText.length * 0.1,
                     ease: "easeOut",
                   }}
                   className="ml-1 text-slate-400 dark:text-slate-500 inline-block"
@@ -230,9 +238,9 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
         </div>
 
         {/* -- 移动端入口 (Mobile) - 极简横向排列 -- */}
-        <div className="flex md:hidden flex-row gap-8 w-full mt-2 flex-wrap">
+        <div className="flex md:hidden flex-row gap-8 w-full mt-1 flex-wrap justify-center">
           {/* 主副标题与入口间的分界线 - 古典编排风格的高级分界线 */}
-          <div className="flex items-center w-full mt-2 mb-1.5 opacity-80">
+          <div className="flex items-center w-full mt-2 mb-1 opacity-80">
             <div className="flex-1 h-px bg-linear-to-r from-transparent to-slate-300 dark:to-slate-700" />
             <div className="mx-4 flex items-center justify-center gap-1.5 text-slate-400 dark:text-slate-600">
               <div className="h-[2px] w-[2px] rounded-full bg-current" />
@@ -250,7 +258,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 onMouseEnter={() => setHoveredId(feature.id)}
                 onMouseLeave={() => setHoveredId(null)}
                 onTouchStart={() => setHoveredId(feature.id)}
-                className="group flex items-center justify-between outline-none py-2"
+                className="group flex items-center justify-between outline-none py-1.5 -translate-x-8"
               >
                 <div className="flex items-center gap-4">
                   {/* 菱形小印章指示点 - 加上与桌面端统一的无边界高斯模糊光晕 */}

@@ -259,7 +259,7 @@ export default function MusicLibraryClient({
       />
 
       <main className="mx-auto max-w-7xl px-6 pb-20 pt-32">
-        <section className="mb-8 md:mb-16">
+        <section className="mb-6 md:mb-16">
           <div className="flex items-end justify-between gap-8">
             <HeroSection songCount={filteredSongs.length} />
           </div>

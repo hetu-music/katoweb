@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth, type AuthenticatedUser } from "@/lib/server/server-auth";
-import { updateMeaning } from "@/lib/server/service-imagery";
+import { updateMeaning, deleteMeaning } from "@/lib/server/service-imagery";
 import { createSupabaseServerClient } from "@/lib/db/supabase-auth";
 import { z } from "zod";
 
@@ -47,6 +47,33 @@ export const PUT = withAuth(
       return NextResponse.json(updated);
     } catch (e) {
       console.error("[PUT /api/admin/meanings/[id]]", e);
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 },
+      );
+    }
+  },
+  { requireCSRF: true, requireAdmin: true },
+);
+
+export const DELETE = withAuth(
+  async (request: NextRequest, _user: AuthenticatedUser) => {
+    const meaningId = getIdFromUrl(request);
+    if (!meaningId)
+      return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+
+    try {
+      const supabase = await createSupabaseServerClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token)
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+      await deleteMeaning(meaningId, session.access_token);
+      return NextResponse.json({ success: true });
+    } catch (e) {
+      console.error("[DELETE /api/admin/meanings/[id]]", e);
       return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 },

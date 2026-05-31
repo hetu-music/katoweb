@@ -5,27 +5,6 @@ import type { ImageryCategory, ImageryItem, ImageryMeaning } from "@/lib/types";
 const normalizeString = (value: unknown) =>
   typeof value === "string" ? value : value == null ? "" : String(value);
 
-export function parseLyricTimetag(value: string) {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(value);
-  } catch {
-    throw new Error("lyric_timetag 必须是正确的 JSON 数组。");
-  }
-
-  if (
-    !Array.isArray(parsed) ||
-    parsed.some(
-      (item) =>
-        typeof item !== "object" || item === null || Array.isArray(item),
-    )
-  ) {
-    throw new Error("lyric_timetag 必须是对象数组。");
-  }
-
-  return parsed as Record<string, unknown>[];
-}
-
 export const imageryFormSchema = z.object({
   name: z.preprocess(
     normalizeString,
@@ -57,24 +36,25 @@ export const meaningFormSchema = z.object({
   description: z.preprocess(normalizeString, z.string()),
 });
 
+// lyric_timetag 单项的 schema：每项是一个 LRC 时间戳字符串
+// 支持格式：mm:ss、mm:ss.xx、mm:ss.xxx（分钟可为 1~2 位）
+export const lyricTimetagItemSchema = z.object({
+  value: z.string().superRefine((value, ctx) => {
+    if (value.trim() === "") return; // 空项在提交时过滤掉
+    if (!/^\d{1,2}:\d{2}(\.\d{2,3})?$/.test(value.trim())) {
+      ctx.addIssue({
+        code: "custom",
+        message: '格式应为 mm:ss、mm:ss.xx 或 mm:ss.xxx，如 "01:26.04"',
+      });
+    }
+  }),
+});
+
 export const relationFormSchema = z.object({
   imagery_id: z.number().int().positive("请先选择意象"),
   category_id: z.number().int().positive("请先选择分类"),
   meaning_id: z.number().int().positive().nullable(),
-  lyric_timetag: z.preprocess(
-    normalizeString,
-    z.string().superRefine((value, context) => {
-      try {
-        parseLyricTimetag(value);
-      } catch (error) {
-        context.addIssue({
-          code: "custom",
-          message:
-            error instanceof Error ? error.message : "lyric_timetag 格式错误",
-        });
-      }
-    }),
-  ),
+  lyric_timetag: z.array(lyricTimetagItemSchema),
 });
 
 export const deleteConfirmationFormSchema = z.object({
@@ -131,8 +111,8 @@ export function createRelationFormValues(
     meaning_id:
       typeof occurrence?.meaning_id === "number" ? occurrence.meaning_id : null,
     lyric_timetag: occurrence?.lyric_timetag
-      ? JSON.stringify(occurrence.lyric_timetag, null, 2)
-      : "[]",
+      ? occurrence.lyric_timetag.map((item) => ({ value: item }))
+      : [],
   };
 }
 
@@ -153,7 +133,7 @@ export function toCategoryPayload(
   return {
     name: values.name.trim(),
     parent_id: values.parent_id,
-    level: parent ? (parent.level ?? 0) + 1 : 0,
+    level: parent ? (parent.level ?? 1) + 1 : 1,
     description: values.description.trim() || null,
   };
 }
@@ -170,6 +150,8 @@ export function toRelationPayload(values: RelationFormValues) {
     imagery_id: values.imagery_id,
     category_id: values.category_id,
     meaning_id: values.meaning_id,
-    lyric_timetag: parseLyricTimetag(values.lyric_timetag),
+    lyric_timetag: values.lyric_timetag
+      .filter((item) => item.value.trim() !== "")
+      .map((item) => item.value.trim()),
   };
 }

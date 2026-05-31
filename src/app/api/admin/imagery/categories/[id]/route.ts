@@ -7,7 +7,7 @@ import { z } from "zod";
 const UpdateCategorySchema = z.object({
   name: z.string().min(1).max(50).optional(),
   parent_id: z.number().int().positive().nullable().optional(),
-  level: z.number().int().min(0).nullable().optional(),
+  level: z.number().int().min(1).nullable().optional(),
   description: z.string().max(500).nullable().optional(),
 });
 
@@ -48,6 +48,12 @@ export const PUT = withAuth(
       );
       return NextResponse.json(updated);
     } catch (e) {
+      if (
+        e instanceof Error &&
+        (e as Error & { code?: string }).code === "INVALID_PARENT_LEVEL"
+      ) {
+        return NextResponse.json({ error: e.message }, { status: 400 });
+      }
       console.error("[PUT /api/admin/imagery/categories/[id]]", e);
       return NextResponse.json(
         { error: "Internal server error" },

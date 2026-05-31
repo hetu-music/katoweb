@@ -137,22 +137,12 @@ export async function apiUpdateImagery(
   id: number,
   name: string,
   csrfToken: string,
-) {
-  const res = await fetch(`/api/admin/imagery/${id}`, {
+) {  const res = await fetch(`/api/admin/imagery/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
     body: JSON.stringify({ name }),
   });
   if (!res.ok) throw new Error("更新意象失败");
-  return res.json();
-}
-
-export async function apiDeleteImagery(id: number, csrfToken: string) {
-  const res = await fetch(`/api/admin/imagery/${id}`, {
-    method: "DELETE",
-    headers: { "x-csrf-token": csrfToken },
-  });
-  if (!res.ok) throw new Error("删除意象失败");
   return res.json();
 }
 
@@ -202,15 +192,6 @@ export async function apiUpdateImageryCategory(
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error("更新分类失败");
-  return res.json();
-}
-
-export async function apiDeleteImageryCategory(id: number, csrfToken: string) {
-  const res = await fetch(`/api/admin/imagery/categories/${id}`, {
-    method: "DELETE",
-    headers: { "x-csrf-token": csrfToken },
-  });
-  if (!res.ok) throw new Error("删除分类失败");
   return res.json();
 }
 
@@ -332,7 +313,7 @@ export async function apiCreateOccurrence(
     imagery_id: number;
     category_id: number;
     meaning_id?: number | null;
-    lyric_timetag: Record<string, unknown>[];
+    lyric_timetag: string[];
   },
   csrfToken: string,
 ) {
@@ -351,7 +332,7 @@ export async function apiUpdateOccurrence(
     imagery_id?: number;
     category_id?: number;
     meaning_id?: number | null;
-    lyric_timetag?: Record<string, unknown>[];
+    lyric_timetag?: string[];
   },
   csrfToken: string,
 ) {

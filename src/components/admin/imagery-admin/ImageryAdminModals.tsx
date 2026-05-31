@@ -30,10 +30,8 @@ export default function ImageryAdminModals({
   onClose,
   onAddImagery,
   onEditImagery,
-  onDeleteImagery,
   onAddCategory,
   onEditCategory,
-  onDeleteCategory,
   onDeleteMeaning,
   onDeleteOccurrence,
   deleteSubmitting,
@@ -45,10 +43,8 @@ export default function ImageryAdminModals({
   onClose: () => void;
   onAddImagery: (values: ImageryFormValues) => void | Promise<void>;
   onEditImagery: (values: ImageryFormValues) => void | Promise<void>;
-  onDeleteImagery: () => void;
   onAddCategory: (values: CategoryFormValues) => void | Promise<void>;
   onEditCategory: (values: CategoryFormValues) => void | Promise<void>;
-  onDeleteCategory: () => void;
   onDeleteMeaning: () => void;
   onDeleteOccurrence: () => void;
   deleteSubmitting: boolean;
@@ -90,7 +86,7 @@ export default function ImageryAdminModals({
   if (modal.type === "add-imagery" || modal.type === "edit-imagery") {
     return (
       <ModalBackdrop onClose={onClose}>
-        <ModalCard>
+        <ModalCard className="max-w-lg">
           <form
             onSubmit={imageryForm.handleSubmit((values) =>
               modal.type === "add-imagery"
@@ -165,41 +161,18 @@ export default function ImageryAdminModals({
   }
 
   if (
-    modal.type === "delete-imagery" ||
-    modal.type === "delete-category" ||
     modal.type === "delete-meaning" ||
     modal.type === "delete-occurrence"
   ) {
     const title =
-      modal.type === "delete-imagery"
-        ? "确认删除意象"
-        : modal.type === "delete-category"
-          ? "确认删除分类"
-          : modal.type === "delete-meaning"
-            ? "确认删除含义"
-            : "确认删除关系";
-    const label =
-      modal.type === "delete-imagery"
-        ? modal.item.name
-        : modal.type === "delete-category"
-          ? modal.category.name
-          : modal.label;
+      modal.type === "delete-meaning" ? "确认删除含义" : "确认删除关系";
+    const label = modal.label;
     const description =
-      modal.type === "delete-imagery"
-        ? `将删除意象「${label}」。${modal.item.count > 0 ? ` 当前已有 ${modal.item.count} 条关系记录。` : ""}`
-        : modal.type === "delete-category"
-          ? `将删除分类「${label}」。`
-          : modal.type === "delete-meaning"
-            ? `将删除含义「${label}」。`
-            : `将删除关系记录「${label}」。`;
+      modal.type === "delete-meaning"
+        ? `将删除含义「${label}」。`
+        : `将删除关系记录「${label}」。`;
     const handleConfirm =
-      modal.type === "delete-imagery"
-        ? onDeleteImagery
-        : modal.type === "delete-category"
-          ? onDeleteCategory
-          : modal.type === "delete-meaning"
-            ? onDeleteMeaning
-            : onDeleteOccurrence;
+      modal.type === "delete-meaning" ? onDeleteMeaning : onDeleteOccurrence;
 
     return (
       <DeleteConfirmationModal
@@ -216,7 +189,7 @@ export default function ImageryAdminModals({
   if (modal.type === "add-category" || modal.type === "edit-category") {
     return (
       <ModalBackdrop onClose={onClose}>
-        <ModalCard>
+        <ModalCard className="max-w-lg">
           <form
             onSubmit={categoryForm.handleSubmit((values) =>
               modal.type === "add-category"
@@ -266,26 +239,48 @@ export default function ImageryAdminModals({
 
               <div>
                 <label className={formLabelClassName()}>父分类</label>
-                <select
-                  {...categoryForm.register("parent_id", {
-                    setValueAs: (value) => (value ? Number(value) : null),
-                  })}
-                  className={compactInputClassName()}
-                >
-                  <option value="">（顶级分类）</option>
-                  {categories
-                    .filter(
-                      (category) =>
-                        (modal.type !== "edit-category" ||
-                          category.id !== modal.category.id) &&
-                        (category.level ?? 0) < 3,
-                    )
-                    .map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {getCategoryPath(category.id)}
-                      </option>
-                    ))}
-                </select>
+                {modal.type === "edit-category" &&
+                (modal.category.level ?? 1) === 1 ? (
+                  // L1 分类没有父级，锁定显示
+                  <div className={`${compactInputClassName()} cursor-not-allowed bg-slate-50 text-slate-400 dark:bg-slate-800/50`}>
+                    （顶级分类）
+                  </div>
+                ) : (
+                  <select
+                    {...categoryForm.register("parent_id", {
+                      setValueAs: (value) => (value ? Number(value) : null),
+                    })}
+                    className={compactInputClassName()}
+                  >
+                    {(modal.type === "add-category" ||
+                      (modal.category.level ?? 1) <= 1) && (
+                      <option value="">（顶级分类）</option>
+                    )}
+                    {categories
+                      .filter((category) => {
+                        if (modal.type === "edit-category") {
+                          // 编辑时：只显示 level === 当前 level - 1 的分类（同级父分类）
+                          const currentLevel = modal.category.level ?? 1;
+                          return (
+                            category.id !== modal.category.id &&
+                            (category.level ?? 1) === currentLevel - 1
+                          );
+                        }
+                        // 新增时：显示所有可作为父级的分类（level < 3）
+                        return (category.level ?? 1) < 3;
+                      })
+                      .map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {getCategoryPath(category.id)}
+                        </option>
+                      ))}
+                  </select>
+                )}
+                {modal.type === "edit-category" && (
+                  <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
+                    编辑时只能在同级分类间调整父分类
+                  </p>
+                )}
               </div>
 
               <div>
@@ -384,7 +379,7 @@ function DeleteConfirmationModal({
             <div className="mt-5">
               <input
                 type="text"
-                placeholder="输入“删除”确认"
+                placeholder={'输入"删除"确认'}
                 autoFocus
                 {...form.register("confirmationText")}
                 className={compactInputClassName()}
