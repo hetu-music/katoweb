@@ -192,7 +192,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
 
                 {/* 竖排标题 - 确保文字和光点绝对中心对齐 */}
                 <div
-                  className={`[writing-mode:vertical-rl] font-calligraphy font-medium text-[18px] tracking-[0.55em] mb-[-0.55em] ${feature.offsetClass} ${feature.textBase} ${feature.textHover} transition-[color,filter,text-shadow] duration-1000 group-hover:drop-shadow-[0_0_12px_${feature.glow}] select-none`}
+                  className={`[writing-mode:vertical-rl] font-calligraphy font-medium text-[17px] tracking-[0.55em] mb-[-0.55em] ${feature.offsetClass} ${feature.textBase} ${feature.textHover} transition-[color,filter,text-shadow] duration-1000 group-hover:drop-shadow-[0_0_12px_${feature.glow}] select-none`}
                 >
                   {feature.label.split("").map((char, i) => (
                     <motion.span
