@@ -34,6 +34,8 @@ export function usePlayerTime(onTick?: (currentTime: number, duration: number) =
   const isPlayingRef = useRef(false);
   // 上次触发 setState 时的秒数（整数），只在整秒变化时才 setState
   const lastSecRef = useRef(-1);
+  // loadstart 到 canplay 之间屏蔽 readTime，防止 audio.currentTime=0 时写入错误位置
+  const isLoadingRef = useRef(false);
 
   // seekBase 变化时立即同步
   const [prevSeekBase, setPrevSeekBase] = useState(seekBase);
@@ -48,6 +50,9 @@ export function usePlayerTime(onTick?: (currentTime: number, duration: number) =
     if (!audio) return;
 
     const readTime = () => {
+      // seek/加载期间 audio.currentTime 不可信（已被重置为 0），跳过
+      if (isLoadingRef.current) return;
+
       const ct = seekBaseRef.current + audio.currentTime;
       const dur = trackDurationRef.current;
 
@@ -84,11 +89,23 @@ export function usePlayerTime(onTick?: (currentTime: number, duration: number) =
     };
     const onSeeked = () => readTime();
     const onLoadedMetadata = () => readTime();
+    const onLoadStart = () => {
+      isLoadingRef.current = true;
+    };
+    const onCanPlay = () => {
+      isLoadingRef.current = false;
+      // 新流就绪，立即用最新的 seekBase + audio.currentTime 刷新一次
+      readTime();
+      // 如果正在播放，重启 rAF 循环
+      if (isPlayingRef.current) startRaf();
+    };
 
     audio.addEventListener("play", onPlay);
     audio.addEventListener("pause", onPause);
     audio.addEventListener("seeked", onSeeked);
     audio.addEventListener("loadedmetadata", onLoadedMetadata);
+    audio.addEventListener("loadstart", onLoadStart);
+    audio.addEventListener("canplay", onCanPlay);
 
     if (!audio.paused) {
       isPlayingRef.current = true;
@@ -103,6 +120,8 @@ export function usePlayerTime(onTick?: (currentTime: number, duration: number) =
       audio.removeEventListener("pause", onPause);
       audio.removeEventListener("seeked", onSeeked);
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
+      audio.removeEventListener("loadstart", onLoadStart);
+      audio.removeEventListener("canplay", onCanPlay);
     };
   }, []);
 

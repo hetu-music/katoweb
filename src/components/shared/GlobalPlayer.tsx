@@ -226,13 +226,24 @@ export default function GlobalPlayer() {
 
   // opus seek 是重新请求流，触发 canplay 而非 seeked，preview 在 canplay 后清除
   // 等下一个 rAF 帧（此时 seekBase + audio.currentTime 已稳定）再释放 preview
+  // 只清 ref，不操作 DOM——rAF 接管后会用正确的 seekBase + audio.currentTime 写入
   useEffect(() => {
     const onCanPlay = () => {
       if (isSeekingRef.current) {
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             isSeekingRef.current = false;
-            applySeekPreviewDOM(null, 0);
+            // 清掉 preview 锁之前，先用最新的 seekBase + audio.currentTime 刷新一次 DOM
+            // 避免 React 重渲染时 JSX style 用旧 currentTime 写入导致闪回
+            const a = audioRef.current;
+            const { seekBase, trackDuration } = usePlayerStore.getState();
+            if (a && trackDuration > 0) {
+              const ct = seekBase + a.currentTime;
+              const pct = (ct / trackDuration) * 100;
+              if (progressBarRef.current) progressBarRef.current.style.width = `${pct}%`;
+              if (timeCurrentRef.current) timeCurrentRef.current.textContent = formatPlayerTime(ct);
+            }
+            seekPreviewRef.current = null;
           });
         });
       }
@@ -251,7 +262,7 @@ export default function GlobalPlayer() {
       const a = audioRef.current;
       a?.removeEventListener("canplay", onCanPlay);
     };
-  }, [applySeekPreviewDOM]);
+  }, []);
 
   // 沉浸式全屏页面不显示播放条 UI（音频继续播放）
   const HIDDEN_PATHS = ["/imagery", "/story"];
@@ -304,7 +315,6 @@ export default function GlobalPlayer() {
               <div
                 ref={progressBarRef}
                 className="h-full bg-blue-500 rounded-r-full"
-                style={{ width: duration > 0 ? `${(currentTime / duration) * 100}%` : "0%" }}
               />
             </div>
           </div>
