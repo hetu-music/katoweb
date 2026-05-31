@@ -17,8 +17,7 @@ export const CategoryTreeNode = React.memo(function CategoryTreeNode({
   onAddChild: (parentId: number) => void;
   onEdit: (category: ImageryCategory) => void;
 }) {
-  // Default expanded at depth 0 (L2 nodes inside a L1 column)
-  const [expanded, setExpanded] = useState(depth === 0);
+  const [expanded, setExpanded] = useState(false);
   const hasChildren = node.children.length > 0;
   const count = imageryCountByCategory.get(node.id) ?? 0;
   const isLeaf = !hasChildren;
@@ -62,15 +61,8 @@ export const CategoryTreeNode = React.memo(function CategoryTreeNode({
           {node.name}
         </span>
 
-        {/* Count badge */}
-        {count > 0 && (
-          <span className="shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-            {count}
-          </span>
-        )}
-
         {/* Actions — visible on hover */}
-        <div className="hidden shrink-0 items-center gap-0.5 group-hover:flex">
+        <div className="invisible shrink-0 items-center gap-0.5 group-hover:visible flex">
           {hasChildren && (
             <button
               type="button"
@@ -90,6 +82,13 @@ export const CategoryTreeNode = React.memo(function CategoryTreeNode({
             <Edit2 size={12} />
           </button>
         </div>
+
+        {/* Count badge */}
+        {count > 0 && (
+          <span className="shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+            {count}
+          </span>
+        )}
       </div>
 
       {/* Description — shown below name when leaf */}
