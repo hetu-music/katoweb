@@ -64,7 +64,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
         </h1>
 
         <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 mt-auto -mb-1 lg:-mb-1.5">
-          <span className="text-blue-600 dark:text-blue-500 font-mono text-lg leading-none relative top-0 md:-top-[1.5px] select-none">
+          <span className="text-blue-600 dark:text-blue-500 font-mono text-lg leading-none relative top-0 md:top-[-1.5px] select-none">
             &gt;
           </span>
           <p className="font-light tracking-[0.15em] text-sm md:text-[15px] leading-relaxed mb-0">
@@ -124,7 +124,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
 
                 {/* 竖排标题 - 确保文字和光点绝对中心对齐 */}
                 <div
-                  className={`[writing-mode:vertical-rl] font-calligraphy font-medium text-[18px] tracking-[0.55em] -mb-[0.55em] ${feature.offsetClass} ${feature.textBase} ${feature.textHover} transition-[color,filter,text-shadow] duration-1000 group-hover:drop-shadow-[0_0_12px_${feature.glow}] select-none`}
+                  className={`[writing-mode:vertical-rl] font-calligraphy font-medium text-[18px] tracking-[0.55em] mb-[-0.55em] ${feature.offsetClass} ${feature.textBase} ${feature.textHover} transition-[color,filter,text-shadow] duration-1000 group-hover:drop-shadow-[0_0_12px_${feature.glow}] select-none`}
                 >
                   {feature.label.split("").map((char, i) => (
                     <motion.span
@@ -159,12 +159,12 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
 
                 {/* Hover 展开的微光宣纸画卷面板 */}
                 <div className="absolute top-12 right-full mr-4 lg:mr-6 flex flex-row-reverse overflow-hidden w-0 opacity-0 transition-[width,opacity] duration-2000 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:w-[220px] lg:group-hover:w-[250px] group-hover:opacity-100 z-10 will-change-[width,opacity]">
-                  <div className="flex w-max shrink-0 items-center gap-4 lg:gap-5 backdrop-blur-md bg-white/80 dark:bg-slate-900/80 border border-slate-200/50 dark:border-slate-800/50 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)] rounded-2xl pl-5 pr-4 py-3.5 h-full border-r-2 border-[#D4A373]/50 dark:border-[#D4A373]/30">
+                  <div className="flex w-max shrink-0 items-center gap-4 lg:gap-5 backdrop-blur-md bg-white/80 dark:bg-slate-900/80 border border-slate-200/50 dark:border-slate-800/50 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)] rounded-2xl pl-5 pr-4 py-3.5 h-full border-r-2">
                     <div className="flex flex-col items-end">
                       <span className="text-[15px] font-serif font-bold tracking-[0.15em] text-slate-800 dark:text-slate-200 mb-1 whitespace-nowrap drop-shadow-xs transition-colors duration-500">
                         {feature.label}
                       </span>
-                      <span className="text-[11px] font-sans font-light tracking-[0.1em] text-slate-500 dark:text-slate-400 whitespace-nowrap transition-colors duration-500">
+                      <span className="text-[11px] font-sans font-light tracking-widest text-slate-500 dark:text-slate-400 whitespace-nowrap transition-colors duration-500">
                         {feature.desc}
                       </span>
                     </div>
