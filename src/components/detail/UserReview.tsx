@@ -127,9 +127,7 @@ const UserReview: React.FC<UserReviewProps> = ({ songId }) => {
       ) : (
         <div className="space-y-3">
           <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm whitespace-pre-line break-words min-w-0">
-            {review || (
-              <span className="text-slate-400 italic">暂无评论</span>
-            )}
+            {review || <span className="text-slate-400 italic">暂无评论</span>}
           </p>
           {/* 添加/编辑按钮 — 右对齐 */}
           <div className="flex justify-end">

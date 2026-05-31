@@ -93,7 +93,12 @@ export const CategoryTreeNode = React.memo(function CategoryTreeNode({
 
       {/* Description — shown below name when leaf */}
       {isLeaf && node.description && (
-        <p className={cn("mb-1 truncate px-2 text-xs text-slate-400 dark:text-slate-500", depth > 0 && "ml-3")}>
+        <p
+          className={cn(
+            "mb-1 truncate px-2 text-xs text-slate-400 dark:text-slate-500",
+            depth > 0 && "ml-3",
+          )}
+        >
           {node.description}
         </p>
       )}

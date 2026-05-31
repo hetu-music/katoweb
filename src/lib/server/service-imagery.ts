@@ -266,10 +266,9 @@ export async function updateImageryCategory(
     if (data.parent_id === null) {
       // 改为顶级：只有 L1（level === 1）才允许无父分类
       if (currentLevel !== 1) {
-        throw Object.assign(
-          new Error("只有 L1 分类可以设为顶级分类"),
-          { code: "INVALID_PARENT_LEVEL" },
-        );
+        throw Object.assign(new Error("只有 L1 分类可以设为顶级分类"), {
+          code: "INVALID_PARENT_LEVEL",
+        });
       }
     } else {
       // 查新父分类的 level

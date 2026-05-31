@@ -6,7 +6,15 @@ import {
 import type { OccurrenceWithSong } from "@/lib/server/service-imagery";
 import type { ImageryCategory, ImageryItem, ImageryMeaning } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronDown, ChevronRight, Edit2, Layers, Plus, Trash2, X } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Edit2,
+  Layers,
+  Plus,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useEffect } from "react";
 import { type Resolver, useFieldArray, useForm } from "react-hook-form";
 import {
@@ -154,7 +162,8 @@ function RelationEditorCard({
             {fields.map((_, index) =>
               form.formState.errors.lyric_timetag?.[index]?.value ? (
                 <p key={index} className="text-xs text-red-500">
-                  第 {index + 1} 项：{form.formState.errors.lyric_timetag[index]?.value?.message}
+                  第 {index + 1} 项：
+                  {form.formState.errors.lyric_timetag[index]?.value?.message}
                 </p>
               ) : null,
             )}
@@ -326,7 +335,11 @@ export default function OccurrencesTab({
   onStartEditRelation: (songId: number, occurrence: OccurrenceWithSong) => void;
   onResetRelationEditor: () => void;
   onSaveRelation: (values: RelationFormValues) => void | Promise<void>;
-  onDeleteRelation: (occurrenceId: number, songId: number, label: string) => void;
+  onDeleteRelation: (
+    occurrenceId: number,
+    songId: number,
+    label: string,
+  ) => void;
   getCategoryPath: (
     categoryId: number,
     categories: ImageryCategory[],

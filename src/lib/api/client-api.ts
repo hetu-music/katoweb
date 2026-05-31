@@ -137,7 +137,8 @@ export async function apiUpdateImagery(
   id: number,
   name: string,
   csrfToken: string,
-) {  const res = await fetch(`/api/admin/imagery/${id}`, {
+) {
+  const res = await fetch(`/api/admin/imagery/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
     body: JSON.stringify({ name }),

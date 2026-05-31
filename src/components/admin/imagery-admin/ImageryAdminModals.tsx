@@ -160,10 +160,7 @@ export default function ImageryAdminModals({
     );
   }
 
-  if (
-    modal.type === "delete-meaning" ||
-    modal.type === "delete-occurrence"
-  ) {
+  if (modal.type === "delete-meaning" || modal.type === "delete-occurrence") {
     const title =
       modal.type === "delete-meaning" ? "确认删除含义" : "确认删除关系";
     const label = modal.label;
@@ -242,7 +239,9 @@ export default function ImageryAdminModals({
                 {modal.type === "edit-category" &&
                 (modal.category.level ?? 1) === 1 ? (
                   // L1 分类没有父级，锁定显示
-                  <div className={`${compactInputClassName()} cursor-not-allowed bg-slate-50 text-slate-400 dark:bg-slate-800/50`}>
+                  <div
+                    className={`${compactInputClassName()} cursor-not-allowed bg-slate-50 text-slate-400 dark:bg-slate-800/50`}
+                  >
                     （顶级分类）
                   </div>
                 ) : (
