@@ -22,7 +22,7 @@ export type OccurrenceWithSong = {
   imagery_id: number;
   category_id: number;
   meaning_id: number | null;
-  lyric_timetag: Record<string, unknown>[];
+  lyric_timetag: string[];
   song_title: string;
   song_album: string | null;
   imagery_name?: string;
@@ -43,7 +43,7 @@ function mapOccurrenceRow(row: Record<string, unknown>): OccurrenceWithSong {
     imagery_id: row.imagery_id as number,
     category_id: row.category_id as number,
     meaning_id: (row.meaning_id as number | null) ?? null,
-    lyric_timetag: (row.lyric_timetag as Record<string, unknown>[]) ?? [],
+    lyric_timetag: (row.lyric_timetag as string[]) ?? [],
     song_title: music?.title ?? "",
     song_album: music?.album ?? null,
     imagery_name: imagery?.name,
@@ -354,7 +354,7 @@ export async function createOccurrence(
     imagery_id: number;
     category_id: number;
     meaning_id?: number | null;
-    lyric_timetag: Record<string, unknown>[];
+    lyric_timetag: string[];
   },
   accessToken: string,
 ) {
@@ -379,7 +379,7 @@ export async function updateOccurrence(
     imagery_id?: number;
     category_id?: number;
     meaning_id?: number | null;
-    lyric_timetag?: Record<string, unknown>[];
+    lyric_timetag?: string[];
   },
   accessToken: string,
 ) {

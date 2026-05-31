@@ -8,7 +8,7 @@ const UpdateOccurrenceSchema = z.object({
   imagery_id: z.number().int().positive().optional(),
   category_id: z.number().int().positive().optional(),
   meaning_id: z.number().int().positive().nullable().optional(),
-  lyric_timetag: z.array(z.record(z.string(), z.unknown())).optional(),
+  lyric_timetag: z.array(z.string()).optional(),
 });
 
 function getIdFromUrl(request: NextRequest): number | null {

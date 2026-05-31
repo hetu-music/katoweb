@@ -323,7 +323,7 @@ export async function apiCreateOccurrence(
     imagery_id: number;
     category_id: number;
     meaning_id?: number | null;
-    lyric_timetag: Record<string, unknown>[];
+    lyric_timetag: string[];
   },
   csrfToken: string,
 ) {
@@ -342,7 +342,7 @@ export async function apiUpdateOccurrence(
     imagery_id?: number;
     category_id?: number;
     meaning_id?: number | null;
-    lyric_timetag?: Record<string, unknown>[];
+    lyric_timetag?: string[];
   },
   csrfToken: string,
 ) {

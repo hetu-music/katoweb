@@ -13,7 +13,7 @@ const CreateOccurrenceSchema = z.object({
   imagery_id: z.number().int().positive(),
   category_id: z.number().int().positive(),
   meaning_id: z.number().int().positive().nullable().optional(),
-  lyric_timetag: z.array(z.record(z.string(), z.unknown())).default([]),
+  lyric_timetag: z.array(z.string()).default([]),
 });
 
 export const GET = withAuth(

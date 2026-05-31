@@ -6,9 +6,9 @@ import {
 import type { OccurrenceWithSong } from "@/lib/server/service-imagery";
 import type { ImageryCategory, ImageryItem, ImageryMeaning } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronDown, ChevronRight, Edit2, Layers, Plus } from "lucide-react";
+import { ChevronDown, ChevronRight, Edit2, Layers, Plus, X } from "lucide-react";
 import { useEffect } from "react";
-import { type Resolver, useForm } from "react-hook-form";
+import { type Resolver, useFieldArray, useForm } from "react-hook-form";
 import {
   compactInputClassName,
   EmptyState,
@@ -50,6 +50,11 @@ function RelationEditorCard({
     defaultValues: initialValues,
     mode: "onBlur",
     reValidateMode: "onChange",
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "lyric_timetag",
   });
 
   useEffect(() => {
@@ -129,17 +134,39 @@ function RelationEditorCard({
           <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
             Lyric Timetag
           </label>
-          <textarea
-            rows={4}
-            placeholder='lyric_timetag JSON，如：[{"start": 12.4, "end": 14.8}]'
-            {...form.register("lyric_timetag")}
-            className={`w-full ${compactInputClassName()} text-xs font-mono`}
-          />
-          {form.formState.errors.lyric_timetag && (
-            <p className="mt-2 text-xs text-red-500">
-              {form.formState.errors.lyric_timetag.message}
-            </p>
-          )}
+          <div className="space-y-2">
+            {fields.map((field, index) => (
+              <div key={field.id} className="flex gap-2">
+                <input
+                  {...form.register(`lyric_timetag.${index}.value`)}
+                  placeholder="01:26.04"
+                  className={`flex-1 font-mono text-xs ${compactInputClassName()}`}
+                />
+                <button
+                  type="button"
+                  onClick={() => remove(index)}
+                  className="rounded-lg p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+            {fields.map((_, index) =>
+              form.formState.errors.lyric_timetag?.[index]?.value ? (
+                <p key={index} className="text-xs text-red-500">
+                  第 {index + 1} 项：{form.formState.errors.lyric_timetag[index]?.value?.message}
+                </p>
+              ) : null,
+            )}
+            <button
+              type="button"
+              onClick={() => append({ value: "" })}
+              className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
+            >
+              <Plus size={13} />
+              添加一项
+            </button>
+          </div>
         </div>
 
         <div className="mt-4 flex justify-end gap-2">
@@ -209,9 +236,20 @@ function OccurrenceRow({
             <div className="mb-1 text-xs uppercase tracking-[0.2em] text-slate-400">
               lyric_timetag
             </div>
-            <pre className="overflow-x-auto rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-600 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-300">
-              {JSON.stringify(occurrence.lyric_timetag, null, 2)}
-            </pre>
+            <div className="flex flex-wrap gap-1.5">
+              {occurrence.lyric_timetag.length > 0 ? (
+                occurrence.lyric_timetag.map((t, i) => (
+                  <span
+                    key={i}
+                    className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-[11px] text-slate-600 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-300"
+                  >
+                    {t}
+                  </span>
+                ))
+              ) : (
+                <span className="text-xs text-slate-400">（无）</span>
+              )}
+            </div>
           </div>
         </div>
 
