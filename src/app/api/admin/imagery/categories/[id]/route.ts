@@ -7,7 +7,7 @@ import { z } from "zod";
 const UpdateCategorySchema = z.object({
   name: z.string().min(1).max(50).optional(),
   parent_id: z.number().int().positive().nullable().optional(),
-  level: z.number().int().min(0).nullable().optional(),
+  level: z.number().int().min(1).nullable().optional(),
   description: z.string().max(500).nullable().optional(),
 });
 
