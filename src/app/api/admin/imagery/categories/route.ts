@@ -56,6 +56,12 @@ export const POST = withAuth(
       );
       return NextResponse.json(created);
     } catch (e) {
+      if (
+        e instanceof Error &&
+        (e as Error & { code?: string }).code === "MAX_DEPTH_EXCEEDED"
+      ) {
+        return NextResponse.json({ error: e.message }, { status: 400 });
+      }
       console.error("[POST /api/admin/imagery/categories]", e);
       return NextResponse.json(
         { error: "Internal server error" },

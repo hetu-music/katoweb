@@ -206,6 +206,27 @@ export async function createImageryCategory(
   },
   accessToken: string,
 ) {
+  // 如果有父分类，校验父分类 level 不能超过 2（即父最深为 L2，子为 L3）
+  if (data.parent_id) {
+    const supabase = getUserClient(accessToken);
+    if (!supabase) throw new Error("Supabase client unavailable");
+
+    const { data: parent, error } = await supabase
+      .from(TABLES.IMAGERY_CAT)
+      .select("level")
+      .eq("id", data.parent_id)
+      .single();
+    if (error) throw error;
+
+    const parentLevel = (parent as { level: number | null }).level ?? 1;
+    if (parentLevel >= 3) {
+      throw Object.assign(
+        new Error("分类最多支持 3 层，L3 分类不能再添加子分类"),
+        { code: "MAX_DEPTH_EXCEEDED" },
+      );
+    }
+  }
+
   const supabase = getUserClient(accessToken);
   if (!supabase) throw new Error("Supabase client unavailable");
   const { data: created, error } = await supabase

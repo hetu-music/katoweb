@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth, type AuthenticatedUser } from "@/lib/server/server-auth";
-import { updateOccurrence } from "@/lib/server/service-imagery";
+import { updateOccurrence, deleteOccurrence } from "@/lib/server/service-imagery";
 import { createSupabaseServerClient } from "@/lib/db/supabase-auth";
 import { z } from "zod";
 
@@ -49,6 +49,30 @@ export const PUT = withAuth(
         return NextResponse.json({ error: e.message }, { status: 400 });
       }
       console.error("[PUT /api/admin/occurrences/[id]]", e);
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 },
+      );
+    }
+  },
+  { requireCSRF: true, requireAdmin: true },
+);
+
+export const DELETE = withAuth(
+  async (request: NextRequest, _user: AuthenticatedUser) => {
+    const id = getIdFromUrl(request);
+    if (!id) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+    try {
+      const supabase = await createSupabaseServerClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token)
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      await deleteOccurrence(id, session.access_token);
+      return NextResponse.json({ success: true });
+    } catch (e) {
+      console.error("[DELETE /api/admin/occurrences/[id]]", e);
       return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 },
