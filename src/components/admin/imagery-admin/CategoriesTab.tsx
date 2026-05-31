@@ -50,8 +50,8 @@ export default function CategoriesTab({
   onEditCategory: (category: ImageryCategory) => void;
   onDeleteCategory: (category: ImageryCategory) => void;
 }) {
-  const l1Count = categories.filter((c) => (c.level ?? 0) === 0).length;
-  const l2Count = categories.filter((c) => (c.level ?? 0) === 1).length;
+  const l1Count = categories.filter((c) => (c.level ?? 1) === 1).length;
+  const l2Count = categories.filter((c) => (c.level ?? 1) === 2).length;
   const leafCount = categories.filter((c) => {
     const hasChildren = categories.some((child) => child.parent_id === c.id);
     return !hasChildren;

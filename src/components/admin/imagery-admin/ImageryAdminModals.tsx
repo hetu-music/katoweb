@@ -278,7 +278,7 @@ export default function ImageryAdminModals({
                       (category) =>
                         (modal.type !== "edit-category" ||
                           category.id !== modal.category.id) &&
-                        (category.level ?? 0) < 3,
+                        (category.level ?? 1) < 3,
                     )
                     .map((category) => (
                       <option key={category.id} value={category.id}>
