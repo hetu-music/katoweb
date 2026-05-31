@@ -126,6 +126,9 @@ function RelationEditorCard({
         </div>
 
         <div>
+          <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+            Lyric Timetag
+          </label>
           <textarea
             rows={4}
             placeholder='lyric_timetag JSON，如：[{"start": 12.4, "end": 14.8}]'
@@ -212,7 +215,7 @@ function OccurrenceRow({
           </div>
         </div>
 
-        <div className="hidden items-center gap-1 group-hover:flex">
+        <div className="invisible flex items-center gap-1 group-hover:visible">
           <button
             type="button"
             onClick={() => onEdit(songId, occurrence)}

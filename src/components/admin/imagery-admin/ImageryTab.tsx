@@ -96,7 +96,7 @@ export default function ImageryTab({
                     </div>
                   </div>
 
-                  <div className="hidden items-center gap-1 group-hover:flex">
+                  <div className="invisible flex items-center gap-1 group-hover:visible">
                     <button
                       onClick={() => onEdit(item)}
                       className="rounded-xl p-2 text-emerald-600 transition-colors hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20"

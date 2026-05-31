@@ -192,7 +192,7 @@ export default function MeaningsTab({
                         {meaning.description || "暂无描述"}
                       </p>
                     </div>
-                    <div className="hidden items-center gap-1 group-hover:flex">
+                    <div className="invisible flex items-center gap-1 group-hover:visible">
                       <button
                         type="button"
                         onClick={() => onStartEdit(meaning)}
