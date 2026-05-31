@@ -100,24 +100,24 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 duration: 0.35,
                 ease: [0.25, 1, 0.5, 1],
               }}
-              className="font-light text-sm md:text-[15px] leading-relaxed mb-0 flex flex-wrap items-center select-none"
+              className="font-light text-sm md:text-[15px] leading-relaxed mb-0 flex flex-wrap items-center select-none font-[family-name:var(--font-calligraphy)]"
             >
               {currentText.split("").map((char, i) => (
                 <motion.span
                   key={i}
                   initial={{
                     opacity: 0,
-                    filter: "blur(8px)",
+                    filter: "blur(10px)",
                   }}
                   animate={{
-                    opacity: [0, 0.6, 1],
-                    filter: ["blur(8px)", "blur(3px)", "blur(0px)"],
+                    opacity: [0, 0.7, 1],
+                    filter: ["blur(10px)", "blur(4px)", "blur(0px)"],
                   }}
                   transition={{
-                    duration: 0.9,
-                    ease: "easeOut",
+                    duration: 1.6,
+                    ease: [0.22, 0.6, 0.36, 1],
                     delay: i * 0.08,
-                    times: [0, 0.4, 1],
+                    times: [0, 0.35, 1],
                   }}
                   className="inline-block mr-[0.15em] origin-center"
                 >
