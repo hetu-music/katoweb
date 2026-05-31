@@ -340,7 +340,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
               categories={categories.categories}
               onAddCategory={categories.openAdd}
               onEditCategory={categories.openEdit}
-              onDeleteCategory={categories.openDelete}
             />
           )}
 
@@ -434,7 +433,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
         onClose={closeActiveModal}
         onAddImagery={imagery.handleAdd}
         onEditImagery={imagery.handleEdit}
-        onDeleteImagery={imagery.handleDelete}
         onAddCategory={categories.handleAdd}
         onEditCategory={categories.handleEdit}
         onDeleteMeaning={meanings.handleDelete}

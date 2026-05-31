@@ -234,7 +234,7 @@ export function ModalCard({
   return (
     <div
       className={cn(
-        "w-full max-w-md rounded-[28px] border border-slate-200/80 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900",
+        "w-[calc(100vw-2rem)] max-w-md rounded-[28px] border border-slate-200/80 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900",
         className,
       )}
     >

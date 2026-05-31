@@ -196,15 +196,7 @@ export async function updateImagery(
   return data;
 }
 
-export async function deleteImagery(id: number, accessToken: string) {
-  const supabase = getUserClient(accessToken);
-  if (!supabase) throw new Error("Supabase client unavailable");
-  const { error } = await supabase.from(TABLES.IMAGERY).delete().eq("id", id);
-  if (error) throw error;
-}
-
 // ─── write functions: imagery categories ─────────────────────────────────────
-
 export async function createImageryCategory(
   data: {
     name: string;

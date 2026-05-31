@@ -30,7 +30,6 @@ export default function ImageryAdminModals({
   onClose,
   onAddImagery,
   onEditImagery,
-  onDeleteImagery,
   onAddCategory,
   onEditCategory,
   onDeleteMeaning,
@@ -44,7 +43,6 @@ export default function ImageryAdminModals({
   onClose: () => void;
   onAddImagery: (values: ImageryFormValues) => void | Promise<void>;
   onEditImagery: (values: ImageryFormValues) => void | Promise<void>;
-  onDeleteImagery: () => void;
   onAddCategory: (values: CategoryFormValues) => void | Promise<void>;
   onEditCategory: (values: CategoryFormValues) => void | Promise<void>;
   onDeleteMeaning: () => void;
@@ -163,30 +161,18 @@ export default function ImageryAdminModals({
   }
 
   if (
-    modal.type === "delete-imagery" ||
     modal.type === "delete-meaning" ||
     modal.type === "delete-occurrence"
   ) {
     const title =
-      modal.type === "delete-imagery"
-        ? "确认删除意象"
-        : modal.type === "delete-meaning"
-          ? "确认删除含义"
-          : "确认删除关系";
-    const label =
-      modal.type === "delete-imagery" ? modal.item.name : modal.label;
+      modal.type === "delete-meaning" ? "确认删除含义" : "确认删除关系";
+    const label = modal.label;
     const description =
-      modal.type === "delete-imagery"
-        ? `将删除意象「${label}」。${modal.item.count > 0 ? ` 当前已有 ${modal.item.count} 条关系记录。` : ""}`
-        : modal.type === "delete-meaning"
-          ? `将删除含义「${label}」。`
-          : `将删除关系记录「${label}」。`;
+      modal.type === "delete-meaning"
+        ? `将删除含义「${label}」。`
+        : `将删除关系记录「${label}」。`;
     const handleConfirm =
-      modal.type === "delete-imagery"
-        ? onDeleteImagery
-        : modal.type === "delete-meaning"
-          ? onDeleteMeaning
-          : onDeleteOccurrence;
+      modal.type === "delete-meaning" ? onDeleteMeaning : onDeleteOccurrence;
 
     return (
       <DeleteConfirmationModal
