@@ -651,23 +651,23 @@ export default function AdminClientComponent({
       {/* Navbar to match MusicLibraryClient */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA]/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-1.5 bg-slate-200/50 dark:bg-slate-900/50 backdrop-blur-md border border-slate-200/30 dark:border-slate-800/60 rounded-full p-1 shadow-inner relative">
+          <div className="shrink-0 flex items-center gap-1.5 bg-slate-200/50 dark:bg-slate-900/50 backdrop-blur-md border border-slate-200/30 dark:border-slate-800/60 rounded-full p-1 shadow-inner relative">
             {/* 歌曲管理 (当前激活态 - 蓝色主题) */}
-            <span className="relative flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium tracking-wide bg-linear-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 text-white shadow-md shadow-blue-500/20 dark:shadow-blue-500/10 transition-all select-none">
-              <Music size={14} className="animate-pulse" />
-              <span>歌曲管理</span>
+            <span className="relative flex items-center gap-2 px-3 sm:px-5 py-2 rounded-full text-sm font-medium tracking-wide bg-linear-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 text-white shadow-md shadow-blue-500/20 dark:shadow-blue-500/10 transition-all select-none">
+              <Music size={14} className="sm:animate-pulse shrink-0" />
+              <span className="hidden sm:inline">歌曲管理</span>
             </span>
 
             {/* 意象管理 (当前未激活态) */}
             <Link
               href="/admin/imagery"
-              className="group relative flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium tracking-wide text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/40 hover:shadow-xs transition-all duration-300"
+              className="group relative flex items-center gap-2 px-3 sm:px-5 py-2 rounded-full text-sm font-medium tracking-wide text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/40 hover:shadow-xs transition-all duration-300"
             >
               <Tag
                 size={14}
-                className="text-slate-400 dark:text-slate-500 group-hover:text-violet-500 dark:group-hover:text-violet-400 transition-colors duration-300 group-hover:scale-110"
+                className="text-slate-400 dark:text-slate-500 group-hover:text-violet-500 dark:group-hover:text-violet-400 transition-colors duration-300 group-hover:scale-110 shrink-0"
               />
-              <span>意象管理</span>
+              <span className="hidden sm:inline">意象管理</span>
             </Link>
           </div>
           <div className="flex items-center gap-1">
