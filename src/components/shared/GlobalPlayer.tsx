@@ -18,10 +18,6 @@ import {
   SkipBack,
   SkipForward,
   Trash2,
-  Volume,
-  Volume1,
-  Volume2,
-  VolumeX,
   X,
 } from "lucide-react";
 import Image from "next/image";
@@ -43,8 +39,6 @@ export default function GlobalPlayer() {
     currentIndex,
     isPlaying,
     isLoading,
-    volume,
-    isMuted,
     error,
     playerVisible,
     lyricsMap,
@@ -58,8 +52,6 @@ export default function GlobalPlayer() {
     removeFromQueue,
     clearQueue,
     seek,
-    setVolume,
-    toggleMute,
   } = usePlayerStore();
   const controls = useMemo(
     () => ({
@@ -73,8 +65,6 @@ export default function GlobalPlayer() {
       removeFromQueue,
       clearQueue,
       seek,
-      setVolume,
-      toggleMute,
     }),
     [
       play,
@@ -87,8 +77,6 @@ export default function GlobalPlayer() {
       removeFromQueue,
       clearQueue,
       seek,
-      setVolume,
-      toggleMute,
     ],
   );
   const audioRef = useRef(getAudio());
@@ -122,28 +110,6 @@ export default function GlobalPlayer() {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [showQueue]);
-
-  // ── 音量面板 ──────────────────────────────────────────────────────────────
-  const [showVolume, setShowVolume] = useState(false);
-  const volumeRef = useRef<HTMLDivElement>(null);
-  const volumeRefMobile = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!showVolume) return;
-    const handler = (e: MouseEvent | TouchEvent) => {
-      const target = e.target as Node;
-      const isClickInsideDesktop = volumeRef.current?.contains(target);
-      const isClickInsideMobile = volumeRefMobile.current?.contains(target);
-      if (!isClickInsideDesktop && !isClickInsideMobile) {
-        setShowVolume(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    document.addEventListener("touchstart", handler);
-    return () => {
-      document.removeEventListener("mousedown", handler);
-      document.removeEventListener("touchstart", handler);
-    };
-  }, [showVolume]);
 
   // ── LRC 歌词 ──────────────────────────────────────────────────────────────
   const lrcLines = useMemo(() => {
@@ -180,7 +146,11 @@ export default function GlobalPlayer() {
       if (t !== null) {
         setSeekPreview(t);
       }
-      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      try {
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      } catch {
+        // Safari may not support setPointerCapture in all contexts
+      }
     },
     [duration, getTimeFromPointer],
   );
@@ -201,6 +171,40 @@ export default function GlobalPlayer() {
       const t = getTimeFromPointer(e.clientX);
       if (t !== null) {
         // 先标记 seeking，等 seeked 事件触发后再清除 preview，防止闪回
+        isSeekingRef.current = true;
+        setSeekPreview(t);
+        controls.seek(t);
+      } else {
+        setSeekPreview(null);
+      }
+    },
+    [controls, getTimeFromPointer],
+  );
+  // Safari Touch Events fallback for seek bar
+  const handleSeekTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      if (!duration) return;
+      isDraggingRef.current = true;
+      const t = getTimeFromPointer(e.touches[0].clientX);
+      if (t !== null) setSeekPreview(t);
+    },
+    [duration, getTimeFromPointer],
+  );
+  const handleSeekTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (!isDraggingRef.current || !duration) return;
+      const t = getTimeFromPointer(e.touches[0].clientX);
+      if (t !== null) setSeekPreview(t);
+    },
+    [duration, getTimeFromPointer],
+  );
+  const handleSeekTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      if (!isDraggingRef.current) return;
+      isDraggingRef.current = false;
+      const touch = e.changedTouches[0];
+      const t = getTimeFromPointer(touch.clientX);
+      if (t !== null) {
         isSeekingRef.current = true;
         setSeekPreview(t);
         controls.seek(t);
@@ -240,52 +244,6 @@ export default function GlobalPlayer() {
     };
   }, []);
 
-  // ── 音量拖拽 ──────────────────────────────────────────────────────────────
-  const volTrackRef = useRef<HTMLDivElement>(null);
-  const volTrackRefMobile = useRef<HTMLDivElement>(null);
-  const isVolDraggingRef = useRef(false);
-  const activeVolTrackRef = useRef<HTMLDivElement | null>(null);
-
-  const getVolFromPointer = useCallback(
-    (clientY: number, trackEl: HTMLDivElement | null) => {
-      if (!trackEl) return null;
-      const rect = trackEl.getBoundingClientRect();
-      return Math.max(0, Math.min(1, 1 - (clientY - rect.top) / rect.height));
-    },
-    [],
-  );
-
-  const handleVolPointerDown = useCallback(
-    (
-      e: React.PointerEvent,
-      trackRef: React.RefObject<HTMLDivElement | null>,
-    ) => {
-      isVolDraggingRef.current = true;
-      activeVolTrackRef.current = trackRef.current;
-      const v = getVolFromPointer(e.clientY, trackRef.current);
-      if (v !== null) controls.setVolume(v);
-      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    },
-    [controls, getVolFromPointer],
-  );
-  const handleVolPointerMove = useCallback(
-    (e: React.PointerEvent) => {
-      if (!isVolDraggingRef.current) return;
-      const v = getVolFromPointer(e.clientY, activeVolTrackRef.current);
-      if (v !== null) controls.setVolume(v);
-    },
-    [controls, getVolFromPointer],
-  );
-  const handleVolPointerUp = useCallback(
-    (e: React.PointerEvent) => {
-      isVolDraggingRef.current = false;
-      const v = getVolFromPointer(e.clientY, activeVolTrackRef.current);
-      if (v !== null) controls.setVolume(v);
-      activeVolTrackRef.current = null;
-    },
-    [controls, getVolFromPointer],
-  );
-
   // 沉浸式全屏页面不显示播放条 UI（音频继续播放）
   const HIDDEN_PATHS = ["/imagery", "/story"];
   if (HIDDEN_PATHS.some((p) => pathname.startsWith(p))) return null;
@@ -294,7 +252,6 @@ export default function GlobalPlayer() {
 
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex < queue.length - 1;
-  const effectiveVolume = isMuted ? 0 : volume;
   const cardHeightClass = currentLrcText
     ? "h-[88px] sm:h-[68px]"
     : "h-[60px] sm:h-[68px]";
@@ -330,6 +287,9 @@ export default function GlobalPlayer() {
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerUp}
+            onTouchStart={handleSeekTouchStart}
+            onTouchMove={handleSeekTouchMove}
+            onTouchEnd={handleSeekTouchEnd}
           >
             <div className="h-1 bg-slate-200 dark:bg-slate-700/50 rounded-t-2xl overflow-hidden group-hover/prog:h-1.5 transition-all duration-150">
               <div
@@ -621,94 +581,6 @@ export default function GlobalPlayer() {
               </button>
             </div>
 
-            {/* 音量面板 */}
-            <div className="relative shrink-0" ref={volumeRef}>
-              <div
-                className={cn(
-                  "absolute bottom-full right-1/2 mb-3 p-2.5 rounded-2xl w-12",
-                  "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl",
-                  "border border-slate-200/60 dark:border-slate-700/50",
-                  "shadow-2xl shadow-slate-200/40 dark:shadow-black/40",
-                  "transition-all duration-200 origin-bottom",
-                  "flex flex-col items-center gap-3 select-none",
-                  showVolume
-                    ? "opacity-100 scale-100 pointer-events-auto translate-x-1/2 translate-y-0"
-                    : "opacity-0 scale-95 pointer-events-none translate-x-1/2 translate-y-2",
-                )}
-              >
-                <span className="shrink-0 text-[9px] font-mono font-bold text-slate-400 dark:text-slate-500 text-center w-full">
-                  {Math.round(effectiveVolume * 100)}%
-                </span>
-
-                <div
-                  className="relative w-6 h-28 flex justify-center cursor-pointer select-none group/vol-area [touch-action:none]"
-                  onPointerDown={(e) => handleVolPointerDown(e, volTrackRef)}
-                  onPointerMove={handleVolPointerMove}
-                  onPointerUp={handleVolPointerUp}
-                  onPointerCancel={handleVolPointerUp}
-                >
-                  {/* The actual thin track */}
-                  <div
-                    ref={volTrackRef}
-                    className="relative w-1 h-full rounded-full bg-slate-200 dark:bg-slate-700/50 overflow-hidden group-hover/vol-area:bg-slate-300 dark:group-hover/vol-area:bg-slate-600 transition-colors"
-                  >
-                    <div
-                      className="absolute bottom-0 left-0 right-0 bg-blue-500 rounded-full"
-                      style={{ height: `${effectiveVolume * 100}%` }}
-                    />
-                  </div>
-                  {/* Knob handle */}
-                  <div
-                    className="absolute left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border border-slate-200 shadow-md pointer-events-none scale-0 group-hover/vol-area:scale-100 transition-transform duration-150"
-                    style={{
-                      bottom: `calc(${effectiveVolume * 100}% - 6px)`,
-                    }}
-                  />
-                </div>
-
-                <button
-                  onClick={controls.toggleMute}
-                  aria-label={isMuted ? "取消静音" : "静音"}
-                  className={cn(
-                    "shrink-0 p-1 rounded-full transition-all",
-                    "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200",
-                    "hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-90",
-                  )}
-                >
-                  {effectiveVolume === 0 ? (
-                    <VolumeX size={14} />
-                  ) : effectiveVolume < 0.3 ? (
-                    <Volume size={14} />
-                  ) : effectiveVolume < 0.7 ? (
-                    <Volume1 size={14} />
-                  ) : (
-                    <Volume2 size={14} />
-                  )}
-                </button>
-              </div>
-
-              <button
-                onClick={() => setShowVolume((v) => !v)}
-                aria-label={isMuted ? "取消静音" : "音量"}
-                className={cn(
-                  "p-2 rounded-full transition-colors",
-                  "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
-                  "hover:bg-slate-100 dark:hover:bg-slate-800/80",
-                  showVolume &&
-                    "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300",
-                )}
-              >
-                {effectiveVolume === 0 ? (
-                  <VolumeX size={15} />
-                ) : effectiveVolume < 0.3 ? (
-                  <Volume size={15} />
-                ) : effectiveVolume < 0.7 ? (
-                  <Volume1 size={15} />
-                ) : (
-                  <Volume2 size={15} />
-                )}
-              </button>
-            </div>
           </div>
         </div>
 
@@ -956,96 +828,6 @@ export default function GlobalPlayer() {
                     <line x1="3" y1="12" x2="3.01" y2="12" />
                     <line x1="3" y1="18" x2="3.01" y2="18" />
                   </svg>
-                </button>
-              </div>
-
-              {/* 音量面板 (移动端版) */}
-              <div className="relative shrink-0" ref={volumeRefMobile}>
-                <div
-                  className={cn(
-                    "absolute bottom-full right-1/2 mb-3 p-2.5 rounded-2xl w-12",
-                    "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl",
-                    "border border-slate-200/60 dark:border-slate-700/50",
-                    "shadow-2xl shadow-slate-200/40 dark:shadow-black/40",
-                    "transition-all duration-200 origin-bottom",
-                    "flex flex-col items-center gap-3 select-none",
-                    showVolume
-                      ? "opacity-100 scale-100 pointer-events-auto translate-x-1/2 translate-y-0"
-                      : "opacity-0 scale-95 pointer-events-none translate-x-1/2 translate-y-2",
-                  )}
-                >
-                  <span className="shrink-0 text-[9px] font-mono font-bold text-slate-400 dark:text-slate-500 text-center w-full">
-                    {Math.round(effectiveVolume * 100)}%
-                  </span>
-
-                  <div
-                    className="relative w-10 h-28 flex justify-center cursor-pointer select-none group/vol-area [touch-action:none]"
-                    onPointerDown={(e) =>
-                      handleVolPointerDown(e, volTrackRefMobile)
-                    }
-                    onPointerMove={handleVolPointerMove}
-                    onPointerUp={handleVolPointerUp}
-                    onPointerCancel={handleVolPointerUp}
-                  >
-                    <div
-                      ref={volTrackRefMobile}
-                      className="relative w-1.5 h-full rounded-full bg-slate-200 dark:bg-slate-700/50 overflow-hidden transition-colors"
-                    >
-                      <div
-                        className="absolute bottom-0 left-0 right-0 bg-blue-500 rounded-full"
-                        style={{ height: `${effectiveVolume * 100}%` }}
-                      />
-                    </div>
-                    {/* Knob handle - always visible on mobile */}
-                    <div
-                      className="absolute left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-white border border-slate-200 shadow-md pointer-events-none"
-                      style={{
-                        bottom: `calc(${effectiveVolume * 100}% - 8px)`,
-                      }}
-                    />
-                  </div>
-
-                  <button
-                    onClick={controls.toggleMute}
-                    aria-label={isMuted ? "取消静音" : "静音"}
-                    className={cn(
-                      "shrink-0 p-1 rounded-full transition-all",
-                      "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200",
-                      "hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-90",
-                    )}
-                  >
-                    {effectiveVolume === 0 ? (
-                      <VolumeX size={14} />
-                    ) : effectiveVolume < 0.3 ? (
-                      <Volume size={14} />
-                    ) : effectiveVolume < 0.7 ? (
-                      <Volume1 size={14} />
-                    ) : (
-                      <Volume2 size={14} />
-                    )}
-                  </button>
-                </div>
-
-                <button
-                  onClick={() => setShowVolume((v) => !v)}
-                  aria-label={isMuted ? "取消静音" : "音量"}
-                  className={cn(
-                    "p-1.5 rounded-full transition-colors",
-                    "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
-                    "hover:bg-slate-100 dark:hover:bg-slate-800/80",
-                    showVolume &&
-                      "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300",
-                  )}
-                >
-                  {effectiveVolume === 0 ? (
-                    <VolumeX size={14} />
-                  ) : effectiveVolume < 0.3 ? (
-                    <Volume size={14} />
-                  ) : effectiveVolume < 0.7 ? (
-                    <Volume1 size={14} />
-                  ) : (
-                    <Volume2 size={14} />
-                  )}
                 </button>
               </div>
             </div>
