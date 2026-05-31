@@ -1,6 +1,7 @@
 "use client";
 
 import ThemeToggle from "@/components/shared/ThemeToggle";
+import { useUserContext } from "@/context/UserContext";
 import { useCsrfToken } from "@/hooks/utils/useCsrfToken";
 import type { ImageryCategory } from "@/lib/types";
 import {
@@ -35,6 +36,7 @@ interface Props {
 }
 
 export default function ImageryAdminClient({ initialCategories }: Props) {
+  const { user } = useUserContext();
   const csrfToken = useCsrfToken();
   const [activeTab, setActiveTab] = useState<Tab>("imagery");
   const [toast, setToast] = useState<{
@@ -163,9 +165,12 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
             <Link
               href="/profile"
               className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-800"
-              title="个人中心"
+              title={user?.name ?? "个人中心"}
             >
-              <User size={18} />
+              <User
+                size={18}
+                className={user ? "text-blue-500 dark:text-blue-400" : ""}
+              />
             </Link>
             <Link
               href="/"
