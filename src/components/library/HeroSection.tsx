@@ -107,9 +107,9 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                     y: 0,
                   }}
                   transition={{
-                    duration: 0.8,
+                    duration: 1.0,
                     ease: [0.16, 1, 0.3, 1],
-                    delay: i * 0.035,
+                    delay: i * 0.06,
                   }}
                   className="inline-block mr-[0.15em] origin-center"
                 >
@@ -123,7 +123,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                   animate={{ opacity: 1, filter: "blur(0px)" }}
                   transition={{
                     duration: 0.8,
-                    delay: currentText.length * 0.035,
+                    delay: currentText.length * 0.06,
                     ease: "easeOut",
                   }}
                   className="inline-block"
@@ -146,7 +146,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                   animate={{ opacity: 1, filter: "blur(0px)" }}
                   transition={{
                     duration: 0.8,
-                    delay: currentText.length * 0.035,
+                    delay: currentText.length * 0.06,
                     ease: "easeOut",
                   }}
                   className="ml-1 text-slate-400 dark:text-slate-500 inline-block"
