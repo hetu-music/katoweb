@@ -627,6 +627,9 @@ export default function ImageryClient({ items, categories }: Props) {
       setPanelSide(clickX > (cloudRight * 3) / 4 ? "left" : "right");
       setSelectedItem(d.item);
       setPanelOpen(true);
+      // 面板打开后 Drawer/Sheet 会给背景加 aria-hidden，需要先让按钮失焦
+      // 避免 "aria-hidden on focused element" 的无障碍警告
+      (document.activeElement as HTMLElement)?.blur();
       // Dismiss tooltip immediately when panel opens
       hoveredBtnRef.current = null;
       setHoveredData(null);

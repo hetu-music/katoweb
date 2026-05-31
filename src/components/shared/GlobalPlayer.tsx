@@ -1,6 +1,7 @@
 "use client";
 
 import { usePlayerStore } from "@/store/player-store";
+import { useShallow } from "zustand/react/shallow";
 import { usePlayerTime } from "@/hooks/player/usePlayerTime";
 import {
   formatPlayerTime,
@@ -18,10 +19,6 @@ import {
   SkipBack,
   SkipForward,
   Trash2,
-  Volume,
-  Volume1,
-  Volume2,
-  VolumeX,
   X,
 } from "lucide-react";
 import Image from "next/image";
@@ -37,72 +34,72 @@ import React, {
 
 export default function GlobalPlayer() {
   const pathname = usePathname();
-  const {
-    currentTrack,
-    queue,
-    currentIndex,
-    isPlaying,
-    isLoading,
-    volume,
-    isMuted,
-    error,
-    playerVisible,
-    lyricsMap,
-    play,
-    enqueue,
-    toggle,
-    pause,
-    jumpTo,
-    prev,
-    next,
-    removeFromQueue,
-    clearQueue,
-    seek,
-    setVolume,
-    toggleMute,
-  } = usePlayerStore();
-  const controls = useMemo(
-    () => ({
-      play,
-      enqueue,
-      toggle,
-      pause,
-      jumpTo,
-      prev,
-      next,
-      removeFromQueue,
-      clearQueue,
-      seek,
-      setVolume,
-      toggleMute,
-    }),
-    [
-      play,
-      enqueue,
-      toggle,
-      pause,
-      jumpTo,
-      prev,
-      next,
-      removeFromQueue,
-      clearQueue,
-      seek,
-      setVolume,
-      toggleMute,
-    ],
+
+  // 细粒度 selector，只订阅各自需要的字段，避免无关状态变化触发整体重渲染
+  const currentTrack = usePlayerStore((s) => s.currentTrack);
+  const queue = usePlayerStore((s) => s.queue);
+  const currentIndex = usePlayerStore((s) => s.currentIndex);
+  const isPlaying = usePlayerStore((s) => s.isPlaying);
+  const isLoading = usePlayerStore((s) => s.isLoading);
+  const error = usePlayerStore((s) => s.error);
+  const playerVisible = usePlayerStore((s) => s.playerVisible);
+  const lyricsMap = usePlayerStore((s) => s.lyricsMap);
+
+  // actions 在 Zustand store 中引用稳定，用 useShallow 避免每次返回新对象引用
+  const controls = usePlayerStore(
+    useShallow((s) => ({
+      play: s.play,
+      enqueue: s.enqueue,
+      toggle: s.toggle,
+      pause: s.pause,
+      jumpTo: s.jumpTo,
+      prev: s.prev,
+      next: s.next,
+      removeFromQueue: s.removeFromQueue,
+      clearQueue: s.clearQueue,
+      seek: s.seek,
+    })),
   );
+
   const audioRef = useRef(getAudio());
 
-  // ── 进度时间：通过 rAF 直读 audio 元素，不经过全局 state ─────────────────
-  const { currentTime, duration } = usePlayerTime();
+  // ── 进度条 & 时间码的 DOM refs（高频更新绕开 React 渲染） ─────────────────
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  const timeCurrentRef = useRef<HTMLSpanElement>(null);
+  const seekPreviewRef = useRef<number | null>(null);
+
+  // ── 进度时间：低频 state（歌词行切换）+ 高频 DOM 回调（进度条/时间码） ──
+  const { currentTime, duration } = usePlayerTime(
+    useCallback((ct: number, dur: number) => {
+      // 拖拽预览期间不覆盖 DOM（由 seek preview 逻辑控制）
+      if (seekPreviewRef.current !== null) return;
+      const pct = dur > 0 ? (ct / dur) * 100 : 0;
+      if (progressBarRef.current) {
+        progressBarRef.current.style.width = `${pct}%`;
+      }
+      if (timeCurrentRef.current) {
+        timeCurrentRef.current.textContent = formatPlayerTime(ct);
+      }
+    }, []),
+  );
 
   // ── 进度条拖拽预览 ────────────────────────────────────────────────────────
   const isDraggingRef = useRef(false);
-  const [seekPreview, setSeekPreview] = useState<number | null>(null);
-  // isSeeking：seek 已发出但 seeked 事件还未回来，期间继续用 preview 值防止闪回
+  // isSeeking：seek 已发出但 canplay 事件还未回来，期间继续用 preview 值防止闪回
   const isSeekingRef = useRef(false);
-  const displayTime = seekPreview !== null ? seekPreview : currentTime;
-  // 进度条宽度直接由 JSX style 驱动（usePlayerTime rAF 触发重渲染），无需额外 effect
+
+  /**
+   * 直接操作 DOM 更新进度条和时间码，完全绕开 React 渲染管线。
+   * null 表示清除预览（恢复由 rAF 驱动的正常更新）。
+   */
+  const applySeekPreviewDOM = useCallback((t: number | null, dur: number) => {
+    seekPreviewRef.current = t;
+    if (t !== null && dur > 0) {
+      const pct = (t / dur) * 100;
+      if (progressBarRef.current) progressBarRef.current.style.width = `${pct}%`;
+      if (timeCurrentRef.current) timeCurrentRef.current.textContent = formatPlayerTime(t);
+    }
+  }, []);
 
   // ── 播放列表面板 ──────────────────────────────────────────────────────────
   const [showQueue, setShowQueue] = useState(false);
@@ -122,28 +119,6 @@ export default function GlobalPlayer() {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [showQueue]);
-
-  // ── 音量面板 ──────────────────────────────────────────────────────────────
-  const [showVolume, setShowVolume] = useState(false);
-  const volumeRef = useRef<HTMLDivElement>(null);
-  const volumeRefMobile = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!showVolume) return;
-    const handler = (e: MouseEvent | TouchEvent) => {
-      const target = e.target as Node;
-      const isClickInsideDesktop = volumeRef.current?.contains(target);
-      const isClickInsideMobile = volumeRefMobile.current?.contains(target);
-      if (!isClickInsideDesktop && !isClickInsideMobile) {
-        setShowVolume(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    document.addEventListener("touchstart", handler);
-    return () => {
-      document.removeEventListener("mousedown", handler);
-      document.removeEventListener("touchstart", handler);
-    };
-  }, [showVolume]);
 
   // ── LRC 歌词 ──────────────────────────────────────────────────────────────
   const lrcLines = useMemo(() => {
@@ -178,21 +153,25 @@ export default function GlobalPlayer() {
       isDraggingRef.current = true;
       const t = getTimeFromPointer(e.clientX);
       if (t !== null) {
-        setSeekPreview(t);
+        applySeekPreviewDOM(t, duration);
       }
-      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      try {
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      } catch {
+        // Safari may not support setPointerCapture in all contexts
+      }
     },
-    [duration, getTimeFromPointer],
+    [duration, getTimeFromPointer, applySeekPreviewDOM],
   );
   const handlePointerMove = useCallback(
     (e: React.PointerEvent) => {
       if (!isDraggingRef.current || !duration) return;
       const t = getTimeFromPointer(e.clientX);
       if (t !== null) {
-        setSeekPreview(t);
+        applySeekPreviewDOM(t, duration);
       }
     },
-    [duration, getTimeFromPointer],
+    [duration, getTimeFromPointer, applySeekPreviewDOM],
   );
   const handlePointerUp = useCallback(
     (e: React.PointerEvent) => {
@@ -200,26 +179,71 @@ export default function GlobalPlayer() {
       isDraggingRef.current = false;
       const t = getTimeFromPointer(e.clientX);
       if (t !== null) {
-        // 先标记 seeking，等 seeked 事件触发后再清除 preview，防止闪回
+        // 先标记 seeking，等 canplay 事件触发后再清除 preview，防止闪回
         isSeekingRef.current = true;
-        setSeekPreview(t);
+        applySeekPreviewDOM(t, duration);
         controls.seek(t);
       } else {
-        setSeekPreview(null);
+        applySeekPreviewDOM(null, duration);
       }
     },
-    [controls, getTimeFromPointer],
+    [controls, duration, getTimeFromPointer, applySeekPreviewDOM],
+  );
+  // Safari Touch Events fallback for seek bar
+  const handleSeekTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      if (!duration) return;
+      isDraggingRef.current = true;
+      const t = getTimeFromPointer(e.touches[0].clientX);
+      if (t !== null) applySeekPreviewDOM(t, duration);
+    },
+    [duration, getTimeFromPointer, applySeekPreviewDOM],
+  );
+  const handleSeekTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (!isDraggingRef.current || !duration) return;
+      const t = getTimeFromPointer(e.touches[0].clientX);
+      if (t !== null) applySeekPreviewDOM(t, duration);
+    },
+    [duration, getTimeFromPointer, applySeekPreviewDOM],
+  );
+  const handleSeekTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      if (!isDraggingRef.current) return;
+      isDraggingRef.current = false;
+      const touch = e.changedTouches[0];
+      const t = getTimeFromPointer(touch.clientX);
+      if (t !== null) {
+        isSeekingRef.current = true;
+        applySeekPreviewDOM(t, duration);
+        controls.seek(t);
+      } else {
+        applySeekPreviewDOM(null, duration);
+      }
+    },
+    [controls, duration, getTimeFromPointer, applySeekPreviewDOM],
   );
 
   // opus seek 是重新请求流，触发 canplay 而非 seeked，preview 在 canplay 后清除
   // 等下一个 rAF 帧（此时 seekBase + audio.currentTime 已稳定）再释放 preview
+  // 只清 ref，不操作 DOM——rAF 接管后会用正确的 seekBase + audio.currentTime 写入
   useEffect(() => {
     const onCanPlay = () => {
       if (isSeekingRef.current) {
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             isSeekingRef.current = false;
-            setSeekPreview(null);
+            // 清掉 preview 锁之前，先用最新的 seekBase + audio.currentTime 刷新一次 DOM
+            // 避免 React 重渲染时 JSX style 用旧 currentTime 写入导致闪回
+            const a = audioRef.current;
+            const { seekBase, trackDuration } = usePlayerStore.getState();
+            if (a && trackDuration > 0) {
+              const ct = seekBase + a.currentTime;
+              const pct = (ct / trackDuration) * 100;
+              if (progressBarRef.current) progressBarRef.current.style.width = `${pct}%`;
+              if (timeCurrentRef.current) timeCurrentRef.current.textContent = formatPlayerTime(ct);
+            }
+            seekPreviewRef.current = null;
           });
         });
       }
@@ -240,52 +264,6 @@ export default function GlobalPlayer() {
     };
   }, []);
 
-  // ── 音量拖拽 ──────────────────────────────────────────────────────────────
-  const volTrackRef = useRef<HTMLDivElement>(null);
-  const volTrackRefMobile = useRef<HTMLDivElement>(null);
-  const isVolDraggingRef = useRef(false);
-  const activeVolTrackRef = useRef<HTMLDivElement | null>(null);
-
-  const getVolFromPointer = useCallback(
-    (clientY: number, trackEl: HTMLDivElement | null) => {
-      if (!trackEl) return null;
-      const rect = trackEl.getBoundingClientRect();
-      return Math.max(0, Math.min(1, 1 - (clientY - rect.top) / rect.height));
-    },
-    [],
-  );
-
-  const handleVolPointerDown = useCallback(
-    (
-      e: React.PointerEvent,
-      trackRef: React.RefObject<HTMLDivElement | null>,
-    ) => {
-      isVolDraggingRef.current = true;
-      activeVolTrackRef.current = trackRef.current;
-      const v = getVolFromPointer(e.clientY, trackRef.current);
-      if (v !== null) controls.setVolume(v);
-      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    },
-    [controls, getVolFromPointer],
-  );
-  const handleVolPointerMove = useCallback(
-    (e: React.PointerEvent) => {
-      if (!isVolDraggingRef.current) return;
-      const v = getVolFromPointer(e.clientY, activeVolTrackRef.current);
-      if (v !== null) controls.setVolume(v);
-    },
-    [controls, getVolFromPointer],
-  );
-  const handleVolPointerUp = useCallback(
-    (e: React.PointerEvent) => {
-      isVolDraggingRef.current = false;
-      const v = getVolFromPointer(e.clientY, activeVolTrackRef.current);
-      if (v !== null) controls.setVolume(v);
-      activeVolTrackRef.current = null;
-    },
-    [controls, getVolFromPointer],
-  );
-
   // 沉浸式全屏页面不显示播放条 UI（音频继续播放）
   const HIDDEN_PATHS = ["/imagery", "/story"];
   if (HIDDEN_PATHS.some((p) => pathname.startsWith(p))) return null;
@@ -294,7 +272,6 @@ export default function GlobalPlayer() {
 
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex < queue.length - 1;
-  const effectiveVolume = isMuted ? 0 : volume;
   const cardHeightClass = currentLrcText
     ? "h-[88px] sm:h-[68px]"
     : "h-[60px] sm:h-[68px]";
@@ -330,14 +307,14 @@ export default function GlobalPlayer() {
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerUp}
+            onTouchStart={handleSeekTouchStart}
+            onTouchMove={handleSeekTouchMove}
+            onTouchEnd={handleSeekTouchEnd}
           >
             <div className="h-1 bg-slate-200 dark:bg-slate-700/50 rounded-t-2xl overflow-hidden group-hover/prog:h-1.5 transition-all duration-150">
               <div
+                ref={progressBarRef}
                 className="h-full bg-blue-500 rounded-r-full"
-                style={{
-                  width:
-                    duration > 0 ? `${(displayTime / duration) * 100}%` : "0%",
-                }}
               />
             </div>
           </div>
@@ -436,7 +413,7 @@ export default function GlobalPlayer() {
               ) : isPlaying ? (
                 <Pause size={16} className="fill-current" />
               ) : (
-                <Play size={16} className="fill-current translate-x-[1px]" />
+                <Play size={16} className="fill-current" />
               )}
             </button>
             <button
@@ -458,7 +435,7 @@ export default function GlobalPlayer() {
           <div className="flex items-center gap-3 justify-end w-1/3 shrink-0">
             {/* 时间码 */}
             <div className="flex items-center gap-1 text-[10px] font-mono text-slate-400 dark:text-slate-500">
-              <span>{formatPlayerTime(displayTime)}</span>
+              <span ref={timeCurrentRef}>{formatPlayerTime(currentTime)}</span>
               <span className="opacity-40">/</span>
               <span>{formatPlayerTime(duration)}</span>
             </div>
@@ -511,7 +488,7 @@ export default function GlobalPlayer() {
                 <div className="max-h-[320px] overflow-y-auto overscroll-contain no-scrollbar">
                   {queue.map((track, i) => (
                     <div
-                      key={`${track.songId}-${i}`}
+                      key={track.songId}
                       onClick={() => controls.jumpTo(i)}
                       className={cn(
                         "flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-all group/item select-none border-b border-slate-50/50 dark:border-slate-800/5 last:border-b-0",
@@ -591,7 +568,7 @@ export default function GlobalPlayer() {
 
               {/* 列表按钮 */}
               <button
-                onClick={() => setShowQueue((v) => !v)}
+                onClick={() => setShowQueue((v: boolean) => !v)}
                 aria-label="播放列表"
                 className={cn(
                   "p-2 rounded-full transition-colors",
@@ -621,94 +598,6 @@ export default function GlobalPlayer() {
               </button>
             </div>
 
-            {/* 音量面板 */}
-            <div className="relative shrink-0" ref={volumeRef}>
-              <div
-                className={cn(
-                  "absolute bottom-full right-1/2 mb-3 p-2.5 rounded-2xl w-12",
-                  "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl",
-                  "border border-slate-200/60 dark:border-slate-700/50",
-                  "shadow-2xl shadow-slate-200/40 dark:shadow-black/40",
-                  "transition-all duration-200 origin-bottom",
-                  "flex flex-col items-center gap-3 select-none",
-                  showVolume
-                    ? "opacity-100 scale-100 pointer-events-auto translate-x-1/2 translate-y-0"
-                    : "opacity-0 scale-95 pointer-events-none translate-x-1/2 translate-y-2",
-                )}
-              >
-                <span className="shrink-0 text-[9px] font-mono font-bold text-slate-400 dark:text-slate-500 text-center w-full">
-                  {Math.round(effectiveVolume * 100)}%
-                </span>
-
-                <div
-                  className="relative w-6 h-28 flex justify-center cursor-pointer select-none group/vol-area [touch-action:none]"
-                  onPointerDown={(e) => handleVolPointerDown(e, volTrackRef)}
-                  onPointerMove={handleVolPointerMove}
-                  onPointerUp={handleVolPointerUp}
-                  onPointerCancel={handleVolPointerUp}
-                >
-                  {/* The actual thin track */}
-                  <div
-                    ref={volTrackRef}
-                    className="relative w-1 h-full rounded-full bg-slate-200 dark:bg-slate-700/50 overflow-hidden group-hover/vol-area:bg-slate-300 dark:group-hover/vol-area:bg-slate-600 transition-colors"
-                  >
-                    <div
-                      className="absolute bottom-0 left-0 right-0 bg-blue-500 rounded-full"
-                      style={{ height: `${effectiveVolume * 100}%` }}
-                    />
-                  </div>
-                  {/* Knob handle */}
-                  <div
-                    className="absolute left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border border-slate-200 shadow-md pointer-events-none scale-0 group-hover/vol-area:scale-100 transition-transform duration-150"
-                    style={{
-                      bottom: `calc(${effectiveVolume * 100}% - 6px)`,
-                    }}
-                  />
-                </div>
-
-                <button
-                  onClick={controls.toggleMute}
-                  aria-label={isMuted ? "取消静音" : "静音"}
-                  className={cn(
-                    "shrink-0 p-1 rounded-full transition-all",
-                    "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200",
-                    "hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-90",
-                  )}
-                >
-                  {effectiveVolume === 0 ? (
-                    <VolumeX size={14} />
-                  ) : effectiveVolume < 0.3 ? (
-                    <Volume size={14} />
-                  ) : effectiveVolume < 0.7 ? (
-                    <Volume1 size={14} />
-                  ) : (
-                    <Volume2 size={14} />
-                  )}
-                </button>
-              </div>
-
-              <button
-                onClick={() => setShowVolume((v) => !v)}
-                aria-label={isMuted ? "取消静音" : "音量"}
-                className={cn(
-                  "p-2 rounded-full transition-colors",
-                  "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
-                  "hover:bg-slate-100 dark:hover:bg-slate-800/80",
-                  showVolume &&
-                    "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300",
-                )}
-              >
-                {effectiveVolume === 0 ? (
-                  <VolumeX size={15} />
-                ) : effectiveVolume < 0.3 ? (
-                  <Volume size={15} />
-                ) : effectiveVolume < 0.7 ? (
-                  <Volume1 size={15} />
-                ) : (
-                  <Volume2 size={15} />
-                )}
-              </button>
-            </div>
           </div>
         </div>
 
@@ -786,7 +675,7 @@ export default function GlobalPlayer() {
                 ) : isPlaying ? (
                   <Pause size={13} className="fill-current" />
                 ) : (
-                  <Play size={13} className="fill-current translate-x-[1px]" />
+                  <Play size={13} className="fill-current" />
                 )}
               </button>
 
@@ -850,9 +739,9 @@ export default function GlobalPlayer() {
 
                   {/* 歌曲列表 */}
                   <div className="max-h-[260px] overflow-y-auto overscroll-contain no-scrollbar">
-                    {queue.map((track, i) => (
+                  {queue.map((track, i) => (
                       <div
-                        key={`${track.songId}-${i}`}
+                        key={track.songId}
                         onClick={() => controls.jumpTo(i)}
                         className={cn(
                           "flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-all active:bg-slate-50/50 dark:active:bg-slate-800/20 select-none border-b border-slate-50/50 dark:border-slate-800/5 last:border-b-0",
@@ -932,7 +821,7 @@ export default function GlobalPlayer() {
 
                 {/* 列表按钮 */}
                 <button
-                  onClick={() => setShowQueue((v) => !v)}
+                  onClick={() => setShowQueue((v: boolean) => !v)}
                   aria-label="播放列表"
                   className={cn(
                     "p-1.5 rounded-full text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors",
@@ -956,96 +845,6 @@ export default function GlobalPlayer() {
                     <line x1="3" y1="12" x2="3.01" y2="12" />
                     <line x1="3" y1="18" x2="3.01" y2="18" />
                   </svg>
-                </button>
-              </div>
-
-              {/* 音量面板 (移动端版) */}
-              <div className="relative shrink-0" ref={volumeRefMobile}>
-                <div
-                  className={cn(
-                    "absolute bottom-full right-1/2 mb-3 p-2.5 rounded-2xl w-12",
-                    "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl",
-                    "border border-slate-200/60 dark:border-slate-700/50",
-                    "shadow-2xl shadow-slate-200/40 dark:shadow-black/40",
-                    "transition-all duration-200 origin-bottom",
-                    "flex flex-col items-center gap-3 select-none",
-                    showVolume
-                      ? "opacity-100 scale-100 pointer-events-auto translate-x-1/2 translate-y-0"
-                      : "opacity-0 scale-95 pointer-events-none translate-x-1/2 translate-y-2",
-                  )}
-                >
-                  <span className="shrink-0 text-[9px] font-mono font-bold text-slate-400 dark:text-slate-500 text-center w-full">
-                    {Math.round(effectiveVolume * 100)}%
-                  </span>
-
-                  <div
-                    className="relative w-10 h-28 flex justify-center cursor-pointer select-none group/vol-area [touch-action:none]"
-                    onPointerDown={(e) =>
-                      handleVolPointerDown(e, volTrackRefMobile)
-                    }
-                    onPointerMove={handleVolPointerMove}
-                    onPointerUp={handleVolPointerUp}
-                    onPointerCancel={handleVolPointerUp}
-                  >
-                    <div
-                      ref={volTrackRefMobile}
-                      className="relative w-1.5 h-full rounded-full bg-slate-200 dark:bg-slate-700/50 overflow-hidden transition-colors"
-                    >
-                      <div
-                        className="absolute bottom-0 left-0 right-0 bg-blue-500 rounded-full"
-                        style={{ height: `${effectiveVolume * 100}%` }}
-                      />
-                    </div>
-                    {/* Knob handle - always visible on mobile */}
-                    <div
-                      className="absolute left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-white border border-slate-200 shadow-md pointer-events-none"
-                      style={{
-                        bottom: `calc(${effectiveVolume * 100}% - 8px)`,
-                      }}
-                    />
-                  </div>
-
-                  <button
-                    onClick={controls.toggleMute}
-                    aria-label={isMuted ? "取消静音" : "静音"}
-                    className={cn(
-                      "shrink-0 p-1 rounded-full transition-all",
-                      "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200",
-                      "hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-90",
-                    )}
-                  >
-                    {effectiveVolume === 0 ? (
-                      <VolumeX size={14} />
-                    ) : effectiveVolume < 0.3 ? (
-                      <Volume size={14} />
-                    ) : effectiveVolume < 0.7 ? (
-                      <Volume1 size={14} />
-                    ) : (
-                      <Volume2 size={14} />
-                    )}
-                  </button>
-                </div>
-
-                <button
-                  onClick={() => setShowVolume((v) => !v)}
-                  aria-label={isMuted ? "取消静音" : "音量"}
-                  className={cn(
-                    "p-1.5 rounded-full transition-colors",
-                    "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
-                    "hover:bg-slate-100 dark:hover:bg-slate-800/80",
-                    showVolume &&
-                      "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300",
-                  )}
-                >
-                  {effectiveVolume === 0 ? (
-                    <VolumeX size={14} />
-                  ) : effectiveVolume < 0.3 ? (
-                    <Volume size={14} />
-                  ) : effectiveVolume < 0.7 ? (
-                    <Volume1 size={14} />
-                  ) : (
-                    <Volume2 size={14} />
-                  )}
                 </button>
               </div>
             </div>

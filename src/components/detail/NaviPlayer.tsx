@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import {
   AlertCircle,
   ListPlus,
@@ -31,40 +31,42 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
   hasAudio = true,
   className,
 }) => {
-  const {
-    currentTrack,
-    isPlaying,
-    isLoading,
-    queue,
-    error,
-    toggle,
-    play,
-    enqueue,
-  } = usePlayerStore();
+  // 细粒度 selector，避免无关状态变化触发重渲染
+  const currentTrack = usePlayerStore((s) => s.currentTrack);
+  const isPlaying = usePlayerStore((s) => s.isPlaying);
+  const isLoading = usePlayerStore((s) => s.isLoading);
+  const isInQueue = usePlayerStore((s) => s.queue.some((t) => t.songId === songId));
+  const error = usePlayerStore((s) => s.error);
+  const toggle = usePlayerStore((s) => s.toggle);
+  const play = usePlayerStore((s) => s.play);
+  const enqueue = usePlayerStore((s) => s.enqueue);
 
-  if (!hasAudio) return null;
+  // 稳定的 track 对象引用，避免每次渲染都创建新对象
+  const track = useMemo<PlayerTrack>(
+    () => ({ songId, title, artist, coverUrl }),
+    [songId, title, artist, coverUrl],
+  );
 
   const isCurrentSong = currentTrack?.songId === songId;
   const isThisPlaying = isCurrentSong && isPlaying;
   const isThisLoading = isCurrentSong && isLoading;
-  const isInQueue = queue.some((track) => track.songId === songId);
 
-  const track: PlayerTrack = { songId, title, artist, coverUrl };
-
-  const handleToggle = () => {
+  const handleToggle = useCallback(() => {
     if (isCurrentSong) {
       toggle();
     } else {
       play(track);
     }
-  };
+  }, [isCurrentSong, toggle, play, track]);
 
-  const handleEnqueue = (e: React.MouseEvent) => {
+  const handleEnqueue = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     enqueue(track);
-  };
+  }, [enqueue, track]);
 
   const currentError = isCurrentSong ? error : null;
+
+  if (!hasAudio) return null;
 
   return (
     <div
@@ -170,7 +172,7 @@ const NaviPlayer: React.FC<NaviPlayerProps> = ({
             ) : isThisPlaying ? (
               <Pause size={13} className="fill-current" />
             ) : (
-              <Play size={13} className="fill-current translate-x-0.5" />
+              <Play size={13} className="fill-current" />
             )}
           </button>
         </div>

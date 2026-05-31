@@ -543,16 +543,20 @@ if (typeof window !== "undefined") {
       state.currentIndex !== prev.currentIndex;
 
     if (trackChanged) {
+      const artworkSrc = currentTrack.coverUrl
+        ? `/_next/image?url=${encodeURIComponent(currentTrack.coverUrl)}&w=512&q=90`
+        : null;
       navigator.mediaSession.metadata = new MediaMetadata({
         title: currentTrack.title,
         artist: currentTrack.artist ?? undefined,
-        artwork: currentTrack.coverUrl
+        artwork: artworkSrc
           ? [
-              {
-                src: currentTrack.coverUrl,
-                sizes: "512x512",
-                type: "image/jpeg",
-              },
+              { src: artworkSrc, sizes: "96x96",   type: "image/jpeg" },
+              { src: artworkSrc, sizes: "128x128", type: "image/jpeg" },
+              { src: artworkSrc, sizes: "192x192", type: "image/jpeg" },
+              { src: artworkSrc, sizes: "256x256", type: "image/jpeg" },
+              { src: artworkSrc, sizes: "384x384", type: "image/jpeg" },
+              { src: artworkSrc, sizes: "512x512", type: "image/jpeg" },
             ]
           : undefined,
       });

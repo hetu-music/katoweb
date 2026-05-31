@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { getServiceClient, TABLES } from "@/lib/db/supabase-server";
 import { type TimelineEvent } from "@/components/story/qjtx/types";
 
@@ -39,8 +40,11 @@ function mapRowToEvent(row: StoryQjtxRow): TimelineEvent {
  *
  * 使用 Service Role Key 的高权限客户端（公开只读），
  * 按 id 升序返回所有节点。
+ *
+ * 用 React cache() 包装，确保同一请求内（generateMetadata + 页面组件）
+ * 多次调用只触发一次 Supabase 查询。
  */
-export async function getQjtxTimeline(): Promise<TimelineEvent[]> {
+export const getQjtxTimeline = cache(async (): Promise<TimelineEvent[]> => {
   const supabase = getServiceClient();
   if (!supabase) {
     console.warn(
@@ -62,4 +66,4 @@ export async function getQjtxTimeline(): Promise<TimelineEvent[]> {
   }
 
   return (data as StoryQjtxRow[]).map(mapRowToEvent);
-}
+});
