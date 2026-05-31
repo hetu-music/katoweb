@@ -90,7 +90,7 @@ export default function ImageryAdminModals({
   if (modal.type === "add-imagery" || modal.type === "edit-imagery") {
     return (
       <ModalBackdrop onClose={onClose}>
-        <ModalCard>
+        <ModalCard className="max-w-lg">
           <form
             onSubmit={imageryForm.handleSubmit((values) =>
               modal.type === "add-imagery"
