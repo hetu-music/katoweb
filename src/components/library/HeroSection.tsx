@@ -52,6 +52,13 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
     () => false,
   );
 
+  const currentText =
+    hoveredId === "qjtx"
+      ? "一纸长歌，倾尽天下"
+      : hoveredId === "imagery"
+      ? "探索词中万千意象"
+      : "你一定想知道，戏里讲了什么故事";
+
   return (
     <div
       className="w-full flex flex-col md:flex-row justify-between gap-5 md:gap-12 pt-1 md:pt-4"
@@ -70,33 +77,82 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
           <AnimatePresence mode="wait">
             <motion.p
               key={hoveredId || "default"}
-              initial={{ opacity: 0, y: 6, filter: "blur(3px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: -6, filter: "blur(3px)" }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="font-light tracking-[0.15em] text-sm md:text-[15px] leading-relaxed mb-0"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{
+                opacity: 0,
+                filter: "blur(12px)",
+                scale: 1.06,
+                y: -3,
+              }}
+              transition={{
+                duration: 0.35,
+                ease: [0.25, 1, 0.5, 1],
+              }}
+              className="font-light text-sm md:text-[15px] leading-relaxed mb-0 flex flex-wrap items-center select-none"
             >
-              {hoveredId === "qjtx"
-                ? "一纸长歌，倾尽天下"
-                : hoveredId === "imagery"
-                ? "探索词中万千意象"
-                : "你一定想知道，戏里讲了什么故事"}
+              {currentText.split("").map((char, i) => (
+                <motion.span
+                  key={i}
+                  initial={{
+                    opacity: 0,
+                    filter: "blur(14px)",
+                    scale: 1.25,
+                    y: 4,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    filter: "blur(0px)",
+                    scale: 1,
+                    y: 0,
+                  }}
+                  transition={{
+                    duration: 0.8,
+                    ease: [0.16, 1, 0.3, 1],
+                    delay: i * 0.035,
+                  }}
+                  className="inline-block mr-[0.15em] origin-center"
+                >
+                  {char}
+                </motion.span>
+              ))}
+
               {isHoverDevice ? (
                 <motion.span
-                  animate={{ opacity: [0.3, 1, 0.3] }}
+                  initial={{ opacity: 0, filter: "blur(8px)" }}
+                  animate={{ opacity: 1, filter: "blur(0px)" }}
                   transition={{
-                    duration: 2.5,
-                    repeat: Infinity,
-                    ease: "easeInOut",
+                    duration: 0.8,
+                    delay: currentText.length * 0.035,
+                    ease: "easeOut",
                   }}
-                  className="select-none inline-block ml-1 font-normal text-slate-400 dark:text-slate-500"
+                  className="inline-block"
+                >
+                  <motion.span
+                    animate={{ opacity: [0.3, 1, 0.3] }}
+                    transition={{
+                      duration: 2.5,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                    className="select-none inline-block ml-1 font-normal text-slate-400 dark:text-slate-500"
+                  >
+                    ……
+                  </motion.span>
+                </motion.span>
+              ) : (
+                <motion.span
+                  initial={{ opacity: 0, filter: "blur(8px)" }}
+                  animate={{ opacity: 1, filter: "blur(0px)" }}
+                  transition={{
+                    duration: 0.8,
+                    delay: currentText.length * 0.035,
+                    ease: "easeOut",
+                  }}
+                  className="ml-1 text-slate-400 dark:text-slate-500 inline-block"
                 >
                   ……
                 </motion.span>
-              ) : (
-                <span className="ml-1 text-slate-400 dark:text-slate-500">
-                  ……
-                </span>
               )}
             </motion.p>
           </AnimatePresence>
