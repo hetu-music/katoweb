@@ -153,7 +153,7 @@ export function toCategoryPayload(
   return {
     name: values.name.trim(),
     parent_id: values.parent_id,
-    level: parent ? (parent.level ?? 0) + 1 : 0,
+    level: parent ? (parent.level ?? 1) + 1 : 1,
     description: values.description.trim() || null,
   };
 }
