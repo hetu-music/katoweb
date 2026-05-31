@@ -81,16 +81,41 @@ export default function GlobalPlayer() {
   );
   const audioRef = useRef(getAudio());
 
-  // ── 进度时间：通过 rAF 直读 audio 元素，不经过全局 state ─────────────────
-  const { currentTime, duration } = usePlayerTime();
+  // ── 进度条 & 时间码的 DOM refs（高频更新绕开 React 渲染） ─────────────────
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  const timeCurrentRef = useRef<HTMLSpanElement>(null);
+  const seekPreviewRef = useRef<number | null>(null);
+
+  // ── 进度时间：低频 state（歌词行切换）+ 高频 DOM 回调（进度条/时间码） ──
+  const { currentTime, duration } = usePlayerTime(
+    useCallback((ct: number, dur: number) => {
+      // 拖拽预览期间不覆盖 DOM（由 seek preview 逻辑控制）
+      if (seekPreviewRef.current !== null) return;
+      const pct = dur > 0 ? (ct / dur) * 100 : 0;
+      if (progressBarRef.current) {
+        progressBarRef.current.style.width = `${pct}%`;
+      }
+      if (timeCurrentRef.current) {
+        timeCurrentRef.current.textContent = formatPlayerTime(ct);
+      }
+    }, []),
+  );
 
   // ── 进度条拖拽预览 ────────────────────────────────────────────────────────
   const isDraggingRef = useRef(false);
   const [seekPreview, setSeekPreview] = useState<number | null>(null);
   // isSeeking：seek 已发出但 seeked 事件还未回来，期间继续用 preview 值防止闪回
   const isSeekingRef = useRef(false);
-  const displayTime = seekPreview !== null ? seekPreview : currentTime;
-  // 进度条宽度直接由 JSX style 驱动（usePlayerTime rAF 触发重渲染），无需额外 effect
+
+  // seekPreview 变化时同步 ref 并直接更新 DOM
+  useEffect(() => {
+    seekPreviewRef.current = seekPreview;
+    if (seekPreview !== null && duration > 0) {
+      const pct = (seekPreview / duration) * 100;
+      if (progressBarRef.current) progressBarRef.current.style.width = `${pct}%`;
+      if (timeCurrentRef.current) timeCurrentRef.current.textContent = formatPlayerTime(seekPreview);
+    }
+  }, [seekPreview, duration]);
 
   // ── 播放列表面板 ──────────────────────────────────────────────────────────
   const [showQueue, setShowQueue] = useState(false);
@@ -293,11 +318,9 @@ export default function GlobalPlayer() {
           >
             <div className="h-1 bg-slate-200 dark:bg-slate-700/50 rounded-t-2xl overflow-hidden group-hover/prog:h-1.5 transition-all duration-150">
               <div
+                ref={progressBarRef}
                 className="h-full bg-blue-500 rounded-r-full"
-                style={{
-                  width:
-                    duration > 0 ? `${(displayTime / duration) * 100}%` : "0%",
-                }}
+                style={{ width: duration > 0 ? `${(currentTime / duration) * 100}%` : "0%" }}
               />
             </div>
           </div>
@@ -418,7 +441,7 @@ export default function GlobalPlayer() {
           <div className="flex items-center gap-3 justify-end w-1/3 shrink-0">
             {/* 时间码 */}
             <div className="flex items-center gap-1 text-[10px] font-mono text-slate-400 dark:text-slate-500">
-              <span>{formatPlayerTime(displayTime)}</span>
+              <span ref={timeCurrentRef}>{formatPlayerTime(currentTime)}</span>
               <span className="opacity-40">/</span>
               <span>{formatPlayerTime(duration)}</span>
             </div>
