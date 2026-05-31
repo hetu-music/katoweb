@@ -76,6 +76,12 @@ export const POST = withAuth(
       const created = await createOccurrence(parsed.data, session.access_token);
       return NextResponse.json(created);
     } catch (e) {
+      if (
+        e instanceof Error &&
+        (e as Error & { code?: string }).code === "NOT_LEAF_CATEGORY"
+      ) {
+        return NextResponse.json({ error: e.message }, { status: 400 });
+      }
       console.error("[POST /api/admin/occurrences]", e);
       return NextResponse.json(
         { error: "Internal server error" },

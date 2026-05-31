@@ -326,6 +326,36 @@ export async function deleteMeaning(id: number, accessToken: string) {
   if (error) throw error;
 }
 
+// ─── helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * 校验 category_id 必须是叶子节点（没有子分类）。
+ * 意象只允许挂载到叶子分类，以保证公开词云页面的层级着色逻辑正确。
+ */
+async function assertLeafCategory(
+  categoryId: number,
+  accessToken: string,
+): Promise<void> {
+  const supabase = getUserClient(accessToken);
+  if (!supabase) throw new Error("Supabase client unavailable");
+
+  // 查询是否存在以该分类为父级的子分类
+  const { data, error } = await supabase
+    .from(TABLES.IMAGERY_CAT)
+    .select("id")
+    .eq("parent_id", categoryId)
+    .limit(1);
+
+  if (error) throw error;
+
+  if (data && data.length > 0) {
+    throw Object.assign(
+      new Error("意象只能挂载到叶子分类（该分类下还有子分类）"),
+      { code: "NOT_LEAF_CATEGORY" },
+    );
+  }
+}
+
 // ─── write functions: occurrences ─────────────────────────────────────────────
 
 export async function createOccurrence(
@@ -338,6 +368,7 @@ export async function createOccurrence(
   },
   accessToken: string,
 ) {
+  await assertLeafCategory(data.category_id, accessToken);
   const supabase = getUserClient(accessToken);
   if (!supabase) throw new Error("Supabase client unavailable");
   const { data: created, error } = await supabase
@@ -362,6 +393,9 @@ export async function updateOccurrence(
   },
   accessToken: string,
 ) {
+  if (data.category_id !== undefined) {
+    await assertLeafCategory(data.category_id, accessToken);
+  }
   const supabase = getUserClient(accessToken);
   if (!supabase) throw new Error("Supabase client unavailable");
   const { error } = await supabase
