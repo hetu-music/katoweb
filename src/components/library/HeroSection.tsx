@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Scroll, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
@@ -63,40 +63,43 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
           谣歌 <span className="text-[1.3em] font-semibold">{songCount}</span>
         </h1>
 
-        <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 mt-auto -mb-1 lg:-mb-1.5">
+        <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 mt-auto -mb-1 lg:-mb-1.5 min-h-[24px]">
           <span className="text-blue-600 dark:text-blue-500 font-mono text-lg leading-none relative top-0 md:top-[-1.5px] select-none">
             &gt;
           </span>
-          <motion.p
-            key={hoveredId || "default"}
-            initial={{ opacity: 0, y: 4, filter: "blur(2px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="font-light tracking-[0.15em] text-sm md:text-[15px] leading-relaxed mb-0"
-          >
-            {hoveredId === "qjtx"
-              ? "一纸长歌，倾尽天下"
-              : hoveredId === "imagery"
-              ? "探索词中万千意象"
-              : "你一定想知道，戏里讲了什么故事"}
-            {isHoverDevice ? (
-              <motion.span
-                animate={{ opacity: [0.3, 1, 0.3] }}
-                transition={{
-                  duration: 2.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-                className="select-none inline-block ml-1 font-normal text-slate-400 dark:text-slate-500"
-              >
-                ……
-              </motion.span>
-            ) : (
-              <span className="ml-1 text-slate-400 dark:text-slate-500">
-                ……
-              </span>
-            )}
-          </motion.p>
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={hoveredId || "default"}
+              initial={{ opacity: 0, y: 6, filter: "blur(3px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, y: -6, filter: "blur(3px)" }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="font-light tracking-[0.15em] text-sm md:text-[15px] leading-relaxed mb-0"
+            >
+              {hoveredId === "qjtx"
+                ? "一纸长歌，倾尽天下"
+                : hoveredId === "imagery"
+                ? "探索词中万千意象"
+                : "你一定想知道，戏里讲了什么故事"}
+              {isHoverDevice ? (
+                <motion.span
+                  animate={{ opacity: [0.3, 1, 0.3] }}
+                  transition={{
+                    duration: 2.5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                  className="select-none inline-block ml-1 font-normal text-slate-400 dark:text-slate-500"
+                >
+                  ……
+                </motion.span>
+              ) : (
+                <span className="ml-1 text-slate-400 dark:text-slate-500">
+                  ……
+                </span>
+              )}
+            </motion.p>
+          </AnimatePresence>
         </div>
       </div>
 
