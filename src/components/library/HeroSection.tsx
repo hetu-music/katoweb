@@ -107,20 +107,17 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                   key={i}
                   initial={{
                     opacity: 0,
-                    filter: "blur(14px)",
-                    scale: 1.25,
-                    y: 4,
+                    filter: "blur(8px)",
                   }}
                   animate={{
-                    opacity: 1,
-                    filter: "blur(0px)",
-                    scale: 1,
-                    y: 0,
+                    opacity: [0, 0.6, 1],
+                    filter: ["blur(8px)", "blur(3px)", "blur(0px)"],
                   }}
                   transition={{
-                    duration: 1.0,
-                    ease: [0.16, 1, 0.3, 1],
-                    delay: i * 0.06,
+                    duration: 0.9,
+                    ease: "easeOut",
+                    delay: i * 0.08,
+                    times: [0, 0.4, 1],
                   }}
                   className="inline-block mr-[0.15em] origin-center"
                 >
@@ -134,7 +131,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                   animate={{ opacity: 1, filter: "blur(0px)" }}
                   transition={{
                     duration: 0.8,
-                    delay: currentText.length * 0.06,
+                    delay: currentText.length * 0.08,
                     ease: "easeOut",
                   }}
                   className="inline-block"
@@ -157,7 +154,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                   animate={{ opacity: 1, filter: "blur(0px)" }}
                   transition={{
                     duration: 0.8,
-                    delay: currentText.length * 0.06,
+                    delay: currentText.length * 0.08,
                     ease: "easeOut",
                   }}
                   className="ml-1 text-slate-400 dark:text-slate-500 inline-block"
