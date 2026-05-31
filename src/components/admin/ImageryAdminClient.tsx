@@ -437,7 +437,6 @@ export default function ImageryAdminClient({ initialCategories }: Props) {
         onDeleteImagery={imagery.handleDelete}
         onAddCategory={categories.handleAdd}
         onEditCategory={categories.handleEdit}
-        onDeleteCategory={categories.handleDelete}
         onDeleteMeaning={meanings.handleDelete}
         onDeleteOccurrence={occurrences.handleDeleteRelation}
       />

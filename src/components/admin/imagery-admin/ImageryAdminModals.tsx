@@ -33,7 +33,6 @@ export default function ImageryAdminModals({
   onDeleteImagery,
   onAddCategory,
   onEditCategory,
-  onDeleteCategory,
   onDeleteMeaning,
   onDeleteOccurrence,
   deleteSubmitting,
@@ -48,7 +47,6 @@ export default function ImageryAdminModals({
   onDeleteImagery: () => void;
   onAddCategory: (values: CategoryFormValues) => void | Promise<void>;
   onEditCategory: (values: CategoryFormValues) => void | Promise<void>;
-  onDeleteCategory: () => void;
   onDeleteMeaning: () => void;
   onDeleteOccurrence: () => void;
   deleteSubmitting: boolean;
@@ -166,40 +164,29 @@ export default function ImageryAdminModals({
 
   if (
     modal.type === "delete-imagery" ||
-    modal.type === "delete-category" ||
     modal.type === "delete-meaning" ||
     modal.type === "delete-occurrence"
   ) {
     const title =
       modal.type === "delete-imagery"
         ? "确认删除意象"
-        : modal.type === "delete-category"
-          ? "确认删除分类"
-          : modal.type === "delete-meaning"
-            ? "确认删除含义"
-            : "确认删除关系";
+        : modal.type === "delete-meaning"
+          ? "确认删除含义"
+          : "确认删除关系";
     const label =
-      modal.type === "delete-imagery"
-        ? modal.item.name
-        : modal.type === "delete-category"
-          ? modal.category.name
-          : modal.label;
+      modal.type === "delete-imagery" ? modal.item.name : modal.label;
     const description =
       modal.type === "delete-imagery"
         ? `将删除意象「${label}」。${modal.item.count > 0 ? ` 当前已有 ${modal.item.count} 条关系记录。` : ""}`
-        : modal.type === "delete-category"
-          ? `将删除分类「${label}」。`
-          : modal.type === "delete-meaning"
-            ? `将删除含义「${label}」。`
-            : `将删除关系记录「${label}」。`;
+        : modal.type === "delete-meaning"
+          ? `将删除含义「${label}」。`
+          : `将删除关系记录「${label}」。`;
     const handleConfirm =
       modal.type === "delete-imagery"
         ? onDeleteImagery
-        : modal.type === "delete-category"
-          ? onDeleteCategory
-          : modal.type === "delete-meaning"
-            ? onDeleteMeaning
-            : onDeleteOccurrence;
+        : modal.type === "delete-meaning"
+          ? onDeleteMeaning
+          : onDeleteOccurrence;
 
     return (
       <DeleteConfirmationModal
@@ -384,7 +371,7 @@ function DeleteConfirmationModal({
             <div className="mt-5">
               <input
                 type="text"
-                placeholder="输入“删除”确认"
+                placeholder={'输入"删除"确认'}
                 autoFocus
                 {...form.register("confirmationText")}
                 className={compactInputClassName()}

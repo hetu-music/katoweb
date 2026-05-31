@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import type { ImageryCategory } from "@/lib/types";
-import { ChevronDown, ChevronRight, Edit2, FolderPlus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Edit2, FolderPlus } from "lucide-react";
 import { cn } from "./shared";
 import type { CategoryNode } from "./types";
 
@@ -10,14 +10,12 @@ export const CategoryTreeNode = React.memo(function CategoryTreeNode({
   imageryCountByCategory,
   onAddChild,
   onEdit,
-  onDelete,
 }: {
   node: CategoryNode;
   depth: number;
   imageryCountByCategory: Map<number, number>;
   onAddChild: (parentId: number) => void;
   onEdit: (category: ImageryCategory) => void;
-  onDelete: (category: ImageryCategory) => void;
 }) {
   // Default expanded at depth 0 (L2 nodes inside a L1 column)
   const [expanded, setExpanded] = useState(depth === 0);
@@ -91,14 +89,6 @@ export const CategoryTreeNode = React.memo(function CategoryTreeNode({
           >
             <Edit2 size={12} />
           </button>
-          <button
-            type="button"
-            onClick={() => onDelete(node)}
-            className="rounded-lg p-1 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-            title="删除"
-          >
-            <Trash2 size={12} />
-          </button>
         </div>
       </div>
 
@@ -120,7 +110,6 @@ export const CategoryTreeNode = React.memo(function CategoryTreeNode({
               imageryCountByCategory={imageryCountByCategory}
               onAddChild={onAddChild}
               onEdit={onEdit}
-              onDelete={onDelete}
             />
           ))}
         </div>

@@ -41,14 +41,12 @@ export default function CategoriesTab({
   categories,
   onAddCategory,
   onEditCategory,
-  onDeleteCategory,
 }: {
   categoryTree: CategoryNode[];
   imageryCountByCategory: Map<number, number>;
   categories: ImageryCategory[];
   onAddCategory: (parentId?: number) => void;
   onEditCategory: (category: ImageryCategory) => void;
-  onDeleteCategory: (category: ImageryCategory) => void;
 }) {
   const l1Count = categories.filter((c) => (c.level ?? 1) === 1).length;
   const l2Count = categories.filter((c) => (c.level ?? 1) === 2).length;
@@ -157,7 +155,6 @@ export default function CategoriesTab({
                         imageryCountByCategory={imageryCountByCategory}
                         onAddChild={onAddCategory}
                         onEdit={onEditCategory}
-                        onDelete={onDeleteCategory}
                       />
                     ))}
                   </div>

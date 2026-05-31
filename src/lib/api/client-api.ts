@@ -205,15 +205,6 @@ export async function apiUpdateImageryCategory(
   return res.json();
 }
 
-export async function apiDeleteImageryCategory(id: number, csrfToken: string) {
-  const res = await fetch(`/api/admin/imagery/categories/${id}`, {
-    method: "DELETE",
-    headers: { "x-csrf-token": csrfToken },
-  });
-  if (!res.ok) throw new Error("删除分类失败");
-  return res.json();
-}
-
 // ─── Imagery meanings API ──────────────────────────────────────────────────────
 
 export async function apiGetMeanings() {

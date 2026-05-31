@@ -247,16 +247,6 @@ export async function updateImageryCategory(
   return updated;
 }
 
-export async function deleteImageryCategory(id: number, accessToken: string) {
-  const supabase = getUserClient(accessToken);
-  if (!supabase) throw new Error("Supabase client unavailable");
-  const { error } = await supabase
-    .from(TABLES.IMAGERY_CAT)
-    .delete()
-    .eq("id", id);
-  if (error) throw error;
-}
-
 // ─── write functions: meanings ────────────────────────────────────────────────
 
 async function getOccurrenceWithRelationsById(id: number, accessToken: string) {
