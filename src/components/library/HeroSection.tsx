@@ -238,9 +238,9 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
         </div>
 
         {/* -- 移动端入口 (Mobile) - 极简横向排列 -- */}
-        <div className="flex md:hidden flex-row gap-8 w-full mt-2 flex-wrap">
+        <div className="flex md:hidden flex-row gap-8 w-full mt-1 flex-wrap">
           {/* 主副标题与入口间的分界线 - 古典编排风格的高级分界线 */}
-          <div className="flex items-center w-full mt-2 mb-1.5 opacity-80">
+          <div className="flex items-center w-full mt-1 mb-1 opacity-80">
             <div className="flex-1 h-px bg-linear-to-r from-transparent to-slate-300 dark:to-slate-700" />
             <div className="mx-4 flex items-center justify-center gap-1.5 text-slate-400 dark:text-slate-600">
               <div className="h-[2px] w-[2px] rounded-full bg-current" />
@@ -258,7 +258,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 onMouseEnter={() => setHoveredId(feature.id)}
                 onMouseLeave={() => setHoveredId(null)}
                 onTouchStart={() => setHoveredId(feature.id)}
-                className="group flex items-center justify-between outline-none py-2"
+                className="group flex items-center justify-between outline-none py-1"
               >
                 <div className="flex items-center gap-4">
                   {/* 菱形小印章指示点 - 加上与桌面端统一的无边界高斯模糊光晕 */}
