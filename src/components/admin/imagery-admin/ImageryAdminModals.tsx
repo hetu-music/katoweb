@@ -252,7 +252,10 @@ export default function ImageryAdminModals({
                     })}
                     className={compactInputClassName()}
                   >
-                    <option value="">（顶级分类）</option>
+                    {(modal.type === "add-category" ||
+                      (modal.category.level ?? 1) <= 1) && (
+                      <option value="">（顶级分类）</option>
+                    )}
                     {categories
                       .filter((category) => {
                         if (modal.type === "edit-category") {
