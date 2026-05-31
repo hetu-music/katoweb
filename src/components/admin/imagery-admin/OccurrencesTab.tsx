@@ -139,7 +139,7 @@ function RelationEditorCard({
               <div key={field.id} className="flex gap-2">
                 <input
                   {...form.register(`lyric_timetag.${index}.value`)}
-                  placeholder="01:26.04"
+                  placeholder="01:26.04 或 01:26.040"
                   className={`flex-1 font-mono text-xs ${compactInputClassName()}`}
                 />
                 <button
