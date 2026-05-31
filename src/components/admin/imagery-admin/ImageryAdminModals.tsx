@@ -253,26 +253,45 @@ export default function ImageryAdminModals({
 
               <div>
                 <label className={formLabelClassName()}>父分类</label>
-                <select
-                  {...categoryForm.register("parent_id", {
-                    setValueAs: (value) => (value ? Number(value) : null),
-                  })}
-                  className={compactInputClassName()}
-                >
-                  <option value="">（顶级分类）</option>
-                  {categories
-                    .filter(
-                      (category) =>
-                        (modal.type !== "edit-category" ||
-                          category.id !== modal.category.id) &&
-                        (category.level ?? 1) < 3,
-                    )
-                    .map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {getCategoryPath(category.id)}
-                      </option>
-                    ))}
-                </select>
+                {modal.type === "edit-category" &&
+                (modal.category.level ?? 1) === 1 ? (
+                  // L1 分类没有父级，锁定显示
+                  <div className={`${compactInputClassName()} cursor-not-allowed bg-slate-50 text-slate-400 dark:bg-slate-800/50`}>
+                    （顶级分类）
+                  </div>
+                ) : (
+                  <select
+                    {...categoryForm.register("parent_id", {
+                      setValueAs: (value) => (value ? Number(value) : null),
+                    })}
+                    className={compactInputClassName()}
+                  >
+                    <option value="">（顶级分类）</option>
+                    {categories
+                      .filter((category) => {
+                        if (modal.type === "edit-category") {
+                          // 编辑时：只显示 level === 当前 level - 1 的分类（同级父分类）
+                          const currentLevel = modal.category.level ?? 1;
+                          return (
+                            category.id !== modal.category.id &&
+                            (category.level ?? 1) === currentLevel - 1
+                          );
+                        }
+                        // 新增时：显示所有可作为父级的分类（level < 3）
+                        return (category.level ?? 1) < 3;
+                      })
+                      .map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {getCategoryPath(category.id)}
+                        </option>
+                      ))}
+                  </select>
+                )}
+                {modal.type === "edit-category" && (
+                  <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
+                    编辑时只能在同级分类间调整父分类
+                  </p>
+                )}
               </div>
 
               <div>
