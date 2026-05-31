@@ -216,7 +216,7 @@ export default function ImageryAdminModals({
   if (modal.type === "add-category" || modal.type === "edit-category") {
     return (
       <ModalBackdrop onClose={onClose}>
-        <ModalCard>
+        <ModalCard className="max-w-lg">
           <form
             onSubmit={categoryForm.handleSubmit((values) =>
               modal.type === "add-category"
