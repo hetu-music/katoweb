@@ -100,7 +100,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 duration: 0.35,
                 ease: [0.25, 1, 0.5, 1],
               }}
-              className="font-light text-sm md:text-[15px] leading-relaxed mb-0 flex flex-wrap items-center select-none font-[family-name:var(--font-calligraphy)]"
+              className="font-light text-base md:text-[17px] leading-relaxed mb-0 flex flex-wrap items-center select-none font-[family-name:var(--font-calligraphy)]"
             >
               {currentText.split("").map((char, i) => (
                 <motion.span
