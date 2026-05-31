@@ -164,7 +164,6 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
         {/* -- 桌面端入口 (Desktop) - 极简水墨印章 -- */}
         <div className="hidden md:flex flex-row gap-5 justify-end mt-4 md:mt-0">
           {FEATURE_ENTRANCES.map((feature, index) => {
-            const Icon = feature.icon;
             return (
               <Link
                 key={feature.id}

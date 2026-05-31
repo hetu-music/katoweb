@@ -42,8 +42,12 @@ export function usePlayerTime(onTick?: (currentTime: number, duration: number) =
   if (prevSeekBase !== seekBase) {
     setPrevSeekBase(seekBase);
     setCurrentTime(seekBase);
-    lastSecRef.current = Math.floor(seekBase);
   }
+
+  // 在 effect 中同步 lastSecRef，避免在渲染阶段写 ref
+  useEffect(() => {
+    lastSecRef.current = Math.floor(seekBase);
+  }, [seekBase]);
 
   useEffect(() => {
     const audio = getAudio();
