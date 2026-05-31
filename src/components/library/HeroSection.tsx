@@ -67,7 +67,19 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
       {/* 左侧：标题与子标题 */}
       <div className="flex flex-col justify-between flex-1 gap-8 md:gap-0">
         <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50 italic tracking-tight leading-[0.8] -mt-1 lg:-mt-1.5">
-          谣歌 <span className="text-[1.3em] font-semibold">{songCount}</span>
+          谣歌{" "}
+          <AnimatePresence mode="popLayout">
+            <motion.span
+              key={songCount}
+              className="text-[1.3em] font-semibold inline-block"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {songCount}
+            </motion.span>
+          </AnimatePresence>
         </h1>
 
         <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 mt-auto -mb-1 lg:-mb-1.5 min-h-[24px]">
