@@ -80,7 +80,7 @@ export default function FavoritesTabContent() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex-1 flex flex-col">
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-slate-705 dark:text-slate-295">
+          <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
             已收藏 {favoriteSongs.length} 首作品
           </span>
         </div>
@@ -122,7 +122,7 @@ export default function FavoritesTabContent() {
                 </div>
 
                 <div className="min-w-0">
-                  <h4 className="text-sm font-semibold text-slate-855 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                     {song.title}
                   </h4>
                   <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 truncate">
@@ -179,7 +179,7 @@ export default function FavoritesTabContent() {
             {/* Expanded Review — lazy-loaded */}
             {!!song.collectionInfo?.review && expandedReviews.get(song.id) && (
               <div className="px-3.5 pb-3.5 pt-0.5">
-                <div className="bg-slate-50 dark:bg-slate-850/40 p-3 rounded-lg border border-slate-100/60 dark:border-slate-800/60">
+                <div className="bg-slate-50 dark:bg-slate-800/40 p-3 rounded-lg border border-slate-100/60 dark:border-slate-800/60">
                   {!reviewTexts.has(song.id) ? (
                     <p className="text-sm text-slate-400 animate-pulse">
                       加载评论中...
