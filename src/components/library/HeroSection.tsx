@@ -65,7 +65,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
       style={{ alignItems: "stretch" }}
     >
       {/* 左侧：标题与子标题 */}
-      <div className="flex flex-col justify-between flex-1 gap-8 md:gap-0">
+      <div className="flex flex-col justify-between flex-1 gap-12 md:gap-0">
         <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50 italic tracking-tight leading-[0.8] -mt-1 lg:-mt-1.5">
           谣歌{" "}
           <AnimatePresence mode="wait">
