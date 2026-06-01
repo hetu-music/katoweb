@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Scroll, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
@@ -65,7 +65,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
       style={{ alignItems: "stretch" }}
     >
       {/* 左侧：标题与子标题 */}
-      <div className="flex flex-col justify-between flex-1 gap-8 md:gap-0">
+      <div className="flex flex-col justify-between flex-1 gap-12 md:gap-0">
         <h1 className="text-5xl md:text-6xl text-slate-900 dark:text-slate-50 italic tracking-tight leading-[0.8] -mt-1 lg:-mt-1.5">
           谣歌{" "}
           <AnimatePresence mode="wait">
@@ -108,7 +108,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 duration: 0.35,
                 ease: [0.25, 1, 0.5, 1],
               }}
-              className="font-light text-base md:text-[17px] leading-relaxed mb-0 flex flex-wrap items-center select-none font-[family-name:var(--font-calligraphy)] text-stone-500 dark:text-stone-400"
+              className="font-light text-base md:text-[17px] leading-relaxed mb-0 flex flex-wrap items-center select-none font-calligraphy text-stone-500 dark:text-stone-400"
             >
               {currentText.split("").map((char, i) => (
                 <motion.span
@@ -122,9 +122,9 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                     filter: ["blur(10px)", "blur(4px)", "blur(0px)"],
                   }}
                   transition={{
-                    duration: 2.2,
+                    duration: 1.8,
                     ease: [0.22, 0.6, 0.36, 1],
-                    delay: i * 0.1,
+                    delay: i * 0.08,
                     times: [0, 0.35, 1],
                   }}
                   className="inline-block mr-[0.15em] origin-center"
@@ -139,7 +139,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                   animate={{ opacity: 1, filter: "blur(0px)" }}
                   transition={{
                     duration: 0.8,
-                    delay: currentText.length * 0.1,
+                    delay: currentText.length * 0.08,
                     ease: "easeOut",
                   }}
                   className="inline-block"
@@ -162,7 +162,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                   animate={{ opacity: 1, filter: "blur(0px)" }}
                   transition={{
                     duration: 0.8,
-                    delay: currentText.length * 0.1,
+                    delay: currentText.length * 0.08,
                     ease: "easeOut",
                   }}
                   className="ml-1 text-slate-400 dark:text-slate-500 inline-block"
@@ -282,20 +282,18 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                     />
                     {/* 核心印章 */}
                     <div
-                      className={`h-1.5 w-1.5 border border-current transition-all duration-500 ${
-                        hoveredId === feature.id
+                      className={`h-1.5 w-1.5 border border-current transition-all duration-500 ${hoveredId === feature.id
                           ? `rotate-135 bg-current ${feature.textHover.replace(/group-hover:/g, "")}`
                           : `rotate-45 bg-transparent ${feature.textBase} group-active:rotate-135 group-active:bg-current`
-                      }`}
+                        }`}
                     />
                   </div>
                   {/* 标题 */}
                   <div
-                    className={`flex items-center text-[16px] font-calligraphy font-medium tracking-[0.5em] leading-none transition-all duration-500 ${
-                      hoveredId === feature.id
+                    className={`flex items-center text-[16px] font-calligraphy font-medium tracking-[0.5em] leading-none transition-all duration-500 ${hoveredId === feature.id
                         ? `${feature.textHover.replace(/group-hover:/g, "")}`
                         : `${feature.textBase} ${feature.textHover}`
-                    }`}
+                      }`}
                   >
                     {feature.label.split("").map((char, i) => (
                       <motion.span
