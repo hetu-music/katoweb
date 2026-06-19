@@ -1,20 +1,20 @@
 import type {
-  SearchResultItem,
-  SearchResponse,
   AutoCompleteResponse,
+  SearchResponse,
+  SearchResultItem,
 } from "@/lib/api/api-auto-complete";
 import {
   type MusicProvider,
   msToSeconds,
-  timestampToDateString,
   parseLyricMetadata,
+  timestampToDateString,
 } from "./types";
 
 // ============================================
 // 常量定义
 // ============================================
 
-const HETU_API_BASE = "http://ncm-api:3000";
+const HETU_API_BASE = "http://ncmapi:3000";
 
 // ============================================
 // 内部辅助函数

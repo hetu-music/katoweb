@@ -1,7 +1,7 @@
 import type {
-  SearchResultItem,
-  SearchResponse,
   AutoCompleteResponse,
+  SearchResponse,
+  SearchResultItem,
 } from "@/lib/api/api-auto-complete";
 import { type MusicProvider, parseLyricMetadata } from "./types";
 
@@ -9,7 +9,7 @@ import { type MusicProvider, parseLyricMetadata } from "./types";
 // 常量定义
 // ============================================
 
-const KUGOU_API_BASE = "http://kgm-api:3000";
+const KUGOU_API_BASE = "http://kgmapi:3000";
 
 // ============================================
 // 内部辅助函数
