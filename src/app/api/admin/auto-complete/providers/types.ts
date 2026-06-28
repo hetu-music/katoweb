@@ -65,23 +65,57 @@ export function parseLyricMetadata(rawLyric: string): LyricMetadata {
       .filter(Boolean);
 
   for (const line of lines) {
-    // 匹配带时间戳的格式：[00:00.00] 作词 : xxx
-    const lyricistMatch = line.match(
-      /\[\d{2}:\d{2}[.\d]*\]\s*作词\s*[:：]\s*(.+)/i,
-    );
-    const composerMatch = line.match(
-      /\[\d{2}:\d{2}[.\d]*\]\s*作曲\s*[:：]\s*(.+)/i,
-    );
-    const arrangerMatch = line.match(
-      /\[\d{2}:\d{2}[.\d]*\]\s*编曲\s*[:：]\s*(.+)/i,
-    );
+    const trimmedLine = line.trim();
+    if (!trimmedLine) continue;
 
+    // 1. 词曲编 / 词/曲/编 / 作词/作曲/编曲
+    const allThreeMatch = trimmedLine.match(
+      /^(?:\[[^\]]+\]\s*)*(?:词曲编|词[/\s、,，]曲[/\s、,，]编|作词[/\s、,，]作曲[/\s、,，]编曲)\s*[:：]\s*(.+)/i,
+    );
+    if (allThreeMatch) {
+      const names = splitNames(allThreeMatch[1]);
+      if (!lyricist) lyricist = names;
+      if (!composer) composer = names;
+      if (!arranger) arranger = names;
+      continue;
+    }
+
+    // 2. 词曲 / 词/曲 / 作词/作曲
+    const combinedMatch = trimmedLine.match(
+      /^(?:\[[^\]]+\]\s*)*(?:词曲|词[/\s、,，]曲|作词[/\s、,，]作曲)\s*[:：]\s*(.+)/i,
+    );
+    if (combinedMatch) {
+      const names = splitNames(combinedMatch[1]);
+      if (!lyricist) lyricist = names;
+      if (!composer) composer = names;
+      continue;
+    }
+
+    // 3. 作词 / 词
+    const lyricistMatch = trimmedLine.match(
+      /^(?:\[[^\]]+\]\s*)*(?:作词|词|Lyricist)\s*[:：]\s*(.+)/i,
+    );
     if (lyricistMatch && !lyricist) {
       lyricist = splitNames(lyricistMatch[1]);
-    } else if (composerMatch && !composer) {
+      continue;
+    }
+
+    // 4. 作曲 / 曲
+    const composerMatch = trimmedLine.match(
+      /^(?:\[[^\]]+\]\s*)*(?:作曲|曲|Composer)\s*[:：]\s*(.+)/i,
+    );
+    if (composerMatch && !composer) {
       composer = splitNames(composerMatch[1]);
-    } else if (arrangerMatch && !arranger) {
+      continue;
+    }
+
+    // 5. 编曲 / 编
+    const arrangerMatch = trimmedLine.match(
+      /^(?:\[[^\]]+\]\s*)*(?:编曲|编|Arranger|Arrangement)\s*[:：]\s*(.+)/i,
+    );
+    if (arrangerMatch && !arranger) {
       arranger = splitNames(arrangerMatch[1]);
+      continue;
     }
   }
 
