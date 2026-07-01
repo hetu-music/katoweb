@@ -24,6 +24,13 @@ const Pagination: React.FC<PaginationProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
 
+  const handlePageChange = (page: number) => {
+    onPageChange(page);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0 });
+    }
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -62,7 +69,7 @@ const Pagination: React.FC<PaginationProps> = ({
     <div className={`flex items-center justify-center gap-2 ${className}`}>
       {/* 跳转到第一页 */}
       <button
-        onClick={() => onPageChange(1)}
+        onClick={() => handlePageChange(1)}
         disabled={currentPage === 1}
         className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
         aria-label="First page"
@@ -72,7 +79,7 @@ const Pagination: React.FC<PaginationProps> = ({
 
       {/* 上一页 */}
       <button
-        onClick={() => onPageChange(currentPage - 1)}
+        onClick={() => handlePageChange(currentPage - 1)}
         disabled={currentPage === 1}
         className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
         aria-label="Previous page"
@@ -115,7 +122,7 @@ const Pagination: React.FC<PaginationProps> = ({
                     key={page}
                     onClick={() => {
                       if (page !== currentPage) {
-                        onPageChange(page);
+                        handlePageChange(page);
                       }
                       setIsOpen(false);
                     }}
@@ -142,7 +149,7 @@ const Pagination: React.FC<PaginationProps> = ({
 
       {/* 下一页 */}
       <button
-        onClick={() => onPageChange(currentPage + 1)}
+        onClick={() => handlePageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
         className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
         aria-label="Next page"
@@ -152,7 +159,7 @@ const Pagination: React.FC<PaginationProps> = ({
 
       {/* 跳转到最后一页 */}
       <button
-        onClick={() => onPageChange(totalPages)}
+        onClick={() => handlePageChange(totalPages)}
         disabled={currentPage === totalPages}
         className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
         aria-label="Last page"

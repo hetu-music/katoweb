@@ -1,6 +1,7 @@
 import type { ImageryCategory, ImageryItem } from "@/lib/types";
 import { Edit2, Tag } from "lucide-react";
-import { EmptyState, LoadingState, PaginationControls } from "./shared";
+import { EmptyState, LoadingState } from "./shared";
+import Pagination from "@/components/shared/Pagination";
 
 export default function ImageryTab({
   categories,
@@ -110,11 +111,13 @@ export default function ImageryTab({
             );
           })}
 
-          <PaginationControls
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={onPageChange}
-          />
+          <div className="pt-4">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={onPageChange}
+            />
+          </div>
         </div>
       )}
     </div>

@@ -22,9 +22,9 @@ import {
   EmptyState,
   ghostButtonClassName,
   LoadingState,
-  PaginationControls,
   primaryButtonClassName,
 } from "./shared";
+import Pagination from "@/components/shared/Pagination";
 import type { RelationEditor, SongOption } from "./types";
 
 function RelationEditorCard({
@@ -486,11 +486,13 @@ export default function OccurrencesTab({
             );
           })}
 
-          <PaginationControls
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={onPageChange}
-          />
+          <div className="pt-4">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={onPageChange}
+            />
+          </div>
         </>
       )}
     </div>

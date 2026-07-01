@@ -154,6 +154,9 @@ export default function AuditLogsPanel() {
       setLoading(true);
       setError(null);
       await fetchPage(p, table);
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0 });
+      }
     },
     [fetchPage, tableFilter],
   );
