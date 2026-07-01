@@ -1,5 +1,7 @@
 "use client";
 
+import EnqueueButton from "@/components/shared/EnqueueButton";
+import PlayButton from "@/components/shared/PlayButton";
 import { useFavorites } from "@/context/FavoritesContext";
 import type { Song } from "@/lib/types";
 import { cn } from "@/lib/utils/utils";
@@ -9,8 +11,6 @@ import { Calendar, Clock, Heart } from "lucide-react";
 import type React from "react";
 import CoverArt from "./CoverArt";
 import MultiTagDisplay from "./MultiTagDisplay";
-import EnqueueButton from "@/components/shared/EnqueueButton";
-import PlayButton from "@/components/shared/PlayButton";
 
 interface ListRowProps {
   song: Song;
@@ -48,7 +48,7 @@ export default function ListRow({
         <CoverArt song={song} isActive={isActive} />
       </div>
 
-      <div className="grow min-w-0 flex flex-col justify-center">
+      <div className="grow min-w-0 flex flex-col justify-center translate-y-[-1.5px] md:translate-y-0">
         <h2
           className={cn(
             "truncate text-lg text-slate-900 transition-colors dark:text-slate-100",
@@ -64,6 +64,12 @@ export default function ListRow({
           <span className="mx-1 opacity-50">/</span>{" "}
           {song.composer?.join(" ") || "-"}
         </p>
+        {song.year && (
+          <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-400 dark:text-slate-500 md:hidden">
+            <Calendar size={11} className="opacity-60" />
+            <span className="font-mono leading-none">{song.year}</span>
+          </div>
+        )}
         {lyricsSnippet && (
           <div className="mt-1 border-l-2 border-slate-200 pl-2 dark:border-slate-700">
             <p className="truncate text-[11px] leading-relaxed text-slate-400 dark:text-slate-500">
