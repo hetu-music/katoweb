@@ -64,6 +64,12 @@ export default function ListRow({
           <span className="mx-1 opacity-50">/</span>{" "}
           {song.composer?.join(" ") || "-"}
         </p>
+        {song.year && (
+          <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-400 dark:text-slate-500 md:hidden">
+            <Calendar size={11} className="opacity-60" />
+            <span className="font-mono leading-none">{song.year}</span>
+          </div>
+        )}
         {lyricsSnippet && (
           <div className="mt-1 border-l-2 border-slate-200 pl-2 dark:border-slate-700">
             <p className="truncate text-[11px] leading-relaxed text-slate-400 dark:text-slate-500">
