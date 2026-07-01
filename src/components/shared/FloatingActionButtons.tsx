@@ -4,7 +4,7 @@ import IOSInstallPrompt from "@/components/pwa/IOSInstallPrompt";
 import { usePWAInstall } from "@/components/pwa/PWARegistration";
 import { usePlayerStore } from "@/store/player-store";
 import { cn } from "@/lib/utils/utils";
-import { ArrowUp, Disc3, Download, Plus, Share2 } from "lucide-react";
+import { ArrowUp, ArrowDown, Disc3, Download, Plus, Share2 } from "lucide-react";
 import React, { useState } from "react";
 
 interface FloatingActionButtonsProps {
@@ -138,20 +138,47 @@ const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
           </button>
         )}
 
-        {/* 3. 返回顶部 */}
-        <button
-          onClick={onScrollToTop}
-          className={cn(
-            buttonClass,
-            showScrollTop
-              ? "translate-y-0 opacity-100"
-              : "translate-y-8 opacity-0 pointer-events-none",
-          )}
-          title="返回顶部"
-          aria-label="返回顶部"
-        >
-          <ArrowUp size={20} />
-        </button>
+        {/* 3. 返回顶部 / 一键到底 */}
+        <div className="relative w-11 h-11 shrink-0">
+          {/* 返回顶部 */}
+          <button
+            onClick={onScrollToTop}
+            className={cn(
+              buttonClass,
+              "absolute inset-0 transition-all duration-300 transform",
+              showScrollTop
+                ? "scale-100 opacity-100 rotate-0"
+                : "scale-50 opacity-0 pointer-events-none rotate-90",
+            )}
+            title="返回顶部"
+            aria-label="返回顶部"
+          >
+            <ArrowUp size={20} />
+          </button>
+
+          {/* 一键到底 */}
+          <button
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                window.scrollTo({
+                  top: document.documentElement.scrollHeight,
+                  behavior: "smooth",
+                });
+              }
+            }}
+            className={cn(
+              buttonClass,
+              "absolute inset-0 transition-all duration-300 transform",
+              !showScrollTop
+                ? "scale-100 opacity-100 rotate-0"
+                : "scale-50 opacity-0 pointer-events-none -rotate-90",
+            )}
+            title="一键到底"
+            aria-label="一键到底"
+          >
+            <ArrowDown size={20} />
+          </button>
+        </div>
       </div>
     </>
   );
