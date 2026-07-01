@@ -14,9 +14,9 @@ import {
   formLabelClassName,
   ghostButtonClassName,
   LoadingState,
-  PaginationControls,
   primaryButtonClassName,
 } from "./shared";
+import Pagination from "@/components/shared/Pagination";
 
 function MeaningEditor({
   initialValues,
@@ -218,11 +218,13 @@ export default function MeaningsTab({
         </>
       )}
 
-      <PaginationControls
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={onPageChange}
-      />
+      <div className="pt-4">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+        />
+      </div>
     </div>
   );
 }

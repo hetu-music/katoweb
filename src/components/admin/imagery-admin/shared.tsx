@@ -135,46 +135,6 @@ export function SearchField({
   );
 }
 
-export function PaginationControls({
-  currentPage,
-  totalPages,
-  onPageChange,
-}: {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}) {
-  if (totalPages <= 1) return null;
-
-  const handlePageChange = (page: number) => {
-    onPageChange(page);
-    if (typeof window !== "undefined") {
-      window.scrollTo({ top: 0 });
-    }
-  };
-
-  return (
-    <div className="flex items-center justify-center gap-3 pt-4">
-      <button
-        onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-        disabled={currentPage === 1}
-        className="rounded-full border border-slate-200 px-3.5 py-1.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-40 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
-      >
-        上一页
-      </button>
-      <span className="text-sm text-slate-500">
-        {currentPage} / {totalPages}
-      </span>
-      <button
-        onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-        disabled={currentPage === totalPages}
-        className="rounded-full border border-slate-200 px-3.5 py-1.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-40 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
-      >
-        下一页
-      </button>
-    </div>
-  );
-}
 
 export function EmptyState({
   icon,
