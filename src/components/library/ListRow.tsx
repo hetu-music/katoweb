@@ -51,7 +51,7 @@ export default function ListRow({
       <div className="grow min-w-0 flex flex-col justify-center translate-y-[-1.5px] md:translate-y-0">
         <h2
           className={cn(
-            "truncate text-lg leading-6 text-slate-900 transition-colors dark:text-slate-100",
+            "truncate text-lg text-slate-900 transition-colors dark:text-slate-100",
             isActive
               ? "text-blue-600 dark:text-blue-400"
               : "group-hover:text-blue-600 dark:group-hover:text-blue-400",
