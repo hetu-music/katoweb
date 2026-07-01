@@ -135,7 +135,6 @@ export function SearchField({
   );
 }
 
-
 export function EmptyState({
   icon,
   title,

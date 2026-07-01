@@ -4,7 +4,14 @@ import IOSInstallPrompt from "@/components/pwa/IOSInstallPrompt";
 import { usePWAInstall } from "@/components/pwa/PWARegistration";
 import { usePlayerStore } from "@/store/player-store";
 import { cn } from "@/lib/utils/utils";
-import { ArrowUp, ArrowDown, Disc3, Download, Plus, Share2 } from "lucide-react";
+import {
+  ArrowUp,
+  ArrowDown,
+  Disc3,
+  Download,
+  Plus,
+  Share2,
+} from "lucide-react";
 import React, { useState } from "react";
 
 interface FloatingActionButtonsProps {

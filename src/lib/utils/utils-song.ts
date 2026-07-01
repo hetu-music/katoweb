@@ -1,11 +1,11 @@
-import { Song, SongDetail, FilterOptions, SongInfo } from "@/lib/types";
 import {
   FILTER_OPTION_ALL,
   FILTER_OPTION_UNKNOWN,
   TYPE_ORDER,
 } from "@/lib/constants";
-import Fuse from "fuse.js";
+import { FilterOptions, Song, SongDetail, SongInfo } from "@/lib/types";
 import { formatDate, formatTime } from "@/lib/utils/utils-common";
+import Fuse from "fuse.js";
 
 // 判断字符串首字母是否为英文
 function startsWithEnglish(str: string): boolean {
@@ -302,11 +302,25 @@ export function calculateSongInfo(song: SongDetail): SongInfo {
       { label: "时长", value: formatTime(song.length) },
       {
         label: "曲号",
-        value: `${song.track || "未知"}/${song.tracktotal || "未知"}`,
+        value: (() => {
+          const track = song.track;
+          const total = song.tracktotal;
+          if (!track && !total) return "未知";
+          if (track && !total) return `第${track}首`;
+          if (!track && total) return `共${total}首`;
+          return `第${track}首/共${total}首`;
+        })(),
       },
       {
         label: "碟号",
-        value: `${song.discnumber || "未知"}/${song.disctotal || "未知"}`,
+        value: (() => {
+          const disc = song.discnumber;
+          const total = song.disctotal;
+          if (!disc && !total) return "未知";
+          if (disc && !total) return `第${disc}张`;
+          if (!disc && total) return `共${total}张`;
+          return `第${disc}张/共${total}张`;
+        })(),
       },
       {
         label: "流派",

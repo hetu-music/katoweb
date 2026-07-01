@@ -26,12 +26,7 @@ import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { Suspense, useCallback, useEffect } from "react";
 
 type TabType =
-  | "favorites"
-  | "account"
-  | "feedback"
-  | "users"
-  | "logs"
-  | "requests";
+  "favorites" | "account" | "feedback" | "users" | "logs" | "requests";
 const PROFILE_TABS = [
   "favorites",
   "account",
