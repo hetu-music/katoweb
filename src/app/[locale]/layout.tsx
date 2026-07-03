@@ -40,7 +40,7 @@ const notoSansSC = Noto_Sans_SC({
 });
 
 const lxgwMono = localFont({
-  src: "../../../../public/fonts/LXGWMono.woff2",
+  src: "../../../public/fonts/LXGWMono.woff2",
   variable: "--font-mono-cjk",
   weight: "400",
   display: "swap",
@@ -48,7 +48,7 @@ const lxgwMono = localFont({
 });
 
 const keben = localFont({
-  src: "../../../../public/fonts/keben.woff2",
+  src: "../../../public/fonts/keben.woff2",
   variable: "--font-keben",
   weight: "400",
   display: "swap",
