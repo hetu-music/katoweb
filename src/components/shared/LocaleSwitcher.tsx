@@ -10,12 +10,19 @@ const LOCALE_LABELS: Record<string, string> = {
   "zh-TW": "繁",
 };
 
+const LOCALE_TITLES: Record<string, string> = {
+  "zh-CN": "切換繁體中文",
+  "zh-TW": "切换简体中文",
+};
+
 export default function LocaleSwitcher({ className }: { className?: string }) {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
 
+  const label = LOCALE_LABELS[locale] ?? "简";
+  const title = LOCALE_TITLES[locale] ?? "切换语言";
   const otherLocale = locale === "zh-CN" ? "zh-TW" : "zh-CN";
 
   const handleSwitch = () => {
@@ -28,22 +35,20 @@ export default function LocaleSwitcher({ className }: { className?: string }) {
     <button
       onClick={handleSwitch}
       disabled={isPending}
+      title={title}
+      aria-label={title}
       className={cn(
-        "relative rounded-full px-2.5 py-1 text-xs font-semibold tracking-wide transition-all duration-300",
-        "border border-slate-200 dark:border-slate-700",
+        "p-2 rounded-full transition-colors",
         "text-slate-600 dark:text-slate-400",
-        "hover:border-slate-400 dark:hover:border-slate-500",
-        "hover:bg-slate-50 dark:hover:bg-slate-800",
-        "disabled:opacity-50 disabled:cursor-wait",
+        "hover:bg-slate-200/50 dark:hover:bg-slate-800",
+        "disabled:opacity-40 disabled:cursor-wait",
+        "w-9 h-9 flex items-center justify-center",
+        "text-sm font-semibold leading-none select-none",
+        isPending && "animate-pulse",
         className,
       )}
-      title={`切换至${otherLocale === "zh-TW" ? "繁體中文" : "简体中文"}`}
     >
-      {isPending ? (
-        <span className="opacity-50">{LOCALE_LABELS[locale]}</span>
-      ) : (
-        LOCALE_LABELS[locale]
-      )}
+      {label}
     </button>
   );
 }
