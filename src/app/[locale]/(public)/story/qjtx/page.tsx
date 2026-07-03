@@ -57,7 +57,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     authors: [{ url: "https://hetu-music.com" }],
     creator: siteName,
     alternates: {
-      canonical: "/story/qjtx",
+      canonical: locale === "zh-TW" ? "https://hetu-music.com/zh-TW/story/qjtx" : "https://hetu-music.com/story/qjtx",
       languages: {
         "zh-CN": "https://hetu-music.com/story/qjtx",
         "zh-TW": "https://hetu-music.com/zh-TW/story/qjtx",

@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     description,
     alternates: {
-      canonical: "/",
+      canonical: locale === "zh-TW" ? "https://hetu-music.com/zh-TW" : "https://hetu-music.com",
       languages: {
         "zh-CN": "https://hetu-music.com",
         "zh-TW": "https://hetu-music.com/zh-TW",

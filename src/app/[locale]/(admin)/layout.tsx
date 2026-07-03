@@ -4,6 +4,10 @@ import { headers } from "next/headers";
 export const metadata: Metadata = {
   title: "Admin - 河图作品勘鉴",
   description: "Administrative Interface",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function AdminLayout({

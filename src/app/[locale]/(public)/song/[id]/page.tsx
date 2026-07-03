@@ -50,6 +50,7 @@ export async function generateMetadata({
     title: song.title,
     description,
     alternates: {
+      canonical: locale === "zh-TW" ? `https://hetu-music.com/zh-TW/song/${song.id}` : `https://hetu-music.com/song/${song.id}`,
       languages: {
         "zh-CN": `https://hetu-music.com/song/${song.id}`,
         "zh-TW": `https://hetu-music.com/zh-TW/song/${song.id}`,
