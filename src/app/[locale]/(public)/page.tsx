@@ -35,6 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
+    title: tLib("title"),
     description,
     alternates: {
       canonical: "/",
@@ -44,7 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     },
     openGraph: {
-      title: t("site.title"),
+      title: `${tLib("title")} - ${t("site.title")}`,
       description,
       type: "website",
       images: [{ url: "/icons/source.png" }],
