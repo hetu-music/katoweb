@@ -80,6 +80,8 @@ export async function getSongs(
         lyricist: toTraditionalArray(s.lyricist),
         composer: toTraditionalArray(s.composer),
         arranger: toTraditionalArray(s.arranger),
+        type: toTraditionalArray(s.type),
+        genre: toTraditionalArray(s.genre),
       };
       if (item.albumartist) {
         (res as any).albumartist = toTraditionalArray(item.albumartist);
@@ -157,6 +159,8 @@ export async function getSongById(
       composer: toTraditionalArray(result.composer),
       arranger: toTraditionalArray(result.arranger),
       albumartist: toTraditionalArray(result.albumartist),
+      type: toTraditionalArray(result.type),
+      genre: toTraditionalArray(result.genre),
     };
   }
 
