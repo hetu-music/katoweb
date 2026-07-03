@@ -38,6 +38,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const router = useRouter();
   const t = useTranslations("song");
   const tNav = useTranslations("common.nav");
+  const tCommon = useTranslations("common");
   const { user, loaded: userLoaded } = useUserContext();
 
   const hasBenefits = userLoaded && !!user?.hasBenefits;
@@ -77,8 +78,8 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
   // songInfo 计算逻辑
   const songInfo = useMemo(() => {
-    return calculateSongInfo(song);
-  }, [song]);
+    return calculateSongInfo(song, t, tCommon);
+  }, [song, t, tCommon]);
 
   // 在组件挂载后立即启动动画
   useEffect(() => {
@@ -308,7 +309,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
             {(song.kugolink || song.qmlink || song.nelink) && (
               <div className="flex flex-col gap-3">
                 <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">
-                  {t("listenOn")}
+                  Listen On
                 </h2>
                 <div className="grid grid-cols-1 gap-2">
                   {song.nelink && (

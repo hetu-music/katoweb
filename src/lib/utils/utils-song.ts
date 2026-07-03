@@ -257,79 +257,94 @@ export function filterSongs(
 }
 
 // 计算歌曲信息
-export function calculateSongInfo(song: SongDetail): SongInfo {
+export function calculateSongInfo(
+  song: SongDetail,
+  t?: any,
+  tCommon?: any,
+): SongInfo {
+  const getLabel = (key: string, fallback: string) => (t ? t(key) : fallback);
+  const unknownStr = tCommon ? tCommon("unknown") : "未知";
+
   return {
     creativeInfo: [
       {
-        label: "作词",
+        label: getLabel("labels.lyricist", "作词"),
         value:
           song.lyricist && song.lyricist.length > 0
             ? song.lyricist.join(" ")
-            : "未知",
+            : unknownStr,
       },
       {
-        label: "作曲",
+        label: getLabel("labels.composer", "作曲"),
         value:
           song.composer && song.composer.length > 0
             ? song.composer.join(" ")
-            : "未知",
+            : unknownStr,
       },
       {
-        label: "编曲",
+        label: getLabel("labels.arranger", "编曲"),
         value:
           song.arranger && song.arranger.length > 0
             ? song.arranger.join(" ")
-            : "未知",
+            : unknownStr,
       },
       {
-        label: "演唱",
+        label: getLabel("labels.artist", "演唱"),
         value:
           song.artist && song.artist.length > 0
             ? song.artist.join(" ")
-            : "未知",
+            : unknownStr,
       },
     ],
     basicInfo: [
-      { label: "专辑", value: song.album || "未知" },
+      { label: getLabel("labels.album", "专辑"), value: song.album || unknownStr },
       {
-        label: "出品发行",
+        label: getLabel("labels.albumartist", "出品发行"),
         value:
           song.albumartist && song.albumartist.length > 0
             ? song.albumartist.join(" ")
-            : "未知",
+            : unknownStr,
       },
-      { label: "发行日期", value: formatDate(song.date) },
-      { label: "时长", value: formatTime(song.length) },
+      { label: getLabel("labels.releaseDate", "发行日期"), value: formatDate(song.date) },
+      { label: getLabel("labels.duration", "时长"), value: formatTime(song.length) },
       {
-        label: "曲号",
+        label: getLabel("labels.trackNumber", "曲号"),
         value: (() => {
           const track = song.track;
           const total = song.tracktotal;
-          if (!track && !total) return "未知";
-          if (track && !total) return `第${track}首`;
-          if (!track && total) return `共${total}首`;
-          return `第${track}首/共${total}首`;
+          if (!track && !total) return unknownStr;
+          if (track && !total) {
+            return t ? t("trackFormat.trackOnly", { track }) : `第${track}首`;
+          }
+          if (!track && total) {
+            return t ? t("trackFormat.totalOnly", { total }) : `共${total}首`;
+          }
+          return t ? t("trackFormat.both", { track, total }) : `第${track}首/共${total}首`;
         })(),
       },
       {
-        label: "碟号",
+        label: getLabel("labels.discNumber", "碟号"),
         value: (() => {
           const disc = song.discnumber;
           const total = song.disctotal;
-          if (!disc && !total) return "未知";
-          if (disc && !total) return `第${disc}张`;
-          if (!disc && total) return `共${total}张`;
-          return `第${disc}张/共${total}张`;
+          if (!disc && !total) return unknownStr;
+          if (disc && !total) {
+            return t ? t("discFormat.discOnly", { disc }) : `第${disc}张`;
+          }
+          if (!disc && total) {
+            return t ? t("discFormat.totalOnly", { total }) : `共${total}张`;
+          }
+          return t ? t("discFormat.both", { disc, total }) : `第${disc}张/共${total}张`;
         })(),
       },
       {
-        label: "流派",
+        label: getLabel("labels.genre", "流派"),
         value:
-          song.genre && song.genre.length > 0 ? song.genre.join(" ") : "未知",
+          song.genre && song.genre.length > 0 ? song.genre.join(" ") : unknownStr,
       },
       {
-        label: "类型",
-        value: song.type && song.type.length > 0 ? song.type.join(" ") : "原创",
+        label: getLabel("labels.type", "类型"),
+        value: song.type && song.type.length > 0 ? song.type.join(" ") : getLabel("labels.single", "原创"),
       },
     ],
   };
