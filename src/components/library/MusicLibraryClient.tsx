@@ -11,6 +11,7 @@ import { useScrollTop } from "@/hooks/ui/useScrollTop";
 import {
   DEFAULT_MUSIC_LIBRARY_VIEW_MODE,
   FILTER_OPTION_ALL,
+  FILTER_OPTION_UNKNOWN,
   MUSIC_LIBRARY_VIEW_MODES,
   type MusicLibraryViewMode,
 } from "@/lib/constants";
@@ -74,6 +75,8 @@ export default function MusicLibraryClient({
 }: MusicLibraryClientProps) {
   const router = useRouter();
   const t = useTranslations("library");
+  const tCommon = useTranslations("common");
+  const tEnum = useTranslations("enums");
   const { isLoggedIn } = useFavorites();
   const [mounted, setMounted] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
@@ -296,10 +299,16 @@ export default function MusicLibraryClient({
                     );
                   }
 
+                  const pillLabel = (() => {
+                    if (type === FILTER_OPTION_ALL) return tCommon("all");
+                    if (type === FILTER_OPTION_UNKNOWN) return tCommon("unknown");
+                    return tEnum.has(`type.${type}`) ? tEnum(`type.${type}`) : type;
+                  })();
+
                   return (
                     <FilterPill
                       key={type}
-                      label={type}
+                      label={pillLabel}
                       active={filterType === type}
                       onClick={() => {
                         if (hasDraggedRef.current) return;

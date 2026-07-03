@@ -31,6 +31,7 @@ export default function GridCard({
 }: GridCardProps) {
   const { isFavorite, toggleFavorite, isLoggedIn } = useFavorites();
   const t = useTranslations("song");
+  const tEnum = useTranslations("enums");
   const active = isFavorite(song.id);
 
   return (
@@ -134,7 +135,7 @@ export default function GridCard({
                   getTypeTagStyle(song.type[0]),
                 )}
               >
-                {song.type[0]}
+                {tEnum.has(`type.${song.type[0]}`) ? tEnum(`type.${song.type[0]}`) : song.type[0]}
               </span>
             </>
           )}

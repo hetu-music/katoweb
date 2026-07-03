@@ -39,6 +39,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const t = useTranslations("song");
   const tNav = useTranslations("common.nav");
   const tCommon = useTranslations("common");
+  const tEnum = useTranslations("enums");
   const { user, loaded: userLoaded } = useUserContext();
 
   const hasBenefits = userLoaded && !!user?.hasBenefits;
@@ -266,18 +267,18 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
               )}
             </div>
 
-            {/* 标签云 */}
+             {/* 标签云 */}
             <div className="flex flex-wrap gap-2">
               {(song.type && song.type.length > 0 ? song.type : ["原创"]).map(
-                (t) => (
+                (tVal) => (
                   <span
-                    key={t}
+                    key={tVal}
                     className={cn(
                       "px-3 py-1 text-xs font-medium rounded-full border tracking-wide uppercase",
-                      getTypeTagStyle(t, "emphasized"),
+                      getTypeTagStyle(tVal, "emphasized"),
                     )}
                   >
-                    {t}
+                    {tEnum.has(`type.${tVal}`) ? tEnum(`type.${tVal}`) : tVal}
                   </span>
                 ),
               )}
@@ -289,7 +290,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                     getGenreTagStyle(g, "emphasized"),
                   )}
                 >
-                  {g}
+                  {tEnum.has(`genre.${g}`) ? tEnum(`genre.${g}`) : g}
                 </span>
               ))}
             </div>
