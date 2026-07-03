@@ -32,22 +32,9 @@ export default function LocaleSwitcher({ className }: { className?: string }) {
   }, [router, pathname, otherLocale]);
 
   const handleSwitch = () => {
-    const doSwitch = () =>
-      startTransition(() => {
-        router.replace(pathname, { locale: otherLocale });
-      });
-
-    // View Transitions API：支持的浏览器（Chrome 111+/Edge 111+）使用淡入淡出动画
-    // 不支持的浏览器（Firefox）直接切换，不影响功能
-    if (
-      typeof document !== "undefined" &&
-      "startViewTransition" in document &&
-      typeof (document as Document & { startViewTransition?: (cb: () => void) => void }).startViewTransition === "function"
-    ) {
-      (document as Document & { startViewTransition: (cb: () => void) => void }).startViewTransition(doSwitch);
-    } else {
-      doSwitch();
-    }
+    startTransition(() => {
+      router.replace(pathname, { locale: otherLocale });
+    });
   };
 
   return (
