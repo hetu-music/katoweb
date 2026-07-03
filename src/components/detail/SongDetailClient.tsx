@@ -7,6 +7,7 @@ import FavoriteButton from "@/components/shared/FavoriteButton";
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import ImageModal from "@/components/shared/ImageModal";
 import ThemeToggle from "@/components/shared/ThemeToggle";
+import LocaleSwitcher from "@/components/shared/LocaleSwitcher";
 import { useScrollTop } from "@/hooks/ui/useScrollTop";
 import { useUserContext } from "@/context/UserContext";
 import { getGenreTagStyle, getTypeTagStyle } from "@/lib/constants";
@@ -213,6 +214,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 className={user ? "text-blue-500 dark:text-blue-400" : ""}
               />
             </button>
+            <LocaleSwitcher />
             <ThemeToggle />
           </div>
         </div>
