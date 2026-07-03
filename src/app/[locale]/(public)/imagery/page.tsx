@@ -7,6 +7,7 @@ import {
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import Script from "next/script";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -106,7 +107,8 @@ export default async function ImageryPage({ params }: Props) {
 
   return (
     <>
-      <script
+      <Script
+        id="jsonld-imagery"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
