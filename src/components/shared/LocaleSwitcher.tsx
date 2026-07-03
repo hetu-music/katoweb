@@ -2,7 +2,7 @@
 
 import { useLocale } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/navigation";
-import { useTransition } from "react";
+import { useTransition, useCallback } from "react";
 import { cn } from "@/lib/utils/utils";
 
 const LOCALE_LABELS: Record<string, string> = {
@@ -24,6 +24,12 @@ export default function LocaleSwitcher({ className }: { className?: string }) {
   const label = LOCALE_LABELS[locale] ?? "简";
   const title = LOCALE_TITLES[locale] ?? "切换语言";
   const otherLocale = locale === "zh-CN" ? "zh-TW" : "zh-CN";
+
+  // 鼠标悬停 / 键盘 focus 时预取目标 locale 页面
+  // 这样用户真正点击时，服务端（含 OpenCC 转换）已完成响应，切换近乎即时
+  const handlePrefetch = useCallback(() => {
+    router.prefetch(pathname, { locale: otherLocale });
+  }, [router, pathname, otherLocale]);
 
   const handleSwitch = () => {
     const doSwitch = () =>
@@ -47,6 +53,8 @@ export default function LocaleSwitcher({ className }: { className?: string }) {
   return (
     <button
       onClick={handleSwitch}
+      onMouseEnter={handlePrefetch}
+      onFocus={handlePrefetch}
       disabled={isPending}
       title={title}
       aria-label={title}
