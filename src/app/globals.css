@@ -79,11 +79,22 @@
     line-height: 1.4;
   }
 
-  /* 禁用 View Transitions 默认动画 */
-  ::view-transition-old(root),
+  /* View Transitions：语言切换时平滑淡入淡出 */
+  ::view-transition-old(root) {
+    animation: locale-fade-out 0.18s ease-out both;
+  }
   ::view-transition-new(root) {
-    animation: none;
-    mix-blend-mode: normal;
+    animation: locale-fade-in 0.22s ease-out both;
+  }
+
+  @keyframes locale-fade-out {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+  }
+
+  @keyframes locale-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
 }
 
