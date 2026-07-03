@@ -1,18 +1,43 @@
 {
   "title": "音樂圖書館",
-  "hero": {
-    "badge": "全集收錄",
-    "title": "河圖",
-    "subtitle": "作品勘鑒",
-    "description": "收錄河圖音樂全集，探索每一首作品背後的詩意與故事",
-    "statsLabel": "首作品",
-    "exploreBtn": "探索作品",
-    "imageryBtn": "意象詞雲"
+  "meta": {
+    "descriptionWithStats": "共收錄{count}首作品。最近收錄：{recentTitles}。提供歌曲資訊、歌詞、樂譜等詳細資料的查閱與篩選。"
   },
+  "hero": {
+    "title": "謠歌",
+    "featureEntrances": {
+      "qjtx": {
+        "label": "傾盡天下",
+        "desc": "一曲長歌，傾盡天下"
+      },
+      "imagery": {
+        "label": "意象詞雲",
+        "desc": "探索詞中萬千意象"
+      }
+    },
+    "defaultDesc": "你一定想知道，戲裡講了什麼故事"
+  },
+  "logo": {
+    "part1": "河圖",
+    "part2": "作品勘鑒"
+  },
+  "titleTooltip": "點擊重新整理頁面",
+  "reset": "重設",
+  "advancedFilter": "高級篩選",
   "search": {
     "placeholder": "搜尋歌名、專輯、作詞、作曲…",
+    "placeholderWithLyrics": "搜尋歌曲、創作者、歌詞...",
+    "placeholderNoLyrics": "搜尋歌曲、創作者...",
     "noResults": "未找到匹配的歌曲",
     "noResultsHint": "請嘗試其他關鍵詞或清除篩選條件"
+  },
+  "listHeader": {
+    "cover": "封面",
+    "title": "標題 / 作詞 / 作曲",
+    "type": "類型",
+    "genre": "流派",
+    "year": "年份",
+    "time": "時長"
   },
   "filter": {
     "type": "類型",
@@ -21,7 +46,11 @@
     "composer": "作曲",
     "arranger": "編曲",
     "clearAll": "清除篩選",
-    "apply": "套用"
+    "apply": "套用",
+    "yearRange": "發行年份",
+    "allLyricists": "全部作詞",
+    "allComposers": "全部作曲",
+    "allArrangers": "全部編曲"
   },
   "sort": {
     "label": "排序",
@@ -42,5 +71,7 @@
     "play": "播放",
     "enqueue": "加入佇列",
     "favorite": "收藏"
-  }
+  },
+  "noFilteredSongs": "沒有符合條件的歌曲",
+  "linkCopied": "連結已複製到剪貼簿"
 }

@@ -1,29 +1,46 @@
 import Loading from "@/components/shared/Loading";
 import QjtxClient from "@/components/story/qjtx/QjtxClient";
 import { getQjtxTimeline } from "@/lib/server/service-story";
+import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-const STORY_TITLE = "倾尽天下 · 编年史";
+type Props = {
+  params: Promise<{ locale: string }>;
+};
 
 function buildDescription(
+  t: any,
   count: number,
   firstYear: string | undefined,
   secondLastYear: string | undefined,
 ) {
-  return `以 ${count} 个历史节点展现《倾尽天下》的故事，从${firstYear ?? "乱世初起"}到${secondLastYear ?? "故人长绝"}，沉浸式回望白炎、朱砂与故国山河。`;
+  const fy = firstYear || t("story.qjtx.fallbackFirstYear");
+  const sly = secondLastYear || t("story.qjtx.fallbackSecondLastYear");
+  return t("story.qjtx.description", {
+    count,
+    firstYear: fy,
+    secondLastYear: sly,
+  });
 }
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "common" });
+
   const events = await getQjtxTimeline();
   const description = buildDescription(
+    t,
     events.length,
     events[0]?.year,
     (events[events.length - 2] ?? events[events.length - 1])?.year,
   );
 
+  const title = t("story.qjtx.title");
+  const siteName = t("site.name");
+
   return {
-    title: STORY_TITLE,
+    title,
     description,
     keywords: [
       "倾尽天下",
@@ -38,7 +55,7 @@ export async function generateMetadata(): Promise<Metadata> {
       "Qing Jin Tian Xia",
     ],
     authors: [{ url: "https://hetu-music.com" }],
-    creator: "河图作品勘鉴",
+    creator: siteName,
     alternates: {
       canonical: "/story/qjtx",
       languages: {
@@ -47,47 +64,54 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     },
     openGraph: {
-      title: `${STORY_TITLE} - 河图作品勘鉴`,
+      title: `${title} - ${siteName}`,
       description,
       type: "article",
       url: "https://hetu-music.com/story/qjtx",
-      siteName: "河图作品勘鉴",
-      locale: "zh_CN",
+      siteName: siteName,
+      locale: locale.replace("-", "_"),
       images: [
         {
           url: "/story/qjtx/31.avif",
           width: 1200,
           height: 630,
-          alt: "倾尽天下 · 编年史封面",
+          alt: `${title}封面`,
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${STORY_TITLE} - 河图作品勘鉴`,
+      title: `${title} - ${siteName}`,
       description,
       images: ["/story/qjtx/31.avif"],
     },
   };
 }
 
-export default async function QingJinTianXiaPage() {
+export default async function QingJinTianXiaPage({ params }: Props) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "common" });
+
   const events = await getQjtxTimeline();
   const description = buildDescription(
+    t,
     events.length,
     events[0]?.year,
     (events[events.length - 2] ?? events[events.length - 1])?.year,
   );
 
+  const title = t("story.qjtx.title");
+  const siteName = t("site.name");
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
-    headline: STORY_TITLE,
+    headline: title,
     description,
     image: "https://hetu-music.com/story/qjtx/31.avif",
     publisher: {
       "@type": "Organization",
-      name: "河图作品勘鉴",
+      name: siteName,
       logo: {
         "@type": "ImageObject",
         url: "https://hetu-music.com/icons/icon-512x512.png",

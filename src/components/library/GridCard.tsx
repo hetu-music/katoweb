@@ -10,6 +10,7 @@ import type React from "react";
 import CoverArt from "./CoverArt";
 import EnqueueButton from "@/components/shared/EnqueueButton";
 import PlayButton from "@/components/shared/PlayButton";
+import { useTranslations } from "next-intl";
 
 interface GridCardProps {
   song: Song;
@@ -29,6 +30,7 @@ export default function GridCard({
   lyricsSnippet,
 }: GridCardProps) {
   const { isFavorite, toggleFavorite, isLoggedIn } = useFavorites();
+  const t = useTranslations("song");
   const active = isFavorite(song.id);
 
   return (
@@ -89,8 +91,8 @@ export default function GridCard({
                 event.stopPropagation();
                 toggleFavorite(song.id);
               }}
-              aria-label={active ? "取消收藏" : "收藏"}
-              title={active ? "取消收藏" : "收藏"}
+              aria-label={active ? t("actions.unfavorite") : t("actions.favorite")}
+              title={active ? t("actions.unfavorite") : t("actions.favorite")}
               className={cn(
                 "rounded-full bg-white/80 p-1.5 backdrop-blur-sm transition-all duration-200 dark:bg-slate-900/80",
                 active
@@ -122,7 +124,7 @@ export default function GridCard({
           </span>
         </div>
         <p className="flex items-center gap-2 overflow-hidden text-sm font-light text-slate-500 dark:text-slate-400">
-          <span className="truncate">{song.album || "单曲"}</span>
+          <span className="truncate">{song.album || t("labels.single")}</span>
           {song.type?.[0] && (
             <>
               <span className="h-1 w-1 shrink-0 rounded-full bg-slate-300 dark:bg-slate-600" />

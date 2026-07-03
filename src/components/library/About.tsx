@@ -11,6 +11,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TYPE_ORDER } from "@/lib/constants";
 import { Award, Mail, User, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import React, { useCallback, useLayoutEffect, useRef, useState } from "react";
 
 /** Smoothly animates height changes when children resize (e.g. tab switching). */
@@ -49,16 +50,6 @@ interface Contributor {
   intro?: string;
   sort_order?: number;
 }
-
-const typeDescriptions: Record<string, string> = {
-  原创: "河图原创作品。",
-  翻唱: "翻唱他人作品，非原创。",
-  合作: "与其他歌手或音乐人合作完成的作品。",
-  文宣: "用于文旅宣传推广的作品。",
-  商业: "为商业项目或品牌创作的作品。",
-  墨宝: "与墨明棋妙相关的作品。",
-  参与: "以非主创身份参与的作品。",
-};
 
 const typeColors: Record<
   string,
@@ -137,6 +128,7 @@ const WeiboIcon = ({
 );
 
 const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const t = useTranslations("common.about");
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [contributorsLoading, setContributorsLoading] = useState(false);
   const [contributorsError, setContributorsError] = useState<string | null>(
@@ -153,11 +145,11 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         Array.isArray(data.contributors) ? data.contributors : [],
       );
     } catch {
-      setContributorsError("获取贡献者失败");
+      setContributorsError(t("maintainersSection.loadError"));
     } finally {
       setContributorsLoading(false);
     }
-  }, []);
+  }, [t]);
 
   const mainContributor = contributors.find((c) => c.sort_order === 2);
 
@@ -171,7 +163,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     >
       <DialogContent className="overflow-hidden">
         <DialogHeader>
-          <DialogTitle>关于</DialogTitle>
+          <DialogTitle>{t("title")}</DialogTitle>
           <DialogClose asChild>
             <button className="p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
               <X size={20} />
@@ -180,7 +172,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </DialogHeader>
 
         <DialogDescription className="sr-only">
-          关于河图作品勘鉴项目的说明
+          {t("description")}
         </DialogDescription>
 
         <Tabs
@@ -197,9 +189,9 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           }}
         >
           <TabsList className="px-6">
-            <TabsTrigger value="about">项目介绍</TabsTrigger>
-            <TabsTrigger value="types">类型说明</TabsTrigger>
-            <TabsTrigger value="maintainer">维护团队</TabsTrigger>
+            <TabsTrigger value="about">{t("tabs.intro")}</TabsTrigger>
+            <TabsTrigger value="types">{t("tabs.types")}</TabsTrigger>
+            <TabsTrigger value="maintainer">{t("tabs.maintainers")}</TabsTrigger>
           </TabsList>
 
           <AnimatedHeight>
@@ -208,24 +200,16 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               <div className="space-y-6 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                 <div className="space-y-2">
                   <h3 className="font-semibold text-slate-900 dark:text-white">
-                    简介
+                    {t("introSection.title")}
                   </h3>
-                  <p>
-                    本项目为
-                    <span className="font-medium text-slate-900 dark:text-white">
-                      河图作品勘鉴
-                    </span>
-                    ，致力于收录整理河图的音乐作品资料，为听众提供便捷的筛选与搜索服务。
-                  </p>
+                  <p>{t("introSection.content")}</p>
                 </div>
 
                 <div className="space-y-2">
                   <h3 className="font-semibold text-slate-900 dark:text-white">
-                    数据与反馈
+                    {t("feedbackSection.title")}
                   </h3>
-                  <p>
-                    数据来源于创作者微博及各大音乐平台。若发现误漏，可以注册本站账号或通过下方联系方式进行反馈。
-                  </p>
+                  <p>{t("feedbackSection.content")}</p>
                   <div className="flex flex-col gap-2 mt-2">
                     <a
                       href="mailto:feedback@hetu-music.com"
@@ -241,7 +225,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                       className="w-fit inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-[#e6162d] dark:text-[#ff4d4f] hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200 dark:border-slate-700 shadow-sm"
                     >
                       <WeiboIcon size={18} />
-                      <span>微博</span>
+                      <span>{t("feedbackSection.weibo")}</span>
                     </a>
                   </div>
                 </div>
@@ -249,14 +233,13 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 <div className="p-5 rounded-xl bg-linear-to-br from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 border border-amber-100 dark:border-amber-900/20 text-sm">
                   <div className="flex items-center gap-2 mb-2 text-amber-700 dark:text-amber-500 font-bold">
                     <Award size={18} />
-                    <span>特别鸣谢</span>
+                    <span>{t("thanksSection.title")}</span>
                   </div>
                   <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                    正版河图吧吧主{" "}
-                    <span className="font-semibold text-slate-900 dark:text-white">
-                      {mainContributor ? mainContributor.name : "顾大一"}
-                    </span>{" "}
-                    及众位网友整理的《歌手河图作品发布勘鉴》，为本项目提供了宝贵参考资料。
+                    {t.rich("thanksSection.content", {
+                      name: mainContributor?.name || "顾大一",
+                      highlight: (chunks) => <span className="font-semibold text-slate-900 dark:text-white">{chunks}</span>
+                    })}
                   </p>
                 </div>
               </div>
@@ -265,37 +248,35 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             {/* Types Tab */}
             <TabsContent value="types" className="max-h-[65vh] px-6 py-4">
               <div className="grid grid-cols-1 gap-3">
-                {TYPE_ORDER.filter((t) => typeDescriptions[t]).map(
-                  (type, idx) => {
-                    const colors = typeColors[type] ?? fallbackColors;
-                    return (
-                      <div
-                        key={type}
-                        style={{ animationDelay: `${idx * 40}ms` }}
-                        className={`
-                      animate-in fade-in slide-in-from-right-4 duration-500 fill-mode-both
-                      relative overflow-hidden rounded-xl
-                      border-l-[3px] ${colors.border}
-                      bg-linear-to-r ${colors.bg} to-transparent
-                      border border-slate-100 dark:border-slate-800/50
-                      ${colors.hoverBorder}
-                      transition-colors duration-200
-                    `}
-                      >
-                        <div className="px-4 py-3">
-                          <div
-                            className={`text-sm font-semibold ${colors.text} mb-1`}
-                          >
-                            {type}
-                          </div>
-                          <div className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-                            {typeDescriptions[type]}
-                          </div>
+                {TYPE_ORDER.map((type, idx) => {
+                  const colors = typeColors[type] ?? fallbackColors;
+                  return (
+                    <div
+                      key={type}
+                      style={{ animationDelay: `${idx * 40}ms` }}
+                      className={`
+                        animate-in fade-in slide-in-from-right-4 duration-500 fill-mode-both
+                        relative overflow-hidden rounded-xl
+                        border-l-[3px] ${colors.border}
+                        bg-linear-to-r ${colors.bg} to-transparent
+                        border border-slate-100 dark:border-slate-800/50
+                        ${colors.hoverBorder}
+                        transition-colors duration-200
+                      `}
+                    >
+                      <div className="px-4 py-3">
+                        <div
+                          className={`text-sm font-semibold ${colors.text} mb-1`}
+                        >
+                          {type}
+                        </div>
+                        <div className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                          {t(`typeDescriptions.${type}`)}
                         </div>
                       </div>
-                    );
-                  },
-                )}
+                    </div>
+                  );
+                })}
               </div>
             </TabsContent>
 
@@ -305,7 +286,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 {contributorsLoading ? (
                   <div className="flex flex-col items-center justify-center py-12 text-slate-400 gap-3">
                     <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm">加载数据中...</span>
+                    <span className="text-sm">{t("maintainersSection.loading")}</span>
                   </div>
                 ) : contributorsError ? (
                   <div className="flex flex-col items-center justify-center py-12 text-red-500 gap-2">
@@ -315,7 +296,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 ) : contributors.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-slate-400 gap-2">
                     <User size={32} className="opacity-20" />
-                    <span className="text-sm">暂无贡献者信息</span>
+                    <span className="text-sm">{t("maintainersSection.empty")}</span>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -334,7 +315,7 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                           </div>
                           <div className="flex-1 min-w-0 pt-0.5">
                             <div className="font-semibold text-slate-900 dark:text-white text-sm">
-                              {contributor.name ?? "未知贡献者"}
+                              {contributor.name ?? t("maintainersSection.unknown")}
                             </div>
                             {contributor.intro && (
                               <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">

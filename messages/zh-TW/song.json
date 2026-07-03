@@ -14,7 +14,8 @@
     "trackNumber": "曲號",
     "discNumber": "碟號",
     "genre": "流派",
-    "type": "類型"
+    "type": "類型",
+    "single": "單曲"
   },
   "trackFormat": {
     "trackOnly": "第{track}首",
@@ -48,5 +49,19 @@
   "noLyrics": "暫無歌詞",
   "noScore": "暫無樂譜",
   "notFound": "歌曲不存在或已被刪除。",
-  "ogSuffix": " - 河圖作品勘鑒"
+  "ogSuffix": " - 河圖作品勘鑒",
+  "viewCover": "查看封面",
+  "noCover": "暫無封面",
+  "listenOn": "收聽平台",
+  "lyricFormat": {
+    "normal": "普通",
+    "lrc": "LRC"
+  },
+  "zoomScore": "點擊放大",
+  "scoreLoadError": "樂譜載入失敗",
+  "copySuccess": "連結已複製到剪貼簿",
+  "copyError": "複製失敗",
+  "shareCancel": "分享取消或失敗",
+  "shareText": "來聽聽河圖的這首歌：{title}{artist}",
+  "shareTitle": "歌曲詳情"
 }

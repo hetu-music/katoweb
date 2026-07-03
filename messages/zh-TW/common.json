@@ -25,5 +25,68 @@
     "home": "返回主頁"
   },
   "unknown": "未知",
-  "all": "全部"
+  "all": "全部",
+  "imagery": {
+    "title": "意象詞雲",
+    "description": "在 {count} 個精選意象中發現河圖音樂的詩意世界。涵蓋 {categoryNames} 等分類，探索山川、日月、草木、時令在歌詞中的流轉。",
+    "subtitle": "行過 {count} ，長歌踏雪去何方",
+    "all": "全部",
+    "noData": "暫無數據",
+    "times": "{count} 次",
+    "totalCount": "共 {count} 個意象",
+    "ariaLabel": "意象：{name}，出現 {count} 次",
+    "loadError": "載入意象關聯歌曲失敗",
+    "detailPanel": {
+      "noWorks": "暫無相關詞作",
+      "lyricistLabel": "詞作",
+      "relatedSongs": "相關曲目",
+      "songsByLyricist": "{name}的曲目",
+      "appears": "出現 {count} 次"
+    }
+  },
+  "story": {
+    "qjtx": {
+      "title": "傾盡天下 · 編年史",
+      "description": "以 {count} 個歷史節點展現《傾盡天下》的故事，從{firstYear}到{secondLastYear}，沉浸式回望白炎、朱砂與故國山河。",
+      "fallbackFirstYear": "亂世初起",
+      "fallbackSecondLastYear": "故人長絕"
+    }
+  },
+  "about": {
+    "title": "關於",
+    "description": "關於河圖作品勘鑒項目的說明",
+    "tabs": {
+      "intro": "項目介紹",
+      "types": "類型說明",
+      "maintainers": "維護團隊"
+    },
+    "introSection": {
+      "title": "簡介",
+      "content": "本項目為河圖作品勘鑒，致力於收錄整理河圖的音樂作品資料，為聽眾提供便捷的篩選與搜尋服務。"
+    },
+    "feedbackSection": {
+      "title": "數據與回饋",
+      "content": "數據來源於創作者微博及各大音樂平台。若發現誤漏，可以註冊本站帳號或透過下方聯絡方式進行回饋。",
+      "weibo": "微博"
+    },
+    "thanksSection": {
+      "title": "特別鳴謝",
+      "content": "正版河圖吧吧主 <highlight>{name}</highlight> 及眾位網友整理的《歌手河圖作品發布勘鑒》，為本項目提供了寶貴參考資料。"
+    },
+    "typeDescriptions": {
+      "原创": "河圖原創作品。",
+      "翻唱": "翻唱他人作品，非原創。",
+      "合作": "與其他歌手或音樂人合作完成的作品。",
+      "文宣": "用於文旅宣傳推廣的作品。",
+      "商业": "為商業項目或品牌創作的作品。",
+      "墨宝": "與墨明棋妙相關的作品。",
+      "参与": "以非主創身份參與的作品。"
+    },
+    "maintainersSection": {
+      "loading": "載入數據中...",
+      "loadError": "獲取貢獻者失敗",
+      "empty": "暫無貢獻者資訊",
+      "unknown": "未知貢獻者"
+    }
+  }
 }

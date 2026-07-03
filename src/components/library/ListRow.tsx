@@ -11,6 +11,7 @@ import { Calendar, Clock, Heart } from "lucide-react";
 import type React from "react";
 import CoverArt from "./CoverArt";
 import MultiTagDisplay from "./MultiTagDisplay";
+import { useTranslations } from "next-intl";
 
 interface ListRowProps {
   song: Song;
@@ -30,6 +31,7 @@ export default function ListRow({
   lyricsSnippet,
 }: ListRowProps) {
   const { isFavorite, toggleFavorite, isLoggedIn } = useFavorites();
+  const t = useTranslations("song");
   const active = isFavorite(song.id);
 
   return (
@@ -107,8 +109,8 @@ export default function ListRow({
                 event.stopPropagation();
                 toggleFavorite(song.id);
               }}
-              aria-label={active ? "取消收藏" : "收藏"}
-              title={active ? "取消收藏" : "收藏"}
+              aria-label={active ? t("actions.unfavorite") : t("actions.favorite")}
+              title={active ? t("actions.unfavorite") : t("actions.favorite")}
               className={cn(
                 "rounded-lg p-2 transition-all duration-200",
                 active
@@ -139,8 +141,8 @@ export default function ListRow({
               event.stopPropagation();
               toggleFavorite(song.id);
             }}
-            aria-label={active ? "取消收藏" : "收藏"}
-            title={active ? "取消收藏" : "收藏"}
+            aria-label={active ? t("actions.unfavorite") : t("actions.favorite")}
+            title={active ? t("actions.unfavorite") : t("actions.favorite")}
             className={cn(
               "rounded-lg p-2 transition-all duration-200",
               active

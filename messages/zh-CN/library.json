@@ -1,18 +1,43 @@
 {
   "title": "音乐图书馆",
-  "hero": {
-    "badge": "全集收录",
-    "title": "河图",
-    "subtitle": "作品勘鉴",
-    "description": "收录河图音乐全集，探索每一首作品背后的诗意与故事",
-    "statsLabel": "首作品",
-    "exploreBtn": "探索作品",
-    "imageryBtn": "意象词云"
+  "meta": {
+    "descriptionWithStats": "共收录{count}首作品。最近收录：{recentTitles}。提供歌曲信息、歌词、乐谱等详细资料的查阅与筛选。"
   },
+  "hero": {
+    "title": "谣歌",
+    "featureEntrances": {
+      "qjtx": {
+        "label": "倾尽天下",
+        "desc": "一曲长歌，倾尽天下"
+      },
+      "imagery": {
+        "label": "意象词云",
+        "desc": "探索词中万千意象"
+      }
+    },
+    "defaultDesc": "你一定想知道，戏里讲了什么故事"
+  },
+  "logo": {
+    "part1": "河图",
+    "part2": "作品勘鉴"
+  },
+  "titleTooltip": "点击刷新页面",
+  "reset": "重置",
+  "advancedFilter": "高级筛选",
   "search": {
     "placeholder": "搜索歌名、专辑、作词、作曲…",
+    "placeholderWithLyrics": "搜索歌曲、创作者、歌词...",
+    "placeholderNoLyrics": "搜索歌曲、创作者...",
     "noResults": "未找到匹配的歌曲",
     "noResultsHint": "请尝试其他关键词或清除筛选条件"
+  },
+  "listHeader": {
+    "cover": "封面",
+    "title": "标题 / 作词 / 作曲",
+    "type": "类型",
+    "genre": "流派",
+    "year": "年份",
+    "time": "时长"
   },
   "filter": {
     "type": "类型",
@@ -21,7 +46,11 @@
     "composer": "作曲",
     "arranger": "编曲",
     "clearAll": "清除筛选",
-    "apply": "应用"
+    "apply": "应用",
+    "yearRange": "发行年份",
+    "allLyricists": "全部作词",
+    "allComposers": "全部作曲",
+    "allArrangers": "全部编曲"
   },
   "sort": {
     "label": "排序",
@@ -42,5 +71,7 @@
     "play": "播放",
     "enqueue": "加入队列",
     "favorite": "收藏"
-  }
+  },
+  "noFilteredSongs": "没有符合条件的歌曲",
+  "linkCopied": "链接已复制到剪贴板"
 }

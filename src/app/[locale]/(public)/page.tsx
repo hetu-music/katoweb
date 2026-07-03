@@ -15,6 +15,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "common" });
+  const tLib = await getTranslations({ locale, namespace: "library" });
 
   let description = t("site.description");
 
@@ -25,7 +26,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       .slice(0, 5)
       .map((s) => `《${s.title}》`)
       .join("");
-    description = `共收录${count}首作品。最近收录：${recentTitles}。提供歌曲信息、歌词、乐谱等详细资料的查阅与筛选。`;
+    description = tLib("meta.descriptionWithStats", {
+      count,
+      recentTitles,
+    });
   } catch {
     // 获取失败时使用默认描述
   }
