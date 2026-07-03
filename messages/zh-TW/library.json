@@ -32,12 +32,12 @@
     "noResultsHint": "請嘗試其他關鍵詞或清除篩選條件"
   },
   "listHeader": {
-    "cover": "封面",
-    "title": "標題 / 作詞 / 作曲",
-    "type": "類型",
-    "genre": "流派",
-    "year": "年份",
-    "time": "時長"
+    "cover": "Cover",
+    "title": "Title / Lyricist / Composer",
+    "type": "Type",
+    "genre": "Genre",
+    "year": "Year",
+    "time": "Time"
   },
   "filter": {
     "type": "類型",

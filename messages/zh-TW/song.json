@@ -44,7 +44,9 @@
     "basicInfo": "基本資訊",
     "lyrics": "歌詞",
     "score": "樂譜",
-    "comment": "備註"
+    "comment": "備註",
+    "toc": "目錄導航",
+    "jumpTo": "跳轉到{label}"
   },
   "noLyrics": "暫無歌詞",
   "noScore": "暫無樂譜",

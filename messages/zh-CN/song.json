@@ -44,7 +44,9 @@
     "basicInfo": "基本信息",
     "lyrics": "歌词",
     "score": "乐谱",
-    "comment": "备注"
+    "comment": "备注",
+    "toc": "目录导航",
+    "jumpTo": "跳转到{label}"
   },
   "noLyrics": "暂无歌词",
   "noScore": "暂无乐谱",
