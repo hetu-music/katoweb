@@ -7,7 +7,6 @@ import {
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import Script from "next/script";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -107,10 +106,10 @@ export default async function ImageryPage({ params }: Props) {
 
   return (
     <>
-      <Script
-        id="jsonld-imagery"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        suppressHydrationWarning
       />
       <Suspense fallback={<Loading />}>
         <ImageryClient items={items} categories={categories} />

@@ -4,7 +4,6 @@ import { getQjtxTimeline } from "@/lib/server/service-story";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import Script from "next/script";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -132,10 +131,10 @@ export default async function QingJinTianXiaPage({ params }: Props) {
         href="/story/qjtx/4.avif"
         type="image/avif"
       />
-      <Script
-        id="jsonld-qjtx"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        suppressHydrationWarning
       />
       <Suspense fallback={<Loading />}>
         <QjtxClient events={events} />
