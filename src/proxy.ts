@@ -82,17 +82,22 @@ export async function proxy(request: NextRequest) {
   }
 
   // Create request headers（在 intl 处理之后）
-  const requestHeaders = new Headers(intlResponse.headers);
+  const requestHeaders = new Headers(request.headers);
   if (useNonce) {
     requestHeaders.set("x-nonce", nonce);
   }
   requestHeaders.set("Content-Security-Policy", cspHeader);
 
-  // Initialize response
+  // Initialize response keeping request headers
   const response = NextResponse.next({
     request: {
       headers: requestHeaders,
     },
+  });
+
+  // Copy all headers from next-intl response (including x-middleware-rewrite, cookies, etc.)
+  intlResponse.headers.forEach((value, key) => {
+    response.headers.set(key, value);
   });
 
   // Apply Security Headers to Response
