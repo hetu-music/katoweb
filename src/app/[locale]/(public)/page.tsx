@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   let description = t("site.description");
 
   try {
-    const songs = await getSongs(undefined, undefined, true);
+    const songs = await getSongs(undefined, undefined, true, locale);
     const count = songs.length;
     const recentTitles = songs
       .slice(0, 5)
@@ -53,13 +53,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 // 服务端组件 - 使用 ISR
-export default async function MusicLibraryPage() {
+export default async function MusicLibraryPage({ params }: Props) {
+  const { locale } = await params;
   let songsData: Song[] = [];
   let error: Error | null = null;
 
   try {
     // forListView = true 只获取列表展示需要的字段，排除歌词等大字段
-    songsData = await getSongs(undefined, undefined, true);
+    songsData = await getSongs(undefined, undefined, true, locale);
   } catch (err) {
     console.error("Error fetching songs:", err);
     error = err instanceof Error ? err : new Error("未知错误");

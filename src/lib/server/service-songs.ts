@@ -27,8 +27,10 @@ export async function getSongs(
   table: string = TABLES.MUSIC,
   accessToken?: string,
   forListView: boolean = false,
+  locale: string = "zh-CN",
 ): Promise<Song[]> {
   const selectFields = forListView ? SONG_LIST_VIEW_FIELDS.join(",") : "*";
+  let songs: Song[] = [];
 
   // 公共主表：高权限 + 分页全量获取
   if (table === TABLES.MUSIC && !accessToken) {
@@ -46,26 +48,47 @@ export async function getSongs(
       (q) => q.order("id", { ascending: true }),
     );
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return mapAndSortSongs(data as any);
+    songs = mapAndSortSongs(data as any);
+  } else {
+    // Admin / 其他表：用户权限客户端
+    const supabase = getUserClient(accessToken);
+    if (!supabase) {
+      console.warn("[getSongs] User client unavailable, returning empty data");
+      return [];
+    }
+    const { data, error } = await supabase
+      .from(table)
+      .select(selectFields)
+      .order("id", { ascending: true });
+
+    if (error) {
+      console.error("[getSongs] Supabase error:", error);
+      throw new Error("Failed to fetch songs");
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    songs = mapAndSortSongs(data as any);
   }
 
-  // Admin / 其他表：用户权限客户端
-  const supabase = getUserClient(accessToken);
-  if (!supabase) {
-    console.warn("[getSongs] User client unavailable, returning empty data");
-    return [];
+  if (locale === "zh-TW") {
+    return songs.map((s) => {
+      const item = s as any;
+      const res: Song = {
+        ...s,
+        title: toTraditional(s.title) ?? s.title,
+        album: toTraditional(s.album),
+        artist: toTraditionalArray(s.artist),
+        lyricist: toTraditionalArray(s.lyricist),
+        composer: toTraditionalArray(s.composer),
+        arranger: toTraditionalArray(s.arranger),
+      };
+      if (item.albumartist) {
+        (res as any).albumartist = toTraditionalArray(item.albumartist);
+      }
+      return res;
+    });
   }
-  const { data, error } = await supabase
-    .from(table)
-    .select(selectFields)
-    .order("id", { ascending: true });
 
-  if (error) {
-    console.error("[getSongs] Supabase error:", error);
-    throw new Error("Failed to fetch songs");
-  }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return mapAndSortSongs(data as any);
+  return songs;
 }
 
 /**
