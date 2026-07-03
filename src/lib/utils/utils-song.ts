@@ -261,6 +261,7 @@ export function calculateSongInfo(
   song: SongDetail,
   t?: any,
   tCommon?: any,
+  tEnum?: any,
 ): SongInfo {
   const getLabel = (key: string, fallback: string) => (t ? t(key) : fallback);
   const unknownStr = tCommon ? tCommon("unknown") : "未知";
@@ -340,11 +341,16 @@ export function calculateSongInfo(
       {
         label: getLabel("labels.genre", "流派"),
         value:
-          song.genre && song.genre.length > 0 ? song.genre.join(" ") : unknownStr,
+          song.genre && song.genre.length > 0
+            ? song.genre.map((g) => (tEnum && tEnum.has(`genre.${g}`) ? tEnum(`genre.${g}`) : g)).join(" ")
+            : unknownStr,
       },
       {
         label: getLabel("labels.type", "类型"),
-        value: song.type && song.type.length > 0 ? song.type.join(" ") : getLabel("labels.single", "原创"),
+        value:
+          song.type && song.type.length > 0
+            ? song.type.map((typeVal) => (tEnum && tEnum.has(`type.${typeVal}`) ? tEnum(`type.${typeVal}`) : typeVal)).join(" ")
+            : (tEnum && tEnum.has("type.原创") ? tEnum("type.原创") : "原创"),
       },
     ],
   };

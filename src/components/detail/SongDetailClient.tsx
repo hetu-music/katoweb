@@ -80,8 +80,8 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
   // songInfo 计算逻辑
   const songInfo = useMemo(() => {
-    return calculateSongInfo(song, t, tCommon);
-  }, [song, t, tCommon]);
+    return calculateSongInfo(song, t, tCommon, tEnum);
+  }, [song, t, tCommon, tEnum]);
 
   // 在组件挂载后立即启动动画
   useEffect(() => {
