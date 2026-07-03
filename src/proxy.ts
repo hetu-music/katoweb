@@ -1,6 +1,11 @@
+import createIntlMiddleware from "next-intl/middleware";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { createSupabaseMiddlewareClient } from "@/lib/db/supabase-auth";
+import { routing } from "@/i18n/routing";
+
+// next-intl 中间件：处理 locale 探测和重定向
+const intlMiddleware = createIntlMiddleware(routing);
 
 export async function proxy(request: NextRequest) {
   // Generate a random nonce for CSP
@@ -10,22 +15,24 @@ export async function proxy(request: NextRequest) {
   const isDev = process.env.NODE_ENV === "development";
   const pathname = request.nextUrl.pathname;
 
+  // 跳过 next-intl 不需要处理的路径（API、静态资源等由 matcher 过滤）
+  // 对所有页面路由先走 next-intl，再做 CSP 和 Auth 处理
+
   // Determine the route type based on the new structure
-  // (admin) group: Starts with /admin or is /login -> Strict CSP
-  // (public) group: /, /song/*, etc. -> Relaxed CSP (Static/ISR)
-  // Note: /api is excluded by the matcher below, so we don't need to check for it here.
-  const isStrictRoute = pathname.startsWith("/admin") || pathname === "/login";
+  // (admin) group: Starts with /admin or is /login or /zh-TW/admin etc. -> Strict CSP
+  // (public) group: /, /song/*, /zh-TW/* etc. -> Relaxed CSP (Static/ISR)
+  const strippedPathname = pathname
+    .replace(/^\/(zh-TW)/, "")
+    .replace(/^\/(zh-CN)/, "");
+  const isStrictRoute =
+    strippedPathname.startsWith("/admin") || strippedPathname === "/login" || strippedPathname === "/register";
 
   // Only use Nonce in Production on Strict routes
-  // We disable Nonce in Development to avoid HMR/Hydration errors
   const useNonce = isStrictRoute && !isDev;
 
   let cspHeader = "";
 
   if (useNonce) {
-    // [STRICT POLICY] For Admin Routes
-    // - Requires 'nonce' for all scripts
-    // - valid for: /admin/*, /login
     cspHeader = `
       default-src 'self';
       script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'sha256-n46vPwSWuMC0W703pBofImv82Z26xo4LXymv0E9caPk=' https://challenges.cloudflare.com https://static.cloudflareinsights.com;
@@ -45,9 +52,6 @@ export async function proxy(request: NextRequest) {
       .replace(/\s{2,}/g, " ")
       .trim();
   } else {
-    // [RELAXED POLICY] For Public Static/ISR Pages & Development
-    // - Allows unsafe-inline/eval for broad compatibility with static hydration
-    // - valid for: /, /song/*, and all routes in 'pnpm dev'
     cspHeader = `
       default-src 'self';
       script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://static.cloudflareinsights.com;
@@ -68,17 +72,23 @@ export async function proxy(request: NextRequest) {
       .trim();
   }
 
-  // Create request headers
-  const requestHeaders = new Headers(request.headers);
+  // 先运行 next-intl 中间件（处理 locale 路由）
+  const intlResponse = intlMiddleware(request);
 
-  // Only set x-nonce if we are using it
+  // 如果 next-intl 要做重定向（如 locale 探测），直接返回并附上 CSP
+  if (intlResponse.status !== 200) {
+    intlResponse.headers.set("Content-Security-Policy", cspHeader);
+    return intlResponse;
+  }
+
+  // Create request headers（在 intl 处理之后）
+  const requestHeaders = new Headers(intlResponse.headers);
   if (useNonce) {
     requestHeaders.set("x-nonce", nonce);
   }
-
   requestHeaders.set("Content-Security-Policy", cspHeader);
 
-  // Initialize response with new headers
+  // Initialize response
   const response = NextResponse.next({
     request: {
       headers: requestHeaders,
@@ -88,8 +98,7 @@ export async function proxy(request: NextRequest) {
   // Apply Security Headers to Response
   response.headers.set("Content-Security-Policy", cspHeader);
 
-  // Always refresh the Supabase session so cookies stay valid on all routes
-  // (including public pages that need to read auth state client-side)
+  // Always refresh the Supabase session
   try {
     const supabase = createSupabaseMiddlewareClient(request, response);
     const {
@@ -98,23 +107,28 @@ export async function proxy(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     // Admin-only: redirect to login if not authenticated or not admin
-    if (request.nextUrl.pathname.startsWith("/admin")) {
+    // 兼容 locale 前缀：/admin 和 /zh-TW/admin 都要保护
+    if (strippedPathname.startsWith("/admin")) {
       if (error || !user) {
         console.warn("Auth middleware: User not authenticated", error?.message);
+        // 重定向到带 locale 前缀的 /login
+        const loginPath = pathname.startsWith("/zh-TW")
+          ? "/zh-TW/login"
+          : "/login";
         const redirectResponse = NextResponse.redirect(
-          new URL("/login", request.url),
+          new URL(loginPath, request.url),
         );
         redirectResponse.headers.set("Content-Security-Policy", cspHeader);
         return redirectResponse;
       }
 
-      // Check is_admin flag from JWT app_metadata (synced by trigger sync_user_claims_to_auth)
       const isAdmin = user.app_metadata?.is_admin === true;
 
       if (!isAdmin) {
         console.warn("Auth middleware: User is not admin", user.id);
+        const homePath = pathname.startsWith("/zh-TW") ? "/zh-TW" : "/";
         const redirectResponse = NextResponse.redirect(
-          new URL("/", request.url),
+          new URL(homePath, request.url),
         );
         redirectResponse.headers.set("Content-Security-Policy", cspHeader);
         return redirectResponse;
@@ -122,9 +136,12 @@ export async function proxy(request: NextRequest) {
     }
   } catch (error) {
     console.error("Auth middleware error:", error);
-    if (request.nextUrl.pathname.startsWith("/admin")) {
+    if (strippedPathname.startsWith("/admin")) {
+      const loginPath = pathname.startsWith("/zh-TW")
+        ? "/zh-TW/login"
+        : "/login";
       const redirectResponse = NextResponse.redirect(
-        new URL("/login", request.url),
+        new URL(loginPath, request.url),
       );
       redirectResponse.headers.set("Content-Security-Policy", cspHeader);
       return redirectResponse;

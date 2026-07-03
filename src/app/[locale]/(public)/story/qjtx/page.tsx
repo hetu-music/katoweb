@@ -41,6 +41,10 @@ export async function generateMetadata(): Promise<Metadata> {
     creator: "河图作品勘鉴",
     alternates: {
       canonical: "/story/qjtx",
+      languages: {
+        "zh-CN": "https://hetu-music.com/story/qjtx",
+        "zh-TW": "https://hetu-music.com/zh-TW/story/qjtx",
+      },
     },
     openGraph: {
       title: `${STORY_TITLE} - 河图作品勘鉴`,

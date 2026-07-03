@@ -1,0 +1,52 @@
+{
+  "meta": {
+    "siteSuffix": "河圖作品勘鑒收錄。"
+  },
+  "labels": {
+    "lyricist": "作詞",
+    "composer": "作曲",
+    "arranger": "編曲",
+    "artist": "演唱",
+    "album": "專輯",
+    "albumartist": "出品發行",
+    "releaseDate": "發行日期",
+    "duration": "時長",
+    "trackNumber": "曲號",
+    "discNumber": "碟號",
+    "genre": "流派",
+    "type": "類型"
+  },
+  "trackFormat": {
+    "trackOnly": "第{track}首",
+    "totalOnly": "共{total}首",
+    "both": "第{track}首/共{total}首"
+  },
+  "discFormat": {
+    "discOnly": "第{disc}張",
+    "totalOnly": "共{total}張",
+    "both": "第{disc}張/共{total}張"
+  },
+  "actions": {
+    "play": "播放",
+    "enqueue": "加入佇列",
+    "favorite": "收藏",
+    "unfavorite": "取消收藏",
+    "lyrics": "歌詞",
+    "score": "樂譜",
+    "share": "分享",
+    "kugou": "酷狗音樂",
+    "netease": "網易雲音樂",
+    "qqmusic": "QQ音樂"
+  },
+  "sections": {
+    "creativeInfo": "創作資訊",
+    "basicInfo": "基本資訊",
+    "lyrics": "歌詞",
+    "score": "樂譜",
+    "comment": "備註"
+  },
+  "noLyrics": "暫無歌詞",
+  "noScore": "暫無樂譜",
+  "notFound": "歌曲不存在或已被刪除。",
+  "ogSuffix": " - 河圖作品勘鑒"
+}

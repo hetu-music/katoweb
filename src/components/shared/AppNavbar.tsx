@@ -1,10 +1,11 @@
 "use client";
 
 import ThemeToggle from "@/components/shared/ThemeToggle";
+import LocaleSwitcher from "@/components/shared/LocaleSwitcher";
 import { useUserContext } from "@/context/UserContext";
 import { cn } from "@/lib/utils/utils";
 import { Info, User } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import React, { forwardRef, useCallback } from "react";
 
 interface AppNavbarProps {
@@ -79,6 +80,7 @@ const AppNavbar = forwardRef<HTMLElement, AppNavbarProps>(function AppNavbar(
               className={user ? "text-blue-500 dark:text-blue-400" : ""}
             />
           </button>
+          <LocaleSwitcher />
           <ThemeToggle />
         </div>
       </div>

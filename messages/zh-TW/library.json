@@ -1,0 +1,46 @@
+{
+  "title": "音樂圖書館",
+  "hero": {
+    "badge": "全集收錄",
+    "title": "河圖",
+    "subtitle": "作品勘鑒",
+    "description": "收錄河圖音樂全集，探索每一首作品背後的詩意與故事",
+    "statsLabel": "首作品",
+    "exploreBtn": "探索作品",
+    "imageryBtn": "意象詞雲"
+  },
+  "search": {
+    "placeholder": "搜尋歌名、專輯、作詞、作曲…",
+    "noResults": "未找到匹配的歌曲",
+    "noResultsHint": "請嘗試其他關鍵詞或清除篩選條件"
+  },
+  "filter": {
+    "type": "類型",
+    "year": "年份",
+    "lyricist": "作詞",
+    "composer": "作曲",
+    "arranger": "編曲",
+    "clearAll": "清除篩選",
+    "apply": "套用"
+  },
+  "sort": {
+    "label": "排序",
+    "dateDesc": "最新優先",
+    "dateAsc": "最早優先",
+    "titleAsc": "標題 A-Z"
+  },
+  "view": {
+    "grid": "網格",
+    "list": "列表"
+  },
+  "pagination": {
+    "prev": "上一頁",
+    "next": "下一頁",
+    "page": "第 {current} 頁，共 {total} 頁"
+  },
+  "card": {
+    "play": "播放",
+    "enqueue": "加入佇列",
+    "favorite": "收藏"
+  }
+}

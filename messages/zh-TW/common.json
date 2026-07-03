@@ -1,0 +1,29 @@
+{
+  "site": {
+    "name": "河圖作品勘鑒",
+    "title": "河圖作品勘鑒 - 河圖音樂作品收錄與鑑賞",
+    "description": "河圖音樂作品收錄與鑑賞。"
+  },
+  "nav": {
+    "backToHome": "返回首頁",
+    "home": "回到主頁",
+    "back": "返回",
+    "about": "關於",
+    "login": "登入",
+    "loading": "載入中…"
+  },
+  "error": {
+    "title": "出錯了",
+    "description": "抱歉，系統遇到了一些問題。請嘗試重新整理頁面或稍後再試。",
+    "refresh": "重新整理頁面",
+    "backToHome": "返回主頁"
+  },
+  "notFound": {
+    "title": "頁面未找到",
+    "description": "抱歉，您訪問的頁面不存在或已被移除。",
+    "back": "返回上頁",
+    "home": "返回主頁"
+  },
+  "unknown": "未知",
+  "all": "全部"
+}

@@ -1,0 +1,29 @@
+{
+  "site": {
+    "name": "河图作品勘鉴",
+    "title": "河图作品勘鉴 - 河图音乐作品收录与鉴赏",
+    "description": "河图音乐作品收录与鉴赏。"
+  },
+  "nav": {
+    "backToHome": "返回首页",
+    "home": "回到主页",
+    "back": "返回",
+    "about": "关于",
+    "login": "登录",
+    "loading": "加载中…"
+  },
+  "error": {
+    "title": "出错了",
+    "description": "抱歉，系统遇到了一些问题。请尝试刷新页面或稍后再试。",
+    "refresh": "刷新页面",
+    "backToHome": "返回主页"
+  },
+  "notFound": {
+    "title": "页面未找到",
+    "description": "抱歉，您访问的页面不存在或已被移除。",
+    "back": "返回上页",
+    "home": "返回主页"
+  },
+  "unknown": "未知",
+  "all": "全部"
+}

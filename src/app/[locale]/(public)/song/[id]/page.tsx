@@ -1,36 +1,42 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import SongDetailClient from "@/components/detail/SongDetailClient";
 import { getSongById } from "@/lib/server/service-songs";
+import { TABLES } from "@/lib/db/supabase-server";
 
 type PageProps = {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string; locale: string }>;
 };
 
 // 动态生成每首歌的 SEO 元数据
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const { id } = await params;
+  const { id, locale } = await params;
   const songId = parseInt(id);
   if (isNaN(songId)) return {};
 
-  const song = await getSongById(songId);
+  const t = await getTranslations({ locale, namespace: "song" });
+  const song = await getSongById(songId, TABLES.MUSIC, undefined, locale);
   if (!song) return {};
 
   // 构建描述信息 — 使用｜分隔的紧凑格式
+  const lyricistLabel = t("labels.lyricist");
+  const composerLabel = t("labels.composer");
+  const arrangerLabel = t("labels.arranger");
+  const artistLabel = t("labels.artist");
+  const albumLabel = t("labels.album");
+
   const descParts: string[] = [`《${song.title}》`];
-  if (song.artist?.length) descParts.push(`演唱：${song.artist.join("、")}`);
-  if (song.lyricist?.length)
-    descParts.push(`作词：${song.lyricist.join("、")}`);
-  if (song.composer?.length)
-    descParts.push(`作曲：${song.composer.join("、")}`);
-  if (song.arranger?.length)
-    descParts.push(`编曲：${song.arranger.join("、")}`);
-  if (song.album) descParts.push(`专辑：《${song.album}》`);
+  if (song.artist?.length) descParts.push(`${artistLabel}：${song.artist.join("、")}`);
+  if (song.lyricist?.length) descParts.push(`${lyricistLabel}：${song.lyricist.join("、")}`);
+  if (song.composer?.length) descParts.push(`${composerLabel}：${song.composer.join("、")}`);
+  if (song.arranger?.length) descParts.push(`${arrangerLabel}：${song.arranger.join("、")}`);
+  if (song.album) descParts.push(`${albumLabel}：《${song.album}》`);
   if (song.year) descParts.push(`${song.year}年`);
 
-  const description = descParts.join("｜") + "。河图作品勘鉴收录。";
+  const description = descParts.join("｜") + t("meta.siteSuffix");
 
   // OG 封面走代理路径，确保爬虫可以访问
   const coverFilename =
@@ -43,20 +49,27 @@ export async function generateMetadata({
   return {
     title: song.title,
     description,
+    alternates: {
+      languages: {
+        "zh-CN": `https://hetu-music.com/song/${song.id}`,
+        "zh-TW": `https://hetu-music.com/zh-TW/song/${song.id}`,
+      },
+    },
     openGraph: {
-      title: `${song.title} - 河图作品勘鉴`,
+      title: `${song.title}${t("ogSuffix")}`,
       description,
       type: "music.song",
       images: [{ url: `/og-cover/${coverFilename}` }],
     },
   };
 }
+
 export default async function SongDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string; locale: string }>;
 }) {
-  const { id } = await params;
+  const { id, locale } = await params;
 
   const songId = parseInt(id);
   if (isNaN(songId)) {
@@ -66,7 +79,7 @@ export default async function SongDetailPage({
 
   let song;
   try {
-    song = await getSongById(songId);
+    song = await getSongById(songId, TABLES.MUSIC, undefined, locale);
   } catch (error) {
     console.error("Error in SongDetailPage:", error);
     notFound();

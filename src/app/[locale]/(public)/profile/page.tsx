@@ -11,6 +11,8 @@ import ThemeToggle from "@/components/shared/ThemeToggle";
 import { useUserContext } from "@/context/UserContext";
 import { useCsrfToken } from "@/hooks/utils/useCsrfToken";
 import { cn } from "@/lib/utils/utils";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import {
   ArrowLeft,
   ClipboardList,
@@ -21,7 +23,6 @@ import {
   Settings,
   Users,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { Suspense, useCallback, useEffect } from "react";
 
@@ -38,6 +39,8 @@ const PROFILE_TABS = [
 
 function ProfileContent() {
   const router = useRouter();
+  const t = useTranslations("profile");
+  const tNav = useTranslations("common.nav");
   const [activeTab, setActiveTab] = useQueryState(
     "tab",
     parseAsStringLiteral(PROFILE_TABS).withDefault("favorites").withOptions({
@@ -92,7 +95,7 @@ function ProfileContent() {
               <button
                 onClick={handleBack}
                 className="p-2 rounded-full transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800 group"
-                title="返回"
+                title={tNav("back") as string}
               >
                 <ArrowLeft
                   size={20}
@@ -105,7 +108,7 @@ function ProfileContent() {
               <button
                 onClick={() => router.push("/")}
                 className="p-2 rounded-full transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800 group"
-                title="回到主页"
+                title={tNav("home") as string}
               >
                 <Home
                   size={20}
@@ -114,7 +117,7 @@ function ProfileContent() {
               </button>
             </div>
             <h1 className="text-xl font-bold text-slate-900 dark:text-white font-serif tracking-tight">
-              个人中心
+              {t("title")}
             </h1>
           </div>
           <div className="flex items-center gap-3">
@@ -162,17 +165,7 @@ function ProfileContent() {
                   {tab === "requests" && <ClipboardList size={14} />}
                   {tab === "users" && <Users size={14} />}
                   {tab === "logs" && <ClipboardList size={14} />}
-                  {tab === "favorites"
-                    ? "我的收藏"
-                    : tab === "account"
-                      ? "账户设置"
-                      : tab === "feedback"
-                        ? "建议反馈"
-                        : tab === "requests"
-                          ? "反馈管理"
-                          : tab === "users"
-                            ? "用户管理"
-                            : "操作日志"}
+                  {t(`tabs.${tab}`)}
                 </button>
               ))}
             </div>
@@ -200,10 +193,10 @@ function ProfileContent() {
                     <div className="space-y-1 mb-6">
                       <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         <ClipboardList size={18} className="text-blue-500" />
-                        反馈管理
+                        {t("sections.requests.title")}
                       </h3>
                       <p className="text-xs text-slate-400">
-                        处理用户提交的纠错、申请等反馈
+                        {t("sections.requests.description")}
                       </p>
                     </div>
                     <RequestsPanel
@@ -220,10 +213,10 @@ function ProfileContent() {
                   <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 md:p-6 flex-1">
                     <div className="space-y-1 mb-6">
                       <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                        用户管理
+                        {t("sections.users.title")}
                       </h3>
                       <p className="text-xs text-slate-400">
-                        管理所有注册用户的资料与权限
+                        {t("sections.users.description")}
                       </p>
                     </div>
                     <UserManagePanel csrfToken={csrfToken} />
@@ -238,10 +231,10 @@ function ProfileContent() {
                     <div className="space-y-1 mb-6">
                       <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         <ClipboardList size={18} className="text-blue-500" />
-                        操作日志
+                        {t("sections.logs.title")}
                       </h3>
                       <p className="text-xs text-slate-400">
-                        数据库审计记录，仅供查阅
+                        {t("sections.logs.description")}
                       </p>
                     </div>
                     <AuditLogsPanel />

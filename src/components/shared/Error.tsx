@@ -1,11 +1,13 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import { AlertTriangle, Home, RefreshCw } from "lucide-react";
 
 export default function ErrorState({ error }: { error: Error | string }) {
   const router = useRouter();
+  const t = useTranslations("common.error");
 
   // Log error for debugging but don't show to user
   React.useEffect(() => {
@@ -27,10 +29,10 @@ export default function ErrorState({ error }: { error: Error | string }) {
 
         <div className="space-y-2">
           <h1 className="text-3xl md:text-4xl text-slate-900 dark:text-slate-50 font-medium">
-            出错了
+            {t("title")}
           </h1>
           <p className="text-slate-500 dark:text-slate-400 font-light max-w-sm mx-auto">
-            抱歉，系统遇到了一些问题。请尝试刷新页面或稍后再试。
+            {t("description")}
           </p>
         </div>
 
@@ -43,7 +45,7 @@ export default function ErrorState({ error }: { error: Error | string }) {
               size={18}
               className="group-hover:rotate-180 transition-transform duration-500"
             />
-            <span>刷新页面</span>
+            <span>{t("refresh")}</span>
           </button>
 
           <button
@@ -51,7 +53,7 @@ export default function ErrorState({ error }: { error: Error | string }) {
             className="group px-6 py-2.5 rounded-full bg-blue-600 text-white border border-blue-600 shadow-lg shadow-blue-200/50 dark:shadow-none hover:bg-blue-700 hover:border-blue-700 transition-all duration-300 flex items-center gap-2"
           >
             <Home size={18} />
-            <span>返回主页</span>
+            <span>{t("backToHome")}</span>
           </button>
         </div>
       </div>

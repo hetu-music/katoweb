@@ -1,0 +1,46 @@
+{
+  "title": "音乐图书馆",
+  "hero": {
+    "badge": "全集收录",
+    "title": "河图",
+    "subtitle": "作品勘鉴",
+    "description": "收录河图音乐全集，探索每一首作品背后的诗意与故事",
+    "statsLabel": "首作品",
+    "exploreBtn": "探索作品",
+    "imageryBtn": "意象词云"
+  },
+  "search": {
+    "placeholder": "搜索歌名、专辑、作词、作曲…",
+    "noResults": "未找到匹配的歌曲",
+    "noResultsHint": "请尝试其他关键词或清除筛选条件"
+  },
+  "filter": {
+    "type": "类型",
+    "year": "年份",
+    "lyricist": "作词",
+    "composer": "作曲",
+    "arranger": "编曲",
+    "clearAll": "清除筛选",
+    "apply": "应用"
+  },
+  "sort": {
+    "label": "排序",
+    "dateDesc": "最新优先",
+    "dateAsc": "最早优先",
+    "titleAsc": "标题 A-Z"
+  },
+  "view": {
+    "grid": "网格",
+    "list": "列表"
+  },
+  "pagination": {
+    "prev": "上一页",
+    "next": "下一页",
+    "page": "第 {current} 页，共 {total} 页"
+  },
+  "card": {
+    "play": "播放",
+    "enqueue": "加入队列",
+    "favorite": "收藏"
+  }
+}
