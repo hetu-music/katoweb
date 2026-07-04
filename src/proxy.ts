@@ -90,16 +90,28 @@ export async function proxy(request: NextRequest) {
   }
   requestHeaders.set("Content-Security-Policy", cspHeader);
 
-  // Initialize response keeping request headers
-  const response = NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
-  });
+  // Check if next-intl middleware wants to rewrite the path (needed for default locale zh-CN without prefix)
+  const rewriteUrl = intlResponse.headers.get("x-middleware-rewrite");
+  let response: NextResponse;
+  if (rewriteUrl) {
+    response = NextResponse.rewrite(new URL(rewriteUrl, request.url), {
+      request: {
+        headers: requestHeaders,
+      },
+    });
+  } else {
+    response = NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
+  }
 
-  // Copy all headers from next-intl response (including x-middleware-rewrite, cookies, etc.)
+  // Copy all other headers from next-intl response (cookies, x-next-intl-locale, etc.)
   intlResponse.headers.forEach((value, key) => {
-    response.headers.set(key, value);
+    if (key.toLowerCase() !== "x-middleware-rewrite") {
+      response.headers.set(key, value);
+    }
   });
 
   // Apply Security Headers to Response
