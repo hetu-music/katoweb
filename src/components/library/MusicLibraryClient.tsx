@@ -11,6 +11,7 @@ import { useScrollTop } from "@/hooks/ui/useScrollTop";
 import {
   DEFAULT_MUSIC_LIBRARY_VIEW_MODE,
   FILTER_OPTION_ALL,
+  FILTER_OPTION_UNKNOWN,
   MUSIC_LIBRARY_VIEW_MODES,
   type MusicLibraryViewMode,
 } from "@/lib/constants";
@@ -18,6 +19,7 @@ import type { MusicLibraryClientProps } from "@/lib/types";
 import { cn } from "@/lib/utils/utils";
 import { extractLyricsSnippet } from "@/hooks/library/useLyricsIndex";
 import { calculateFilterOptions } from "@/lib/utils/utils-song";
+import { useTranslations } from "next-intl";
 import {
   Disc,
   LayoutGrid,
@@ -29,7 +31,7 @@ import {
   X,
   XCircle,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import About from "./About";
 import GridCard from "./GridCard";
@@ -72,6 +74,9 @@ export default function MusicLibraryClient({
   initialSongsData,
 }: MusicLibraryClientProps) {
   const router = useRouter();
+  const t = useTranslations("library");
+  const tCommon = useTranslations("common");
+  const tEnum = useTranslations("enums");
   const { isLoggedIn } = useFavorites();
   const [mounted, setMounted] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
@@ -200,11 +205,11 @@ export default function MusicLibraryClient({
 
     try {
       await navigator.clipboard.writeText(window.location.href);
-      alert("链接已复制到剪贴板");
+      alert(t("linkCopied"));
     } catch {
       // Clipboard unavailable.
     }
-  }, []);
+  }, [t]);
 
   const handleTitleReset = useCallback(() => {
     sessionStorage.removeItem("music_library_scrollY");
@@ -248,14 +253,14 @@ export default function MusicLibraryClient({
       <AppNavbar
         title={
           <>
-            河图
+            {t("logo.part1")}
             <span className="mx-2 h-5 w-[2px] translate-y-[1.5px] rounded-full bg-blue-600" />
-            作品勘鉴
+            {t("logo.part2")}
           </>
         }
         onTitleClick={handleTitleReset}
         onAboutClick={() => setShowAbout(true)}
-        titleTooltip="点击刷新页面"
+        titleTooltip={t("titleTooltip")}
       />
 
       <main className="mx-auto max-w-7xl px-6 pb-20 pt-32">
@@ -289,15 +294,21 @@ export default function MusicLibraryClient({
                         className="flex items-center gap-1.5 whitespace-nowrap rounded-full border border-red-200 bg-red-50 px-4 py-1.5 text-sm text-red-600 transition-all duration-300 hover:border-red-300 hover:bg-red-100 dark:border-red-900/30 dark:bg-red-900/10 dark:text-red-400"
                       >
                         <RotateCcw size={12} />
-                        重置
+                        {t("reset")}
                       </button>
                     );
                   }
 
+                  const pillLabel = (() => {
+                    if (type === FILTER_OPTION_ALL) return tCommon("all");
+                    if (type === FILTER_OPTION_UNKNOWN) return tCommon("unknown");
+                    return tEnum.has(`type.${type}`) ? tEnum(`type.${type}`) : type;
+                  })();
+
                   return (
                     <FilterPill
                       key={type}
-                      label={type}
+                      label={pillLabel}
                       active={filterType === type}
                       onClick={() => {
                         if (hasDraggedRef.current) return;
@@ -318,8 +329,8 @@ export default function MusicLibraryClient({
                     type="text"
                     placeholder={
                       lyricsState === "ready"
-                        ? "搜索歌曲、创作者、歌词..."
-                        : "搜索歌曲、创作者..."
+                        ? t("search.placeholderWithLyrics")
+                        : t("search.placeholderNoLyrics")
                     }
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
@@ -352,7 +363,7 @@ export default function MusicLibraryClient({
                       ? "border-blue-600 bg-blue-600 text-white shadow-md"
                       : "border-slate-200 bg-white text-slate-600 hover:border-blue-400 hover:bg-blue-50/50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-blue-400 dark:hover:bg-blue-900/10",
                   )}
-                  title="高级筛选"
+                  title={t("advancedFilter")}
                 >
                   {showAdvancedFilters ? (
                     <X size={16} />
@@ -374,7 +385,7 @@ export default function MusicLibraryClient({
                           ? "bg-white text-blue-600 shadow-sm dark:bg-slate-700 dark:text-blue-400"
                           : "text-slate-400 hover:text-slate-600",
                       )}
-                      title={mode === "grid" ? "网格视图" : "列表视图"}
+                      title={mode === "grid" ? t("view.grid") : t("view.list")}
                     >
                       {VIEW_MODE_ICONS[mode]}
                     </button>
@@ -436,15 +447,15 @@ export default function MusicLibraryClient({
                   className="flex flex-col gap-2"
                 >
                   <div className="mb-2 hidden border-b border-slate-100 px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:border-slate-800 md:flex">
-                    <div className="mr-6 w-16">Cover</div>
-                    <div className="grow">Title / Lyricist / Composer</div>
+                    <div className="mr-6 w-16">{t("listHeader.cover")}</div>
+                    <div className="grow">{t("listHeader.title")}</div>
                     <div className="ml-8 w-8" />
                     <div className="ml-8 w-8" />
                     {isLoggedIn && <div className="ml-8 w-8" />}
-                    <div className="ml-8 w-24 text-center">Type</div>
-                    <div className="ml-8 w-24 text-center">Genre</div>
-                    <div className="ml-8 w-16">Year</div>
-                    <div className="ml-8 w-16">Time</div>
+                    <div className="ml-8 w-24 text-center">{t("listHeader.type")}</div>
+                    <div className="ml-8 w-24 text-center">{t("listHeader.genre")}</div>
+                    <div className="ml-8 w-16">{t("listHeader.year")}</div>
+                    <div className="ml-8 w-16">{t("listHeader.time")}</div>
                   </div>
                   {paginatedSongs.map((song, index) => (
                     <ListRow
@@ -474,7 +485,7 @@ export default function MusicLibraryClient({
           ) : (
             <div className="flex flex-col items-center justify-center py-20 text-slate-400">
               <Disc size={48} className="mb-4 opacity-20" />
-              <p className="font-light">没有符合条件的歌曲</p>
+              <p className="font-light">{t("noFilteredSongs")}</p>
             </div>
           )}
         </section>

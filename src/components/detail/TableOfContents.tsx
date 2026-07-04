@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
 import { SongDetail } from "@/lib/types";
+import { useTranslations } from "next-intl";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 interface TableOfContentsProps {
   song: SongDetail;
@@ -13,6 +14,7 @@ interface NavItem {
 }
 
 const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
+  const t = useTranslations("song");
   const [activeId, setActiveId] = useState<string>("info");
   const [displayedActiveId, setDisplayedActiveId] = useState<string>("info");
   const displayedActiveIdRef = useRef<string>("info");
@@ -39,11 +41,11 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
 
   // 构建导航项 - 移除备注，只保留基本信息、歌词、乐谱
   const getNavItems = useCallback((): NavItem[] => {
-    const items: NavItem[] = [{ id: "info", label: "基本信息" }];
-    items.push({ id: "lyrics", label: "歌词" });
-    if (song.nmn_status) items.push({ id: "score", label: "乐谱" });
+    const items: NavItem[] = [{ id: "info", label: t("sections.basicInfo") }];
+    items.push({ id: "lyrics", label: t("sections.lyrics") });
+    if (song.nmn_status) items.push({ id: "score", label: t("sections.score") });
     return items;
-  }, [song.nmn_status]);
+  }, [song.nmn_status, t]);
 
   const navItems = getNavItems();
 
@@ -194,7 +196,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
       {/* 平板及以上：右侧垂直导航 */}
       <nav
         className="fixed right-6 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col items-end gap-3"
-        aria-label="目录导航"
+        aria-label={t("sections.toc")}
       >
         {navItems.map((item) => {
           const isActive = displayedActiveId === item.id;
@@ -208,7 +210,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
               onMouseEnter={() => handleMouseEnter(item.id)}
               onMouseLeave={handleMouseLeave}
               className="group flex items-center gap-3 outline-none touch-manipulation"
-              aria-label={`跳转到${item.label}`}
+              aria-label={t("sections.jumpTo", { label: item.label })}
               aria-current={isActive ? "location" : undefined}
             >
               {/* 标签 */}
@@ -217,10 +219,9 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                   px-3 py-1.5 rounded-full text-xs font-medium
                   backdrop-blur-md border transition-all duration-300 ease-out
                   ${showLabel ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4 pointer-events-none"}
-                  ${
-                    isActive
-                      ? "bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 border-transparent shadow-lg"
-                      : "bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50"
+                  ${isActive
+                    ? "bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 border-transparent shadow-lg"
+                    : "bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50"
                   }
                 `}
               >
@@ -232,10 +233,9 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                 className={`
                   relative flex items-center justify-center
                   w-3 h-3 rounded-full transition-all duration-300 ease-out
-                  ${
-                    isActive
-                      ? "bg-slate-900 dark:bg-white scale-100"
-                      : "bg-slate-300 dark:bg-slate-600 scale-75 group-hover:scale-100 group-hover:bg-slate-400 dark:group-hover:bg-slate-500"
+                  ${isActive
+                    ? "bg-slate-900 dark:bg-white scale-100"
+                    : "bg-slate-300 dark:bg-slate-600 scale-75 group-hover:scale-100 group-hover:bg-slate-400 dark:group-hover:bg-slate-500"
                   }
                 `}
               />
@@ -245,7 +245,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
 
         {/* 连接线 */}
         <div
-          className="absolute right-[5px] top-0 bottom-0 w-[2px] bg-gradient-to-b from-transparent via-slate-200 dark:via-slate-700 to-transparent -z-10"
+          className="absolute right-[5px] top-0 bottom-0 w-[2px] bg-linear-to-b from-transparent via-slate-200 dark:via-slate-700 to-transparent -z-10"
           aria-hidden="true"
         />
       </nav>
@@ -253,12 +253,12 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
       {/* 手机端：底部水平导航 */}
       <nav
         className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 md:hidden"
-        aria-label="目录导航"
+        aria-label={t("sections.toc")}
       >
         <div className="flex items-center gap-8 px-2 py-2">
           {/* 水平连接线 */}
           <div
-            className="absolute left-1 right-1 top-1/2 -translate-y-1/2 h-[1.5px] bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent -z-10"
+            className="absolute left-1 right-1 top-1/2 -translate-y-1/2 h-[1.5px] bg-linear-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent -z-10"
             aria-hidden="true"
           />
 
@@ -274,7 +274,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                 onMouseEnter={() => handleMouseEnter(item.id)}
                 onMouseLeave={handleMouseLeave}
                 className="group relative flex flex-col items-center outline-none touch-manipulation"
-                aria-label={`跳转到${item.label}`}
+                aria-label={t("sections.jumpTo", { label: item.label })}
                 aria-current={isActive ? "location" : undefined}
               >
                 {/* 标签 - 向上弹出 */}
@@ -284,10 +284,9 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                     px-2 py-1 rounded-full text-[10px] font-medium whitespace-nowrap
                     backdrop-blur-md border transition-all duration-300 ease-out
                     ${showLabel ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}
-                    ${
-                      isActive
-                        ? "bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 border-transparent shadow-md"
-                        : "bg-white/90 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50"
+                    ${isActive
+                      ? "bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 border-transparent shadow-md"
+                      : "bg-white/90 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50"
                     }
                   `}
                 >
@@ -307,10 +306,9 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                   className={`
                     relative flex items-center justify-center
                     w-2.5 h-2.5 rounded-full transition-all duration-300 ease-out
-                    ${
-                      isActive
-                        ? "bg-slate-900 dark:bg-white scale-110"
-                        : "bg-slate-300 dark:bg-slate-600 scale-100 group-hover:scale-105 group-hover:bg-slate-400 dark:group-hover:bg-slate-500"
+                    ${isActive
+                      ? "bg-slate-900 dark:bg-white scale-110"
+                      : "bg-slate-300 dark:bg-slate-600 scale-100 group-hover:scale-105 group-hover:bg-slate-400 dark:group-hover:bg-slate-500"
                     }
                   `}
                 />

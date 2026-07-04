@@ -2,6 +2,7 @@ import React from "react";
 import { FILTER_OPTION_ALL, FILTER_OPTION_UNKNOWN } from "@/lib/constants";
 import CustomSelect from "./CustomSelect";
 import { Slider } from "@/components/ui/slider";
+import { useTranslations } from "next-intl";
 
 interface SongFiltersProps {
   yearRangeIndices: [number, number];
@@ -76,6 +77,8 @@ const SongFilters: React.FC<SongFiltersProps> = ({
   setSelectedArranger,
   filterOptions,
 }) => {
+  const t = useTranslations("library.filter");
+
   // 共享样式常量
   const labelStyle =
     "text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest";
@@ -90,7 +93,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
     <div className="w-full flex flex-col gap-4 p-1">
       {/* Top Row: Year Slider */}
       <div className="w-full bg-white/30 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800/50 rounded-xl p-3">
-        <div className={`${labelStyle} mb-1`}>发行年份</div>
+        <div className={`${labelStyle} mb-1`}>{t("yearRange")}</div>
         <YearRangeSlider
           range={yearRangeIndices}
           setRange={setYearRangeIndices}
@@ -103,11 +106,11 @@ const SongFilters: React.FC<SongFiltersProps> = ({
         <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-3">
           {/* Lyricist Filter */}
           <div className="flex flex-col gap-1">
-            <label className={`${labelStyle} ml-1`}>作词</label>
+            <label className={`${labelStyle} ml-1`}>{t("lyricist")}</label>
             <CustomSelect
               value={selectedLyricist}
               onChange={setSelectedLyricist}
-              placeholder="全部作词"
+              placeholder={t("allLyricists")}
               options={filterOptions.allLyricists
                 .filter((lyricist) => lyricist !== FILTER_OPTION_ALL)
                 .map((lyricist) => ({ value: lyricist, label: lyricist }))}
@@ -116,11 +119,11 @@ const SongFilters: React.FC<SongFiltersProps> = ({
 
           {/* Composer Filter */}
           <div className="flex flex-col gap-1">
-            <label className={`${labelStyle} ml-1`}>作曲</label>
+            <label className={`${labelStyle} ml-1`}>{t("composer")}</label>
             <CustomSelect
               value={selectedComposer}
               onChange={setSelectedComposer}
-              placeholder="全部作曲"
+              placeholder={t("allComposers")}
               options={filterOptions.allComposers
                 .filter((composer) => composer !== FILTER_OPTION_ALL)
                 .map((composer) => ({ value: composer, label: composer }))}
@@ -129,11 +132,11 @@ const SongFilters: React.FC<SongFiltersProps> = ({
 
           {/* Arranger Filter */}
           <div className="flex flex-col gap-1">
-            <label className={`${labelStyle} ml-1`}>编曲</label>
+            <label className={`${labelStyle} ml-1`}>{t("arranger")}</label>
             <CustomSelect
               value={selectedArranger}
               onChange={setSelectedArranger}
-              placeholder="全部编曲"
+              placeholder={t("allArrangers")}
               options={filterOptions.allArrangers
                 .filter((arranger) => arranger !== FILTER_OPTION_ALL)
                 .map((arranger) => ({ value: arranger, label: arranger }))}

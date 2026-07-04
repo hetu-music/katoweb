@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { getTypeTagStyle, getGenreTagStyle } from "@/lib/constants";
 import { cn } from "@/lib/utils/utils";
+import { useTranslations } from "next-intl";
 
 const MultiTagDisplay = ({
   tags,
@@ -11,6 +12,7 @@ const MultiTagDisplay = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [placement, setPlacement] = useState<"top" | "bottom">("top");
+  const tEnum = useTranslations("enums");
 
   if (!tags || tags.length === 0) {
     return (
@@ -21,9 +23,10 @@ const MultiTagDisplay = ({
   }
 
   if (tags.length === 1) {
-    const t = tags[0];
+    const tVal = tags[0];
     const style =
-      type === "type" ? getTypeTagStyle(t, "subtle") : getGenreTagStyle(t);
+      type === "type" ? getTypeTagStyle(tVal, "subtle") : getGenreTagStyle(tVal);
+    const label = tEnum.has(`${type}.${tVal}`) ? tEnum(`${type}.${tVal}`) : tVal;
     return (
       <span
         className={cn(
@@ -31,7 +34,7 @@ const MultiTagDisplay = ({
           style,
         )}
       >
-        {t}
+        {label}
       </span>
     );
   }
@@ -58,19 +61,22 @@ const MultiTagDisplay = ({
       className="group/tags relative flex items-center justify-center gap-2 w-24"
     >
       {/* Small circles */}
-      {tags.slice(0, 3).map((t) => (
-        <div
-          key={t}
-          className={cn(
-            "w-7 h-7 rounded-full flex items-center justify-center text-xs border shrink-0",
-            type === "type"
-              ? getTypeTagStyle(t, "subtle")
-              : getGenreTagStyle(t),
-          )}
-        >
-          {t[0]}
-        </div>
-      ))}
+      {tags.slice(0, 3).map((tVal) => {
+        const label = tEnum.has(`${type}.${tVal}`) ? tEnum(`${type}.${tVal}`) : tVal;
+        return (
+          <div
+            key={tVal}
+            className={cn(
+              "w-7 h-7 rounded-full flex items-center justify-center text-xs border shrink-0",
+              type === "type"
+                ? getTypeTagStyle(tVal, "subtle")
+                : getGenreTagStyle(tVal),
+            )}
+          >
+            {label[0]}
+          </div>
+        );
+      })}
       {tags.length > 3 && (
         <div className="text-[10px] text-slate-400 font-medium">
           +{tags.length - 3}
@@ -86,22 +92,25 @@ const MultiTagDisplay = ({
             : "top-full mt-4 flex-col",
         )}
       >
-        {tags.map((t, i) => (
-          <span
-            key={t}
-            style={{ transitionDelay: `${i * 40}ms` }}
-            className={cn(
-              "px-3 py-1 text-xs font-medium text-center border rounded-full w-24 truncate transition-all duration-300 ease-out",
-              type === "type"
-                ? getTypeTagStyle(t, "glass")
-                : getGenreTagStyle(t, "glass"),
-              "opacity-0 scale-50 group-hover/tags:opacity-100 group-hover/tags:translate-y-0 group-hover/tags:scale-100",
-              placement === "top" ? "translate-y-8" : "-translate-y-8",
-            )}
-          >
-            {t}
-          </span>
-        ))}
+        {tags.map((tVal, i) => {
+          const label = tEnum.has(`${type}.${tVal}`) ? tEnum(`${type}.${tVal}`) : tVal;
+          return (
+            <span
+              key={tVal}
+              style={{ transitionDelay: `${i * 40}ms` }}
+              className={cn(
+                "px-3 py-1 text-xs font-medium text-center border rounded-full w-24 truncate transition-all duration-300 ease-out",
+                type === "type"
+                  ? getTypeTagStyle(tVal, "glass")
+                  : getGenreTagStyle(tVal, "glass"),
+                "opacity-0 scale-50 group-hover/tags:opacity-100 group-hover/tags:translate-y-0 group-hover/tags:scale-100",
+                placement === "top" ? "translate-y-8" : "-translate-y-8",
+              )}
+            >
+              {label}
+            </span>
+          );
+        })}
       </div>
     </div>
   );

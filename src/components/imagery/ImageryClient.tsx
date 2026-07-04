@@ -8,7 +8,8 @@ import type { ImageryCategory, ImageryItem } from "@/lib/types";
 import { useIntersection } from "@mantine/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
 import React, {
   memo,
@@ -200,6 +201,7 @@ const WordItem = memo(function WordItem({
   rowWordIdx: number;
   selectedItemId: number | null;
 }) {
+  const t = useTranslations("common.imagery");
   // Stagger words within the same row for a cascade effect on each new batch
   const unfurlDelay = `${rowWordIdx * 80}ms`;
   const isSelected = selectedItemId === data.item.id;
@@ -226,7 +228,7 @@ const WordItem = memo(function WordItem({
       >
         <button
           data-item-id={data.item.id}
-          aria-label={`意象：${data.item.name}，出现 ${data.item.count} 次`}
+          aria-label={t("ariaLabel", { name: data.item.name, count: data.item.count })}
           className={`font-calligraphy leading-none transition-opacity duration-200 word-breathe-anim ${isSelected ? "word-breathe-force-run" : ""} ${data.paletteText} ${isSelected ? "opacity-100" : "opacity-70 hover:opacity-100"}`}
           style={
             {
@@ -287,6 +289,8 @@ const CategoryButton = memo(function CategoryButton({
 
 export default function ImageryClient({ items, categories }: Props) {
   const router = useRouter();
+  const t = useTranslations("common.imagery");
+  const tSite = useTranslations("common.site");
   const { setPlayerVisible } = usePlayerStore();
 
   // 意象词云页面：隐藏播放条但不暂停音乐，离开时恢复显示
@@ -522,7 +526,7 @@ export default function ImageryClient({ items, categories }: Props) {
 
       const response = await fetch(`/api/imagery/${selectedItem.id}/songs`);
       if (!response.ok) {
-        throw new Error("加载意象关联歌曲失败");
+        throw new Error(t("loadError"));
       }
 
       const data: { songs?: SongResult[] } = await response.json();
@@ -689,9 +693,9 @@ export default function ImageryClient({ items, categories }: Props) {
         ref={navRef}
         title={
           <>
-            河图
+            {tSite("name").substring(0, 2)}
             <span className="mx-2 h-5 w-[2px] translate-y-[1.5px] rounded-full bg-blue-600" />
-            作品勘鉴
+            {tSite("name").substring(2)}
           </>
         }
         onTitleClick={handleTitleReset}
@@ -758,11 +762,11 @@ export default function ImageryClient({ items, categories }: Props) {
           </div>
 
           <h1 className="font-serif text-5xl md:text-7xl text-slate-800 dark:text-slate-100 mb-4 flex justify-center items-center gap-4 sm:gap-10 drop-shadow-[0_0_30px_rgba(255,255,255,0.05)]">
-            {"意象词云".split("").map((char, i) => (
+            {t("title").split("").map((char, i) => (
               <span
                 key={i}
                 className={`hero-title-char inline-block ${mounted ? "" : "opacity-0"}`}
-                style={{ animationDelay: `${i * 400}ms` }}
+                style={{ animationDelay: `${i * 300}ms` }}
               >
                 {char}
               </span>
@@ -770,9 +774,9 @@ export default function ImageryClient({ items, categories }: Props) {
           </h1>
           <p
             className={`font-serif text-base md:text-xl text-slate-500 dark:text-slate-400 tracking-[0.4em] pl-[0.4em] mb-3 ${mounted ? "hero-unroll" : "opacity-0"}`}
-            style={{ animationDelay: "2200ms" }}
+            style={{ animationDelay: "1650ms" }}
           >
-            行过 {wordDisplayList.length} ，长歌踏雪去何方
+            {t("subtitle", { count: wordDisplayList.length })}
           </p>
         </div>
       </header>
@@ -786,7 +790,7 @@ export default function ImageryClient({ items, categories }: Props) {
             <div className="min-w-[8px]" />
 
             <CategoryButton
-              label="全部"
+              label={t("all")}
               isActive={activeL1Id === null}
               onClick={() => {
                 setActiveL1Id(null);
@@ -886,7 +890,7 @@ export default function ImageryClient({ items, categories }: Props) {
       >
         {wordDisplayList.length === 0 ? (
           <div className="text-center text-slate-400 dark:text-slate-600 text-sm py-24 tracking-[0.3em]">
-            暂无数据
+            {t("noData")}
           </div>
         ) : (
           <>
@@ -952,7 +956,7 @@ export default function ImageryClient({ items, categories }: Props) {
                     border: `1px solid ${hoveredData.accent}44`,
                   }}
                 >
-                  {hoveredData.count} 次
+                  {t("times", { count: hoveredData.count })}
                 </div>
               </div>
             )}
@@ -960,7 +964,7 @@ export default function ImageryClient({ items, categories }: Props) {
             {/* Total count */}
             <div className="mt-12 flex justify-center">
               <p className="text-xs text-slate-300 dark:text-slate-700 tracking-[0.2em] select-none font-serif">
-                共 {wordDisplayList.length} 个意象
+                {t("totalCount", { count: wordDisplayList.length })}
               </p>
             </div>
           </>
@@ -971,7 +975,7 @@ export default function ImageryClient({ items, categories }: Props) {
       <footer className="max-w-5xl mx-auto px-8 pb-12">
         <div className="border-t border-slate-100 dark:border-slate-800 pt-8 text-center">
           <p className="text-xs text-slate-400 dark:text-slate-600 font-mono">
-            &copy; {new Date().getFullYear()} 河图作品勘鉴
+            &copy; {new Date().getFullYear()} {tSite("name")}
           </p>
         </div>
       </footer>

@@ -7,6 +7,11 @@ import {
 import { Song, SongDetail, SONG_LIST_VIEW_FIELDS } from "@/lib/types";
 import { mapAndSortSongs } from "@/lib/utils/utils-song";
 import { processLyrics } from "@/lib/utils/utils-lyrics";
+import {
+  toTraditional,
+  toTraditionalArray,
+  toTraditionalLrc,
+} from "@/lib/utils/utils-convert";
 
 /**
  * 获取所有歌曲数据
@@ -22,8 +27,10 @@ export async function getSongs(
   table: string = TABLES.MUSIC,
   accessToken?: string,
   forListView: boolean = false,
+  locale: string = "zh-CN",
 ): Promise<Song[]> {
   const selectFields = forListView ? SONG_LIST_VIEW_FIELDS.join(",") : "*";
+  let songs: Song[] = [];
 
   // 公共主表：高权限 + 分页全量获取
   if (table === TABLES.MUSIC && !accessToken) {
@@ -41,35 +48,58 @@ export async function getSongs(
       (q) => q.order("id", { ascending: true }),
     );
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return mapAndSortSongs(data as any);
+    songs = mapAndSortSongs(data as any);
+  } else {
+    // Admin / 其他表：用户权限客户端
+    const supabase = getUserClient(accessToken);
+    if (!supabase) {
+      console.warn("[getSongs] User client unavailable, returning empty data");
+      return [];
+    }
+    const { data, error } = await supabase
+      .from(table)
+      .select(selectFields)
+      .order("id", { ascending: true });
+
+    if (error) {
+      console.error("[getSongs] Supabase error:", error);
+      throw new Error("Failed to fetch songs");
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    songs = mapAndSortSongs(data as any);
   }
 
-  // Admin / 其他表：用户权限客户端
-  const supabase = getUserClient(accessToken);
-  if (!supabase) {
-    console.warn("[getSongs] User client unavailable, returning empty data");
-    return [];
+  if (locale === "zh-TW") {
+    return songs.map((s) => {
+      const item = s as Song & { albumartist?: string[] | null };
+      const res: Song & { albumartist?: string[] | null } = {
+        ...s,
+        title: toTraditional(s.title) ?? s.title,
+        album: toTraditional(s.album),
+        artist: toTraditionalArray(s.artist),
+        lyricist: toTraditionalArray(s.lyricist),
+        composer: toTraditionalArray(s.composer),
+        arranger: toTraditionalArray(s.arranger),
+      };
+      if (item.albumartist) {
+        res.albumartist = toTraditionalArray(item.albumartist);
+      }
+      return res as Song;
+    });
   }
-  const { data, error } = await supabase
-    .from(table)
-    .select(selectFields)
-    .order("id", { ascending: true });
 
-  if (error) {
-    console.error("[getSongs] Supabase error:", error);
-    throw new Error("Failed to fetch songs");
-  }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return mapAndSortSongs(data as any);
+  return songs;
 }
 
 /**
  * 根据 ID 获取歌曲详情（兼容 music 和 temp 表）
+ * @param locale - 当前语言，'zh-TW' 时自动转换繁体
  */
 export async function getSongById(
   id: number,
   table: string = TABLES.MUSIC,
   accessToken?: string,
+  locale: string = "zh-CN",
 ): Promise<SongDetail | null> {
   const supabase =
     table === TABLES.MUSIC && !accessToken
@@ -106,11 +136,31 @@ export async function getSongById(
     }
   }
 
-  return {
+  const result: SongDetail & { normalLyrics: string } = {
     ...data,
     year: data.date ? new Date(data.date).getFullYear() : null,
     normalLyrics,
   } as SongDetail & { normalLyrics: string };
+
+  // 繁体转换：服务端完成，客户端零负担
+  if (locale === "zh-TW") {
+    return {
+      ...result,
+      title: toTraditional(result.title) ?? result.title,
+      album: toTraditional(result.album),
+      comment: toTraditional(result.comment),
+      lyrics: toTraditionalLrc(result.lyrics),
+      normalLyrics: toTraditional(result.normalLyrics) ?? result.normalLyrics,
+      // 人名字段也转换
+      artist: toTraditionalArray(result.artist),
+      lyricist: toTraditionalArray(result.lyricist),
+      composer: toTraditionalArray(result.composer),
+      arranger: toTraditionalArray(result.arranger),
+      albumartist: toTraditionalArray(result.albumartist),
+    };
+  }
+
+  return result;
 }
 
 /**

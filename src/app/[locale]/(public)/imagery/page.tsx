@@ -4,27 +4,38 @@ import {
   getImageryCategories,
   getImageryWithCounts,
 } from "@/lib/server/service-imagery";
+import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
+type Props = {
+  params: Promise<{ locale: string }>;
+};
+
 // 动态生成意象词云 SEO 元数据
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "common" });
+
   const [items, categories] = await Promise.all([
     getImageryWithCounts().catch(() => []),
     getImageryCategories().catch(() => []),
   ]);
 
   const count = items.length;
-  // 获取前几个分类名称作为描述的一部分
   const categoryNames = categories
     .slice(0, 6)
     .map((c) => c.name)
     .join("、");
 
-  const description = `在 ${count} 个精选意象中发现河图音乐的诗意世界。涵盖 ${categoryNames} 等分类，探索山川、日月、草木、时令在歌词中的流转。`;
+  const description = t("imagery.description", {
+    count,
+    categoryNames,
+  });
+  const siteName = t("site.name");
 
   return {
-    title: "意象词云", // 配合根布局的标题模板，显示为 "意象词云 - 河图作品勘鉴"
+    title: t("imagery.title"),
     description,
     keywords: [
       "河图",
@@ -40,24 +51,31 @@ export async function generateMetadata(): Promise<Metadata> {
       "文学性",
     ],
     alternates: {
-      canonical: "/imagery",
+      canonical: locale === "zh-TW" ? "https://hetu-music.com/zh-TW/imagery" : "https://hetu-music.com/imagery",
+      languages: {
+        "zh-CN": "https://hetu-music.com/imagery",
+        "zh-TW": "https://hetu-music.com/zh-TW/imagery",
+      },
     },
     openGraph: {
-      title: "意象词云 - 河图作品勘鉴",
+      title: `${t("imagery.title")} - ${siteName}`,
       description,
       type: "website",
       images: [{ url: "/icons/source.png" }],
     },
     twitter: {
       card: "summary_large_image",
-      title: "意象词云 - 河图作品勘鉴",
+      title: `${t("imagery.title")} - ${siteName}`,
       description,
       images: ["/icons/source.png"],
     },
   };
 }
 
-export default async function ImageryPage() {
+export default async function ImageryPage({ params }: Props) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "common" });
+
   const [items, categories] = await Promise.all([
     getImageryWithCounts().catch(() => []),
     getImageryCategories().catch(() => []),
@@ -68,17 +86,20 @@ export default async function ImageryPage() {
     .slice(0, 6)
     .map((c) => c.name)
     .join("、");
-  const description = `在 ${count} 个精选意象中发现河图音乐的诗意世界。涵盖 ${categoryNames} 等分类，探索山川、日月、草木、时令在歌词中的流转。`;
+  const description = t("imagery.description", {
+    count,
+    categoryNames,
+  });
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: "意象词云 - 河图作品勘鉴",
+    name: `${t("imagery.title")} - ${t("site.name")}`,
     description: description,
     url: "https://hetu-music.com/imagery",
     isPartOf: {
       "@type": "WebSite",
-      name: "河图作品勘鉴",
+      name: t("site.name"),
       url: "https://hetu-music.com",
     },
   };
@@ -88,6 +109,7 @@ export default async function ImageryPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        suppressHydrationWarning
       />
       <Suspense fallback={<Loading />}>
         <ImageryClient items={items} categories={categories} />

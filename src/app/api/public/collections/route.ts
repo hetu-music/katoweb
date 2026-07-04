@@ -29,7 +29,8 @@ export const GET = withAuth(
     }
 
     // 服务端直接查歌曲数据，避免客户端二次请求
-    const allSongs = await getSongs(undefined, undefined, true);
+    const locale = _request.cookies.get("NEXT_LOCALE")?.value || "zh-CN";
+    const allSongs = await getSongs(undefined, undefined, true, locale);
 
     // 从数据行转为映射
     const idToCol = Object.fromEntries(

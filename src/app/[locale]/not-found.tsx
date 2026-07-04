@@ -1,10 +1,12 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import { Disc, Home, ArrowLeft } from "lucide-react";
 
 export default function NotFound() {
   const router = useRouter();
+  const t = useTranslations("common.notFound");
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500 flex items-center justify-center p-6">
@@ -23,10 +25,10 @@ export default function NotFound() {
 
         <div className="space-y-2">
           <h1 className="text-3xl md:text-4xl text-slate-900 dark:text-slate-50">
-            歌曲未找到
+            {t("title")}
           </h1>
           <p className="text-slate-500 dark:text-slate-400 font-light max-w-sm mx-auto">
-            抱歉，您访问的歌曲不存在或已被移除。
+            {t("description")}
           </p>
         </div>
 
@@ -39,7 +41,7 @@ export default function NotFound() {
               size={18}
               className="group-hover:-translate-x-1 transition-transform"
             />
-            <span>返回上页</span>
+            <span>{t("back")}</span>
           </button>
 
           <button
@@ -47,7 +49,7 @@ export default function NotFound() {
             className="group px-6 py-2.5 rounded-full bg-blue-600 text-white border border-blue-600 shadow-lg shadow-blue-200/50 dark:shadow-none hover:bg-blue-700 hover:border-blue-700 transition-all duration-300 flex items-center gap-2"
           >
             <Home size={18} />
-            <span>返回主页</span>
+            <span>{t("home")}</span>
           </button>
         </div>
       </div>

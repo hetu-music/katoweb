@@ -1,34 +1,30 @@
 "use client";
 
-import React from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import { AlertTriangle, Home, RefreshCw } from "lucide-react";
+import { Disc, Home, ArrowLeft } from "lucide-react";
 
-export default function ErrorState({ error }: { error: Error | string }) {
+export default function NotFound() {
   const router = useRouter();
-  const t = useTranslations("common.error");
-
-  // Log error for debugging but don't show to user
-  React.useEffect(() => {
-    console.error("Application Error:", error);
-  }, [error]);
+  const t = useTranslations("common.notFound");
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19] transition-colors duration-500 flex items-center justify-center p-6">
       <div className="text-center space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
         <div className="relative inline-block">
-          <div className="w-32 h-32 rounded-full bg-red-50 dark:bg-red-900/10 flex items-center justify-center mx-auto">
-            <AlertTriangle
-              size={48}
-              className="text-red-500 dark:text-red-400 opacity-80"
-              strokeWidth={1.5}
-            />
+          <Disc
+            size={120}
+            className="text-slate-200 dark:text-slate-800 animate-[spin_10s_linear_infinite]"
+          />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-4xl font-serif font-bold text-slate-400 dark:text-slate-600">
+              404
+            </span>
           </div>
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl md:text-4xl text-slate-900 dark:text-slate-50 font-medium">
+          <h1 className="text-3xl md:text-4xl text-slate-900 dark:text-slate-50">
             {t("title")}
           </h1>
           <p className="text-slate-500 dark:text-slate-400 font-light max-w-sm mx-auto">
@@ -38,14 +34,14 @@ export default function ErrorState({ error }: { error: Error | string }) {
 
         <div className="flex items-center justify-center gap-4">
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => router.back()}
             className="group px-6 py-2.5 rounded-full border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300 flex items-center gap-2"
           >
-            <RefreshCw
+            <ArrowLeft
               size={18}
-              className="group-hover:rotate-180 transition-transform duration-500"
+              className="group-hover:-translate-x-1 transition-transform"
             />
-            <span>{t("refresh")}</span>
+            <span>{t("back")}</span>
           </button>
 
           <button
@@ -53,7 +49,7 @@ export default function ErrorState({ error }: { error: Error | string }) {
             className="group px-6 py-2.5 rounded-full bg-blue-600 text-white border border-blue-600 shadow-lg shadow-blue-200/50 dark:shadow-none hover:bg-blue-700 hover:border-blue-700 transition-all duration-300 flex items-center gap-2"
           >
             <Home size={18} />
-            <span>{t("backToHome")}</span>
+            <span>{t("home")}</span>
           </button>
         </div>
       </div>

@@ -1,33 +1,53 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
 import MusicLibraryClient from "@/components/library/MusicLibraryClient";
 import { getSongs } from "@/lib/server/service-songs";
 import { Song } from "@/lib/types";
 import Loading from "@/components/shared/Loading";
 import ErrorState from "@/components/shared/Error";
 
+type Props = {
+  params: Promise<{ locale: string }>;
+};
+
 // 动态生成首页 SEO 元数据
-export async function generateMetadata(): Promise<Metadata> {
-  let description =
-    "收录河图音乐作品，提供歌曲信息、歌词、专辑等详细资料的查阅与筛选。";
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "common" });
+  const tLib = await getTranslations({ locale, namespace: "library" });
+
+  let description = t("site.description");
 
   try {
-    const songs = await getSongs(undefined, undefined, true);
+    const songs = await getSongs(undefined, undefined, true, locale);
     const count = songs.length;
-    // 数据已按日期降序排列，取最新的几首
     const recentTitles = songs
       .slice(0, 5)
       .map((s) => `《${s.title}》`)
       .join("");
-    description = `共收录${count}首作品。最近收录：${recentTitles}。提供歌曲信息、歌词、乐谱等详细资料的查阅与筛选。`;
+    description = tLib("meta.descriptionWithStats", {
+      count,
+      recentTitles,
+    });
   } catch {
     // 获取失败时使用默认描述
   }
 
   return {
+    title: {
+      absolute: t("site.title"),
+    },
     description,
+    alternates: {
+      canonical: locale === "zh-TW" ? "https://hetu-music.com/zh-TW" : "https://hetu-music.com",
+      languages: {
+        "zh-CN": "https://hetu-music.com",
+        "zh-TW": "https://hetu-music.com/zh-TW",
+      },
+    },
     openGraph: {
-      title: "河图作品勘鉴 - 河图音乐作品收录与鉴赏",
+      title: t("site.title"),
       description,
       type: "website",
       images: [{ url: "/icons/source.png" }],
@@ -36,13 +56,14 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // 服务端组件 - 使用 ISR
-export default async function MusicLibraryPage() {
+export default async function MusicLibraryPage({ params }: Props) {
+  const { locale } = await params;
   let songsData: Song[] = [];
   let error: Error | null = null;
 
   try {
     // forListView = true 只获取列表展示需要的字段，排除歌词等大字段
-    songsData = await getSongs(undefined, undefined, true);
+    songsData = await getSongs(undefined, undefined, true, locale);
   } catch (err) {
     console.error("Error fetching songs:", err);
     error = err instanceof Error ? err : new Error("未知错误");

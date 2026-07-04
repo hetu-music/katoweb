@@ -1,0 +1,68 @@
+{
+  "meta": {
+    "siteSuffix": "河图作品勘鉴收录。"
+  },
+  "labels": {
+    "lyricist": "作词",
+    "composer": "作曲",
+    "arranger": "编曲",
+    "artist": "演唱",
+    "album": "专辑",
+    "albumartist": "出品发行",
+    "releaseDate": "发行日期",
+    "duration": "时长",
+    "trackNumber": "曲号",
+    "discNumber": "碟号",
+    "genre": "流派",
+    "type": "类型",
+    "single": "单曲"
+  },
+  "trackFormat": {
+    "trackOnly": "第{track}首",
+    "totalOnly": "共{total}首",
+    "both": "第{track}首/共{total}首"
+  },
+  "discFormat": {
+    "discOnly": "第{disc}张",
+    "totalOnly": "共{total}张",
+    "both": "第{disc}张/共{total}张"
+  },
+  "actions": {
+    "play": "播放",
+    "enqueue": "加入队列",
+    "favorite": "收藏",
+    "unfavorite": "取消收藏",
+    "lyrics": "歌词",
+    "score": "乐谱",
+    "share": "分享",
+    "kugou": "酷狗音乐",
+    "netease": "网易云音乐",
+    "qqmusic": "QQ音乐"
+  },
+  "sections": {
+    "creativeInfo": "创作信息",
+    "basicInfo": "基本信息",
+    "lyrics": "歌词",
+    "score": "乐谱",
+    "comment": "备注",
+    "toc": "目录导航",
+    "jumpTo": "跳转到{label}"
+  },
+  "noLyrics": "暂无歌词",
+  "noScore": "暂无乐谱",
+  "notFound": "歌曲不存在或已被删除。",
+  "ogSuffix": " - 河图作品勘鉴",
+  "viewCover": "查看封面",
+  "noCover": "暂无封面",
+  "lyricFormat": {
+    "normal": "普通",
+    "lrc": "LRC"
+  },
+  "zoomScore": "点击放大",
+  "scoreLoadError": "乐谱加载失败",
+  "copySuccess": "链接已复制到剪贴板",
+  "copyError": "复制失败",
+  "shareCancel": "分享取消或失败",
+  "shareText": "来听听河图的这首歌：{title}{artist}",
+  "shareTitle": "歌曲详情"
+}

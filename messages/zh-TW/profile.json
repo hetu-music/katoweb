@@ -1,0 +1,25 @@
+{
+  "title": "個人中心",
+  "tabs": {
+    "favorites": "我的收藏",
+    "account": "帳戶設定",
+    "feedback": "建議回饋",
+    "requests": "回饋管理",
+    "users": "使用者管理",
+    "logs": "操作日誌"
+  },
+  "sections": {
+    "requests": {
+      "title": "回饋管理",
+      "description": "處理使用者提交的糾錯、申請等回饋"
+    },
+    "users": {
+      "title": "使用者管理",
+      "description": "管理所有註冊使用者的資料與權限"
+    },
+    "logs": {
+      "title": "操作日誌",
+      "description": "資料庫稽核記錄，僅供查閱"
+    }
+  }
+}

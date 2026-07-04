@@ -1,0 +1,92 @@
+{
+  "site": {
+    "name": "河图作品勘鉴",
+    "title": "河图作品勘鉴 - 河图音乐作品收录与鉴赏",
+    "description": "河图音乐作品收录与鉴赏。"
+  },
+  "nav": {
+    "backToHome": "返回首页",
+    "home": "回到主页",
+    "back": "返回",
+    "about": "关于",
+    "login": "登录",
+    "loading": "加载中…"
+  },
+  "error": {
+    "title": "出错了",
+    "description": "抱歉，系统遇到了一些问题。请尝试刷新页面或稍后再试。",
+    "refresh": "刷新页面",
+    "backToHome": "返回主页"
+  },
+  "notFound": {
+    "title": "页面未找到",
+    "description": "抱歉，您访问的页面不存在或已被移除。",
+    "back": "返回上页",
+    "home": "返回主页"
+  },
+  "unknown": "未知",
+  "all": "全部",
+  "imagery": {
+    "title": "意象词云",
+    "description": "在 {count} 个精选意象中发现河图音乐的诗意世界。涵盖 {categoryNames} 等分类，探索山川、日月、草木、时令在歌词中的流转。",
+    "subtitle": "行过 {count} ，长歌踏雪去何方",
+    "all": "全部",
+    "noData": "暂无数据",
+    "times": "{count} 次",
+    "totalCount": "共 {count} 个意象",
+    "ariaLabel": "意象：{name}，出现 {count} 次",
+    "loadError": "加载意象关联歌曲失败",
+    "detailPanel": {
+      "noWorks": "暂无相关词作",
+      "lyricistLabel": "词作",
+      "relatedSongs": "相关曲目",
+      "songsByLyricist": "{name}的曲目",
+      "appears": "出现 {count} 次"
+    }
+  },
+  "story": {
+    "qjtx": {
+      "title": "倾尽天下 · 编年史",
+      "description": "以 {count} 个历史节点展现《倾尽天下》的故事，从{firstYear}到{secondLastYear}，沉浸式回望白炎、朱砂与故国山河。",
+      "fallbackFirstYear": "乱世初起",
+      "fallbackSecondLastYear": "故人长绝"
+    }
+  },
+  "about": {
+    "title": "关于",
+    "description": "关于河图作品勘鉴项目的说明",
+    "tabs": {
+      "intro": "项目介绍",
+      "types": "类型说明",
+      "maintainers": "维护团队"
+    },
+    "introSection": {
+      "title": "简介",
+      "content": "本项目为河图作品勘鉴，致力于收录整理河图的音乐作品资料，为听众提供便捷的筛选与搜索服务。"
+    },
+    "feedbackSection": {
+      "title": "数据与反馈",
+      "content": "数据来源于创作者微博及各大音乐平台。若发现误漏，可以注册本站账号或通过下方联系方式进行反馈。",
+      "weibo": "微博"
+    },
+    "thanksSection": {
+      "title": "特别鸣谢",
+      "content": "正版河图吧吧主 <highlight>{name}</highlight> 及众位网友整理的《歌手河图作品发布勘鉴》，为本项目提供了宝贵参考资料。"
+    },
+    "typeDescriptions": {
+      "原创": "河图原创作品。",
+      "翻唱": "翻唱他人作品，非原创。",
+      "合作": "与其他歌手或音乐人合作完成的作品。",
+      "文宣": "用于文旅宣传推广的作品。",
+      "商业": "为商业项目或品牌创作的作品。",
+      "墨宝": "与墨明棋妙相关的作品。",
+      "参与": "以非主创身份参与的作品。"
+    },
+    "maintainersSection": {
+      "loading": "加载数据中...",
+      "loadError": "获取贡献者失败",
+      "empty": "暂无贡献者信息",
+      "unknown": "未知贡献者"
+    }
+  }
+}

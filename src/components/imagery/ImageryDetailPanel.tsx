@@ -15,7 +15,8 @@ import {
 import { useIsDesktop } from "@/hooks/ui/useIsDesktop";
 import type { ImageryItem, SongRef } from "@/lib/types";
 import { ChevronRight } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -93,6 +94,9 @@ const PanelBody = memo(function PanelBody({
   onLinkClick: () => void;
   isDesktop: boolean;
 }) {
+  const t = useTranslations("common.imagery");
+  const tCommon = useTranslations("common");
+  const activeLyricistLabel = (activeLyricist === "未知" ? tCommon("unknown") : activeLyricist) || "";
   const filtered = useMemo(
     () =>
       activeLyricist
@@ -125,7 +129,7 @@ const PanelBody = memo(function PanelBody({
             : "text-slate-400 dark:text-slate-600"
         }`}
       >
-        暂无相关词作
+        {t("detailPanel.noWorks")}
       </p>
     );
   }
@@ -135,7 +139,7 @@ const PanelBody = memo(function PanelBody({
       {/* Lyricist filter badges */}
       {lyricistCounts.length > 0 && (
         <>
-          <SectionLabel label="词作" accent={selectedPalette.accent} />
+          <SectionLabel label={t("detailPanel.lyricistLabel")} accent={selectedPalette.accent} />
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-2">
             <button
               onClick={() => onLyricistClick("")}
@@ -155,7 +159,7 @@ const PanelBody = memo(function PanelBody({
               >
                 「
               </span>
-              全部
+              {t("all")}
               <span
                 className={`inline-block transition-all duration-500 font-system ${
                   !activeLyricist
@@ -169,6 +173,7 @@ const PanelBody = memo(function PanelBody({
             </button>
 
             {lyricistCounts.map(([name, count]) => {
+              const displayName = name === "未知" ? tCommon("unknown") : name;
               const isActive = activeLyricist === name;
               return (
                 <button
@@ -190,7 +195,7 @@ const PanelBody = memo(function PanelBody({
                   >
                     「
                   </span>
-                  {name}
+                  {displayName}
                   <span
                     className={`inline-block transition-all duration-500 font-system ${
                       isActive
@@ -214,7 +219,11 @@ const PanelBody = memo(function PanelBody({
       {/* Songs */}
       <div className="mt-2">
         <SectionLabel
-          label={activeLyricist ? `${activeLyricist}的曲目` : `相关曲目`}
+          label={
+            activeLyricist
+              ? t("detailPanel.songsByLyricist", { name: activeLyricistLabel })
+              : t("detailPanel.relatedSongs")
+          }
           accent={selectedPalette.accent}
         />
         <div className="flex flex-col -mx-6 relative">
@@ -252,7 +261,7 @@ const PanelBody = memo(function PanelBody({
                     <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 truncate tracking-wide">
                       {song.lyricist?.length
                         ? song.lyricist.join("  ·  ")
-                        : "未知"}
+                        : tCommon("unknown")}
                     </div>
                   </div>
                   <ChevronRight
@@ -282,6 +291,7 @@ function PanelHeader({
   selectedCategoryPath: string[];
   isDesktop: boolean;
 }) {
+  const t = useTranslations("common.imagery");
   if (!selectedItem) return null;
 
   if (isDesktop) {
@@ -308,11 +318,7 @@ function PanelHeader({
         </h2>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <span className="text-xs text-slate-500 dark:text-slate-400 tracking-widest">
-            出现{" "}
-            <span className="text-slate-700 dark:text-slate-200 font-serif font-semibold tabular-nums">
-              {selectedItem.count}
-            </span>{" "}
-            次
+            {t("detailPanel.appears", { count: selectedItem.count })}
           </span>
           {selectedCategoryPath.length > 0 && (
             <>
@@ -342,11 +348,7 @@ function PanelHeader({
         </h2>
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-400 dark:text-slate-500 tracking-wide">
           <span>
-            出现{" "}
-            <span className="font-serif font-semibold text-slate-600 dark:text-slate-300 tabular-nums">
-              {selectedItem.count}
-            </span>{" "}
-            次
+            {t("detailPanel.appears", { count: selectedItem.count })}
           </span>
           {selectedCategoryPath.length > 0 && (
             <>

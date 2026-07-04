@@ -4,7 +4,7 @@ import type { MetadataRoute } from "next";
 const SITE_URL = "https://hetu-music.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // 静态页面
+  // 静态页面 - 包含 zh-CN（默认，无前缀）和 zh-TW 两个版本
   const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: SITE_URL,
@@ -13,10 +13,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1.0,
     },
     {
+      url: `${SITE_URL}/zh-TW`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
       url: `${SITE_URL}/imagery`,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.9,
+    },
+    {
+      url: `${SITE_URL}/zh-TW/imagery`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.8,
     },
     {
       url: `${SITE_URL}/story/qjtx`,
@@ -24,25 +36,37 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.9,
     },
+    {
+      url: `${SITE_URL}/zh-TW/story/qjtx`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
   ];
 
   // 动态歌曲详情页面
   try {
     const songs = await getSongs(undefined, undefined, true);
 
-    const songRoutes: MetadataRoute.Sitemap = songs.map((song) => ({
-      url: `${SITE_URL}/song/${song.id}`,
-      changeFrequency: "weekly" as const,
-      priority: 0.8,
-    }));
+    const songRoutes: MetadataRoute.Sitemap = songs.flatMap((song) => [
+      {
+        url: `${SITE_URL}/song/${song.id}`,
+        changeFrequency: "weekly" as const,
+        priority: 0.8,
+      },
+      {
+        url: `${SITE_URL}/zh-TW/song/${song.id}`,
+        changeFrequency: "weekly" as const,
+        priority: 0.7,
+      },
+    ]);
 
     return [...staticRoutes, ...songRoutes];
   } catch (error) {
     console.error("Error generating sitemap:", error);
-    // 如果获取歌曲失败，至少返回静态路由
     return staticRoutes;
   }
 }
 
-// 使用 ISR，与主页同步更新（避免构建时数据库不可用导致 sitemap 为空）
+// 使用 ISR，与主页同步更新
 export const revalidate = 7200;
