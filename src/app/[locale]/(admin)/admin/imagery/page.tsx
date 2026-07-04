@@ -11,7 +11,12 @@ export const metadata: Metadata = {
   description: "管理意象库与分类",
 };
 
-export default async function ImageryAdminPage() {
+type Props = {
+  params: Promise<{ locale: string }>;
+};
+
+export default async function ImageryAdminPage({ params }: Props) {
+  const { locale } = await params;
   const supabase = await createSupabaseServerClient();
 
   const {
@@ -20,7 +25,7 @@ export default async function ImageryAdminPage() {
   } = await supabase.auth.getSession();
 
   if (sessionError || !session) {
-    redirect("/login");
+    redirect(`/${locale}/login`);
   }
 
   const categories = await getImageryCategories().catch(() => []);

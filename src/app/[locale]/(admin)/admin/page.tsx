@@ -8,7 +8,12 @@ import type { Song } from "@/lib/types";
 // 强制动态渲染，不在构建时预渲染
 export const dynamic = "force-dynamic";
 
-export default async function AdminPage() {
+type Props = {
+  params: Promise<{ locale: string }>;
+};
+
+export default async function AdminPage({ params }: Props) {
+  const { locale } = await params;
   const supabase = await createSupabaseServerClient();
 
   const {
@@ -17,7 +22,7 @@ export default async function AdminPage() {
   } = await supabase.auth.getSession();
 
   if (sessionError || !session) {
-    redirect("/login");
+    redirect(`/${locale}/login`);
   }
 
   // middleware 已经验证了 is_admin，这里直接获取数据

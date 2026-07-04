@@ -57,9 +57,9 @@ export async function generateMetadata({
       canonical:
         locale === "zh-TW"
           ? `https://hetu-music.com/zh-TW/song/${song.id}`
-          : `https://hetu-music.com/song/${song.id}`,
+          : `https://hetu-music.com/zh-CN/song/${song.id}`,
       languages: {
-        "zh-CN": `https://hetu-music.com/song/${song.id}`,
+        "zh-CN": `https://hetu-music.com/zh-CN/song/${song.id}`,
         "zh-TW": `https://hetu-music.com/zh-TW/song/${song.id}`,
       },
     },

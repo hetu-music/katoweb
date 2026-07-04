@@ -1,15 +1,15 @@
 "use client";
 
-import { usePlayerStore } from "@/store/player-store";
-import { useShallow } from "zustand/react/shallow";
 import { usePlayerTime } from "@/hooks/player/usePlayerTime";
+import { Link, usePathname } from "@/i18n/navigation";
+import { getAudio } from "@/lib/player/audio-engine";
 import {
   formatPlayerTime,
   getCurrentLrcIndex,
   parseLrc,
 } from "@/lib/player/player-utils";
-import { getAudio } from "@/lib/player/audio-engine";
 import { cn } from "@/lib/utils/utils";
+import { usePlayerStore } from "@/store/player-store";
 import {
   AlertCircle,
   Loader2,
@@ -22,8 +22,6 @@ import {
   X,
 } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import React, {
   useCallback,
   useEffect,
@@ -31,6 +29,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 export default function GlobalPlayer() {
   const pathname = usePathname();
@@ -302,7 +301,7 @@ export default function GlobalPlayer() {
           <div
             ref={trackRef}
             className={cn(
-              "absolute top-0 left-0 right-0 cursor-pointer pointer-events-auto [touch-action:none]",
+              "absolute top-0 left-0 right-0 cursor-pointer pointer-events-auto touch-none",
               "group/prog",
               !duration && "pointer-events-none opacity-40",
             )}

@@ -31,12 +31,13 @@ import {
   User,
 } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "@/i18n/navigation";
+import { useRouter, usePathname } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
   const router = useRouter();
+  const pathname = usePathname();
   const t = useTranslations("song");
   const tNav = useTranslations("common.nav");
   const tCommon = useTranslations("common");
@@ -47,9 +48,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
 
   const openUserPanel = (tab: "account" | "favorites" = "favorites") => {
     if (!user) {
-      const next = encodeURIComponent(
-        window.location.pathname + window.location.search,
-      );
+      const next = encodeURIComponent(pathname + window.location.search);
       router.push(`/login?next=${next}`);
       return;
     }

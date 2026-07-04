@@ -83,36 +83,17 @@ export async function proxy(request: NextRequest) {
     return intlResponse;
   }
 
-  // Create request headers（在 intl 处理之后）
-  const requestHeaders = new Headers(request.headers);
+  // 直接使用 intl 中间件的响应作为基础
+  const response = intlResponse;
+
+  // 向请求头中注入自定义数据（nonce、CSP）
   if (useNonce) {
-    requestHeaders.set("x-nonce", nonce);
+    response.headers.set("x-middleware-request-x-nonce", nonce);
   }
-  requestHeaders.set("Content-Security-Policy", cspHeader);
-
-  // Check if next-intl middleware wants to rewrite the path (needed for default locale zh-CN without prefix)
-  const rewriteUrl = intlResponse.headers.get("x-middleware-rewrite");
-  let response: NextResponse;
-  if (rewriteUrl) {
-    response = NextResponse.rewrite(new URL(rewriteUrl, request.url), {
-      request: {
-        headers: requestHeaders,
-      },
-    });
-  } else {
-    response = NextResponse.next({
-      request: {
-        headers: requestHeaders,
-      },
-    });
-  }
-
-  // Copy all other headers from next-intl response (cookies, x-next-intl-locale, etc.)
-  intlResponse.headers.forEach((value, key) => {
-    if (key.toLowerCase() !== "x-middleware-rewrite") {
-      response.headers.set(key, value);
-    }
-  });
+  response.headers.set(
+    "x-middleware-request-content-security-policy",
+    cspHeader,
+  );
 
   // Apply Security Headers to Response
   response.headers.set("Content-Security-Policy", cspHeader);
@@ -130,10 +111,10 @@ export async function proxy(request: NextRequest) {
     if (strippedPathname.startsWith("/admin")) {
       if (error || !user) {
         console.warn("Auth middleware: User not authenticated", error?.message);
-        // 重定向到带 locale 前缀的 /login
+        // 重定向到带 locale 前缀的 /login（localePrefix: always 下两个 locale 都有前缀）
         const loginPath = pathname.startsWith("/zh-TW")
           ? "/zh-TW/login"
-          : "/login";
+          : "/zh-CN/login";
         const redirectResponse = NextResponse.redirect(
           new URL(loginPath, request.url),
         );
@@ -145,7 +126,7 @@ export async function proxy(request: NextRequest) {
 
       if (!isAdmin) {
         console.warn("Auth middleware: User is not admin", user.id);
-        const homePath = pathname.startsWith("/zh-TW") ? "/zh-TW" : "/";
+        const homePath = pathname.startsWith("/zh-TW") ? "/zh-TW" : "/zh-CN";
         const redirectResponse = NextResponse.redirect(
           new URL(homePath, request.url),
         );
@@ -158,7 +139,7 @@ export async function proxy(request: NextRequest) {
     if (strippedPathname.startsWith("/admin")) {
       const loginPath = pathname.startsWith("/zh-TW")
         ? "/zh-TW/login"
-        : "/login";
+        : "/zh-CN/login";
       const redirectResponse = NextResponse.redirect(
         new URL(loginPath, request.url),
       );

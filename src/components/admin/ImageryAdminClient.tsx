@@ -16,7 +16,7 @@ import {
   User,
   XCircle,
 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import type { ReactNode } from "react";
 import { useCallback, useMemo, useState } from "react";
 import CategoriesTab from "./imagery-admin/CategoriesTab";

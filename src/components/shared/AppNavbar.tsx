@@ -5,7 +5,7 @@ import LocaleSwitcher from "@/components/shared/LocaleSwitcher";
 import { useUserContext } from "@/context/UserContext";
 import { cn } from "@/lib/utils/utils";
 import { Info, User } from "lucide-react";
-import { useRouter } from "@/i18n/navigation";
+import { useRouter, usePathname } from "@/i18n/navigation";
 import React, { forwardRef, useCallback } from "react";
 
 interface AppNavbarProps {
@@ -21,6 +21,7 @@ const AppNavbar = forwardRef<HTMLElement, AppNavbarProps>(function AppNavbar(
   ref,
 ) {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, loaded } = useUserContext();
 
   const openUserPanel = useCallback(() => {
@@ -28,9 +29,7 @@ const AppNavbar = forwardRef<HTMLElement, AppNavbarProps>(function AppNavbar(
     if (!loaded) return;
 
     if (!user) {
-      const next = encodeURIComponent(
-        window.location.pathname + window.location.search,
-      );
+      const next = encodeURIComponent(pathname + window.location.search);
       router.push(`/login?next=${next}`);
       return;
     }
@@ -41,7 +40,7 @@ const AppNavbar = forwardRef<HTMLElement, AppNavbarProps>(function AppNavbar(
     );
     sessionStorage.setItem("__katoweb_nav_depth", String(navDepth + 1));
     router.push("/profile?tab=favorites");
-  }, [router, user, loaded]);
+  }, [router, pathname, user, loaded]);
 
   return (
     <nav

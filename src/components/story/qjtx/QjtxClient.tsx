@@ -5,7 +5,7 @@ import { motion, type Variants } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useEffect, useRef } from "react";
 import { usePlayerStore } from "@/store/player-store";
 import {

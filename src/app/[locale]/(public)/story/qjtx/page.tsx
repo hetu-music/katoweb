@@ -60,9 +60,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       canonical:
         locale === "zh-TW"
           ? "https://hetu-music.com/zh-TW/story/qjtx"
-          : "https://hetu-music.com/story/qjtx",
+          : "https://hetu-music.com/zh-CN/story/qjtx",
       languages: {
-        "zh-CN": "https://hetu-music.com/story/qjtx",
+        "zh-CN": "https://hetu-music.com/zh-CN/story/qjtx",
         "zh-TW": "https://hetu-music.com/zh-TW/story/qjtx",
       },
     },
@@ -70,7 +70,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: `${title} - ${siteName}`,
       description,
       type: "article",
-      url: "https://hetu-music.com/story/qjtx",
+      url: "https://hetu-music.com/zh-CN/story/qjtx",
       siteName: siteName,
       locale: locale.replace("-", "_"),
       images: [
@@ -123,7 +123,7 @@ export default async function QingJinTianXiaPage({ params }: Props) {
     },
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": "https://hetu-music.com/story/qjtx",
+      "@id": "https://hetu-music.com/zh-CN/story/qjtx",
     },
   };
 

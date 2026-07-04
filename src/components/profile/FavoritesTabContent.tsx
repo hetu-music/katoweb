@@ -6,7 +6,7 @@ import PlayButton from "@/components/shared/PlayButton";
 import EnqueueButton from "@/components/shared/EnqueueButton";
 import { Heart, Loader2, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useCallback, useState } from "react";
 
 export default function FavoritesTabContent() {

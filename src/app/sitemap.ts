@@ -4,10 +4,10 @@ import type { MetadataRoute } from "next";
 const SITE_URL = "https://hetu-music.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // 静态页面 - 包含 zh-CN（默认，无前缀）和 zh-TW 两个版本
+  // 静态页面 - zh-CN 和 zh-TW 都使用显式 locale 前缀
   const staticRoutes: MetadataRoute.Sitemap = [
     {
-      url: SITE_URL,
+      url: `${SITE_URL}/zh-CN`,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 1.0,
@@ -19,7 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
-      url: `${SITE_URL}/imagery`,
+      url: `${SITE_URL}/zh-CN/imagery`,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.9,
@@ -31,7 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
-      url: `${SITE_URL}/story/qjtx`,
+      url: `${SITE_URL}/zh-CN/story/qjtx`,
       lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.9,
@@ -50,7 +50,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const songRoutes: MetadataRoute.Sitemap = songs.flatMap((song) => [
       {
-        url: `${SITE_URL}/song/${song.id}`,
+        url: `${SITE_URL}/zh-CN/song/${song.id}`,
         changeFrequency: "weekly" as const,
         priority: 0.8,
       },

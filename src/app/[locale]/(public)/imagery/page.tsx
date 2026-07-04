@@ -54,9 +54,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       canonical:
         locale === "zh-TW"
           ? "https://hetu-music.com/zh-TW/imagery"
-          : "https://hetu-music.com/imagery",
+          : "https://hetu-music.com/zh-CN/imagery",
       languages: {
-        "zh-CN": "https://hetu-music.com/imagery",
+        "zh-CN": "https://hetu-music.com/zh-CN/imagery",
         "zh-TW": "https://hetu-music.com/zh-TW/imagery",
       },
     },
@@ -100,7 +100,7 @@ export default async function ImageryPage({ params }: Props) {
     "@type": "CollectionPage",
     name: `${t("imagery.title")} - ${t("site.name")}`,
     description: description,
-    url: "https://hetu-music.com/imagery",
+    url: "https://hetu-music.com/zh-CN/imagery",
     isPartOf: {
       "@type": "WebSite",
       name: t("site.name"),

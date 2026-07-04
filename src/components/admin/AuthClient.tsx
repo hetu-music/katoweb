@@ -22,8 +22,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { type Resolver, useForm, useWatch } from "react-hook-form";
 

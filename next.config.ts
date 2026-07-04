@@ -57,6 +57,48 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // 旧 zh-CN 无前缀 URL → 新 /zh-CN/ 显式前缀 URL 的 301 永久重定向
+  // 防止 Google 已收录页面变为 404，保护 SEO 权重
+  async redirects() {
+    return [
+      // 首页
+      {
+        source: "/",
+        destination: "/zh-CN",
+        permanent: true,
+      },
+      // imagery
+      {
+        source: "/imagery",
+        destination: "/zh-CN/imagery",
+        permanent: true,
+      },
+      // story/qjtx
+      {
+        source: "/story/qjtx",
+        destination: "/zh-CN/story/qjtx",
+        permanent: true,
+      },
+      // song 详情页（通配）
+      {
+        source: "/song/:id",
+        destination: "/zh-CN/song/:id",
+        permanent: true,
+      },
+      // login / register（admin 相关）
+      {
+        source: "/login",
+        destination: "/zh-CN/login",
+        permanent: true,
+      },
+      {
+        source: "/register",
+        destination: "/zh-CN/register",
+        permanent: true,
+      },
+    ];
+  },
+
 };
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
