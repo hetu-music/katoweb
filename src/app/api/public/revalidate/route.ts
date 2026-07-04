@@ -1,5 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
+import { locales } from "@/i18n/config";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,7 +13,14 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 重新验证音乐库页面、意象页面和 sitemap
+    // 重新验证各语言版本的页面缓存
+    for (const locale of locales) {
+      revalidatePath(`/${locale}`);
+      revalidatePath(`/${locale}/imagery`);
+      revalidatePath(`/${locale}/story/qjtx`);
+    }
+
+    // 防范未命中重写路径的缓存，同时也刷新 sitemap
     revalidatePath("/");
     revalidatePath("/imagery");
     revalidatePath("/story/qjtx");
@@ -61,9 +69,15 @@ export async function GET(request: NextRequest) {
     let response: string;
 
     if (id === "all") {
-      revalidatePath("/song/[id]");
+      for (const locale of locales) {
+        revalidatePath(`/${locale}/song/[id]`, "page");
+      }
+      revalidatePath("/song/[id]", "page");
       response = `SUCCESS: All song pages revalidated at ${timestamp}`;
     } else {
+      for (const locale of locales) {
+        revalidatePath(`/${locale}/song/${id}`);
+      }
       revalidatePath(`/song/${id}`);
       response = `SUCCESS: Page /song/${id} revalidated at ${timestamp}`;
     }
