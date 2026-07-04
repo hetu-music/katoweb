@@ -29,10 +29,14 @@ export async function generateMetadata({
   const albumLabel = t("labels.album");
 
   const descParts: string[] = [`《${song.title}》`];
-  if (song.artist?.length) descParts.push(`${artistLabel}：${song.artist.join("、")}`);
-  if (song.lyricist?.length) descParts.push(`${lyricistLabel}：${song.lyricist.join("、")}`);
-  if (song.composer?.length) descParts.push(`${composerLabel}：${song.composer.join("、")}`);
-  if (song.arranger?.length) descParts.push(`${arrangerLabel}：${song.arranger.join("、")}`);
+  if (song.artist?.length)
+    descParts.push(`${artistLabel}：${song.artist.join("、")}`);
+  if (song.lyricist?.length)
+    descParts.push(`${lyricistLabel}：${song.lyricist.join("、")}`);
+  if (song.composer?.length)
+    descParts.push(`${composerLabel}：${song.composer.join("、")}`);
+  if (song.arranger?.length)
+    descParts.push(`${arrangerLabel}：${song.arranger.join("、")}`);
   if (song.album) descParts.push(`${albumLabel}：《${song.album}》`);
   if (song.year) descParts.push(`${song.year}年`);
 
@@ -50,7 +54,10 @@ export async function generateMetadata({
     title: song.title,
     description,
     alternates: {
-      canonical: locale === "zh-TW" ? `https://hetu-music.com/zh-TW/song/${song.id}` : `https://hetu-music.com/song/${song.id}`,
+      canonical:
+        locale === "zh-TW"
+          ? `https://hetu-music.com/zh-TW/song/${song.id}`
+          : `https://hetu-music.com/song/${song.id}`,
       languages: {
         "zh-CN": `https://hetu-music.com/song/${song.id}`,
         "zh-TW": `https://hetu-music.com/zh-TW/song/${song.id}`,

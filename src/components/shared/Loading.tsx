@@ -15,8 +15,9 @@ export default function Loading() {
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#FAFAFA] transition-colors duration-500 dark:bg-[#0B0F19]">
       {/* 局部动画与渐变样式 */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @keyframes pulse-dot {
           0%, 100% { transform: scale(0.85); opacity: 0.4; }
           50% { transform: scale(1.15); opacity: 1; }
@@ -51,7 +52,9 @@ export default function Loading() {
         .dark .bg-glow {
           background: radial-gradient(circle, rgba(59, 130, 246, 0.03) 0%, transparent 65%);
         }
-      `}} />
+      `,
+        }}
+      />
 
       {/* 中心呼吸微光背景 */}
       <div className="anim-glow bg-glow absolute h-[400px] w-[400px] rounded-full pointer-events-none select-none" />

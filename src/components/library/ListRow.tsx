@@ -109,7 +109,9 @@ export default function ListRow({
                 event.stopPropagation();
                 toggleFavorite(song.id);
               }}
-              aria-label={active ? t("actions.unfavorite") : t("actions.favorite")}
+              aria-label={
+                active ? t("actions.unfavorite") : t("actions.favorite")
+              }
               title={active ? t("actions.unfavorite") : t("actions.favorite")}
               className={cn(
                 "rounded-lg p-2 transition-all duration-200",
@@ -141,7 +143,9 @@ export default function ListRow({
               event.stopPropagation();
               toggleFavorite(song.id);
             }}
-            aria-label={active ? t("actions.unfavorite") : t("actions.favorite")}
+            aria-label={
+              active ? t("actions.unfavorite") : t("actions.favorite")
+            }
             title={active ? t("actions.unfavorite") : t("actions.favorite")}
             className={cn(
               "rounded-lg p-2 transition-all duration-200",

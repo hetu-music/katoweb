@@ -25,8 +25,12 @@ const MultiTagDisplay = ({
   if (tags.length === 1) {
     const tVal = tags[0];
     const style =
-      type === "type" ? getTypeTagStyle(tVal, "subtle") : getGenreTagStyle(tVal);
-    const label = tEnum.has(`${type}.${tVal}`) ? tEnum(`${type}.${tVal}`) : tVal;
+      type === "type"
+        ? getTypeTagStyle(tVal, "subtle")
+        : getGenreTagStyle(tVal);
+    const label = tEnum.has(`${type}.${tVal}`)
+      ? tEnum(`${type}.${tVal}`)
+      : tVal;
     return (
       <span
         className={cn(
@@ -62,7 +66,9 @@ const MultiTagDisplay = ({
     >
       {/* Small circles */}
       {tags.slice(0, 3).map((tVal) => {
-        const label = tEnum.has(`${type}.${tVal}`) ? tEnum(`${type}.${tVal}`) : tVal;
+        const label = tEnum.has(`${type}.${tVal}`)
+          ? tEnum(`${type}.${tVal}`)
+          : tVal;
         return (
           <div
             key={tVal}
@@ -93,7 +99,9 @@ const MultiTagDisplay = ({
         )}
       >
         {tags.map((tVal, i) => {
-          const label = tEnum.has(`${type}.${tVal}`) ? tEnum(`${type}.${tVal}`) : tVal;
+          const label = tEnum.has(`${type}.${tVal}`)
+            ? tEnum(`${type}.${tVal}`)
+            : tVal;
           return (
             <span
               key={tVal}

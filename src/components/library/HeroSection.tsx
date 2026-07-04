@@ -208,35 +208,41 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 <div
                   className={`[writing-mode:vertical-rl] font-calligraphy font-medium text-[17px] tracking-[0.55em] mb-[-0.55em] ${feature.offsetClass} ${feature.textBase} ${feature.textHover} transition-[color,filter,text-shadow] duration-1000 group-hover:drop-shadow-[0_0_12px_${feature.glow}] select-none`}
                 >
-                  {t(`featureEntrances.${feature.id}.label`).split("").map((char, i) => (
-                    <motion.span
-                      key={i}
-                      initial={{ opacity: 0, scale: 0.8, filter: "blur(8px)" }}
-                      animate={
-                        !hoveredId || hoveredId === feature.id
-                          ? { opacity: 1, scale: 1, filter: "blur(0px)" }
-                          : { opacity: 0, scale: 0.6, filter: "blur(12px)" }
-                      }
-                      style={{
-                        backfaceVisibility: "hidden",
-                        WebkitFontSmoothing: "antialiased",
-                        transform: "translateZ(0)",
-                        willChange: "transform, opacity",
-                      }}
-                      transition={{
-                        delay:
+                  {t(`featureEntrances.${feature.id}.label`)
+                    .split("")
+                    .map((char, i) => (
+                      <motion.span
+                        key={i}
+                        initial={{
+                          opacity: 0,
+                          scale: 0.8,
+                          filter: "blur(8px)",
+                        }}
+                        animate={
                           !hoveredId || hoveredId === feature.id
-                            ? 0.45 + index * 0.15 + i * 0.15
-                            : i * 0.05,
-                        duration:
-                          !hoveredId || hoveredId === feature.id ? 2.0 : 0.8,
-                        ease: [0.215, 0.61, 0.355, 1],
-                      }}
-                      className="inline-block"
-                    >
-                      {char}
-                    </motion.span>
-                  ))}
+                            ? { opacity: 1, scale: 1, filter: "blur(0px)" }
+                            : { opacity: 0, scale: 0.6, filter: "blur(12px)" }
+                        }
+                        style={{
+                          backfaceVisibility: "hidden",
+                          WebkitFontSmoothing: "antialiased",
+                          transform: "translateZ(0)",
+                          willChange: "transform, opacity",
+                        }}
+                        transition={{
+                          delay:
+                            !hoveredId || hoveredId === feature.id
+                              ? 0.45 + index * 0.15 + i * 0.15
+                              : i * 0.05,
+                          duration:
+                            !hoveredId || hoveredId === feature.id ? 2.0 : 0.8,
+                          ease: [0.215, 0.61, 0.355, 1],
+                        }}
+                        className="inline-block"
+                      >
+                        {char}
+                      </motion.span>
+                    ))}
                 </div>
               </Link>
             );
@@ -280,52 +286,58 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                     />
                     {/* 核心印章 */}
                     <div
-                      className={`h-1.5 w-1.5 border border-current transition-all duration-500 ${hoveredId === feature.id
+                      className={`h-1.5 w-1.5 border border-current transition-all duration-500 ${
+                        hoveredId === feature.id
                           ? `rotate-135 bg-current ${feature.textHover.replace(/group-hover:/g, "")}`
                           : `rotate-45 bg-transparent ${feature.textBase} group-active:rotate-135 group-active:bg-current`
-                        }`}
+                      }`}
                     />
                   </div>
                   {/* 标题 */}
                   <div
-                    className={`flex items-center text-[16px] font-calligraphy font-medium tracking-[0.5em] leading-none transition-all duration-500 ${hoveredId === feature.id
+                    className={`flex items-center text-[16px] font-calligraphy font-medium tracking-[0.5em] leading-none transition-all duration-500 ${
+                      hoveredId === feature.id
                         ? `${feature.textHover.replace(/group-hover:/g, "")}`
                         : `${feature.textBase} ${feature.textHover}`
-                      }`}
+                    }`}
                   >
-                    {t(`featureEntrances.${feature.id}.label`).split("").map((char, i) => (
-                      <motion.span
-                        key={i}
-                        initial={{
-                          opacity: 0,
-                          scale: 0.8,
-                          filter: "blur(8px)",
-                        }}
-                        animate={
-                          !hoveredId || hoveredId === feature.id
-                            ? { opacity: 1, scale: 1, filter: "blur(0px)" }
-                            : { opacity: 0, scale: 0.6, filter: "blur(12px)" }
-                        }
-                        style={{
-                          backfaceVisibility: "hidden",
-                          WebkitFontSmoothing: "antialiased",
-                          transform: "translateZ(0)",
-                          willChange: "transform, opacity",
-                        }}
-                        transition={{
-                          delay:
+                    {t(`featureEntrances.${feature.id}.label`)
+                      .split("")
+                      .map((char, i) => (
+                        <motion.span
+                          key={i}
+                          initial={{
+                            opacity: 0,
+                            scale: 0.8,
+                            filter: "blur(8px)",
+                          }}
+                          animate={
                             !hoveredId || hoveredId === feature.id
-                              ? 0.35 + index * 0.15 + i * 0.15
-                              : i * 0.05,
-                          duration:
-                            !hoveredId || hoveredId === feature.id ? 2.0 : 0.8,
-                          ease: [0.215, 0.61, 0.355, 1],
-                        }}
-                        className="inline-block"
-                      >
-                        {char}
-                      </motion.span>
-                    ))}
+                              ? { opacity: 1, scale: 1, filter: "blur(0px)" }
+                              : { opacity: 0, scale: 0.6, filter: "blur(12px)" }
+                          }
+                          style={{
+                            backfaceVisibility: "hidden",
+                            WebkitFontSmoothing: "antialiased",
+                            transform: "translateZ(0)",
+                            willChange: "transform, opacity",
+                          }}
+                          transition={{
+                            delay:
+                              !hoveredId || hoveredId === feature.id
+                                ? 0.35 + index * 0.15 + i * 0.15
+                                : i * 0.05,
+                            duration:
+                              !hoveredId || hoveredId === feature.id
+                                ? 2.0
+                                : 0.8,
+                            ease: [0.215, 0.61, 0.355, 1],
+                          }}
+                          className="inline-block"
+                        >
+                          {char}
+                        </motion.span>
+                      ))}
                   </div>
                 </div>
               </Link>

@@ -269,7 +269,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
               )}
             </div>
 
-             {/* 标签云 */}
+            {/* 标签云 */}
             <div className="flex flex-wrap gap-2">
               {(song.type && song.type.length > 0 ? song.type : ["原创"]).map(
                 (tVal) => (

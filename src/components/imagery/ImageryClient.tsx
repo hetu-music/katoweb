@@ -228,7 +228,10 @@ const WordItem = memo(function WordItem({
       >
         <button
           data-item-id={data.item.id}
-          aria-label={t("ariaLabel", { name: data.item.name, count: data.item.count })}
+          aria-label={t("ariaLabel", {
+            name: data.item.name,
+            count: data.item.count,
+          })}
           className={`font-calligraphy leading-none transition-opacity duration-200 word-breathe-anim ${isSelected ? "word-breathe-force-run" : ""} ${data.paletteText} ${isSelected ? "opacity-100" : "opacity-70 hover:opacity-100"}`}
           style={
             {
@@ -762,15 +765,17 @@ export default function ImageryClient({ items, categories }: Props) {
           </div>
 
           <h1 className="font-serif text-5xl md:text-7xl text-slate-800 dark:text-slate-100 mb-4 flex justify-center items-center gap-4 sm:gap-10 drop-shadow-[0_0_30px_rgba(255,255,255,0.05)]">
-            {t("title").split("").map((char, i) => (
-              <span
-                key={i}
-                className={`hero-title-char inline-block ${mounted ? "" : "opacity-0"}`}
-                style={{ animationDelay: `${i * 300}ms` }}
-              >
-                {char}
-              </span>
-            ))}
+            {t("title")
+              .split("")
+              .map((char, i) => (
+                <span
+                  key={i}
+                  className={`hero-title-char inline-block ${mounted ? "" : "opacity-0"}`}
+                  style={{ animationDelay: `${i * 300}ms` }}
+                >
+                  {char}
+                </span>
+              ))}
           </h1>
           <p
             className={`font-serif text-base md:text-xl text-slate-500 dark:text-slate-400 tracking-[0.4em] pl-[0.4em] mb-3 ${mounted ? "hero-unroll" : "opacity-0"}`}

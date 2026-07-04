@@ -191,7 +191,9 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           <TabsList className="px-6">
             <TabsTrigger value="about">{t("tabs.intro")}</TabsTrigger>
             <TabsTrigger value="types">{t("tabs.types")}</TabsTrigger>
-            <TabsTrigger value="maintainer">{t("tabs.maintainers")}</TabsTrigger>
+            <TabsTrigger value="maintainer">
+              {t("tabs.maintainers")}
+            </TabsTrigger>
           </TabsList>
 
           <AnimatedHeight>
@@ -238,7 +240,11 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                   <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
                     {t.rich("thanksSection.content", {
                       name: mainContributor?.name || "顾大一",
-                      highlight: (chunks) => <span className="font-semibold text-slate-900 dark:text-white">{chunks}</span>
+                      highlight: (chunks) => (
+                        <span className="font-semibold text-slate-900 dark:text-white">
+                          {chunks}
+                        </span>
+                      ),
                     })}
                   </p>
                 </div>
@@ -286,7 +292,9 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 {contributorsLoading ? (
                   <div className="flex flex-col items-center justify-center py-12 text-slate-400 gap-3">
                     <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm">{t("maintainersSection.loading")}</span>
+                    <span className="text-sm">
+                      {t("maintainersSection.loading")}
+                    </span>
                   </div>
                 ) : contributorsError ? (
                   <div className="flex flex-col items-center justify-center py-12 text-red-500 gap-2">
@@ -296,7 +304,9 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 ) : contributors.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-slate-400 gap-2">
                     <User size={32} className="opacity-20" />
-                    <span className="text-sm">{t("maintainersSection.empty")}</span>
+                    <span className="text-sm">
+                      {t("maintainersSection.empty")}
+                    </span>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -315,7 +325,8 @@ const About: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                           </div>
                           <div className="flex-1 min-w-0 pt-0.5">
                             <div className="font-semibold text-slate-900 dark:text-white text-sm">
-                              {contributor.name ?? t("maintainersSection.unknown")}
+                              {contributor.name ??
+                                t("maintainersSection.unknown")}
                             </div>
                             {contributor.intro && (
                               <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">

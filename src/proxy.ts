@@ -25,7 +25,9 @@ export async function proxy(request: NextRequest) {
     .replace(/^\/(zh-TW)/, "")
     .replace(/^\/(zh-CN)/, "");
   const isStrictRoute =
-    strippedPathname.startsWith("/admin") || strippedPathname === "/login" || strippedPathname === "/register";
+    strippedPathname.startsWith("/admin") ||
+    strippedPathname === "/login" ||
+    strippedPathname === "/register";
 
   // Only use Nonce in Production on Strict routes
   const useNonce = isStrictRoute && !isDev;

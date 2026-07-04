@@ -19,14 +19,15 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   console.error = (...args: unknown[]) => {
     if (
       typeof args[0] === "string" &&
-      args[0].includes("Encountered a script tag while rendering React component")
+      args[0].includes(
+        "Encountered a script tag while rendering React component",
+      )
     ) {
       return;
     }
     originalError.apply(console, args);
   };
 }
-
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = React.useState(createQueryClient);

@@ -51,7 +51,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       "文学性",
     ],
     alternates: {
-      canonical: locale === "zh-TW" ? "https://hetu-music.com/zh-TW/imagery" : "https://hetu-music.com/imagery",
+      canonical:
+        locale === "zh-TW"
+          ? "https://hetu-music.com/zh-TW/imagery"
+          : "https://hetu-music.com/imagery",
       languages: {
         "zh-CN": "https://hetu-music.com/imagery",
         "zh-TW": "https://hetu-music.com/zh-TW/imagery",

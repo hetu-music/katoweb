@@ -301,7 +301,10 @@ export function calculateSongInfo(
       },
     ],
     basicInfo: [
-      { label: getLabel("labels.album", "专辑"), value: song.album || unknownStr },
+      {
+        label: getLabel("labels.album", "专辑"),
+        value: song.album || unknownStr,
+      },
       {
         label: getLabel("labels.albumartist", "出品发行"),
         value:
@@ -309,8 +312,14 @@ export function calculateSongInfo(
             ? song.albumartist.join(" ")
             : unknownStr,
       },
-      { label: getLabel("labels.releaseDate", "发行日期"), value: formatDate(song.date) },
-      { label: getLabel("labels.duration", "时长"), value: formatTime(song.length) },
+      {
+        label: getLabel("labels.releaseDate", "发行日期"),
+        value: formatDate(song.date),
+      },
+      {
+        label: getLabel("labels.duration", "时长"),
+        value: formatTime(song.length),
+      },
       {
         label: getLabel("labels.trackNumber", "曲号"),
         value: (() => {
@@ -324,7 +333,9 @@ export function calculateSongInfo(
             return t ? t("trackFormat.totalOnly", { total }) : `共${total}首`;
           }
           if (track && total) {
-            return t ? t("trackFormat.both", { track, total }) : `第${track}首/共${total}首`;
+            return t
+              ? t("trackFormat.both", { track, total })
+              : `第${track}首/共${total}首`;
           }
           return unknownStr;
         })(),
@@ -342,7 +353,9 @@ export function calculateSongInfo(
             return t ? t("discFormat.totalOnly", { total }) : `共${total}张`;
           }
           if (disc && total) {
-            return t ? t("discFormat.both", { disc, total }) : `第${disc}张/共${total}张`;
+            return t
+              ? t("discFormat.both", { disc, total })
+              : `第${disc}张/共${total}张`;
           }
           return unknownStr;
         })(),
@@ -351,15 +364,27 @@ export function calculateSongInfo(
         label: getLabel("labels.genre", "流派"),
         value:
           song.genre && song.genre.length > 0
-            ? song.genre.map((g) => (tEnum && tEnum.has(`genre.${g}`) ? tEnum(`genre.${g}`) : g)).join(" ")
+            ? song.genre
+                .map((g) =>
+                  tEnum && tEnum.has(`genre.${g}`) ? tEnum(`genre.${g}`) : g,
+                )
+                .join(" ")
             : unknownStr,
       },
       {
         label: getLabel("labels.type", "类型"),
         value:
           song.type && song.type.length > 0
-            ? song.type.map((typeVal) => (tEnum && tEnum.has(`type.${typeVal}`) ? tEnum(`type.${typeVal}`) : typeVal)).join(" ")
-            : (tEnum && tEnum.has("type.原创") ? tEnum("type.原创") : "原创"),
+            ? song.type
+                .map((typeVal) =>
+                  tEnum && tEnum.has(`type.${typeVal}`)
+                    ? tEnum(`type.${typeVal}`)
+                    : typeVal,
+                )
+                .join(" ")
+            : tEnum && tEnum.has("type.原创")
+              ? tEnum("type.原创")
+              : "原创",
       },
     ],
   };

@@ -301,8 +301,11 @@ export default function MusicLibraryClient({
 
                   const pillLabel = (() => {
                     if (type === FILTER_OPTION_ALL) return tCommon("all");
-                    if (type === FILTER_OPTION_UNKNOWN) return tCommon("unknown");
-                    return tEnum.has(`type.${type}`) ? tEnum(`type.${type}`) : type;
+                    if (type === FILTER_OPTION_UNKNOWN)
+                      return tCommon("unknown");
+                    return tEnum.has(`type.${type}`)
+                      ? tEnum(`type.${type}`)
+                      : type;
                   })();
 
                   return (
@@ -452,8 +455,12 @@ export default function MusicLibraryClient({
                     <div className="ml-8 w-8" />
                     <div className="ml-8 w-8" />
                     {isLoggedIn && <div className="ml-8 w-8" />}
-                    <div className="ml-8 w-24 text-center">{t("listHeader.type")}</div>
-                    <div className="ml-8 w-24 text-center">{t("listHeader.genre")}</div>
+                    <div className="ml-8 w-24 text-center">
+                      {t("listHeader.type")}
+                    </div>
+                    <div className="ml-8 w-24 text-center">
+                      {t("listHeader.genre")}
+                    </div>
                     <div className="ml-8 w-16">{t("listHeader.year")}</div>
                     <div className="ml-8 w-16">{t("listHeader.time")}</div>
                   </div>

@@ -96,7 +96,8 @@ const PanelBody = memo(function PanelBody({
 }) {
   const t = useTranslations("common.imagery");
   const tCommon = useTranslations("common");
-  const activeLyricistLabel = (activeLyricist === "未知" ? tCommon("unknown") : activeLyricist) || "";
+  const activeLyricistLabel =
+    (activeLyricist === "未知" ? tCommon("unknown") : activeLyricist) || "";
   const filtered = useMemo(
     () =>
       activeLyricist
@@ -139,7 +140,10 @@ const PanelBody = memo(function PanelBody({
       {/* Lyricist filter badges */}
       {lyricistCounts.length > 0 && (
         <>
-          <SectionLabel label={t("detailPanel.lyricistLabel")} accent={selectedPalette.accent} />
+          <SectionLabel
+            label={t("detailPanel.lyricistLabel")}
+            accent={selectedPalette.accent}
+          />
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-2">
             <button
               onClick={() => onLyricistClick("")}
@@ -347,9 +351,7 @@ function PanelHeader({
           {selectedItem.name}
         </h2>
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-400 dark:text-slate-500 tracking-wide">
-          <span>
-            {t("detailPanel.appears", { count: selectedItem.count })}
-          </span>
+          <span>{t("detailPanel.appears", { count: selectedItem.count })}</span>
           {selectedCategoryPath.length > 0 && (
             <>
               <span className="text-slate-200 dark:text-slate-700">·</span>

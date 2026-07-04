@@ -70,7 +70,7 @@ export default function LocaleSwitcher({ className }: { className?: string }) {
           isOpen
             ? "bg-slate-200/60 dark:bg-slate-800 text-blue-600 dark:text-blue-400"
             : "hover:bg-slate-200/50 dark:hover:bg-slate-800",
-          isPending && "opacity-40 cursor-wait animate-pulse"
+          isPending && "opacity-40 cursor-wait animate-pulse",
         )}
       >
         <Languages size={19} />
@@ -84,7 +84,7 @@ export default function LocaleSwitcher({ className }: { className?: string }) {
             "absolute right-0 top-11 z-50 min-w-[128px] py-1.5 rounded-xl border",
             "bg-white/95 dark:bg-[#0F1424]/95 backdrop-blur-md shadow-lg shadow-slate-100/50 dark:shadow-none",
             "border-slate-200/60 dark:border-slate-800/80",
-            "animate-in fade-in slide-in-from-top-2 duration-150"
+            "animate-in fade-in slide-in-from-top-2 duration-150",
           )}
         >
           {LANGUAGES.map((lang) => {
@@ -99,7 +99,7 @@ export default function LocaleSwitcher({ className }: { className?: string }) {
                   "w-full px-4 py-2 text-left text-xs font-medium tracking-wide flex items-center justify-between transition-colors cursor-pointer",
                   isActive
                     ? "text-blue-600 dark:text-blue-400 font-semibold bg-blue-50/30 dark:bg-blue-950/15"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200"
+                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200",
                 )}
               >
                 <span>{lang.label}</span>

@@ -19,7 +19,10 @@ function getConverter(): ConverterFn {
   if (current) {
     return current;
   }
-  const newConverter = OpenCC.Converter({ from: "cn", to: "twp" }) as ConverterFn;
+  const newConverter = OpenCC.Converter({
+    from: "cn",
+    to: "twp",
+  }) as ConverterFn;
   _converter = newConverter;
   return newConverter;
 }
@@ -56,7 +59,9 @@ export function toTraditionalArray(
 /**
  * 转换 LRC 格式歌词：保留时间戳，只转换文字部分
  */
-export function toTraditionalLrc(lrc: string | null | undefined): string | null {
+export function toTraditionalLrc(
+  lrc: string | null | undefined,
+): string | null {
   if (!lrc) return lrc ?? null;
   const converter = getConverter();
   try {

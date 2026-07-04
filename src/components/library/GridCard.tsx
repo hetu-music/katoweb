@@ -92,7 +92,9 @@ export default function GridCard({
                 event.stopPropagation();
                 toggleFavorite(song.id);
               }}
-              aria-label={active ? t("actions.unfavorite") : t("actions.favorite")}
+              aria-label={
+                active ? t("actions.unfavorite") : t("actions.favorite")
+              }
               title={active ? t("actions.unfavorite") : t("actions.favorite")}
               className={cn(
                 "rounded-full bg-white/80 p-1.5 backdrop-blur-sm transition-all duration-200 dark:bg-slate-900/80",
@@ -135,7 +137,9 @@ export default function GridCard({
                   getTypeTagStyle(song.type[0]),
                 )}
               >
-                {tEnum.has(`type.${song.type[0]}`) ? tEnum(`type.${song.type[0]}`) : song.type[0]}
+                {tEnum.has(`type.${song.type[0]}`)
+                  ? tEnum(`type.${song.type[0]}`)
+                  : song.type[0]}
               </span>
             </>
           )}

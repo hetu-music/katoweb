@@ -43,7 +43,8 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
   const getNavItems = useCallback((): NavItem[] => {
     const items: NavItem[] = [{ id: "info", label: t("sections.basicInfo") }];
     items.push({ id: "lyrics", label: t("sections.lyrics") });
-    if (song.nmn_status) items.push({ id: "score", label: t("sections.score") });
+    if (song.nmn_status)
+      items.push({ id: "score", label: t("sections.score") });
     return items;
   }, [song.nmn_status, t]);
 
@@ -219,9 +220,10 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                   px-3 py-1.5 rounded-full text-xs font-medium
                   backdrop-blur-md border transition-all duration-300 ease-out
                   ${showLabel ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4 pointer-events-none"}
-                  ${isActive
-                    ? "bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 border-transparent shadow-lg"
-                    : "bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50"
+                  ${
+                    isActive
+                      ? "bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 border-transparent shadow-lg"
+                      : "bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50"
                   }
                 `}
               >
@@ -233,9 +235,10 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                 className={`
                   relative flex items-center justify-center
                   w-3 h-3 rounded-full transition-all duration-300 ease-out
-                  ${isActive
-                    ? "bg-slate-900 dark:bg-white scale-100"
-                    : "bg-slate-300 dark:bg-slate-600 scale-75 group-hover:scale-100 group-hover:bg-slate-400 dark:group-hover:bg-slate-500"
+                  ${
+                    isActive
+                      ? "bg-slate-900 dark:bg-white scale-100"
+                      : "bg-slate-300 dark:bg-slate-600 scale-75 group-hover:scale-100 group-hover:bg-slate-400 dark:group-hover:bg-slate-500"
                   }
                 `}
               />
@@ -284,9 +287,10 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                     px-2 py-1 rounded-full text-[10px] font-medium whitespace-nowrap
                     backdrop-blur-md border transition-all duration-300 ease-out
                     ${showLabel ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}
-                    ${isActive
-                      ? "bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 border-transparent shadow-md"
-                      : "bg-white/90 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50"
+                    ${
+                      isActive
+                        ? "bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 border-transparent shadow-md"
+                        : "bg-white/90 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50"
                     }
                   `}
                 >
@@ -306,9 +310,10 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ song }) => {
                   className={`
                     relative flex items-center justify-center
                     w-2.5 h-2.5 rounded-full transition-all duration-300 ease-out
-                    ${isActive
-                      ? "bg-slate-900 dark:bg-white scale-110"
-                      : "bg-slate-300 dark:bg-slate-600 scale-100 group-hover:scale-105 group-hover:bg-slate-400 dark:group-hover:bg-slate-500"
+                    ${
+                      isActive
+                        ? "bg-slate-900 dark:bg-white scale-110"
+                        : "bg-slate-300 dark:bg-slate-600 scale-100 group-hover:scale-105 group-hover:bg-slate-400 dark:group-hover:bg-slate-500"
                     }
                   `}
                 />
