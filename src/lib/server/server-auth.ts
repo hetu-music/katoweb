@@ -179,3 +179,27 @@ export function withAuth(
     return handler(request, authResult.user);
   };
 }
+
+/**
+ * 验证当前用户是否为管理员（适用于 Server Actions）
+ * 如果验证失败则抛出错误，成功则返回当前登录的 AuthenticatedUser 对象。
+ */
+export async function assertAdmin(): Promise<AuthenticatedUser> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    throw new Error("未登录或登录已过期");
+  }
+
+  const isAdmin = user.app_metadata?.is_admin === true;
+  if (!isAdmin) {
+    throw new Error("无权进行此操作");
+  }
+
+  return user as unknown as AuthenticatedUser;
+}
+
