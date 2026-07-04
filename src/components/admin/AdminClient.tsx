@@ -16,6 +16,7 @@ import {
   type MusicProviderType,
   type SearchResultItem,
 } from "@/lib/api/api-auto-complete";
+import { handleApprove } from "@/app/actions/admin-actions";
 import { apiCreateSong, apiUpdateSong } from "@/lib/api/client-api";
 import { genreColorMap, songFields, typeColorMap } from "@/lib/constants";
 import {
@@ -46,6 +47,7 @@ import {
   Edit,
   Eye,
   EyeOff,
+  Globe,
   Home,
   Music,
   Plus,
@@ -520,6 +522,7 @@ export default function AdminClientComponent({
     text: string;
   } | null>(null);
   const [showNotification, setShowNotification] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const { showScrollTop, scrollToTop } = useScrollTop();
 
   const songForm = useForm<SongFormStateValues>({
@@ -628,6 +631,57 @@ export default function AdminClientComponent({
       setTimeout(() => setOperationMsg(null), 3000);
     }
   });
+
+  // 发布歌曲（保存并同步）
+  const handlePublish = async () => {
+    if (!editSong) return;
+
+    const isValid = await songForm.trigger();
+    if (!isValid) return;
+
+    if (!csrfToken) {
+      setOperationMsg({ type: "error", text: "缺少安全令牌，请刷新后重试" });
+      setTimeout(() => setOperationMsg(null), 3000);
+      return;
+    }
+
+    setIsPublishing(true);
+    const data = songForm.getValues();
+    const payload = toSongFormPayload(data);
+
+    try {
+      // 1. 先保存修改到暂存表
+      const updated = await apiUpdateSong(
+        editSong.id,
+        {
+          ...convertEmptyStringToNull(payload),
+          updated_at: editSong.updated_at,
+        },
+        csrfToken,
+      );
+
+      // 2. 调用服务器操作进行发布同步
+      const approveRes = await handleApprove(editSong.id);
+      if (!approveRes.success) {
+        throw new Error(approveRes.error || "同步失败");
+      }
+
+      // 3. 更新本地状态并关闭表单
+      setSongs((prev) =>
+        prev.map((s) => (s.id === updated.id ? updated : s)),
+      );
+      closeSongForm();
+      setOperationMsg({ type: "success", text: "发布成功" });
+    } catch (err: unknown) {
+      setOperationMsg({
+        type: "error",
+        text: err instanceof Error ? err.message : "发布失败",
+      });
+    } finally {
+      setIsPublishing(false);
+      setTimeout(() => setOperationMsg(null), 3000);
+    }
+  };
 
   // 自动补全处理函数
   const handleAutoComplete = async (provider: MusicProviderType) => {
@@ -979,14 +1033,15 @@ export default function AdminClientComponent({
                 <button
                   type="button"
                   onClick={closeSongForm}
-                  className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  disabled={songForm.formState.isSubmitting || isPublishing}
+                  className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   取消
                 </button>
                 <button
                   type="submit"
                   form="song-form"
-                  disabled={songForm.formState.isSubmitting}
+                  disabled={songForm.formState.isSubmitting || isPublishing}
                   className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
                 >
                   {songForm.formState.isSubmitting ? (
@@ -996,6 +1051,21 @@ export default function AdminClientComponent({
                   )}
                   {formMode === "add" ? "确认添加" : "保存修改"}
                 </button>
+                {formMode === "edit" && (
+                  <button
+                    type="button"
+                    onClick={handlePublish}
+                    disabled={songForm.formState.isSubmitting || isPublishing}
+                    className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                  >
+                    {isPublishing ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <Globe size={18} />
+                    )}
+                    <span>发布</span>
+                  </button>
+                )}
               </div>
             </FormProvider>
           </div>
