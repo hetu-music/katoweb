@@ -29,7 +29,8 @@
     "Courier New", var(--font-mono-cjk), monospace;
   --font-calligraphy: var(--font-keben), cursive;
   --font-kaiti:
-    "KaiTi", "STKaiti", "DFKai-SB", "BiauKai", "楷体", "楷体_GB2312", serif;
+    var(--font-mono-cjk), "KaiTi", "STKaiti", "DFKai-SB", "BiauKai", "楷体",
+    "楷体_GB2312", serif;
 }
 
 /* 颜色：保留在 :root / .dark，支持运行时主题切换 */
