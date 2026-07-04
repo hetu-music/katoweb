@@ -10,7 +10,7 @@ type Props = {
 };
 
 function buildDescription(
-  t: any,
+  t: Awaited<ReturnType<typeof getTranslations>>,
   count: number,
   firstYear: string | undefined,
   secondLastYear: string | undefined,

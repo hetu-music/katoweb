@@ -16,7 +16,7 @@ import { createQueryClient } from "@/lib/query-client";
 // 此拦截器在开发环境下安全过滤掉此误报，以保证正常的调试体验。
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   const originalError = console.error;
-  console.error = (...args: any[]) => {
+  console.error = (...args: unknown[]) => {
     if (
       typeof args[0] === "string" &&
       args[0].includes("Encountered a script tag while rendering React component")

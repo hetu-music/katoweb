@@ -71,8 +71,8 @@ export async function getSongs(
 
   if (locale === "zh-TW") {
     return songs.map((s) => {
-      const item = s as any;
-      const res: Song = {
+      const item = s as Song & { albumartist?: string[] | null };
+      const res: Song & { albumartist?: string[] | null } = {
         ...s,
         title: toTraditional(s.title) ?? s.title,
         album: toTraditional(s.album),
@@ -82,9 +82,9 @@ export async function getSongs(
         arranger: toTraditionalArray(s.arranger),
       };
       if (item.albumartist) {
-        (res as any).albumartist = toTraditionalArray(item.albumartist);
+        res.albumartist = toTraditionalArray(item.albumartist);
       }
-      return res;
+      return res as Song;
     });
   }
 

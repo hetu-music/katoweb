@@ -15,11 +15,13 @@ type ConverterFn = (text: string) => string;
 let _converter: ConverterFn | null = null;
 
 function getConverter(): ConverterFn {
-  if (!_converter) {
-    // cn → twp: 简体 → 繁体台湾（含词汇对照，如 软件→軟體，网络→網路）
-    _converter = OpenCC.Converter({ from: "cn", to: "twp" });
+  const current = _converter;
+  if (current) {
+    return current;
   }
-  return _converter!;
+  const newConverter = OpenCC.Converter({ from: "cn", to: "twp" }) as ConverterFn;
+  _converter = newConverter;
+  return newConverter;
 }
 
 /**

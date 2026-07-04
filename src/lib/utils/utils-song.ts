@@ -6,6 +6,7 @@ import {
 import { FilterOptions, Song, SongDetail, SongInfo } from "@/lib/types";
 import { formatDate, formatTime } from "@/lib/utils/utils-common";
 import Fuse from "fuse.js";
+import { useTranslations } from "next-intl";
 
 // 判断字符串首字母是否为英文
 function startsWithEnglish(str: string): boolean {
@@ -256,12 +257,14 @@ export function filterSongs(
   });
 }
 
+type TranslationFn = ReturnType<typeof useTranslations>;
+
 // 计算歌曲信息
 export function calculateSongInfo(
   song: SongDetail,
-  t?: any,
-  tCommon?: any,
-  tEnum?: any,
+  t?: TranslationFn,
+  tCommon?: TranslationFn,
+  tEnum?: TranslationFn,
 ): SongInfo {
   const getLabel = (key: string, fallback: string) => (t ? t(key) : fallback);
   const unknownStr = tCommon ? tCommon("unknown") : "未知";
@@ -320,7 +323,10 @@ export function calculateSongInfo(
           if (!track && total) {
             return t ? t("trackFormat.totalOnly", { total }) : `共${total}首`;
           }
-          return t ? t("trackFormat.both", { track, total }) : `第${track}首/共${total}首`;
+          if (track && total) {
+            return t ? t("trackFormat.both", { track, total }) : `第${track}首/共${total}首`;
+          }
+          return unknownStr;
         })(),
       },
       {
@@ -335,7 +341,10 @@ export function calculateSongInfo(
           if (!disc && total) {
             return t ? t("discFormat.totalOnly", { total }) : `共${total}张`;
           }
-          return t ? t("discFormat.both", { disc, total }) : `第${disc}张/共${total}张`;
+          if (disc && total) {
+            return t ? t("discFormat.both", { disc, total }) : `第${disc}张/共${total}张`;
+          }
+          return unknownStr;
         })(),
       },
       {
