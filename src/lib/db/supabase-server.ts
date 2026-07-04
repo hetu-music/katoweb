@@ -99,10 +99,13 @@ function getCachedClient(
 
 // ─── 公共 API ──────────────────────────────────────────────────────────────
 
+let hasWarnedService = false;
+let hasWarnedUser = false;
+
 /**
  * 高权限客户端（Service Role Key）
  *
- * 绕过 RLS，可读取所有数据，仅用于公共展示数据的服务端全量读取。
+ * 绕过 RLS，可读取所有 data，仅用于公共展示数据的服务端全量读取。
  * 环境变量缺失时返回 null（构建时降级为空数据而不是抛异常）。
  */
 export function getServiceClient(): SupabaseClient | null {
@@ -112,7 +115,15 @@ export function getServiceClient(): SupabaseClient | null {
   const key = process.env.SUPABASE_SECRET_API;
 
   if (!url || !key || url === "placeholder" || key === "placeholder") {
-    console.warn("[supabase-server] SUPABASE_URL / SUPABASE_SECRET_API 未配置");
+    if (!hasWarnedService) {
+      const isPlaceholder = url === "placeholder" || key === "placeholder";
+      console.warn(
+        `[supabase-server] SUPABASE_URL / SUPABASE_SECRET_API ${
+          isPlaceholder ? "为占位符，已启用构建期降级模式" : "未配置"
+        }`
+      );
+      hasWarnedService = true;
+    }
     return null;
   }
 
@@ -132,9 +143,15 @@ export function getUserClient(accessToken?: string): SupabaseClient | null {
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key || url === "placeholder" || key === "placeholder") {
-    console.warn(
-      "[supabase-server] NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY 未配置",
-    );
+    if (!hasWarnedUser) {
+      const isPlaceholder = url === "placeholder" || key === "placeholder";
+      console.warn(
+        `[supabase-server] NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY ${
+          isPlaceholder ? "为占位符，已启用构建期降级模式" : "未配置"
+        }`
+      );
+      hasWarnedUser = true;
+    }
     return null;
   }
 
