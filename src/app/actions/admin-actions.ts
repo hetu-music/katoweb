@@ -1,7 +1,7 @@
 "use server";
 
 import { locales } from "@/i18n/config";
-import { createSupabaseServerClient } from "@/lib/db/supabase-auth";
+import { getServiceClient } from "@/lib/db/supabase-server";
 import { assertAdmin } from "@/lib/server/server-auth";
 import {
   purgeCloudflareCache,
@@ -19,9 +19,12 @@ export async function handleApprove(id: number) {
     // 验证当前用户是否为管理员
     await assertAdmin();
 
-    const supabase = await createSupabaseServerClient();
+    const supabase = getServiceClient();
+    if (!supabase) {
+      throw new Error("数据库高权限客户端未初始化，请检查环境变量。");
+    }
 
-    // 【第一步】通知数据库执行同步
+    // 【第一步】以 Service Role 高权限通知数据库执行同步，避免普通用户权限不足报错
     const { error } = await supabase.rpc("approve_music_sync", { temp_id: id });
 
     if (error) {
