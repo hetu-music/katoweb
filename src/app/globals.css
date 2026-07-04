@@ -238,7 +238,7 @@
 }
 
 .hero-title-char {
-  animation: hero-title-reveal 5s cubic-bezier(0.25, 0.1, 0.1, 1) both;
+  animation: hero-title-reveal 3.8s cubic-bezier(0.25, 0.1, 0.1, 1) both;
   will-change: transform, opacity, filter;
 }
 
@@ -258,7 +258,7 @@
 }
 
 .hero-unroll {
-  animation: hero-unroll 4s cubic-bezier(0.25, 0.1, 0.1, 1) both;
+  animation: hero-unroll 3s cubic-bezier(0.25, 0.1, 0.1, 1) both;
   will-change: transform, opacity, filter;
 }
 

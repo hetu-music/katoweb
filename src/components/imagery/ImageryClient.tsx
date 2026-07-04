@@ -766,7 +766,7 @@ export default function ImageryClient({ items, categories }: Props) {
               <span
                 key={i}
                 className={`hero-title-char inline-block ${mounted ? "" : "opacity-0"}`}
-                style={{ animationDelay: `${i * 400}ms` }}
+                style={{ animationDelay: `${i * 300}ms` }}
               >
                 {char}
               </span>
@@ -774,7 +774,7 @@ export default function ImageryClient({ items, categories }: Props) {
           </h1>
           <p
             className={`font-serif text-base md:text-xl text-slate-500 dark:text-slate-400 tracking-[0.4em] pl-[0.4em] mb-3 ${mounted ? "hero-unroll" : "opacity-0"}`}
-            style={{ animationDelay: "2200ms" }}
+            style={{ animationDelay: "1650ms" }}
           >
             {t("subtitle", { count: wordDisplayList.length })}
           </p>
