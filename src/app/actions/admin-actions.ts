@@ -3,7 +3,7 @@
 import { locales } from "@/i18n/config";
 import { createSupabaseServerClient } from "@/lib/db/supabase-auth";
 import { assertAdmin } from "@/lib/server/server-auth";
-import { purgeCloudflareCache } from "@/lib/server/server-utils";
+import { purgeCloudflareCache, purgeEdgeOneCache } from "@/lib/server/server-utils";
 import { revalidatePath, revalidateTag } from "next/cache";
 
 /**
@@ -51,6 +51,9 @@ export async function handleApprove(id: number) {
 
     // 2. 刷新 Cloudflare CDN 的边缘节点缓存
     await purgeCloudflareCache(pathsToPurge);
+
+    // 3. 刷新腾讯云 EdgeOne CDN 的边缘节点缓存（如果是独立域名）
+    await purgeEdgeOneCache(pathsToPurge);
 
     return { success: true };
   } catch (err: unknown) {

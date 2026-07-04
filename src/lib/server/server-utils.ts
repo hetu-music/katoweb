@@ -1,4 +1,6 @@
+import crypto from "crypto";
 import { cookies as nextCookies } from "next/headers";
+
 
 const CSRF_COOKIE_NAME = "csrf-token";
 const CSRF_HEADER_NAME = "x-csrf-token";
@@ -200,6 +202,112 @@ export async function purgeCloudflareCache(paths: string[]) {
     }
   } catch (err) {
     console.error("[Cloudflare] 刷新 CDN 缓存出错:", err);
+  }
+}
+
+/**
+ * 清除腾讯云 EdgeOne (TEO) CDN 的指定路径缓存
+ * @param paths 相对地址路径数组，如 ['/', '/song/123']
+ */
+export async function purgeEdgeOneCache(paths: string[]) {
+  const secretId = process.env.EDGEONE_SECRET_ID;
+  const secretKey = process.env.EDGEONE_SECRET_KEY;
+  const zoneId = process.env.EDGEONE_ZONE_ID;
+  const siteUrl = process.env.EDGEONE_SITE_URL;
+
+  // 如果未配置完整环境变量，则静默跳过
+  if (!secretId || !secretKey || !zoneId || !siteUrl) {
+    console.warn("[EdgeOne] 未配置完整凭证 (SecretId/SecretKey/ZoneId/SiteUrl)，跳过 CDN 缓存刷新。");
+    return;
+  }
+
+  // 拼接 EdgeOne 对应的绝对 URL 列表
+  const urls = paths.map((p) => {
+    const cleanPath = p.startsWith("/") ? p : `/${p}`;
+    return `${siteUrl.replace(/\/$/, "")}${cleanPath}`;
+  });
+
+  const host = "teo.intl.tencentcloudapi.com"; // 对应 edgeone.ai 国际站的 API 域名
+  const service = "teo";
+  const action = "CreatePurgeTask";
+  const version = "2022-09-01";
+  const region = "ap-singapore";
+  const timestamp = Math.floor(Date.now() / 1000);
+  const payload = {
+    ZoneId: zoneId,
+    Type: "purge_url",
+    Targets: urls,
+    Method: "delete", // 直接物理删除缓存 (hard purge)，确保客户端下一次访问强行获取最新数据
+  };
+
+  try {
+    const date = new Date(timestamp * 1000).toISOString().split("T")[0];
+
+    // 1. 构建规范请求串 (Canonical Request)
+    const httpRequestMethod = "POST";
+    const canonicalUri = "/";
+    const canonicalQueryString = "";
+    const canonicalHeaders = `content-type:application/json; charset=utf-8\nhost:${host}\n`;
+    const signedHeaders = "content-type;host";
+
+    const payloadHash = crypto
+      .createHash("sha256")
+      .update(JSON.stringify(payload))
+      .digest("hex");
+
+    const canonicalRequest = `${httpRequestMethod}\n${canonicalUri}\n${canonicalQueryString}\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`;
+
+    // 2. 构建待签名字符串 (String to Sign)
+    const credentialScope = `${date}/${service}/tc3_request`;
+    const hashedCanonicalRequest = crypto
+      .createHash("sha256")
+      .update(canonicalRequest)
+      .digest("hex");
+
+    const stringToSign = `TC3-HMAC-SHA256\n${timestamp}\n${credentialScope}\n${hashedCanonicalRequest}`;
+
+    // 3. 计算签名 (Signature)
+    const sign = (key: crypto.BinaryLike | crypto.KeyObject, msg: string | Uint8Array) =>
+      crypto.createHmac("sha256", key).update(msg).digest();
+
+    const kDate = sign(`TC3${secretKey}`, date);
+    const kService = sign(kDate, service);
+    const kSigning = sign(kService, "tc3_request");
+
+    const signature = crypto
+      .createHmac("sha256", kSigning)
+      .update(stringToSign)
+      .digest("hex");
+
+    // 4. 构建 Authorization 头部
+    const authorization = `TC3-HMAC-SHA256 Credential=${secretId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+
+    const res = await fetch(`https://${host}`, {
+      method: "POST",
+      headers: {
+        "Authorization": authorization,
+        "Content-Type": "application/json; charset=utf-8",
+        "Host": host,
+        "X-TC-Action": action,
+        "X-TC-Version": version,
+        "X-TC-Timestamp": String(timestamp),
+        "X-TC-Region": region,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const resData = await res.json();
+    if (resData.Response?.Error) {
+      console.error(
+        "[EdgeOne] 提交刷新任务失败:",
+        resData.Response.Error.Code,
+        resData.Response.Error.Message
+      );
+    } else {
+      console.log("[EdgeOne] 成功提交刷新任务，任务 ID:", resData.Response?.JobId);
+    }
+  } catch (err) {
+    console.error("[EdgeOne] 刷新 CDN 缓存出错:", err);
   }
 }
 
