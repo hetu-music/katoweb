@@ -202,4 +202,3 @@ export async function assertAdmin(): Promise<AuthenticatedUser> {
 
   return user as unknown as AuthenticatedUser;
 }
-

@@ -3,12 +3,15 @@
 import { locales } from "@/i18n/config";
 import { createSupabaseServerClient } from "@/lib/db/supabase-auth";
 import { assertAdmin } from "@/lib/server/server-auth";
-import { purgeCloudflareCache, purgeEdgeOneCache } from "@/lib/server/server-utils";
+import {
+  purgeCloudflareCache,
+  purgeEdgeOneCache,
+} from "@/lib/server/server-utils";
 import { revalidatePath, revalidateTag } from "next/cache";
 
 /**
  * 后台歌曲审批同步操作 (Server Action)
- * 
+ *
  * @param id 暂存表 (temp) 中对应的歌曲 ID
  */
 export async function handleApprove(id: number) {
@@ -31,7 +34,7 @@ export async function handleApprove(id: number) {
 
     // 收集需要刷新缓存的相对路径
     const pathsToPurge: string[] = [];
-    
+
     // 首页与歌曲页（包含不同语言版本）
     for (const locale of locales) {
       pathsToPurge.push(`/${locale}`);

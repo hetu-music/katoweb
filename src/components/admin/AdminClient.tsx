@@ -122,9 +122,9 @@ const CREATOR_FIELD_KEYS = [
 type CreatorFieldKey = (typeof CREATOR_FIELD_KEYS)[number];
 
 const MISSING_FIELD_LABEL_OVERRIDES: Partial<Record<SongFormFieldKey, string>> =
-{
-  lyrics: "歌词",
-};
+  {
+    lyrics: "歌词",
+  };
 
 function isCreatorFieldKey(value: SongFormFieldKey): value is CreatorFieldKey {
   return CREATOR_FIELD_KEYS.includes(value as CreatorFieldKey);
@@ -675,9 +675,7 @@ export default function AdminClientComponent({
       }
 
       // 3. 更新本地状态并关闭表单
-      setSongs((prev) =>
-        prev.map((s) => (s.id === updated.id ? updated : s)),
-      );
+      setSongs((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
       closeSongForm();
       setOperationMsg({ type: "success", text: "发布成功" });
     } catch (err: unknown) {
@@ -964,7 +962,7 @@ export default function AdminClientComponent({
                       title="从网易云音乐自动补全"
                     >
                       {autoComplete.isAutoCompleting &&
-                        autoComplete.currentProvider === "netease" ? (
+                      autoComplete.currentProvider === "netease" ? (
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       ) : (
                         <Wand2 size={16} />
@@ -984,7 +982,7 @@ export default function AdminClientComponent({
                       title="从酷狗音乐自动补全"
                     >
                       {autoComplete.isAutoCompleting &&
-                        autoComplete.currentProvider === "kugou" ? (
+                      autoComplete.currentProvider === "kugou" ? (
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       ) : (
                         <Wand2 size={16} />
@@ -1159,7 +1157,8 @@ export default function AdminClientComponent({
                   确认发布歌曲
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-                  请确认《{editSong?.title || "这首歌曲"}》已经编辑完成。发布后数据将对所有用户实时可见。
+                  请确认《{editSong?.title || "这首歌曲"}
+                  》已经编辑完成。发布后数据将对所有用户实时可见。
                 </p>
               </div>
             </div>
@@ -1245,7 +1244,7 @@ function RenderInput({
                   const isActive = arr.includes(opt);
                   const colorClass =
                     (field.key === "genre" ? genreColorMap : typeColorMap)[
-                    opt
+                      opt
                     ] || "bg-slate-100 text-slate-600";
 
                   return (

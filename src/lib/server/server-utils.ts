@@ -1,7 +1,6 @@
 import crypto from "crypto";
 import { cookies as nextCookies } from "next/headers";
 
-
 const CSRF_COOKIE_NAME = "csrf-token";
 const CSRF_HEADER_NAME = "x-csrf-token";
 
@@ -171,7 +170,9 @@ export async function purgeCloudflareCache(paths: string[]) {
 
   // 如果未配置环境变量，则静默跳过（如本地开发环境）
   if (!zoneId || !token || !siteUrl) {
-    console.warn("[Cloudflare] 未配置 Zone ID 或 API Token，跳过 CDN 缓存刷新。");
+    console.warn(
+      "[Cloudflare] 未配置 Zone ID 或 API Token，跳过 CDN 缓存刷新。",
+    );
     return;
   }
 
@@ -187,11 +188,11 @@ export async function purgeCloudflareCache(paths: string[]) {
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ files: urls }),
-      }
+      },
     );
 
     if (!res.ok) {
@@ -218,7 +219,9 @@ export async function purgeEdgeOneCache(paths: string[]) {
 
   // 如果未配置完整环境变量，则静默跳过
   if (!secretId || !secretKey || !zoneId || !siteUrl) {
-    console.warn("[EdgeOne] 未配置完整凭证 (SecretId/SecretKey/ZoneId/SiteUrl)，跳过 CDN 缓存刷新。");
+    console.warn(
+      "[EdgeOne] 未配置完整凭证 (SecretId/SecretKey/ZoneId/SiteUrl)，跳过 CDN 缓存刷新。",
+    );
     return;
   }
 
@@ -268,8 +271,10 @@ export async function purgeEdgeOneCache(paths: string[]) {
     const stringToSign = `TC3-HMAC-SHA256\n${timestamp}\n${credentialScope}\n${hashedCanonicalRequest}`;
 
     // 3. 计算签名 (Signature)
-    const sign = (key: crypto.BinaryLike | crypto.KeyObject, msg: string | Uint8Array) =>
-      crypto.createHmac("sha256", key).update(msg).digest();
+    const sign = (
+      key: crypto.BinaryLike | crypto.KeyObject,
+      msg: string | Uint8Array,
+    ) => crypto.createHmac("sha256", key).update(msg).digest();
 
     const kDate = sign(`TC3${secretKey}`, date);
     const kService = sign(kDate, service);
@@ -286,9 +291,9 @@ export async function purgeEdgeOneCache(paths: string[]) {
     const res = await fetch(`https://${host}`, {
       method: "POST",
       headers: {
-        "Authorization": authorization,
+        Authorization: authorization,
         "Content-Type": "application/json; charset=utf-8",
-        "Host": host,
+        Host: host,
         "X-TC-Action": action,
         "X-TC-Version": version,
         "X-TC-Timestamp": String(timestamp),
@@ -302,14 +307,16 @@ export async function purgeEdgeOneCache(paths: string[]) {
       console.error(
         "[EdgeOne] 提交刷新任务失败:",
         resData.Response.Error.Code,
-        resData.Response.Error.Message
+        resData.Response.Error.Message,
       );
     } else {
       // eslint-disable-next-line no-console
-      console.log("[EdgeOne] 成功提交刷新任务，任务 ID:", resData.Response?.JobId);
+      console.log(
+        "[EdgeOne] 成功提交刷新任务，任务 ID:",
+        resData.Response?.JobId,
+      );
     }
   } catch (err) {
     console.error("[EdgeOne] 刷新 CDN 缓存出错:", err);
   }
 }
-
