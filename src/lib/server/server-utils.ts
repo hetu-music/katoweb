@@ -198,6 +198,7 @@ export async function purgeCloudflareCache(paths: string[]) {
       const errText = await res.text();
       console.error("[Cloudflare] 刷新 CDN 缓存失败:", errText);
     } else {
+      // eslint-disable-next-line no-console
       console.log("[Cloudflare] 成功刷新 CDN 缓存:", urls);
     }
   } catch (err) {
@@ -304,6 +305,7 @@ export async function purgeEdgeOneCache(paths: string[]) {
         resData.Response.Error.Message
       );
     } else {
+      // eslint-disable-next-line no-console
       console.log("[EdgeOne] 成功提交刷新任务，任务 ID:", resData.Response?.JobId);
     }
   } catch (err) {
