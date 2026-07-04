@@ -120,7 +120,7 @@ export function getServiceClient(): SupabaseClient | null {
       console.warn(
         `[supabase-server] SUPABASE_URL / SUPABASE_SECRET_API ${
           isPlaceholder ? "为占位符，已启用构建期降级模式" : "未配置"
-        }`
+        }`,
       );
       hasWarnedService = true;
     }
@@ -148,7 +148,7 @@ export function getUserClient(accessToken?: string): SupabaseClient | null {
       console.warn(
         `[supabase-server] NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY ${
           isPlaceholder ? "为占位符，已启用构建期降级模式" : "未配置"
-        }`
+        }`,
       );
       hasWarnedUser = true;
     }
