@@ -1,8 +1,8 @@
 "use client";
 
+import { Link } from "@/i18n/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Scroll, Sparkles } from "lucide-react";
-import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useSyncExternalStore } from "react";
 
@@ -106,7 +106,7 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                 duration: 0.35,
                 ease: [0.25, 1, 0.5, 1],
               }}
-              className="font-light text-base md:text-[17px] leading-relaxed mb-0 flex flex-wrap items-center select-none font-calligraphy text-stone-500 dark:text-stone-400"
+              className="font-light text-base md:text-[18px] leading-relaxed mb-0 flex flex-wrap items-center select-none font-kaiti text-slate-600 dark:text-slate-400"
             >
               {currentText.split("").map((char, i) => (
                 <motion.span
@@ -280,20 +280,18 @@ export default function HeroSection({ songCount }: HeroSectionProps) {
                     />
                     {/* 核心印章 */}
                     <div
-                      className={`h-1.5 w-1.5 border border-current transition-all duration-500 ${
-                        hoveredId === feature.id
+                      className={`h-1.5 w-1.5 border border-current transition-all duration-500 ${hoveredId === feature.id
                           ? `rotate-135 bg-current ${feature.textHover.replace(/group-hover:/g, "")}`
                           : `rotate-45 bg-transparent ${feature.textBase} group-active:rotate-135 group-active:bg-current`
-                      }`}
+                        }`}
                     />
                   </div>
                   {/* 标题 */}
                   <div
-                    className={`flex items-center text-[16px] font-calligraphy font-medium tracking-[0.5em] leading-none transition-all duration-500 ${
-                      hoveredId === feature.id
+                    className={`flex items-center text-[16px] font-calligraphy font-medium tracking-[0.5em] leading-none transition-all duration-500 ${hoveredId === feature.id
                         ? `${feature.textHover.replace(/group-hover:/g, "")}`
                         : `${feature.textBase} ${feature.textHover}`
-                    }`}
+                      }`}
                   >
                     {t(`featureEntrances.${feature.id}.label`).split("").map((char, i) => (
                       <motion.span
