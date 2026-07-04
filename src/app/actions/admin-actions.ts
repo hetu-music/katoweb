@@ -3,6 +3,7 @@
 import { locales } from "@/i18n/config";
 import { createSupabaseServerClient } from "@/lib/db/supabase-auth";
 import { assertAdmin } from "@/lib/server/server-auth";
+import { purgeCloudflareCache } from "@/lib/server/server-utils";
 import { revalidatePath, revalidateTag } from "next/cache";
 
 /**
@@ -28,13 +29,28 @@ export async function handleApprove(id: number) {
     // 【第二步】同步成功，执行缓存刷新以实现实时数据更新
     revalidateTag("music", "max");
 
-    // 重新验证各个语言版本的受影响页面
+    // 收集需要刷新缓存的相对路径
+    const pathsToPurge: string[] = [];
+    
+    // 首页与歌曲页（包含不同语言版本）
     for (const locale of locales) {
-      revalidatePath(`/${locale}`);
-      revalidatePath(`/${locale}/song/${id}`);
+      pathsToPurge.push(`/${locale}`);
+      pathsToPurge.push(`/${locale}/song/${id}`);
     }
-    revalidatePath("/");
-    revalidatePath(`/song/${id}`);
+    pathsToPurge.push("/");
+    pathsToPurge.push(`/song/${id}`);
+
+    // 站点地图与歌词 API 索引
+    pathsToPurge.push("/sitemap.xml");
+    pathsToPurge.push("/api/public/songs/lyrics-index");
+
+    // 1. 刷新 Next.js 本地服务缓存
+    for (const path of pathsToPurge) {
+      revalidatePath(path);
+    }
+
+    // 2. 刷新 Cloudflare CDN 的边缘节点缓存
+    await purgeCloudflareCache(pathsToPurge);
 
     return { success: true };
   } catch (err: unknown) {

@@ -157,3 +157,49 @@ export async function verifyTurnstileToken(
     };
   }
 }
+
+/**
+ * 清除 Cloudflare CDN 的指定绝对路径缓存
+ * @param paths 相对地址路径数组，如 ['/', '/song/123']
+ */
+export async function purgeCloudflareCache(paths: string[]) {
+  const zoneId = process.env.CLOUDFLARE_ZONE_ID;
+  const token = process.env.CLOUDFLARE_API_TOKEN;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+
+  // 如果未配置环境变量，则静默跳过（如本地开发环境）
+  if (!zoneId || !token || !siteUrl) {
+    console.warn("[Cloudflare] 未配置 Zone ID 或 API Token，跳过 CDN 缓存刷新。");
+    return;
+  }
+
+  // 拼接绝对 URL 列表
+  const urls = paths.map((p) => {
+    const cleanPath = p.startsWith("/") ? p : `/${p}`;
+    return `${siteUrl.replace(/\/$/, "")}${cleanPath}`;
+  });
+
+  try {
+    const res = await fetch(
+      `https://api.cloudflare.com/client/v4/zones/${zoneId}/purge_cache`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ files: urls }),
+      }
+    );
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("[Cloudflare] 刷新 CDN 缓存失败:", errText);
+    } else {
+      console.log("[Cloudflare] 成功刷新 CDN 缓存:", urls);
+    }
+  } catch (err) {
+    console.error("[Cloudflare] 刷新 CDN 缓存出错:", err);
+  }
+}
+
