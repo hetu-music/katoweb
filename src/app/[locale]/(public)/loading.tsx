@@ -10,6 +10,8 @@ import { useTranslations } from "next-intl";
 export default function LibraryLoading() {
   const t = useTranslations("common");
 
+  const tHero = useTranslations("library.hero");
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#FAFAFA] transition-colors duration-500 dark:bg-[#0B0F19]">
       {/* 局部动画与渐变样式 */}
@@ -74,7 +76,7 @@ export default function LibraryLoading() {
       {/* 底部低调的诗意边脚 */}
       <div className="absolute bottom-12 select-none pointer-events-none z-10 opacity-70">
         <p className="font-serif italic text-xs tracking-widest text-slate-400/60 dark:text-slate-500/50">
-          “ 你一定想知道，戏里讲了什么故事 ”
+          “ {tHero("defaultDesc")} ”
         </p>
       </div>
     </div>
