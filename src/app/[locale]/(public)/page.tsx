@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import MusicLibraryClient from "@/components/library/MusicLibraryClient";
 import { getSongs } from "@/lib/server/service-songs";
 import { Song } from "@/lib/types";
@@ -61,6 +61,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // 服务端组件 - 使用 ISR
 export default async function MusicLibraryPage({ params }: Props) {
   const { locale } = await params;
+  setRequestLocale(locale);
   let songsData: Song[] = [];
   let error: Error | null = null;
 

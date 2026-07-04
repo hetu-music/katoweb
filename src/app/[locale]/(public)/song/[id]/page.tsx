@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import SongDetailClient from "@/components/detail/SongDetailClient";
 import { getSongById } from "@/lib/server/service-songs";
 import { TABLES } from "@/lib/db/supabase-server";
@@ -78,6 +78,7 @@ export default async function SongDetailPage({
   params: Promise<{ id: string; locale: string }>;
 }) {
   const { id, locale } = await params;
+  setRequestLocale(locale);
 
   const songId = parseInt(id);
   if (isNaN(songId)) {

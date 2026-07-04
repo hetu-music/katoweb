@@ -4,7 +4,7 @@ import {
   getImageryCategories,
   getImageryWithCounts,
 } from "@/lib/server/service-imagery";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
@@ -77,6 +77,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ImageryPage({ params }: Props) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "common" });
 
   const [items, categories] = await Promise.all([

@@ -1,7 +1,7 @@
 import Loading from "@/components/shared/Loading";
 import QjtxClient from "@/components/story/qjtx/QjtxClient";
 import { getQjtxTimeline } from "@/lib/server/service-story";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
@@ -93,6 +93,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function QingJinTianXiaPage({ params }: Props) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "common" });
 
   const events = await getQjtxTimeline();
