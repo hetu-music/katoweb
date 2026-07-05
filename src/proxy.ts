@@ -158,12 +158,8 @@ export const config = {
      * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - sitemap.xml (sitemap file)
-     * - robots.txt (robots file)
-     * - manifest.json (PWA manifest)
-     * - sw.js (service worker)
+     * - metadata files or static assets with extensions (containing a dot, e.g. favicon.ico, sitemap.xml, robots.txt, manifest.json, sw.js, image.png, LXGWMono.woff2)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|manifest.json|sw.js).*)",
+    "/((?!api|_next/static|_next/image|.*\\..*).*)",
   ],
 };
