@@ -29,7 +29,7 @@
     "Courier New", var(--font-mono-cjk), monospace;
   --font-calligraphy: var(--font-keben), cursive;
   --font-kaiti:
-    var(--font-mono-cjk), "KaiTi", "STKaiti", "DFKai-SB", "BiauKai", "楷体",
+    var(--font-kaiti-custom), "KaiTi", "STKaiti", "DFKai-SB", "BiauKai", "楷体",
     "楷体_GB2312", serif;
 }
 
