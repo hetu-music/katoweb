@@ -6,7 +6,14 @@ import { useUserContext } from "@/context/UserContext";
 import { cn } from "@/lib/utils/utils";
 import { Info, User, MoreHorizontal, Check, Sun, Moon } from "lucide-react";
 import { useRouter, usePathname } from "@/i18n/navigation";
-import React, { forwardRef, useCallback, useState, useRef, useEffect, useTransition } from "react";
+import React, {
+  forwardRef,
+  useCallback,
+  useState,
+  useRef,
+  useEffect,
+  useTransition,
+} from "react";
 import { useLocale } from "next-intl";
 import { useTheme } from "next-themes";
 import { flushSync } from "react-dom";
@@ -87,7 +94,7 @@ const AppNavbar = forwardRef<HTMLElement, AppNavbarProps>(function AppNavbar(
               className={user ? "text-blue-500 dark:text-blue-400" : ""}
             />
           </button>
-          
+
           {/* PC端显示的 语言 和 主题切换 */}
           <div className="hidden md:flex items-center gap-2">
             <LocaleSwitcher />
@@ -144,7 +151,10 @@ function MoreMenu() {
     });
   };
 
-  const changeTheme = (targetTheme: "light" | "dark", e: React.MouseEvent<HTMLButtonElement>) => {
+  const changeTheme = (
+    targetTheme: "light" | "dark",
+    e: React.MouseEvent<HTMLButtonElement>,
+  ) => {
     if (resolvedTheme === targetTheme) return;
 
     if (!document.startViewTransition) {
@@ -181,7 +191,7 @@ function MoreMenu() {
           duration: 500,
           easing: "ease-in-out",
           pseudoElement: "::view-transition-new(root)",
-        }
+        },
       );
     });
   };
@@ -219,7 +229,9 @@ function MoreMenu() {
         >
           {/* 主题切换（卡片选项组） */}
           <div className="flex flex-col gap-1.5">
-            <span className="px-1 text-[10px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase">外观主题 / Theme</span>
+            <span className="px-1 text-[10px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
+              外观主题 / Theme
+            </span>
             <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-slate-200/40 dark:bg-slate-900/60 border border-slate-200/20 dark:border-slate-800/40">
               <button
                 onClick={(e) => changeTheme("light", e)}
@@ -227,10 +239,13 @@ function MoreMenu() {
                   "flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-300 cursor-pointer",
                   resolvedTheme === "light"
                     ? "bg-white text-blue-600 shadow-sm border border-slate-200/30"
-                    : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200",
                 )}
               >
-                <Sun size={14} className={resolvedTheme === "light" ? "animate-pulse" : ""} />
+                <Sun
+                  size={14}
+                  className={resolvedTheme === "light" ? "animate-pulse" : ""}
+                />
                 <span>浅色</span>
               </button>
               <button
@@ -239,10 +254,13 @@ function MoreMenu() {
                   "flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-300 cursor-pointer",
                   resolvedTheme === "dark"
                     ? "bg-[#161B2C] text-blue-400 shadow-sm border border-slate-800/50"
-                    : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200",
                 )}
               >
-                <Moon size={14} className={resolvedTheme === "dark" ? "animate-pulse" : ""} />
+                <Moon
+                  size={14}
+                  className={resolvedTheme === "dark" ? "animate-pulse" : ""}
+                />
                 <span>深色</span>
               </button>
             </div>
@@ -252,7 +270,9 @@ function MoreMenu() {
 
           {/* 语言选择 */}
           <div className="flex flex-col gap-1.5">
-            <span className="px-1 text-[10px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase">语言 / Language</span>
+            <span className="px-1 text-[10px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
+              语言 / Language
+            </span>
             <div className="flex flex-col gap-1">
               {LANGUAGES.map((lang) => {
                 const isActive = lang.code === locale;
@@ -266,7 +286,7 @@ function MoreMenu() {
                       "w-full px-2.5 py-2 rounded-xl text-left text-xs font-semibold flex items-center gap-3 transition-all duration-300 cursor-pointer border hover:translate-x-0.5",
                       isActive
                         ? "text-blue-600 dark:text-blue-400 bg-blue-500/5 dark:bg-blue-500/10 border-blue-500/15 dark:border-blue-500/20"
-                        : "text-slate-600 dark:text-slate-400 hover:bg-slate-200/30 dark:hover:bg-slate-900/50 border-transparent"
+                        : "text-slate-600 dark:text-slate-400 hover:bg-slate-200/30 dark:hover:bg-slate-900/50 border-transparent",
                     )}
                   >
                     {/* 小微标 */}
@@ -279,13 +299,18 @@ function MoreMenu() {
                             : "bg-indigo-500 text-white"
                           : isCN
                             ? "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                            : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                            : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400",
                       )}
                     >
                       {isCN ? "简" : "繁"}
                     </div>
                     <span className="flex-1">{lang.label}</span>
-                    {isActive && <Check size={13} className="text-blue-500 dark:text-blue-400" />}
+                    {isActive && (
+                      <Check
+                        size={13}
+                        className="text-blue-500 dark:text-blue-400"
+                      />
+                    )}
                   </button>
                 );
               })}
