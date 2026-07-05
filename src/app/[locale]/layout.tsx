@@ -55,6 +55,14 @@ const keben = localFont({
   preload: false,
 });
 
+const customKaiti = localFont({
+  src: "../../../public/fonts/FZKaiTi.woff2",
+  variable: "--font-kaiti-custom",
+  weight: "400",
+  display: "swap",
+  preload: false,
+});
+
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
@@ -79,7 +87,7 @@ export default async function LocaleLayout({ children, params }: Props) {
     <html
       lang={locale}
       suppressHydrationWarning
-      className={`${playfairDisplay.variable} ${notoSerifSC.variable} ${inter.variable} ${notoSansSC.variable} ${lxgwMono.variable} ${keben.variable}`}
+      className={`${playfairDisplay.variable} ${notoSerifSC.variable} ${inter.variable} ${notoSansSC.variable} ${lxgwMono.variable} ${keben.variable} ${customKaiti.variable}`}
     >
       <body className="antialiased">
         <PWARegistration />
