@@ -56,7 +56,7 @@ const keben = localFont({
 });
 
 const customKaiti = localFont({
-  src: "../../../public/fonts/FZKaiTi.woff2",
+  src: "../../../public/fonts/KaiTi.woff2",
   variable: "--font-kaiti-custom",
   weight: "400",
   display: "swap",
