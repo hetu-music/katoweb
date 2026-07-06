@@ -111,7 +111,7 @@ export default function GridCard({
 
       <div className="space-y-1">
         <div className="flex items-start justify-between gap-4">
-          <h2
+          <h3
             className={cn(
               "line-clamp-1 min-w-0 flex-1 text-xl leading-tight text-slate-900 transition-colors dark:text-slate-100",
               isActive
@@ -121,7 +121,7 @@ export default function GridCard({
             title={song.title}
           >
             {song.title}
-          </h2>
+          </h3>
           <span className="shrink-0 text-xs font-mono text-slate-400">
             {song.year || FILTER_OPTION_UNKNOWN}
           </span>

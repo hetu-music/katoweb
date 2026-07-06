@@ -51,7 +51,7 @@ export default function ListRow({
       </div>
 
       <div className="grow min-w-0 flex flex-col justify-center translate-y-[-1.5px] md:translate-y-0">
-        <h2
+        <h3
           className={cn(
             "truncate text-lg text-slate-900 transition-colors dark:text-slate-100",
             isActive
@@ -60,7 +60,7 @@ export default function ListRow({
           )}
         >
           {song.title}
-        </h2>
+        </h3>
         <p className="truncate text-sm font-light text-slate-500 dark:text-slate-400">
           {song.lyricist?.join(" ") || "-"}{" "}
           <span className="mx-1 opacity-50">/</span>{" "}

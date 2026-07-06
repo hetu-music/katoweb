@@ -62,6 +62,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function MusicLibraryPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "common" });
   let songsData: Song[] = [];
   let error: Error | null = null;
 
@@ -78,9 +79,12 @@ export default async function MusicLibraryPage({ params }: Props) {
   }
 
   return (
-    <Suspense fallback={<Loading />}>
-      <MusicLibraryClient initialSongsData={songsData} />
-    </Suspense>
+    <>
+      <h1 className="sr-only">{t("site.title")}</h1>
+      <Suspense fallback={<Loading />}>
+        <MusicLibraryClient initialSongsData={songsData} />
+      </Suspense>
+    </>
   );
 }
 
