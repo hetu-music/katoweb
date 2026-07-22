@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import MusicCupClient from "@/components/music-cup/MusicCupClient";
-import { selectCupSongs } from "@/components/music-cup/music-cup-data";
 import { getSongs } from "@/lib/server/service-songs";
 import type { Song } from "@/lib/types";
 
@@ -50,7 +49,7 @@ export default async function MusicCupPage({ params }: MusicCupPageProps) {
     );
   }
 
-  return <MusicCupClient songs={selectCupSongs(catalog)} locale={locale} />;
+  return <MusicCupClient songs={catalog} locale={locale} />;
 }
 
 export const revalidate = 7200;

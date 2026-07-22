@@ -7,11 +7,11 @@
  * === 两种权限客户端 ===
  *
  * getServiceClient()
- *   使用 Service Role Key（SUPABASE_SECRET_API），绕过 RLS。
+ *   使用服务端专用 key（SUPABASE_SERVICE_ROLE_KEY），绕过 RLS。
  *   适用于：公共展示数据的全量读取（music、imagery 相关表）。
  *
  * getUserClient(accessToken?)
- *   使用 Anon Key（NEXT_PUBLIC_SUPABASE_ANON_KEY），受 RLS 约束。
+ *   使用 Publishable/Anon Key（NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY），受 RLS 约束。
  *   使用 accessToken 时以登录用户身份执行，适用于后台操作（temp 表、users 表）。
  *
  * === 表名常量 ===
@@ -111,14 +111,20 @@ let hasWarnedUser = false;
 export function getServiceClient(): SupabaseClient | null {
   assertServerOnly();
 
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SECRET_API;
+  // Keep the legacy variable as a temporary compatibility fallback. A
+  // database password must never be used as an API key here.
+  const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const secretKey = process.env.SUPABASE_SECRET_KEY;
+  const key =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ??
+    process.env.SUPABASE_SECRET_API ??
+    (secretKey?.startsWith("sb_secret_") ? secretKey : undefined);
 
   if (!url || !key || url === "placeholder" || key === "placeholder") {
     if (!hasWarnedService) {
       const isPlaceholder = url === "placeholder" || key === "placeholder";
       console.warn(
-        `[supabase-server] SUPABASE_URL / SUPABASE_SECRET_API ${
+        `[supabase-server] SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY ${
           isPlaceholder ? "为占位符，已启用构建期降级模式" : "未配置"
         }`,
       );
@@ -139,14 +145,16 @@ export function getServiceClient(): SupabaseClient | null {
 export function getUserClient(accessToken?: string): SupabaseClient | null {
   assertServerOnly();
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL;
+  const key =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key || url === "placeholder" || key === "placeholder") {
     if (!hasWarnedUser) {
       const isPlaceholder = url === "placeholder" || key === "placeholder";
       console.warn(
-        `[supabase-server] NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY ${
+        `[supabase-server] NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ${
           isPlaceholder ? "为占位符，已启用构建期降级模式" : "未配置"
         }`,
       );

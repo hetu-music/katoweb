@@ -8,7 +8,7 @@ import type { NextRequest, NextResponse } from "next/server";
  * - `supabase-auth.ts` (本文件) - 用于**认证和会话管理**的服务端客户端
  *   - 处理用户登录、会话、cookies
  *   - 使用 @supabase/ssr 包
- *   - 使用 NEXT_PUBLIC_SUPABASE_ANON_KEY
+ *   - 使用 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY（兼容旧 ANON_KEY）
  *
  * - `supabase-server.ts` - 用于**数据访问**的服务端客户端
  *   - 查询数据库表（songs, users 等）
@@ -21,8 +21,11 @@ import type { NextRequest, NextResponse } from "next/server";
  * 这个函数专门用于服务端组件和 API 路由中需要处理认证的场景
  */
 export async function createSupabaseServerClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL;
+  const supabaseAnonKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error("Missing Supabase environment variables");
@@ -61,8 +64,11 @@ export function createSupabaseMiddlewareClient(
   request: NextRequest,
   response: NextResponse,
 ) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL;
+  const supabaseAnonKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error("Missing Supabase environment variables");

@@ -21,6 +21,9 @@
 - `1800 × 2800` PNG 分享长图，包含完整 32 强至冠军晋级树。
 - 桌面、平板和手机响应式布局，并尊重“减少动态效果”系统设置。
 - 曲库不可用时使用内置候选数据，不阻断赛事。
+- 首页提供河图初选、全库随机、我的收藏三种入池模式；全库/收藏池超过 48 首随机抽样，不足 48 首随机补足。
+- 新增 `/zh-CN/music-cup/preferences` 与 `/zh-TW/music-cup/preferences` 偏好排序实验室：A/B/平局、个人 rating、层级排名和有向图可视化。
+- 新增个人偏好 API 与 Supabase migration；未应用 migration 时，登录用户会得到明确提示，访客仍可用本机暂存模式。
 
 ## 初选 48 首
 
@@ -75,25 +78,29 @@
 
 ## 主要文件
 
-| 文件                                               | 用途                              |
-| -------------------------------------------------- | --------------------------------- |
-| `src/app/[locale]/(public)/music-cup/page.tsx`     | 页面入口、SEO、真实曲库读取       |
-| `src/components/music-cup/MusicCupClient.tsx`      | 完整客户端赛事界面与交互          |
-| `src/components/music-cup/music-cup-data.ts`       | 固定候选、fallback 与曲库选择规则 |
-| `src/components/music-cup/music-cup-types.ts`      | 赛事状态类型                      |
-| `src/components/music-cup/music-cup-utils.ts`      | 状态机、抽签、恢复、结果推导      |
-| `src/components/music-cup/music-cup-share.ts`      | Canvas 分享长图                   |
-| `src/components/music-cup/music-cup.css`           | 独立响应式视觉与动画              |
-| `src/components/music-cup/music-cup-utils.test.ts` | 完整赛事纯逻辑测试                |
-| `docs/music-cup-process.md`                        | 原站取证、决策与实施过程          |
-| `docs/music-cup-guide.md`                          | 启动和操作说明                    |
+| 文件                                                       | 用途                               |
+| ---------------------------------------------------------- | ---------------------------------- |
+| `src/app/[locale]/(public)/music-cup/page.tsx`             | 页面入口、SEO、真实曲库读取        |
+| `src/components/music-cup/MusicCupClient.tsx`              | 完整客户端赛事界面与交互           |
+| `src/components/music-cup/music-cup-data.ts`               | 固定候选、fallback 与曲库选择规则  |
+| `src/components/music-cup/music-cup-types.ts`              | 赛事状态类型                       |
+| `src/components/music-cup/music-cup-utils.ts`              | 状态机、抽签、恢复、结果推导       |
+| `src/components/music-cup/music-cup-share.ts`              | Canvas 分享长图                    |
+| `src/components/music-cup/music-cup.css`                   | 独立响应式视觉与动画               |
+| `src/components/music-cup/music-cup-utils.test.ts`         | 完整赛事纯逻辑测试                 |
+| `src/components/music-preferences/PreferenceLabClient.tsx` | 全库两两比较、排名和图谱界面       |
+| `src/components/music-preferences/preference-utils.ts`     | 配对选择、Elo 更新、分层和预算算法 |
+| `src/app/api/public/music-preferences/route.ts`            | 账号级偏好读写 API                 |
+| `supabase/migrations/20260722000000_music_preferences.sql` | RLS 表与原子更新 RPC               |
+| `docs/music-cup-process.md`                                | 原站取证、决策与实施过程           |
+| `docs/music-cup-guide.md`                                  | 启动和操作说明                     |
 
 ## 验证结果
 
 | 检查                                  | 结果                                                                                    |
 | ------------------------------------- | --------------------------------------------------------------------------------------- |
 | TypeScript `pnpm exec tsc --noEmit`   | 通过                                                                                    |
-| 纯逻辑测试 `pnpm exec tsx --test ...` | 3 项通过；完整赛事产生唯一冠军                                                          |
+| 纯逻辑测试 `pnpm exec tsx --test ...` | 11 项通过；覆盖赛事、封面、候选池与偏好算法                                             |
 | 全仓 ESLint `pnpm lint`               | 通过                                                                                    |
 | Prettier `pnpm format:check`          | 通过                                                                                    |
 | Next.js `pnpm build:next`             | 通过；`/[locale]/music-cup` 已进入生产构建                                              |
@@ -118,3 +125,4 @@
 - 用户清除浏览器站点数据后，未完成赛事无法恢复。
 - 封面 CDN 返回 `403` 时，页面会自动改用 `hetu-music.com` 的 OG 封面代理；独立封面不存在时使用站内默认封面，代理也失败后才退化为青黛题字封面。
 - 本次自动浏览器环境不能直接切换到手机视口，因此移动端仅完成 CSS 断点和横向溢出规则检查；建议发布前补一次 390px 和 430px 真机或 DevTools 交互回归。
+- 偏好排序的生产同步依赖 Supabase migration；migration 未部署时只验证本地暂存，不应把“本地可用”误认为“账号数据已写入线上”。

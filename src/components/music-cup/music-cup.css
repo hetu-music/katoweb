@@ -31,6 +31,98 @@
   font-family: var(--font-kaiti);
 }
 
+.cup-pool-picker {
+  margin: 1.35rem 0 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(104, 61, 35, 0.18);
+  background: rgba(255, 249, 237, 0.66);
+}
+
+.cup-pool-picker-label {
+  display: block;
+  margin-bottom: 0.65rem;
+  color: var(--cup-ink-soft, #806a58);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.cup-pool-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.cup-pool-option {
+  display: grid;
+  gap: 0.22rem;
+  min-height: 4.1rem;
+  padding: 0.7rem 0.65rem;
+  border: 1px solid rgba(104, 61, 35, 0.18);
+  color: inherit;
+  background: rgba(255, 255, 255, 0.36);
+  text-align: left;
+  cursor: pointer;
+  transition: 180ms ease;
+}
+
+.cup-pool-option:hover:not(:disabled),
+.cup-pool-option.is-active {
+  border-color: var(--cup-red, #9d3e2d);
+  background: rgba(157, 62, 45, 0.09);
+  transform: translateY(-1px);
+}
+
+.cup-pool-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.44;
+}
+
+.cup-pool-option strong {
+  font-size: 0.86rem;
+}
+
+.cup-pool-option small,
+.cup-pool-help,
+.cup-pool-result {
+  color: var(--cup-ink-soft, #806a58);
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
+.cup-pool-help {
+  margin: 0.72rem 0 0;
+}
+
+.cup-pool-result {
+  display: block;
+  margin-top: 0.65rem;
+}
+
+.cup-pool-result-draw {
+  margin: -1rem auto 1.5rem;
+  text-align: center;
+}
+
+.cup-preference-link {
+  margin-top: 1.25rem;
+}
+
+.cup-preference-link a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--cup-red, #9d3e2d);
+  font-size: 0.82rem;
+  text-decoration: none;
+}
+
+@media (max-width: 640px) {
+  .cup-pool-options {
+    grid-template-columns: 1fr;
+  }
+}
+
 .music-cup::before,
 .music-cup::after {
   position: fixed;

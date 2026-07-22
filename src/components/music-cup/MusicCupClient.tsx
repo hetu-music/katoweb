@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import type { Song } from "@/lib/types";
+import { useFavorites } from "@/context/FavoritesContext";
 import PlayButton from "@/components/shared/PlayButton";
 import {
   Dialog,
@@ -25,6 +26,14 @@ import {
 } from "@/components/ui/dialog";
 import { createShareImage } from "./music-cup-share";
 import { getCupCoverUrls, getHetuMusicCoverUrl } from "./music-cup-cover";
+import {
+  buildCupPool,
+  CUP_POOL_SIZE,
+  FALLBACK_SONGS,
+  selectCupSongs,
+  type CupPoolMode,
+  type CupPoolResult,
+} from "./music-cup-data";
 import type { TournamentState } from "./music-cup-types";
 import {
   commitKnockoutWinner,
@@ -40,6 +49,8 @@ import {
   toggleSelection,
 } from "./music-cup-utils";
 import "./music-cup.css";
+
+const POOL_STORAGE_KEY = "hetu-music-cup:pool:v1";
 
 interface MusicCupClientProps {
   songs: Song[];
@@ -240,7 +251,15 @@ function stageProgress(state: TournamentState) {
   );
 }
 
-export default function MusicCupClient({ songs, locale }: MusicCupClientProps) {
+export default function MusicCupClient({
+  songs: catalog,
+  locale,
+}: MusicCupClientProps) {
+  const { favorites, isLoggedIn, loaded: favoritesLoaded } = useFavorites();
+  const curatedSongs = useMemo(() => selectCupSongs(catalog), [catalog]);
+  const [activeSongs, setActiveSongs] = useState<Song[]>(curatedSongs);
+  const [poolMode, setPoolMode] = useState<CupPoolMode>("curated");
+  const [poolInfo, setPoolInfo] = useState<CupPoolResult | null>(null);
   const [state, setState] = useState<TournamentState>(createInitialState);
   const [history, setHistory] = useState<TournamentState[]>([]);
   const [hydrated, setHydrated] = useState(false);
@@ -253,22 +272,67 @@ export default function MusicCupClient({ songs, locale }: MusicCupClientProps) {
   const knockoutTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const songsById = useMemo(
-    () => new Map(songs.map((song) => [song.id, song])),
-    [songs],
+    () => new Map(activeSongs.map((song) => [song.id, song])),
+    [activeSongs],
   );
-  const allowedIds = useMemo(
-    () => new Set(songs.map((song) => song.id)),
-    [songs],
-  );
-
   useEffect(() => {
     let active = true;
+    let persistedMode: CupPoolMode = "curated";
+    let persistedSongs = curatedSongs;
+    let persistedInfo: CupPoolResult | null = null;
+    try {
+      const rawPool = localStorage.getItem(POOL_STORAGE_KEY);
+      const parsed = rawPool ? JSON.parse(rawPool) : null;
+      if (
+        parsed &&
+        (parsed.mode === "curated" ||
+          parsed.mode === "favorites" ||
+          parsed.mode === "all") &&
+        Array.isArray(parsed.songIds)
+      ) {
+        // A small catalog can rely on bundled fallback songs to keep the
+        // bracket valid; restore those IDs as well as live database rows.
+        const byId = new Map([
+          ...FALLBACK_SONGS.map((song) => [song.id, song] as const),
+          ...catalog.map((song) => [song.id, song] as const),
+        ]);
+        const restoredSongs = parsed.songIds
+          .map((id: unknown) => byId.get(Number(id)))
+          .filter((song: Song | undefined): song is Song => Boolean(song));
+        if (restoredSongs.length === CUP_POOL_SIZE) {
+          persistedMode = parsed.mode;
+          persistedSongs = restoredSongs;
+          persistedInfo = {
+            songs: restoredSongs,
+            mode: parsed.mode,
+            sourceCount:
+              Number.isFinite(parsed.sourceCount) && parsed.sourceCount >= 0
+                ? parsed.sourceCount
+                : restoredSongs.length,
+            sampledCount:
+              Number.isFinite(parsed.sampledCount) && parsed.sampledCount >= 0
+                ? parsed.sampledCount
+                : 0,
+            filledCount:
+              Number.isFinite(parsed.filledCount) && parsed.filledCount >= 0
+                ? parsed.filledCount
+                : 0,
+            targetSize: CUP_POOL_SIZE,
+          };
+        }
+      }
+    } catch {
+      localStorage.removeItem(POOL_STORAGE_KEY);
+    }
     const restored = restoreTournament(
       localStorage.getItem(STORAGE_KEY),
-      allowedIds,
+      new Set(persistedSongs.map((song) => song.id)),
     );
     queueMicrotask(() => {
       if (!active) return;
+      setPoolMode(persistedMode);
+      setActiveSongs(persistedSongs);
+      setPoolInfo(persistedInfo);
       if (restored) {
         setState({ ...restored.current, pendingWinner: null });
         setHistory(restored.history);
@@ -280,7 +344,7 @@ export default function MusicCupClient({ songs, locale }: MusicCupClientProps) {
     return () => {
       active = false;
     };
-  }, [allowedIds]);
+  }, [catalog, curatedSongs]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -314,6 +378,50 @@ export default function MusicCupClient({ songs, locale }: MusicCupClientProps) {
     setHistory([]);
     localStorage.removeItem(STORAGE_KEY);
     setResetOpen(false);
+  };
+
+  const choosePoolMode = (mode: CupPoolMode) => {
+    if (mode === "favorites" && !isLoggedIn) return;
+    const preview = buildCupPool({
+      mode,
+      allSongs: catalog,
+      favoriteIds: favorites,
+    });
+    setPoolMode(mode);
+    setPoolInfo(preview);
+    setActiveSongs(preview.songs);
+    setState(createInitialState());
+    setHistory([]);
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(POOL_STORAGE_KEY);
+  };
+
+  const startSelectedPool = () => {
+    // Keep the preview stable so users know exactly which songs enter the
+    // bracket. A fresh pool is only generated when no preview exists yet.
+    const result =
+      poolInfo?.mode === poolMode
+        ? poolInfo
+        : buildCupPool({
+            mode: poolMode,
+            allSongs: catalog,
+            favoriteIds: favorites,
+          });
+    setActiveSongs(result.songs);
+    setPoolInfo(result);
+    localStorage.setItem(
+      POOL_STORAGE_KEY,
+      JSON.stringify({
+        mode: result.mode,
+        songIds: result.songs.map((song) => song.id),
+        sourceCount: result.sourceCount,
+        sampledCount: result.sampledCount,
+        filledCount: result.filledCount,
+      }),
+    );
+    localStorage.removeItem(STORAGE_KEY);
+    setHistory([]);
+    setState(startTournament(result.songs.map((song) => song.id)));
   };
 
   const undo = () => {
@@ -370,6 +478,31 @@ export default function MusicCupClient({ songs, locale }: MusicCupClientProps) {
   );
   const result = getCupResult(state, songsById);
   const progress = stageProgress(state);
+  const poolCopy =
+    poolMode === "curated"
+      ? {
+          eyebrow: "THE CURATED CANON",
+          title: "定选四十八曲",
+          description: "河图代表曲目 · 不以声量论高下",
+        }
+      : poolMode === "favorites"
+        ? {
+            eyebrow: "MY SAVED SONGS",
+            title: "我的收藏入池",
+            description: "从你的收藏中抽取并补足四十八曲",
+          }
+        : {
+            eyebrow: "THE FULL ARCHIVE DRAW",
+            title: "全库四十八曲",
+            description: "从数据库全量歌曲中随机抽取并补足",
+          };
+  const poolSummary = poolInfo
+    ? `本局入池 ${poolInfo.songs.length} 首 · 来源 ${poolInfo.sourceCount} 首${
+        poolInfo.sampledCount > 0 ? ` · 未抽入 ${poolInfo.sampledCount} 首` : ""
+      }${
+        poolInfo.filledCount > 0 ? ` · 随机补入 ${poolInfo.filledCount} 首` : ""
+      }`
+    : null;
 
   return (
     <main className="music-cup">
@@ -438,13 +571,55 @@ export default function MusicCupClient({ songs, locale }: MusicCupClientProps) {
                   <b>1</b>曲问魁
                 </span>
               </div>
+              <div className="cup-pool-picker" aria-label="选择入池来源">
+                <span className="cup-pool-picker-label">入池方式</span>
+                <div className="cup-pool-options">
+                  {(
+                    [
+                      ["curated", "河图初选", "编辑精选 48 首"],
+                      ["all", "全库抽签", `${catalog.length} 首歌曲`],
+                      [
+                        "favorites",
+                        "我的收藏",
+                        isLoggedIn
+                          ? `${favorites.length} 首收藏`
+                          : "登录后可用",
+                      ],
+                    ] as const
+                  ).map(([mode, label, detail]) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      className={`cup-pool-option${poolMode === mode ? " is-active" : ""}`}
+                      disabled={mode === "favorites" && !isLoggedIn}
+                      onClick={() => choosePoolMode(mode)}
+                    >
+                      <strong>{label}</strong>
+                      <small>{detail}</small>
+                    </button>
+                  ))}
+                </div>
+                <p className="cup-pool-help">
+                  {poolMode === "curated"
+                    ? "沿用河图代表曲目的固定初选名单。"
+                    : poolMode === "all"
+                      ? `从数据库全量歌曲${catalog.length > CUP_POOL_SIZE ? "随机抽取" : "直接纳入并补足"} ${CUP_POOL_SIZE} 首；再次点击可重抽。`
+                      : favoritesLoaded
+                        ? `从你的收藏${favorites.length > CUP_POOL_SIZE ? "随机抽取" : "纳入并补足"} ${CUP_POOL_SIZE} 首；再次点击可重抽。`
+                        : "正在读取收藏…"}
+                </p>
+              </div>
               <PrimaryButton
-                onClick={() =>
-                  commit(startTournament(songs.map((song) => song.id)))
+                disabled={
+                  poolMode === "favorites" && (!isLoggedIn || !favoritesLoaded)
                 }
+                onClick={startSelectedPool}
               >
-                开始抽签
+                {poolMode === "curated" ? "开始抽签" : "确认入池并开始"}
               </PrimaryButton>
+              {poolInfo ? (
+                <small className="cup-pool-result">{poolSummary}</small>
+              ) : null}
               {SHOW_AUDIO_PERMISSION_NOTE ? (
                 <small className="cup-audio-note">
                   试听沿用站内会员权限；所有曲目均可打开档案查看。
@@ -453,7 +628,7 @@ export default function MusicCupClient({ songs, locale }: MusicCupClientProps) {
             </div>
 
             <div className="cup-hero-art" aria-label="候选歌曲封面拼贴">
-              {songs.slice(0, 3).map((song, index) => (
+              {activeSongs.slice(0, 3).map((song, index) => (
                 <div
                   className={`cup-hero-cover cover-${index + 1}`}
                   key={song.id}
@@ -479,13 +654,13 @@ export default function MusicCupClient({ songs, locale }: MusicCupClientProps) {
             <section className="cup-candidate-board">
               <div className="cup-candidate-title">
                 <div>
-                  <span>THE CURATED CANON</span>
-                  <h2>定选四十八曲</h2>
+                  <span>{poolCopy.eyebrow}</span>
+                  <h2>{poolCopy.title}</h2>
                 </div>
-                <p>河图代表曲目 · 不以声量论高下</p>
+                <p>{poolCopy.description}</p>
               </div>
               <ol>
-                {songs.map((song, index) => (
+                {activeSongs.map((song, index) => (
                   <li key={song.id}>
                     <span>{String(index + 1).padStart(2, "0")}</span>
                     <strong>{song.title}</strong>
@@ -493,6 +668,11 @@ export default function MusicCupClient({ songs, locale }: MusicCupClientProps) {
                 ))}
               </ol>
             </section>
+            <div className="cup-preference-link">
+              <Link href="/music-cup/preferences">
+                不参加淘汰赛？进入全库偏好排序 <ChevronRight size={15} />
+              </Link>
+            </div>
           </div>
         ) : null}
 
@@ -503,6 +683,11 @@ export default function MusicCupClient({ songs, locale }: MusicCupClientProps) {
               title="十二支分席落定"
               description="四曲同席，择二入围；余者暂退，候列遗珠归席之门。"
             />
+            {poolSummary ? (
+              <p className="cup-pool-result cup-pool-result-draw">
+                {poolSummary}
+              </p>
+            ) : null}
             <div className="cup-group-grid">
               {state.groups.map((group, groupIndex) => (
                 <article key={GROUP_LABELS[groupIndex]}>

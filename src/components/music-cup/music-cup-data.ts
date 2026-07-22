@@ -1,4 +1,18 @@
 import type { Song } from "@/lib/types";
+import { shuffle } from "./music-cup-utils";
+
+export type CupPoolMode = "curated" | "favorites" | "all";
+
+export interface CupPoolResult {
+  songs: Song[];
+  mode: CupPoolMode;
+  sourceCount: number;
+  sampledCount: number;
+  filledCount: number;
+  targetSize: number;
+}
+
+export const CUP_POOL_SIZE = 48;
 
 export const CURATED_SONGS = [
   [9, "倾尽天下", "倾尽天下", 2013],
@@ -126,4 +140,71 @@ export function selectCupSongs(allSongs: Song[]): Song[] {
   }
 
   return selected.slice(0, 48);
+}
+
+function uniqueSongs(songs: Song[]) {
+  return [...new Map(songs.map((song) => [song.id, song])).values()];
+}
+
+/**
+ * Build a tournament pool from a source selection. A pool larger than 48 is
+ * sampled without replacement; a smaller pool is filled from the remaining
+ * catalog and finally from the bundled curated set so the existing 48-slot
+ * bracket remains valid.
+ */
+export function buildCupPool({
+  mode,
+  allSongs,
+  favoriteIds = [],
+}: {
+  mode: CupPoolMode;
+  allSongs: Song[];
+  favoriteIds?: Iterable<number>;
+}): CupPoolResult {
+  const catalog = uniqueSongs(allSongs);
+
+  if (mode === "curated") {
+    const songs = selectCupSongs(catalog).slice(0, CUP_POOL_SIZE);
+    return {
+      songs,
+      mode,
+      sourceCount: songs.length,
+      sampledCount: 0,
+      filledCount: 0,
+      targetSize: CUP_POOL_SIZE,
+    };
+  }
+
+  const favoriteSet = new Set(favoriteIds);
+  const source =
+    mode === "favorites"
+      ? catalog.filter((song) => favoriteSet.has(song.id))
+      : catalog;
+  const primary = shuffle(source);
+  const songs = primary.slice(0, CUP_POOL_SIZE);
+  const selectedIds = new Set(songs.map((song) => song.id));
+  const sampledCount = Math.max(0, source.length - songs.length);
+
+  const fillCandidates = shuffle([
+    ...catalog.filter((song) => !selectedIds.has(song.id)),
+    ...FALLBACK_SONGS.filter((song) => !selectedIds.has(song.id)),
+  ]);
+  for (const song of fillCandidates) {
+    if (songs.length >= CUP_POOL_SIZE) break;
+    if (selectedIds.has(song.id)) continue;
+    songs.push(song);
+    selectedIds.add(song.id);
+  }
+
+  return {
+    songs,
+    mode,
+    sourceCount: source.length,
+    sampledCount,
+    filledCount: Math.max(
+      0,
+      songs.length - Math.min(source.length, CUP_POOL_SIZE),
+    ),
+    targetSize: CUP_POOL_SIZE,
+  };
 }

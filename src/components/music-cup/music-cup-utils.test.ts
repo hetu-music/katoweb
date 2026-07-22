@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  buildCupPool,
   CURATED_SONG_IDS,
   FALLBACK_SONGS,
   selectCupSongs,
@@ -54,6 +55,29 @@ test("live songs retain live fields while missing album metadata is filled", () 
   assert.equal(mergedSong?.album, "倾尽天下");
   assert.equal(mergedSong?.year, 2013);
   assert.equal(mergedSong?.has_audio, false);
+});
+
+test("all-song and favorites pools always resolve to 48 unique songs", () => {
+  const extraSongs = Array.from({ length: 60 }, (_, index) => ({
+    ...FALLBACK_SONGS[index % FALLBACK_SONGS.length],
+    id: 1000 + index,
+    title: `额外歌曲 ${index}`,
+  }));
+  const sampled = buildCupPool({ mode: "all", allSongs: extraSongs });
+  assert.equal(sampled.songs.length, 48);
+  assert.equal(new Set(sampled.songs.map((song) => song.id)).size, 48);
+  assert.equal(sampled.sourceCount, 60);
+  assert.equal(sampled.sampledCount, 12);
+
+  const sparse = buildCupPool({
+    mode: "favorites",
+    allSongs: extraSongs.slice(0, 3),
+    favoriteIds: [1000, 1001],
+  });
+  assert.equal(sparse.songs.length, 48);
+  assert.equal(new Set(sparse.songs.map((song) => song.id)).size, 48);
+  assert.equal(sparse.sourceCount, 2);
+  assert.equal(sparse.filledCount, 46);
 });
 
 test("a complete tournament advances from draw to one champion", () => {
