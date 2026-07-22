@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "cover.hetu-music.com",
       },
+      {
+        protocol: "https",
+        hostname: "hetu-music.com",
+        pathname: "/og-cover/**",
+      },
     ],
     minimumCacheTTL: 3600,
     // 优化图片处理以减少内存占用
@@ -98,7 +103,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-
 };
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
