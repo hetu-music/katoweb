@@ -69,6 +69,21 @@ export const TYPE_ORDER = [
   "参与",
 ];
 
+// 流派顺序（用于排序）
+export const GENRE_ORDER = [
+  "古风",
+  "流行",
+  "摇滚",
+  "民谣",
+  "电子",
+  "说唱",
+  "古典",
+  "民族",
+  "布鲁斯",
+  "新世纪",
+  "其他",
+];
+
 // 类型标签样式映射（标签显示：纯文字样式，无边框无背景）
 const typeTagStyleMap: Record<string, string> = {
   原创: "text-purple-500/60 dark:text-purple-400/60",

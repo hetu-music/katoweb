@@ -40,6 +40,7 @@
   },
   "filter": {
     "type": "类型",
+    "genre": "流派",
     "year": "年份",
     "lyricist": "作词",
     "composer": "作曲",
@@ -47,6 +48,7 @@
     "clearAll": "清除筛选",
     "apply": "应用",
     "yearRange": "发行年份",
+    "allGenres": "全部流派",
     "allLyricists": "全部作词",
     "allComposers": "全部作曲",
     "allArrangers": "全部编曲"
