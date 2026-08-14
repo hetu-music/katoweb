@@ -23,6 +23,8 @@ export interface MusicLibraryState {
   setFilterType: (type: string) => void;
   yearRangeIndices: [number, number];
   setYearRangeIndices: (range: [number, number]) => void;
+  filterGenre: string[];
+  setFilterGenre: (genre: string[]) => void;
   filterLyricist: string[];
   setFilterLyricist: (lyricist: string[]) => void;
   filterComposer: string[];
@@ -66,6 +68,13 @@ export function useMusicLibraryState(
   const [filterType, setFilterTypeState] = useSyncedQueryState<string>(
     "type",
     parseAsString.withDefault(FILTER_OPTION_ALL).withOptions({ shallow: true }),
+  );
+  const [filterGenre, setFilterGenreState] = useSyncedQueryState<string[]>(
+    "genre",
+    parseAsArrayOf(parseAsString)
+      .withDefault([])
+      .withOptions({ shallow: true }),
+    { equals: areStringArraysEqual },
   );
   const [filterLyricist, setFilterLyricistState] = useSyncedQueryState<
     string[]
@@ -182,6 +191,14 @@ export function useMusicLibraryState(
     [setCurrentPageState, setFilterTypeState],
   );
 
+  const setFilterGenre = useCallback(
+    (genre: string[]) => {
+      setFilterGenreState(genre);
+      setCurrentPageState(1);
+    },
+    [setCurrentPageState, setFilterGenreState],
+  );
+
   const setFilterLyricist = useCallback(
     (lyricist: string[]) => {
       setFilterLyricistState(lyricist);
@@ -243,6 +260,7 @@ export function useMusicLibraryState(
   const resetAllFilters = useCallback(() => {
     setSearchQueryState("");
     setFilterTypeState(FILTER_OPTION_ALL);
+    setFilterGenreState([]);
     setFilterLyricistState([]);
     setFilterComposerState([]);
     setFilterArrangerState([]);
@@ -255,6 +273,7 @@ export function useMusicLibraryState(
     setCurrentPageState,
     setFilterArrangerState,
     setFilterComposerState,
+    setFilterGenreState,
     setFilterLyricistState,
     setFilterTypeState,
     setSearchQueryState,
@@ -270,6 +289,8 @@ export function useMusicLibraryState(
     setFilterType,
     yearRangeIndices,
     setYearRangeIndices,
+    filterGenre,
+    setFilterGenre,
     filterLyricist,
     setFilterLyricist,
     filterComposer,

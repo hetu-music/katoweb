@@ -5,9 +5,11 @@ import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import Pagination from "@/components/shared/Pagination";
 import { useFavorites } from "@/context/FavoritesContext";
 import { useFilteredSongs } from "@/hooks/library/useFilteredSongs";
-import { useMouseDragScroll } from "@/hooks/ui/useMouseDragScroll";
+import { extractLyricsSnippet } from "@/hooks/library/useLyricsIndex";
 import { useMusicLibraryState } from "@/hooks/library/useMusicLibraryState";
+import { useMouseDragScroll } from "@/hooks/ui/useMouseDragScroll";
 import { useScrollTop } from "@/hooks/ui/useScrollTop";
+import { useRouter } from "@/i18n/navigation";
 import {
   DEFAULT_MUSIC_LIBRARY_VIEW_MODE,
   FILTER_OPTION_ALL,
@@ -17,9 +19,7 @@ import {
 } from "@/lib/constants";
 import type { MusicLibraryClientProps } from "@/lib/types";
 import { cn } from "@/lib/utils/utils";
-import { extractLyricsSnippet } from "@/hooks/library/useLyricsIndex";
 import { calculateFilterOptions } from "@/lib/utils/utils-song";
-import { useTranslations } from "next-intl";
 import {
   Disc,
   LayoutGrid,
@@ -31,7 +31,7 @@ import {
   X,
   XCircle,
 } from "lucide-react";
-import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import About from "./About";
 import GridCard from "./GridCard";
@@ -102,6 +102,8 @@ export default function MusicLibraryClient({
     setFilterType,
     yearRangeIndices,
     setYearRangeIndices,
+    filterGenre,
+    setFilterGenre,
     filterLyricist,
     setFilterLyricist,
     filterComposer,
@@ -134,6 +136,7 @@ export default function MusicLibraryClient({
     searchQuery,
     filterType,
     yearRangeIndices,
+    filterGenre,
     filterLyricist,
     filterComposer,
     filterArranger,
@@ -254,7 +257,7 @@ export default function MusicLibraryClient({
         title={
           <>
             {t("logo.part1")}
-            <span className="mx-2 h-5 w-[2px] translate-y-[1.5px] rounded-full bg-blue-600" />
+            <span className="mx-2 h-5 w-0.5 translate-y-[1.5px] rounded-full bg-blue-600" />
             {t("logo.part2")}
           </>
         }
@@ -403,6 +406,8 @@ export default function MusicLibraryClient({
                   yearRangeIndices={yearRangeIndices}
                   setYearRangeIndices={setYearRangeIndices}
                   sliderYears={sliderYears}
+                  selectedGenre={filterGenre}
+                  setSelectedGenre={setFilterGenre}
                   selectedLyricist={filterLyricist}
                   setSelectedLyricist={setFilterLyricist}
                   selectedComposer={filterComposer}

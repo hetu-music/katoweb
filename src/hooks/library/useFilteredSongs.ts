@@ -21,6 +21,7 @@ interface UseFilteredSongsOptions {
   searchQuery: string;
   filterType: string;
   yearRangeIndices: [number, number];
+  filterGenre: string[];
   filterLyricist: string[];
   filterComposer: string[];
   filterArranger: string[];
@@ -33,6 +34,7 @@ export function useFilteredSongs({
   searchQuery,
   filterType,
   yearRangeIndices,
+  filterGenre,
   filterLyricist,
   filterComposer,
   filterArranger,
@@ -91,6 +93,7 @@ export function useFilteredSongs({
         filterLyricist,
         filterComposer,
         filterArranger,
+        filterGenre,
         activeFuseInstance,
       ),
     [
@@ -101,6 +104,7 @@ export function useFilteredSongs({
       filterLyricist,
       filterComposer,
       filterArranger,
+      filterGenre,
       activeFuseInstance,
     ],
   );
@@ -108,6 +112,7 @@ export function useFilteredSongs({
   const isAnyFilterActive =
     searchQuery !== "" ||
     filterType !== FILTER_OPTION_ALL ||
+    filterGenre.length > 0 ||
     filterLyricist.length > 0 ||
     filterComposer.length > 0 ||
     filterArranger.length > 0 ||

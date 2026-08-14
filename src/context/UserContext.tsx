@@ -85,6 +85,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     onSuccess: () => {
       // 直接跳转到带当前语言前缀的登录页。由于是全页刷新跳转（window.location.href），整个 React 状态和内存缓存会自动清空。
       // 避免在跳转成功前瞬间清空 queryData，从而解决页面闪烁显示“访客”UI 的视觉不连贯问题。
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.href = `/${locale}/login`;
     },
   });

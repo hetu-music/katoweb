@@ -58,6 +58,7 @@ export interface SongDetailClientProps {
 // 筛选选项类型
 export interface FilterOptions {
   allTypes: string[];
+  allGenres: string[];
   allYears: (string | number)[];
   allLyricists: string[];
   allComposers: string[];

@@ -8,6 +8,8 @@ interface SongFiltersProps {
   yearRangeIndices: [number, number];
   setYearRangeIndices: (range: [number, number]) => void;
   sliderYears: (string | number)[];
+  selectedGenre: string[];
+  setSelectedGenre: (genre: string[]) => void;
   selectedLyricist: string[];
   setSelectedLyricist: (lyricist: string[]) => void;
   selectedComposer: string[];
@@ -16,6 +18,7 @@ interface SongFiltersProps {
   setSelectedArranger: (arranger: string[]) => void;
   filterOptions: {
     allTypes: string[];
+    allGenres: string[];
     allYears: (string | number | null)[];
     allLyricists: string[];
     allComposers: string[];
@@ -69,6 +72,8 @@ const SongFilters: React.FC<SongFiltersProps> = ({
   yearRangeIndices,
   setYearRangeIndices,
   sliderYears,
+  selectedGenre,
+  setSelectedGenre,
   selectedLyricist,
   setSelectedLyricist,
   selectedComposer,
@@ -78,10 +83,17 @@ const SongFilters: React.FC<SongFiltersProps> = ({
   filterOptions,
 }) => {
   const t = useTranslations("library.filter");
+  const tEnum = useTranslations("enums");
+  const tCommon = useTranslations("common");
 
   // 共享样式常量
   const labelStyle =
     "text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest";
+
+  const getGenreLabel = (genre: string) => {
+    if (genre === FILTER_OPTION_UNKNOWN) return tCommon("unknown");
+    return tEnum.has(`genre.${genre}`) ? tEnum(`genre.${genre}`) : genre;
+  };
 
   // If no years loaded yet, use dummy
   const displayYears =
@@ -103,7 +115,23 @@ const SongFilters: React.FC<SongFiltersProps> = ({
 
       {/* Bottom Row: Other Filters */}
       <div className="w-full bg-white/30 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800/50 rounded-xl p-3">
-        <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Genre Filter */}
+          <div className="flex flex-col gap-1">
+            <label className={`${labelStyle} ml-1`}>{t("genre")}</label>
+            <CustomSelect
+              value={selectedGenre}
+              onChange={setSelectedGenre}
+              placeholder={t("allGenres")}
+              options={filterOptions.allGenres
+                .filter((genre) => genre !== FILTER_OPTION_ALL)
+                .map((genre) => ({
+                  value: genre,
+                  label: getGenreLabel(genre),
+                }))}
+            />
+          </div>
+
           {/* Lyricist Filter */}
           <div className="flex flex-col gap-1">
             <label className={`${labelStyle} ml-1`}>{t("lyricist")}</label>

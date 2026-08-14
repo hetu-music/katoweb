@@ -1,6 +1,7 @@
 import {
   FILTER_OPTION_ALL,
   FILTER_OPTION_UNKNOWN,
+  GENRE_ORDER,
   TYPE_ORDER,
 } from "@/lib/constants";
 import { FilterOptions, Song, SongDetail, SongInfo } from "@/lib/types";
@@ -60,6 +61,24 @@ export function calculateFilterOptions(songsData: Song[]): FilterOptions {
   allTypes = [FILTER_OPTION_ALL, ...allTypes];
   if (hasUnknownType) allTypes.push(FILTER_OPTION_UNKNOWN);
 
+  // 处理流派
+  const genreSet = new Set<string>();
+  let hasUnknownGenre = false;
+  songsData.forEach((song) => {
+    if (!song.genre || song.genre.length === 0) {
+      hasUnknownGenre = true;
+    } else {
+      song.genre.forEach((g) => genreSet.add(g));
+    }
+  });
+  const preferredGenreOrder = GENRE_ORDER;
+  let allGenres = Array.from(genreSet);
+  allGenres = preferredGenreOrder
+    .filter((g) => allGenres.includes(g))
+    .concat(allGenres.filter((g) => !preferredGenreOrder.includes(g)));
+  allGenres = [FILTER_OPTION_ALL, ...allGenres];
+  if (hasUnknownGenre) allGenres.push(FILTER_OPTION_UNKNOWN);
+
   // 处理年份
   const yearSet = new Set<number>();
   let hasUnknownYear = false;
@@ -118,7 +137,14 @@ export function calculateFilterOptions(songsData: Song[]): FilterOptions {
   const allArrangers = [FILTER_OPTION_ALL, ...sortedArrangers];
   if (hasUnknownArranger) allArrangers.push(FILTER_OPTION_UNKNOWN);
 
-  return { allTypes, allYears, allLyricists, allComposers, allArrangers };
+  return {
+    allTypes,
+    allGenres,
+    allYears,
+    allLyricists,
+    allComposers,
+    allArrangers,
+  };
 }
 
 // 处理 LRC 歌词用于搜索
@@ -185,6 +211,7 @@ export function filterSongs(
   selectedLyricist: string[],
   selectedComposer: string[],
   selectedArranger: string[],
+  selectedGenre: string[] = [],
   // 接受基础索引或含歌词的扩展索引
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fuseInstance?: Fuse<any>,
@@ -247,12 +274,21 @@ export function filterSongs(
           : song.arranger && song.arranger.includes(sel),
       );
 
+    const matchesGenre =
+      selectedGenre.length === 0 ||
+      selectedGenre.some((sel) =>
+        sel === FILTER_OPTION_UNKNOWN
+          ? !song.genre || song.genre.length === 0
+          : song.genre && song.genre.includes(sel),
+      );
+
     return (
       matchesType &&
       matchesYear &&
       matchesLyricist &&
       matchesComposer &&
-      matchesArranger
+      matchesArranger &&
+      matchesGenre
     );
   });
 }
