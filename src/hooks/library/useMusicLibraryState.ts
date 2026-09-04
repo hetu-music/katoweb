@@ -31,6 +31,8 @@ export interface MusicLibraryState {
   setFilterComposer: (composer: string[]) => void;
   filterArranger: string[];
   setFilterArranger: (arranger: string[]) => void;
+  filterArtist: string[];
+  setFilterArtist: (artist: string[]) => void;
   viewMode: MusicLibraryViewMode;
   setViewMode: (mode: MusicLibraryViewMode) => void;
   currentPage: number;
@@ -98,6 +100,13 @@ export function useMusicLibraryState(
     string[]
   >(
     "arranger",
+    parseAsArrayOf(parseAsString)
+      .withDefault([])
+      .withOptions({ shallow: true }),
+    { equals: areStringArraysEqual },
+  );
+  const [filterArtist, setFilterArtistState] = useSyncedQueryState<string[]>(
+    "artist",
     parseAsArrayOf(parseAsString)
       .withDefault([])
       .withOptions({ shallow: true }),
@@ -223,6 +232,14 @@ export function useMusicLibraryState(
     [setCurrentPageState, setFilterArrangerState],
   );
 
+  const setFilterArtist = useCallback(
+    (artist: string[]) => {
+      setFilterArtistState(artist);
+      setCurrentPageState(1);
+    },
+    [setCurrentPageState, setFilterArtistState],
+  );
+
   const setYearRangeIndices = useCallback(
     (range: [number, number]) => {
       const maxIndex = getMaxYearIndex();
@@ -264,6 +281,7 @@ export function useMusicLibraryState(
     setFilterLyricistState([]);
     setFilterComposerState([]);
     setFilterArrangerState([]);
+    setFilterArtistState([]);
     setYearStartState(0);
     setYearEndState(getMaxYearIndex());
     setCurrentPageState(1);
@@ -272,6 +290,7 @@ export function useMusicLibraryState(
     getMaxYearIndex,
     setCurrentPageState,
     setFilterArrangerState,
+    setFilterArtistState,
     setFilterComposerState,
     setFilterGenreState,
     setFilterLyricistState,
@@ -297,6 +316,8 @@ export function useMusicLibraryState(
     setFilterComposer,
     filterArranger,
     setFilterArranger,
+    filterArtist,
+    setFilterArtist,
     viewMode,
     setViewMode,
     currentPage: Math.max(1, currentPage),

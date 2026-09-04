@@ -35,8 +35,10 @@ function buildFromEntries(
     searchableContent: [
       song.title,
       song.album || "",
+      (song.artist || []).join(" "),
       (song.lyricist || []).join(" "),
       (song.composer || []).join(" "),
+      (song.arranger || []).join(" "),
     ]
       .filter(Boolean)
       .join(" "),
@@ -46,9 +48,10 @@ function buildFromEntries(
   const fuse = new Fuse(searchData, {
     keys: [
       { name: "title", weight: 0.35 },
-      { name: "album", weight: 0.2 },
-      { name: "lyricist", weight: 0.15 },
-      { name: "composer", weight: 0.1 },
+      { name: "album", weight: 0.15 },
+      { name: "artist", weight: 0.15 },
+      { name: "lyricist", weight: 0.1 },
+      { name: "composer", weight: 0.05 },
       { name: "arranger", weight: 0.05 },
       { name: "lyricContent", weight: 0.15 },
     ],

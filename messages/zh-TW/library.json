@@ -42,6 +42,7 @@
     "type": "類型",
     "genre": "流派",
     "year": "年份",
+    "artist": "演唱",
     "lyricist": "作詞",
     "composer": "作曲",
     "arranger": "編曲",
@@ -49,6 +50,7 @@
     "apply": "套用",
     "yearRange": "發行年份",
     "allGenres": "全部流派",
+    "allArtists": "全部演唱",
     "allLyricists": "全部作詞",
     "allComposers": "全部作曲",
     "allArrangers": "全部編曲"

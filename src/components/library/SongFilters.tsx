@@ -10,6 +10,8 @@ interface SongFiltersProps {
   sliderYears: (string | number)[];
   selectedGenre: string[];
   setSelectedGenre: (genre: string[]) => void;
+  selectedArtist: string[];
+  setSelectedArtist: (artist: string[]) => void;
   selectedLyricist: string[];
   setSelectedLyricist: (lyricist: string[]) => void;
   selectedComposer: string[];
@@ -23,6 +25,7 @@ interface SongFiltersProps {
     allLyricists: string[];
     allComposers: string[];
     allArrangers: string[];
+    allArtists: string[];
   };
 }
 
@@ -74,6 +77,8 @@ const SongFilters: React.FC<SongFiltersProps> = ({
   sliderYears,
   selectedGenre,
   setSelectedGenre,
+  selectedArtist,
+  setSelectedArtist,
   selectedLyricist,
   setSelectedLyricist,
   selectedComposer,
@@ -115,7 +120,7 @@ const SongFilters: React.FC<SongFiltersProps> = ({
 
       {/* Bottom Row: Other Filters */}
       <div className="w-full bg-white/30 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800/50 rounded-xl p-3">
-        <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           {/* Genre Filter */}
           <div className="flex flex-col gap-1">
             <label className={`${labelStyle} ml-1`}>{t("genre")}</label>
@@ -129,6 +134,19 @@ const SongFilters: React.FC<SongFiltersProps> = ({
                   value: genre,
                   label: getGenreLabel(genre),
                 }))}
+            />
+          </div>
+
+          {/* Artist Filter */}
+          <div className="flex flex-col gap-1">
+            <label className={`${labelStyle} ml-1`}>{t("artist")}</label>
+            <CustomSelect
+              value={selectedArtist}
+              onChange={setSelectedArtist}
+              placeholder={t("allArtists")}
+              options={filterOptions.allArtists
+                .filter((artist) => artist !== FILTER_OPTION_ALL)
+                .map((artist) => ({ value: artist, label: artist }))}
             />
           </div>
 

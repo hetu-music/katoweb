@@ -110,6 +110,8 @@ export default function MusicLibraryClient({
     setFilterComposer,
     filterArranger,
     setFilterArranger,
+    filterArtist,
+    setFilterArtist,
     viewMode,
     setViewMode,
     currentPage,
@@ -140,6 +142,7 @@ export default function MusicLibraryClient({
     filterLyricist,
     filterComposer,
     filterArranger,
+    filterArtist,
   });
 
   useEffect(() => {
@@ -408,6 +411,8 @@ export default function MusicLibraryClient({
                   sliderYears={sliderYears}
                   selectedGenre={filterGenre}
                   setSelectedGenre={setFilterGenre}
+                  selectedArtist={filterArtist}
+                  setSelectedArtist={setFilterArtist}
                   selectedLyricist={filterLyricist}
                   setSelectedLyricist={setFilterLyricist}
                   selectedComposer={filterComposer}

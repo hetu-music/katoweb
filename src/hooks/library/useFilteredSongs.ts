@@ -25,6 +25,7 @@ interface UseFilteredSongsOptions {
   filterLyricist: string[];
   filterComposer: string[];
   filterArranger: string[];
+  filterArtist: string[];
 }
 
 export function useFilteredSongs({
@@ -38,6 +39,7 @@ export function useFilteredSongs({
   filterLyricist,
   filterComposer,
   filterArranger,
+  filterArtist,
 }: UseFilteredSongsOptions) {
   const filterOptions = useMemo(
     () => providedFilterOptions ?? calculateFilterOptions(songs),
@@ -94,6 +96,7 @@ export function useFilteredSongs({
         filterComposer,
         filterArranger,
         filterGenre,
+        filterArtist,
         activeFuseInstance,
       ),
     [
@@ -105,6 +108,7 @@ export function useFilteredSongs({
       filterComposer,
       filterArranger,
       filterGenre,
+      filterArtist,
       activeFuseInstance,
     ],
   );
@@ -116,6 +120,7 @@ export function useFilteredSongs({
     filterLyricist.length > 0 ||
     filterComposer.length > 0 ||
     filterArranger.length > 0 ||
+    filterArtist.length > 0 ||
     (sliderYears.length > 0 &&
       (yearRangeIndices[0] !== 0 ||
         yearRangeIndices[1] !== sliderYears.length - 1));

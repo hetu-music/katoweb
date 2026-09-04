@@ -137,6 +137,20 @@ export function calculateFilterOptions(songsData: Song[]): FilterOptions {
   const allArrangers = [FILTER_OPTION_ALL, ...sortedArrangers];
   if (hasUnknownArranger) allArrangers.push(FILTER_OPTION_UNKNOWN);
 
+  // 处理演唱
+  const artistSet = new Set<string>();
+  let hasUnknownArtist = false;
+  songsData.forEach((song) => {
+    if (!song.artist || song.artist.length === 0) {
+      hasUnknownArtist = true;
+    } else {
+      song.artist.forEach((a) => artistSet.add(a));
+    }
+  });
+  const sortedArtists = sortNamesOptimized(Array.from(artistSet));
+  const allArtists = [FILTER_OPTION_ALL, ...sortedArtists];
+  if (hasUnknownArtist) allArtists.push(FILTER_OPTION_UNKNOWN);
+
   return {
     allTypes,
     allGenres,
@@ -144,6 +158,7 @@ export function calculateFilterOptions(songsData: Song[]): FilterOptions {
     allLyricists,
     allComposers,
     allArrangers,
+    allArtists,
   };
 }
 
@@ -177,6 +192,7 @@ export function createFuseInstance(songs: Song[]) {
     searchableContent: [
       song.title,
       song.album || "",
+      (song.artist || []).join(" "),
       (song.lyricist || []).join(" "),
       (song.composer || []).join(" "),
       (song.arranger || []).join(" "),
@@ -188,10 +204,11 @@ export function createFuseInstance(songs: Song[]) {
   return new Fuse(searchData, {
     keys: [
       { name: "title", weight: 0.35 }, // 提高标题权重
-      { name: "album", weight: 0.25 }, // 提高专辑权重
-      { name: "lyricist", weight: 0.2 },
+      { name: "album", weight: 0.2 }, // 提高专辑权重
+      { name: "artist", weight: 0.15 },
+      { name: "lyricist", weight: 0.15 },
       { name: "composer", weight: 0.1 },
-      { name: "arranger", weight: 0.1 },
+      { name: "arranger", weight: 0.05 },
     ],
     threshold: 0.4, // 放宽阈值，对中文更友好
     includeScore: true,
@@ -212,6 +229,7 @@ export function filterSongs(
   selectedComposer: string[],
   selectedArranger: string[],
   selectedGenre: string[] = [],
+  selectedArtist: string[] = [],
   // 接受基础索引或含歌词的扩展索引
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fuseInstance?: Fuse<any>,
@@ -282,13 +300,22 @@ export function filterSongs(
           : song.genre && song.genre.includes(sel),
       );
 
+    const matchesArtist =
+      selectedArtist.length === 0 ||
+      selectedArtist.some((sel) =>
+        sel === FILTER_OPTION_UNKNOWN
+          ? !song.artist || song.artist.length === 0
+          : song.artist && song.artist.includes(sel),
+      );
+
     return (
       matchesType &&
       matchesYear &&
       matchesLyricist &&
       matchesComposer &&
       matchesArranger &&
-      matchesGenre
+      matchesGenre &&
+      matchesArtist
     );
   });
 }
