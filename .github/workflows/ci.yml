@@ -15,9 +15,6 @@ permissions:
 
 jobs:
   checks:
-    if: |
-      !startsWith(github.head_ref, 'release-please') &&
-      !startsWith(github.event.head_commit.message, 'chore(main): release')
     runs-on: ubuntu-latest
     env:
       SUPABASE_URL: placeholder
@@ -50,12 +47,3 @@ jobs:
 
       - name: Build
         run: pnpm build
-
-  pr-title:
-    if: github.event_name == 'pull_request' && !startsWith(github.head_ref, 'release-please')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Lint PR title (Conventional Commits)
-        uses: amannn/action-semantic-pull-request@v6
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
