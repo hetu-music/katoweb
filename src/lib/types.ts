@@ -63,6 +63,7 @@ export interface FilterOptions {
   allLyricists: string[];
   allComposers: string[];
   allArrangers: string[];
+  allArtists: string[];
 }
 
 // 歌曲信息类型

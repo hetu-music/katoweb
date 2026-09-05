@@ -36,6 +36,7 @@ export function useSongs(
       [], // selectedComposer
       [], // selectedArranger
       [], // selectedGenre
+      [], // selectedArtist
       fuseInstance, // 使用缓存的 Fuse 实例
     );
   }, [songs, resolvedSearchTerm, fuseInstance]);
