@@ -5,6 +5,13 @@ on:
     branches: [main]
   push:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - '.github/workflows/release.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
