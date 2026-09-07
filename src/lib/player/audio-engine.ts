@@ -9,10 +9,12 @@ let _audio: HTMLAudioElement | null = null;
 
 export function getAudio(): HTMLAudioElement | null {
   if (typeof window === "undefined") return null;
+  /* v8 ignore start -- 需要真实浏览器 Audio 实现，jsdom 只是桩实现，价值有限，见 audio-engine.test.ts 说明 */
   if (!_audio) {
     _audio = new Audio();
     _audio.preload = "metadata";
     _audio.volume = 0.8;
   }
   return _audio;
+  /* v8 ignore stop */
 }

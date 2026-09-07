@@ -42,6 +42,9 @@ jobs:
       - name: Format check
         run: pnpm format:check
 
+      - name: Unit tests (with coverage thresholds)
+        run: pnpm test:coverage
+
       - name: Typecheck
         run: pnpm typecheck
 

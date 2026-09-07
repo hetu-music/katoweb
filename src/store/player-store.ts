@@ -452,7 +452,12 @@ export const usePlayerStore = create<PlayerState & PlayerActions>(
 );
 
 // ─── Audio 事件绑定（模块加载时执行一次） ─────────────────────────────────────
+// 以下三段 `typeof window !== "undefined"` 守卫的代码是纯浏览器运行时绑定
+// （audio 事件监听、MediaSession 订阅、歌词自动拉取），在单测的 Node 环境下
+// window 不存在，这些代码永远不会执行——用 v8 ignore 标记为已知不计入覆盖率，
+// 而不是伪装成"测过了"。核心状态机逻辑已经在 player-store.test.ts 里覆盖。
 
+/* v8 ignore start */
 if (typeof window !== "undefined") {
   setTimeout(() => {
     const audio = getAudio();
@@ -516,9 +521,11 @@ if (typeof window !== "undefined") {
     audio.addEventListener("ratechange", syncMediaSessionPosition);
   }, 0);
 }
+/* v8 ignore stop */
 
 // ─── MediaSession 元数据 & 控制（订阅 store 变化） ───────────────────────────
 
+/* v8 ignore start */
 if (typeof window !== "undefined") {
   usePlayerStore.subscribe((state, prev) => {
     if (
@@ -633,9 +640,11 @@ if (typeof window !== "undefined") {
     );
   });
 }
+/* v8 ignore stop */
 
 // ─── 歌词自动 fetch（订阅 currentTrack 变化） ────────────────────────────────
 
+/* v8 ignore start */
 if (typeof window !== "undefined") {
   usePlayerStore.subscribe((state, prev) => {
     const songId = state.currentTrack?.songId;
@@ -653,3 +662,4 @@ if (typeof window !== "undefined") {
       });
   });
 }
+/* v8 ignore stop */
