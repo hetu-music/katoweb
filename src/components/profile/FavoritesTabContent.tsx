@@ -102,10 +102,10 @@ export default function FavoritesTabContent() {
             <div
               onClick={() => {
                 const d = parseInt(
-                  sessionStorage.getItem("__katoweb_nav_depth") || "0",
+                  sessionStorage.getItem("__hetu_web_nav_depth") || "0",
                   10,
                 );
-                sessionStorage.setItem("__katoweb_nav_depth", String(d + 1));
+                sessionStorage.setItem("__hetu_web_nav_depth", String(d + 1));
                 router.push(`/song/${song.id}`);
               }}
               className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 cursor-pointer"

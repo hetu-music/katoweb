@@ -93,7 +93,7 @@ export const GET = withAuth(
         t: token,
         s: salt,
         v: "1.16.1",
-        c: "katoweb",
+        c: "hetu-web",
         id: navidSongId,
         f: "json",
       });
@@ -114,7 +114,7 @@ export const GET = withAuth(
       t: token,
       s: salt,
       v: "1.16.1",
-      c: "katoweb",
+      c: "hetu-web",
       id: navidSongId,
       format: "opus",
       maxBitRate: "192",

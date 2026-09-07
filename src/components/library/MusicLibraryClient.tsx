@@ -68,7 +68,7 @@ function FilterPill({
   );
 }
 
-const NAV_DEPTH_KEY = "__katoweb_nav_depth";
+const NAV_DEPTH_KEY = "__hetu_web_nav_depth";
 
 export default function MusicLibraryClient({
   initialSongsData,
