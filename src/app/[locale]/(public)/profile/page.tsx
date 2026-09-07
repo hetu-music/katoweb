@@ -75,10 +75,10 @@ function ProfileContent() {
   }, []);
 
   const handleBack = useCallback(() => {
-    const navDepthStr = sessionStorage.getItem("__katoweb_nav_depth");
+    const navDepthStr = sessionStorage.getItem("__hetu_web_nav_depth");
     const navDepth = navDepthStr ? parseInt(navDepthStr, 10) : 0;
     if (navDepth > 0) {
-      sessionStorage.setItem("__katoweb_nav_depth", String(navDepth - 1));
+      sessionStorage.setItem("__hetu_web_nav_depth", String(navDepth - 1));
       router.back();
     } else {
       router.push("/");

@@ -50,10 +50,10 @@ const AppNavbar = forwardRef<HTMLElement, AppNavbarProps>(function AppNavbar(
     }
 
     const navDepth = parseInt(
-      sessionStorage.getItem("__katoweb_nav_depth") || "0",
+      sessionStorage.getItem("__hetu_web_nav_depth") || "0",
       10,
     );
-    sessionStorage.setItem("__katoweb_nav_depth", String(navDepth + 1));
+    sessionStorage.setItem("__hetu_web_nav_depth", String(navDepth + 1));
     router.push("/profile?tab=favorites");
   }, [router, pathname, user, loaded]);
 

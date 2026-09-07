@@ -6,10 +6,11 @@ import UserReview from "@/components/detail/UserReview";
 import FavoriteButton from "@/components/shared/FavoriteButton";
 import FloatingActionButtons from "@/components/shared/FloatingActionButtons";
 import ImageModal from "@/components/shared/ImageModal";
-import ThemeToggle from "@/components/shared/ThemeToggle";
 import LocaleSwitcher from "@/components/shared/LocaleSwitcher";
-import { useScrollTop } from "@/hooks/ui/useScrollTop";
+import ThemeToggle from "@/components/shared/ThemeToggle";
 import { useUserContext } from "@/context/UserContext";
+import { useScrollTop } from "@/hooks/ui/useScrollTop";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { getGenreTagStyle, getTypeTagStyle } from "@/lib/constants";
 import { SongDetailClientProps } from "@/lib/types";
 import { cn } from "@/lib/utils/utils";
@@ -30,9 +31,8 @@ import {
   PenTool,
   User,
 } from "lucide-react";
-import Image from "next/image";
-import { useRouter, usePathname } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
@@ -53,10 +53,10 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
       return;
     }
     const d = parseInt(
-      sessionStorage.getItem("__katoweb_nav_depth") || "0",
+      sessionStorage.getItem("__hetu_web_nav_depth") || "0",
       10,
     );
-    sessionStorage.setItem("__katoweb_nav_depth", String(d + 1));
+    sessionStorage.setItem("__hetu_web_nav_depth", String(d + 1));
     router.push(`/profile?tab=${tab}`);
   };
 
@@ -152,12 +152,12 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                   // 通过 sessionStorage 中的导航深度判断是否有站内历史
                   // 该值由主页面在 router.push 前递增，确保 SPA 导航也能正确追踪
                   const navDepthStr = sessionStorage.getItem(
-                    "__katoweb_nav_depth",
+                    "__hetu_web_nav_depth",
                   );
                   const navDepth = navDepthStr ? parseInt(navDepthStr, 10) : 0;
                   if (navDepth > 0) {
                     sessionStorage.setItem(
-                      "__katoweb_nav_depth",
+                      "__hetu_web_nav_depth",
                       String(navDepth - 1),
                     );
                     router.back();
@@ -556,7 +556,7 @@ const SongDetailClient: React.FC<SongDetailClientProps> = ({ song }) => {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-900/50 rounded-3xl p-8 md:p-12 border border-slate-100 dark:border-slate-800 shadow-sm min-h-[400px]">
+              <div className="bg-white dark:bg-slate-900/50 rounded-3xl p-8 md:p-12 border border-slate-100 dark:border-slate-800 shadow-sm min-h-100">
                 {song.lyrics ? (
                   <div className="relative overflow-hidden">
                     {/* 普通歌词 */}
