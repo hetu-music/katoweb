@@ -14,6 +14,7 @@ import {
 // 测试环境不在真实的 Next.js 请求作用域内，用一个内存 Map 模拟 cookie jar。
 // vi.mock 会被 Vitest 自动提升到文件顶部，先于上面的 import 执行。
 const cookieStore = new Map<string, string>();
+let mockThrowOnCookies = false;
 
 function makeCookieJar() {
   return {
@@ -37,7 +38,10 @@ function makeCookieJar() {
 }
 
 vi.mock("next/headers", () => ({
-  cookies: vi.fn(async () => makeCookieJar()),
+  cookies: vi.fn(async () => {
+    if (mockThrowOnCookies) throw new Error("no request scope");
+    return makeCookieJar();
+  }),
 }));
 
 function makeRequest(headerToken?: string): Request {
@@ -47,7 +51,10 @@ function makeRequest(headerToken?: string): Request {
 }
 
 describe("verifyCSRFToken", () => {
-  beforeEach(() => cookieStore.clear());
+  beforeEach(() => {
+    cookieStore.clear();
+    mockThrowOnCookies = false;
+  });
 
   it("cookie 与 header 一致时通过", async () => {
     cookieStore.set("csrf-token", "abc123");
@@ -85,6 +92,11 @@ describe("verifyCSRFToken", () => {
     });
     expect(result).toBe(true);
   });
+
+  it("读取 cookie 本身抛异常时降级为校验失败，不向上抛出", async () => {
+    mockThrowOnCookies = true;
+    expect(await verifyCSRFToken(makeRequest("abc123"))).toBe(false);
+  });
 });
 
 describe("generateCSRFToken", () => {
@@ -99,7 +111,10 @@ describe("generateCSRFToken", () => {
 });
 
 describe("setCSRFCookie / getCSRFCookie", () => {
-  beforeEach(() => cookieStore.clear());
+  beforeEach(() => {
+    cookieStore.clear();
+    mockThrowOnCookies = false;
+  });
 
   it("写入后可以读回相同的 token", async () => {
     await setCSRFCookie("my-token");
@@ -112,7 +127,10 @@ describe("setCSRFCookie / getCSRFCookie", () => {
 });
 
 describe("clearAuthCookies", () => {
-  beforeEach(() => cookieStore.clear());
+  beforeEach(() => {
+    cookieStore.clear();
+    mockThrowOnCookies = false;
+  });
 
   it("清除所有 sb- 前缀 cookie 和 csrf-token，保留其他 cookie", async () => {
     cookieStore.set("sb-access-token", "token-value");
@@ -227,6 +245,27 @@ describe("purgeCloudflareCache", () => {
       "https://example.com/",
     ]);
   });
+
+  it("Cloudflare 返回非 2xx 时记录失败但不抛异常（不影响调用方主流程）", async () => {
+    vi.stubEnv("CLOUDFLARE_ZONE_ID", "zone123");
+    vi.stubEnv("CLOUDFLARE_API_TOKEN", "token456");
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://example.com");
+    vi.mocked(fetch).mockResolvedValue({
+      ok: false,
+      text: async () => "invalid token",
+    } as Response);
+
+    await expect(purgeCloudflareCache(["/"])).resolves.toBeUndefined();
+  });
+
+  it("fetch 本身抛异常（网络故障）时不向上抛出", async () => {
+    vi.stubEnv("CLOUDFLARE_ZONE_ID", "zone123");
+    vi.stubEnv("CLOUDFLARE_API_TOKEN", "token456");
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://example.com");
+    vi.mocked(fetch).mockRejectedValue(new Error("network down"));
+
+    await expect(purgeCloudflareCache(["/"])).resolves.toBeUndefined();
+  });
 });
 
 describe("purgeEdgeOneCache", () => {
@@ -267,5 +306,29 @@ describe("purgeEdgeOneCache", () => {
     );
     const body = JSON.parse(init.body as string);
     expect(body.Targets).toEqual(["https://example.com/song/1"]);
+  });
+
+  it("EdgeOne 返回业务错误（Response.Error）时记录失败但不抛异常", async () => {
+    vi.stubEnv("EDGEONE_SECRET_ID", "id123");
+    vi.stubEnv("EDGEONE_SECRET_KEY", "key456");
+    vi.stubEnv("EDGEONE_ZONE_ID", "zone789");
+    vi.stubEnv("EDGEONE_SITE_URL", "https://example.com");
+    vi.mocked(fetch).mockResolvedValue({
+      json: async () => ({
+        Response: { Error: { Code: "AuthFailure", Message: "签名错误" } },
+      }),
+    } as Response);
+
+    await expect(purgeEdgeOneCache(["/"])).resolves.toBeUndefined();
+  });
+
+  it("fetch 本身抛异常时不向上抛出", async () => {
+    vi.stubEnv("EDGEONE_SECRET_ID", "id123");
+    vi.stubEnv("EDGEONE_SECRET_KEY", "key456");
+    vi.stubEnv("EDGEONE_ZONE_ID", "zone789");
+    vi.stubEnv("EDGEONE_SITE_URL", "https://example.com");
+    vi.mocked(fetch).mockRejectedValue(new Error("network down"));
+
+    await expect(purgeEdgeOneCache(["/"])).resolves.toBeUndefined();
   });
 });

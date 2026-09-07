@@ -100,6 +100,17 @@ describe("calculateFilterOptions", () => {
     // 全部/Alice 在前，中文按拼音排序（李四在张三之前）
     expect(options.allLyricists).toEqual(["全部", "Alice", "李四", "张三"]);
   });
+
+  it("composer/arranger/artist 缺失时同样归入“未知”", () => {
+    const songs = [
+      makeSong({ id: 1, composer: ["甲"], arranger: ["乙"], artist: ["丙"] }),
+      makeSong({ id: 2, composer: [], arranger: [], artist: [] }),
+    ];
+    const options = calculateFilterOptions(songs);
+    expect(options.allComposers).toEqual(["全部", "甲", "未知"]);
+    expect(options.allArrangers).toEqual(["全部", "乙", "未知"]);
+    expect(options.allArtists).toEqual(["全部", "丙", "未知"]);
+  });
 });
 
 describe("filterSongs", () => {
@@ -108,6 +119,90 @@ describe("filterSongs", () => {
     makeSong({ id: 2, title: "橄榄树", type: ["翻唱"], year: 2021 }),
     makeSong({ id: 3, title: "无题", type: [] }), // 未知 type / year
   ];
+
+  const namedSongs = [
+    makeSong({
+      id: 1,
+      lyricist: ["甲"],
+      composer: ["丙"],
+      arranger: ["戊"],
+      genre: ["古风"],
+      artist: ["A"],
+    }),
+    makeSong({
+      id: 2,
+      lyricist: ["乙"],
+      composer: ["丁"],
+      arranger: ["己"],
+      genre: ["流行"],
+      artist: ["B"],
+    }),
+    makeSong({
+      id: 3,
+      lyricist: [],
+      composer: [],
+      arranger: [],
+      genre: [],
+      artist: [],
+    }),
+  ];
+
+  it("按作词多选筛选（含“未知”）", () => {
+    const result = filterSongs(namedSongs, "", "全部", "全部", ["甲"], [], []);
+    expect(result.map((s) => s.id)).toEqual([1]);
+  });
+
+  it("作词多选包含“未知”时匹配缺失字段的歌曲", () => {
+    const result = filterSongs(
+      namedSongs,
+      "",
+      "全部",
+      "全部",
+      ["未知"],
+      [],
+      [],
+    );
+    expect(result.map((s) => s.id)).toEqual([3]);
+  });
+
+  it("按作曲多选筛选", () => {
+    const result = filterSongs(namedSongs, "", "全部", "全部", [], ["丁"], []);
+    expect(result.map((s) => s.id)).toEqual([2]);
+  });
+
+  it("按编曲多选筛选", () => {
+    const result = filterSongs(namedSongs, "", "全部", "全部", [], [], ["戊"]);
+    expect(result.map((s) => s.id)).toEqual([1]);
+  });
+
+  it("按流派多选筛选", () => {
+    const result = filterSongs(
+      namedSongs,
+      "",
+      "全部",
+      "全部",
+      [],
+      [],
+      [],
+      ["流行"],
+    );
+    expect(result.map((s) => s.id)).toEqual([2]);
+  });
+
+  it("按演唱者多选筛选", () => {
+    const result = filterSongs(
+      namedSongs,
+      "",
+      "全部",
+      "全部",
+      [],
+      [],
+      [],
+      [],
+      ["A"],
+    );
+    expect(result.map((s) => s.id)).toEqual([1]);
+  });
 
   it("按类型精确筛选", () => {
     const result = filterSongs(songs, "", "原创", "全部", [], [], []);

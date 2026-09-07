@@ -84,4 +84,31 @@ describe("validateSongForm", () => {
     const result = validateSongForm({ ...baseValues(), length: -1 });
     expect(result.errors.length).toBeTruthy();
   });
+
+  it("length 为数字字符串时被转换为数字后通过校验", () => {
+    const result = validateSongForm({
+      ...baseValues(),
+      length: "180" as unknown as number,
+    });
+    expect(result.errors.length).toBeUndefined();
+    expect(result.data?.length).toBe(180);
+  });
+
+  it("length 为非法类型（既非数字也非字符串）时报错而不是崩溃", () => {
+    const result = validateSongForm({
+      ...baseValues(),
+      length: {} as unknown as number,
+    });
+    expect(result.data).toBeNull();
+    expect(result.errors.length).toBeTruthy();
+  });
+
+  it("一个字段有多个校验错误时，只记录第一条错误信息", () => {
+    const result = validateSongForm({
+      ...baseValues(),
+      title: "", // 触发 min(1) 错误
+    });
+    // errors.title 应该存在且只有一条（不是数组）
+    expect(typeof result.errors.title).toBe("string");
+  });
 });

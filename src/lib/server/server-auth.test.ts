@@ -13,23 +13,33 @@ type MockUser = {
 
 let mockUser: MockUser = null;
 let mockCsrfValid = true;
+/** 模拟 Supabase 调用本身抛异常（比如数据库/网络挂了），而不是正常返回 error 字段 */
+let mockThrowOnSupabaseCall = false;
+/** 模拟 verifyCSRFToken 本身抛异常 */
+let mockThrowOnCsrfCheck = false;
 
 vi.mock("@/lib/db/supabase-auth", () => ({
-  createSupabaseServerClient: vi.fn(async () => ({
-    auth: {
-      // getUserFromRequest 在没有 Authorization header 时走 session 分支
-      getSession: vi.fn(async () => ({
-        data: { session: mockUser ? { access_token: "test-token" } : null },
-      })),
-      getUser: vi.fn(async () => ({
-        data: { user: mockUser },
-      })),
-    },
-  })),
+  createSupabaseServerClient: vi.fn(async () => {
+    if (mockThrowOnSupabaseCall) throw new Error("supabase unavailable");
+    return {
+      auth: {
+        // getUserFromRequest 在没有 Authorization header 时走 session 分支
+        getSession: vi.fn(async () => ({
+          data: { session: mockUser ? { access_token: "test-token" } : null },
+        })),
+        getUser: vi.fn(async () => ({
+          data: { user: mockUser },
+        })),
+      },
+    };
+  }),
 }));
 
 vi.mock("./server-utils", () => ({
-  verifyCSRFToken: vi.fn(async () => mockCsrfValid),
+  verifyCSRFToken: vi.fn(async () => {
+    if (mockThrowOnCsrfCheck) throw new Error("csrf check exploded");
+    return mockCsrfValid;
+  }),
 }));
 
 function makeRequest() {
@@ -48,6 +58,8 @@ describe("withAuth 权限矩阵", () => {
   beforeEach(() => {
     mockUser = null;
     mockCsrfValid = true;
+    mockThrowOnSupabaseCall = false;
+    mockThrowOnCsrfCheck = false;
   });
 
   it("未登录访问 requireAdmin 接口 → 401", async () => {
@@ -108,12 +120,30 @@ describe("withAuth 权限矩阵", () => {
     const res = await callWithAuth({ requireCSRF: true, requireAdmin: true });
     expect(res.status).toBe(200);
   });
+
+  it("鉴权过程本身抛异常（如数据库挂了）时兜底返回 500，而不是让异常冒泡", async () => {
+    mockThrowOnSupabaseCall = true;
+    const res = await callWithAuth({ requireAdmin: true });
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body.error).toBe("Authentication failed");
+  });
+
+  it("requireCSRF 校验本身抛异常时兜底返回 500", async () => {
+    mockThrowOnCsrfCheck = true;
+    const res = await callWithAuth({ requireCSRF: true, requireAdmin: true });
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body.error).toBe("Authentication failed");
+  });
 });
 
 describe("getUserFromRequest — Authorization header 分支", () => {
   beforeEach(() => {
     mockUser = null;
     mockCsrfValid = true;
+    mockThrowOnSupabaseCall = false;
+    mockThrowOnCsrfCheck = false;
   });
 
   it("合法 Bearer token 格式时直接用该 token 查用户，不依赖 session", async () => {
@@ -137,6 +167,8 @@ describe("getUserFromRequest — Authorization header 分支", () => {
 describe("assertAdmin（用于 Server Actions）", () => {
   beforeEach(() => {
     mockUser = null;
+    mockThrowOnSupabaseCall = false;
+    mockThrowOnCsrfCheck = false;
   });
 
   it("未登录时抛出“未登录或登录已过期”", async () => {
