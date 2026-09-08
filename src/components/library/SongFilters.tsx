@@ -128,6 +128,8 @@ const SongFilters: React.FC<SongFiltersProps> = ({
               value={selectedGenre}
               onChange={setSelectedGenre}
               placeholder={t("allGenres")}
+              selectAllLabel={t("selectAll")}
+              allSelectedLabel={t("allSelected")}
               options={filterOptions.allGenres
                 .filter((genre) => genre !== FILTER_OPTION_ALL)
                 .map((genre) => ({
@@ -144,6 +146,8 @@ const SongFilters: React.FC<SongFiltersProps> = ({
               value={selectedArtist}
               onChange={setSelectedArtist}
               placeholder={t("allArtists")}
+              selectAllLabel={t("selectAll")}
+              allSelectedLabel={t("allSelected")}
               options={filterOptions.allArtists
                 .filter((artist) => artist !== FILTER_OPTION_ALL)
                 .map((artist) => ({ value: artist, label: artist }))}
@@ -157,6 +161,8 @@ const SongFilters: React.FC<SongFiltersProps> = ({
               value={selectedLyricist}
               onChange={setSelectedLyricist}
               placeholder={t("allLyricists")}
+              selectAllLabel={t("selectAll")}
+              allSelectedLabel={t("allSelected")}
               options={filterOptions.allLyricists
                 .filter((lyricist) => lyricist !== FILTER_OPTION_ALL)
                 .map((lyricist) => ({ value: lyricist, label: lyricist }))}
@@ -170,6 +176,8 @@ const SongFilters: React.FC<SongFiltersProps> = ({
               value={selectedComposer}
               onChange={setSelectedComposer}
               placeholder={t("allComposers")}
+              selectAllLabel={t("selectAll")}
+              allSelectedLabel={t("allSelected")}
               options={filterOptions.allComposers
                 .filter((composer) => composer !== FILTER_OPTION_ALL)
                 .map((composer) => ({ value: composer, label: composer }))}
@@ -183,6 +191,8 @@ const SongFilters: React.FC<SongFiltersProps> = ({
               value={selectedArranger}
               onChange={setSelectedArranger}
               placeholder={t("allArrangers")}
+              selectAllLabel={t("selectAll")}
+              allSelectedLabel={t("allSelected")}
               options={filterOptions.allArrangers
                 .filter((arranger) => arranger !== FILTER_OPTION_ALL)
                 .map((arranger) => ({ value: arranger, label: arranger }))}

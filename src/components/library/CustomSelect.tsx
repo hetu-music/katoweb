@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useId, useState } from "react";
-import { Check, ChevronDown, X } from "lucide-react";
+import React, { useId, useMemo, useState } from "react";
+import { Check, ChevronDown, Minus, X } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -29,6 +29,8 @@ interface CustomSelectProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  selectAllLabel?: string;
+  allSelectedLabel?: string;
 }
 
 const CustomSelect: React.FC<CustomSelectProps> = ({
@@ -38,15 +40,19 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   placeholder = "请选择",
   className = "",
   disabled = false,
+  selectAllLabel = "全选",
+  allSelectedLabel = "全部已选",
 }) => {
   const contentId = useId();
   const [open, setOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
   // Snapshot of sorted options taken at open time — doesn't re-sort while dropdown is open
   const [stableOptions, setStableOptions] = useState<Option[]>([...options]);
 
   const handleOpenChange = (next: boolean) => {
     if (disabled) return;
     if (next) {
+      setSearchValue("");
       // Sort selected to the top, then freeze order until the next open
       setStableOptions(
         [...options].sort((a, b) => {
@@ -56,6 +62,8 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           return aSelected ? -1 : 1;
         }),
       );
+    } else {
+      setSearchValue("");
     }
     setOpen(next);
   };
@@ -74,9 +82,41 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     onChange([]);
   };
 
+  const filteredOptions = useMemo(() => {
+    const s = searchValue.trim().toLowerCase();
+    if (!s) return stableOptions;
+    return stableOptions.filter(
+      (o) =>
+        o.label.toLowerCase().includes(s) || o.value.toLowerCase().includes(s),
+    );
+  }, [stableOptions, searchValue]);
+
+  const targetOptions = searchValue.trim() ? filteredOptions : options;
+  const isAllSelected =
+    targetOptions.length > 0 &&
+    targetOptions.every((opt) => value.includes(opt.value));
+  const isIndeterminate =
+    !isAllSelected && targetOptions.some((opt) => value.includes(opt.value));
+
+  const toggleSelectAll = () => {
+    if (targetOptions.length === 0) return;
+    if (isAllSelected) {
+      const targetSet = new Set(targetOptions.map((o) => o.value));
+      onChange(value.filter((v) => !targetSet.has(v)));
+    } else {
+      const newValues = new Set([
+        ...value,
+        ...targetOptions.map((o) => o.value),
+      ]);
+      onChange(Array.from(newValues));
+    }
+  };
+
   let displayText: string;
   if (value.length === 0) {
     displayText = placeholder;
+  } else if (value.length === options.length && options.length > 1) {
+    displayText = allSelectedLabel;
   } else if (value.length === 1) {
     displayText = options.find((o) => o.value === value[0])?.label ?? value[0];
   } else {
@@ -167,16 +207,68 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           className="flex-1 min-h-0"
           filter={(itemValue, search) => {
             if (!search) return 1;
-            return itemValue.toLowerCase().includes(search.toLowerCase())
-              ? 1
-              : 0;
+            if (itemValue === "__select_all__") {
+              const s = search.toLowerCase();
+              return stableOptions.some(
+                (o) =>
+                  o.value.toLowerCase().includes(s) ||
+                  o.label.toLowerCase().includes(s),
+              )
+                ? 1
+                : 0;
+            }
+            const s = search.toLowerCase();
+            const option = stableOptions.find((o) => o.value === itemValue);
+            if (option) {
+              return option.value.toLowerCase().includes(s) ||
+                option.label.toLowerCase().includes(s)
+                ? 1
+                : 0;
+            }
+            return itemValue.toLowerCase().includes(s) ? 1 : 0;
           }}
         >
-          <CommandInput placeholder="搜索…" />
+          <CommandInput
+            placeholder="搜索…"
+            value={searchValue}
+            onValueChange={setSearchValue}
+          />
           {/* flex-1 min-h-0 fills remaining height; max-h-none removes the fixed cap from command.tsx */}
           <CommandList id={contentId} className="flex-1 min-h-0 max-h-none">
             <CommandEmpty>无匹配结果</CommandEmpty>
             <CommandGroup>
+              {targetOptions.length > 0 && (
+                <CommandItem
+                  key="__select_all__"
+                  value="__select_all__"
+                  onSelect={toggleSelectAll}
+                  className={cn(
+                    "flex items-center gap-2 font-medium cursor-pointer border-b border-slate-100 dark:border-slate-800 mb-1 pb-2 rounded-b-none",
+                    isAllSelected &&
+                      "bg-blue-50/60 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300",
+                    isIndeterminate &&
+                      "text-blue-700 dark:text-blue-300 font-medium",
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors",
+                      isAllSelected || isIndeterminate
+                        ? "border-blue-500 bg-blue-500 text-white"
+                        : "border-slate-300 dark:border-slate-600 bg-transparent",
+                    )}
+                  >
+                    {isAllSelected && <Check size={10} strokeWidth={3} />}
+                    {isIndeterminate && <Minus size={10} strokeWidth={3} />}
+                  </div>
+                  <span className="truncate">{selectAllLabel}</span>
+                  <span className="ml-auto text-xs text-slate-400 font-normal">
+                    {searchValue.trim()
+                      ? `${targetOptions.filter((o) => value.includes(o.value)).length}/${targetOptions.length}`
+                      : `${value.length}/${options.length}`}
+                  </span>
+                </CommandItem>
+              )}
               {stableOptions.map((option) => {
                 const isSelected = value.includes(option.value);
                 return (

@@ -487,3 +487,72 @@ export function getCoverUrl(song: Song | SongDetail): string {
 export function getNmnUrl(song: Song | SongDetail): string {
   return `https://cover.hetu-music.com/nmn/${song.id}.png`;
 }
+
+/**
+ * 将前端多选列表压缩编码为 URL 参数
+ * - 列表为空时返回 []
+ * - 全选状态压缩为 ["*"]
+ * - 选中项超过有效选项总数的一半时（如全选 - 1），转换为反向排除列表 ["!排除项1", ...]
+ * - 其余情况保持正向选择列表
+ */
+export function encodeFilterParam(
+  selected: string[],
+  allOptions: string[],
+): string[] {
+  if (!selected || selected.length === 0) return [];
+
+  const validOptions = allOptions.filter((opt) => opt !== FILTER_OPTION_ALL);
+  if (validOptions.length === 0) return selected;
+
+  const selectedSet = new Set(selected);
+  const isAllIncluded =
+    validOptions.length > 0 &&
+    validOptions.every((opt) => selectedSet.has(opt));
+
+  if (isAllIncluded) {
+    return ["*"];
+  }
+
+  // 超过一半被选中时，反向记录排除项（例如全选 - 1 仅记录 ["!排除项"]）
+  if (selected.length > validOptions.length / 2) {
+    const excluded = validOptions.filter((opt) => !selectedSet.has(opt));
+    if (excluded.length === 0) return ["*"];
+    return excluded.map((opt) => `!${opt}`);
+  }
+
+  return selected;
+}
+
+/**
+ * 将 URL 参数还原为前端多选列表
+ * - 参数为空时返回 []
+ * - ["*"] 或 ["all"] 还原为所有有效选项列表
+ * - 带 "!" 前缀的项还原为“全集减去排除项”
+ * - 其余情况保持正向选择列表
+ */
+export function decodeFilterParam(
+  paramValues: string[],
+  allOptions: string[],
+): string[] {
+  if (!paramValues || paramValues.length === 0) return [];
+
+  const validOptions = allOptions.filter((opt) => opt !== FILTER_OPTION_ALL);
+  if (validOptions.length === 0) return paramValues;
+
+  if (
+    paramValues.length === 1 &&
+    (paramValues[0] === "*" || paramValues[0] === "all")
+  ) {
+    return validOptions;
+  }
+
+  const isExcludeMode = paramValues.some((v) => v.startsWith("!"));
+  if (isExcludeMode) {
+    const excludedSet = new Set(
+      paramValues.map((v) => (v.startsWith("!") ? v.slice(1) : v)),
+    );
+    return validOptions.filter((opt) => !excludedSet.has(opt));
+  }
+
+  return paramValues;
+}
