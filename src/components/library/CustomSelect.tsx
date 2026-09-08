@@ -96,8 +96,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     targetOptions.length > 0 &&
     targetOptions.every((opt) => value.includes(opt.value));
   const isIndeterminate =
-    !isAllSelected &&
-    targetOptions.some((opt) => value.includes(opt.value));
+    !isAllSelected && targetOptions.some((opt) => value.includes(opt.value));
 
   const toggleSelectAll = () => {
     if (targetOptions.length === 0) return;

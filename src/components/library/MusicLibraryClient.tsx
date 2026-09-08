@@ -146,7 +146,9 @@ export default function MusicLibraryClient({
   );
   const setFilterLyricist = useCallback(
     (lyricists: string[]) => {
-      setRawFilterLyricist(encodeFilterParam(lyricists, filterOptions.allLyricists));
+      setRawFilterLyricist(
+        encodeFilterParam(lyricists, filterOptions.allLyricists),
+      );
     },
     [setRawFilterLyricist, filterOptions.allLyricists],
   );
@@ -157,7 +159,9 @@ export default function MusicLibraryClient({
   );
   const setFilterComposer = useCallback(
     (composers: string[]) => {
-      setRawFilterComposer(encodeFilterParam(composers, filterOptions.allComposers));
+      setRawFilterComposer(
+        encodeFilterParam(composers, filterOptions.allComposers),
+      );
     },
     [setRawFilterComposer, filterOptions.allComposers],
   );
@@ -168,7 +172,9 @@ export default function MusicLibraryClient({
   );
   const setFilterArranger = useCallback(
     (arrangers: string[]) => {
-      setRawFilterArranger(encodeFilterParam(arrangers, filterOptions.allArrangers));
+      setRawFilterArranger(
+        encodeFilterParam(arrangers, filterOptions.allArrangers),
+      );
     },
     [setRawFilterArranger, filterOptions.allArrangers],
   );

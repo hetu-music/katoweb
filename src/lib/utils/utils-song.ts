@@ -556,4 +556,3 @@ export function decodeFilterParam(
 
   return paramValues;
 }
-
