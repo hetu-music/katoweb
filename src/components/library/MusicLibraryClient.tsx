@@ -19,7 +19,11 @@ import {
 } from "@/lib/constants";
 import type { MusicLibraryClientProps } from "@/lib/types";
 import { cn } from "@/lib/utils/utils";
-import { calculateFilterOptions } from "@/lib/utils/utils-song";
+import {
+  calculateFilterOptions,
+  decodeFilterParam,
+  encodeFilterParam,
+} from "@/lib/utils/utils-song";
 import {
   Disc,
   LayoutGrid,
@@ -102,16 +106,16 @@ export default function MusicLibraryClient({
     setFilterType,
     yearRangeIndices,
     setYearRangeIndices,
-    filterGenre,
-    setFilterGenre,
-    filterLyricist,
-    setFilterLyricist,
-    filterComposer,
-    setFilterComposer,
-    filterArranger,
-    setFilterArranger,
-    filterArtist,
-    setFilterArtist,
+    filterGenre: rawFilterGenre,
+    setFilterGenre: setRawFilterGenre,
+    filterLyricist: rawFilterLyricist,
+    setFilterLyricist: setRawFilterLyricist,
+    filterComposer: rawFilterComposer,
+    setFilterComposer: setRawFilterComposer,
+    filterArranger: rawFilterArranger,
+    setFilterArranger: setRawFilterArranger,
+    filterArtist: rawFilterArtist,
+    setFilterArtist: setRawFilterArtist,
     viewMode,
     setViewMode,
     currentPage,
@@ -123,6 +127,62 @@ export default function MusicLibraryClient({
     isRestoringScroll,
     notifyDataReady,
   } = useMusicLibraryState(sliderYears.length, DEFAULT_MUSIC_LIBRARY_VIEW_MODE);
+
+  // 解码 URL 中的压缩/排除参数为完整选项数组
+  const filterGenre = useMemo(
+    () => decodeFilterParam(rawFilterGenre, filterOptions.allGenres),
+    [rawFilterGenre, filterOptions.allGenres],
+  );
+  const setFilterGenre = useCallback(
+    (genres: string[]) => {
+      setRawFilterGenre(encodeFilterParam(genres, filterOptions.allGenres));
+    },
+    [setRawFilterGenre, filterOptions.allGenres],
+  );
+
+  const filterLyricist = useMemo(
+    () => decodeFilterParam(rawFilterLyricist, filterOptions.allLyricists),
+    [rawFilterLyricist, filterOptions.allLyricists],
+  );
+  const setFilterLyricist = useCallback(
+    (lyricists: string[]) => {
+      setRawFilterLyricist(encodeFilterParam(lyricists, filterOptions.allLyricists));
+    },
+    [setRawFilterLyricist, filterOptions.allLyricists],
+  );
+
+  const filterComposer = useMemo(
+    () => decodeFilterParam(rawFilterComposer, filterOptions.allComposers),
+    [rawFilterComposer, filterOptions.allComposers],
+  );
+  const setFilterComposer = useCallback(
+    (composers: string[]) => {
+      setRawFilterComposer(encodeFilterParam(composers, filterOptions.allComposers));
+    },
+    [setRawFilterComposer, filterOptions.allComposers],
+  );
+
+  const filterArranger = useMemo(
+    () => decodeFilterParam(rawFilterArranger, filterOptions.allArrangers),
+    [rawFilterArranger, filterOptions.allArrangers],
+  );
+  const setFilterArranger = useCallback(
+    (arrangers: string[]) => {
+      setRawFilterArranger(encodeFilterParam(arrangers, filterOptions.allArrangers));
+    },
+    [setRawFilterArranger, filterOptions.allArrangers],
+  );
+
+  const filterArtist = useMemo(
+    () => decodeFilterParam(rawFilterArtist, filterOptions.allArtists),
+    [rawFilterArtist, filterOptions.allArtists],
+  );
+  const setFilterArtist = useCallback(
+    (artists: string[]) => {
+      setRawFilterArtist(encodeFilterParam(artists, filterOptions.allArtists));
+    },
+    [setRawFilterArtist, filterOptions.allArtists],
+  );
 
   const {
     filteredSongs,

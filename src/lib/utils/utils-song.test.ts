@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
   calculateFilterOptions,
+  decodeFilterParam,
+  encodeFilterParam,
   filterSongs,
   getCoverUrl,
   getNmnUrl,
@@ -241,3 +243,78 @@ describe("processLyricsForSearch", () => {
     expect(processLyricsForSearch("")).toBe("");
   });
 });
+
+describe("encodeFilterParam & decodeFilterParam", () => {
+  const allGenres = ["全部", "古风", "流行", "民谣", "摇滚", "电子"];
+  const validGenres = ["古风", "流行", "民谣", "摇滚", "电子"]; // 5 项
+
+  it("空选择时返回空数组", () => {
+    expect(encodeFilterParam([], allGenres)).toEqual([]);
+    expect(decodeFilterParam([], allGenres)).toEqual([]);
+  });
+
+  it("选择项占少数时（<= N/2），正向保存", () => {
+    // 5 项中选 1 项或 2 项
+    expect(encodeFilterParam(["古风"], allGenres)).toEqual(["古风"]);
+    expect(decodeFilterParam(["古风"], allGenres)).toEqual(["古风"]);
+
+    expect(encodeFilterParam(["古风", "流行"], allGenres)).toEqual([
+      "古风",
+      "流行",
+    ]);
+    expect(decodeFilterParam(["古风", "流行"], allGenres)).toEqual([
+      "古风",
+      "流行",
+    ]);
+  });
+
+  it("全选时，压缩为 ['*']，且能正确还原为全部有效选项", () => {
+    expect(encodeFilterParam(validGenres, allGenres)).toEqual(["*"]);
+    expect(decodeFilterParam(["*"], allGenres)).toEqual(validGenres);
+    expect(decodeFilterParam(["all"], allGenres)).toEqual(validGenres);
+  });
+
+  it("全选 - 1 时（> N/2），转换为反向排除列表 ['!排除项']，且能正确还原", () => {
+    // 5 项中选 4 项（排除 电子）
+    const fourGenres = ["古风", "流行", "民谣", "摇滚"];
+    const encoded = encodeFilterParam(fourGenres, allGenres);
+    expect(encoded).toEqual(["!电子"]);
+
+    const decoded = decodeFilterParam(encoded, allGenres);
+    expect(decoded).toEqual(fourGenres);
+  });
+
+  it("全选 - 2 时，转换为反向排除列表，且能正确还原", () => {
+    // 5 项中选 3 项（排除 摇滚、电子，3 > 5/2）
+    const threeGenres = ["古风", "流行", "民谣"];
+    const encoded = encodeFilterParam(threeGenres, allGenres);
+    expect(encoded).toEqual(["!摇滚", "!电子"]);
+
+    const decoded = decodeFilterParam(encoded, allGenres);
+    expect(decoded).toEqual(threeGenres);
+  });
+
+  it("所有可能子集双向编解码满足自洽性 (Roundtrip)", () => {
+    // 对 [A, B, C] 全子集测试双向可逆性
+    const smallOptions = ["全部", "A", "B", "C"];
+
+    // 生成所有 2^3 = 8 个子集
+    const subsets = [
+      [],
+      ["A"],
+      ["B"],
+      ["C"],
+      ["A", "B"],
+      ["A", "C"],
+      ["B", "C"],
+      ["A", "B", "C"],
+    ];
+
+    for (const subset of subsets) {
+      const encoded = encodeFilterParam(subset, smallOptions);
+      const decoded = decodeFilterParam(encoded, smallOptions);
+      expect(decoded.sort()).toEqual(subset.sort());
+    }
+  });
+});
+
