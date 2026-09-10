@@ -1,8 +1,8 @@
+import { routing } from "@/i18n/routing";
+import { createSupabaseMiddlewareClient } from "@/lib/db/supabase-auth";
 import createIntlMiddleware from "next-intl/middleware";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { createSupabaseMiddlewareClient } from "@/lib/db/supabase-auth";
-import { routing } from "@/i18n/routing";
 
 // next-intl 中间件：处理 locale 探测和重定向
 const intlMiddleware = createIntlMiddleware(routing);
@@ -42,7 +42,7 @@ export async function proxy(request: NextRequest) {
       style-src 'self' 'unsafe-inline';
       img-src 'self' blob: data: https://cover.hetu-music.com;
       font-src 'self';
-      media-src 'self' https://qb.hetu-music.com;
+      media-src 'self' https://pre.hetu-music.com;
       object-src 'none';
       base-uri 'self';
       form-action 'self';
@@ -61,7 +61,7 @@ export async function proxy(request: NextRequest) {
       style-src 'self' 'unsafe-inline';
       img-src 'self' blob: data: https://cover.hetu-music.com;
       font-src 'self';
-      media-src 'self' https://qb.hetu-music.com;
+      media-src 'self' https://pre.hetu-music.com;
       object-src 'none';
       base-uri 'self';
       form-action 'self';
